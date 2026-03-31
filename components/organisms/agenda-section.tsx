@@ -1,0 +1,70 @@
+import { View, StyleSheet } from 'react-native';
+
+import { ThemedText } from '@/components/atoms/themed-text';
+import { EntryRow } from '@/components/molecules/entry-row';
+import { Spacing, TextColors } from '@/constants/theme';
+
+import type { EntryType } from '@/components/atoms/entry-dot';
+
+interface AgendaEntry {
+  id: string;
+  title: string;
+  subtitle?: string;
+  time?: string;
+  entryType: EntryType;
+}
+
+interface AgendaSectionProps {
+  date: string;   // e.g. "Friday, Oct 24"
+  entries: AgendaEntry[];
+}
+
+/**
+ * Agenda section organism.
+ * Full-bleed flat list (no card background) of the day's entries
+ * sorted chronologically. No divider lines — spacing handles separation.
+ */
+export function AgendaSection({ date, entries }: AgendaSectionProps): React.ReactElement {
+  return (
+    <View style={styles.section}>
+      <View style={styles.header}>
+        <ThemedText type="headline" style={styles.title}>
+          Agenda
+        </ThemedText>
+        <ThemedText type="label" style={{ color: TextColors.tertiary }}>
+          {date}
+        </ThemedText>
+      </View>
+      <View style={styles.list}>
+        {entries.map((entry) => (
+          <EntryRow
+            key={entry.id}
+            title={entry.title}
+            subtitle={entry.subtitle}
+            time={entry.time}
+            entryType={entry.entryType}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  section: {
+    gap: Spacing.sm,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    paddingHorizontal: Spacing.xs,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  list: {
+    gap: Spacing.xs,
+  },
+});

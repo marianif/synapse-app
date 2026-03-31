@@ -1,98 +1,125 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useRouter } from "expo-router";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { SomedayItem } from "@/components/molecules/someday-item";
+import { AgendaSection } from "@/components/organisms/agenda-section";
+import { AppHeader } from "@/components/organisms/app-header";
+import { DeadlinesCard } from "@/components/organisms/deadlines-card";
+import { Fab } from "@/components/organisms/fab";
+import { TodaySection } from "@/components/organisms/today-section";
+import { WeeklyOverviewCard } from "@/components/organisms/weekly-overview-card";
+import { Spacing, Surface } from "@/constants/theme";
 
-export default function HomeScreen() {
+// ─── Mock data (matches design/home-screem.png) ───────────────────────────────
+
+const WEEKLY_ENTRIES = [
+  { day: "Mon", title: "Team standup @ 10am", entryType: "task" as const },
+  { day: "Tue", title: "Submit weekly report", entryType: "task" as const },
+  { day: "Wed", title: "Client presentation", entryType: "task" as const },
+  { day: "Thu" },
+  { day: "Fri", title: "Design system sync", entryType: "task" as const },
+];
+
+const DEADLINE_ENTRIES = [
+  { day: "Mon" },
+  { day: "Tue", title: "Product Launch v1" },
+  { day: "Wed" },
+  { day: "Thu" },
+  { day: "Fri", title: "Quarterly Tax Filing" },
+];
+
+const TODAY_EVENTS = [
+  {
+    id: "1",
+    title: "Sync with Design Team",
+    timeRange: "10:30 - 11:15 AM",
+    isActive: true,
+    statusTime: "10:42",
+    statusLabel: "12M LEFT",
+  },
+  {
+    id: "2",
+    title: "Quarterly Review",
+    subtitle: "Tomorrow's Focus",
+    isActive: false,
+  },
+];
+
+const AGENDA_ENTRIES = [
+  {
+    id: "1",
+    title: "Update Brand Guidelines",
+    subtitle: "Internal Project",
+    time: "02:00 PM",
+    entryType: "task" as const,
+  },
+  {
+    id: "2",
+    title: "Product Launch Deadline",
+    subtitle: "Marketing Phase 1",
+    time: "04:30 PM",
+    entryType: "deadline" as const,
+  },
+  {
+    id: "3",
+    title: "Community Meetup",
+    subtitle: "Social Event",
+    time: "06:00 PM",
+    entryType: "event" as const,
+  },
+];
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
+export default function HomeScreen(): React.ReactElement {
+  const router = useRouter();
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <View style={styles.screen}>
+        <AppHeader />
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          <WeeklyOverviewCard
+            totalCount={18}
+            spanDays={5}
+            entries={WEEKLY_ENTRIES}
+          />
+          <DeadlinesCard totalCount={2} entries={DEADLINE_ENTRIES} />
+          <TodaySection events={TODAY_EVENTS} />
+          <SomedayItem quote="If you can't explain it to a six year old, you don't understand it yourself." />
+          <AgendaSection date="Friday, Oct 24" entries={AGENDA_ENTRIES} />
+          {/* Bottom padding so FAB never overlaps the last entry */}
+          <View style={styles.fabSpacer} />
+        </ScrollView>
+        <Fab onPress={() => router.push('/modal')} />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  safeArea: {
+    flex: 1,
+    backgroundColor: Surface.base,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  screen: {
+    flex: 1,
+    backgroundColor: Surface.base,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.lg,
+    paddingBottom: Spacing.xl,
+  },
+  fabSpacer: {
+    height: 80,
   },
 });

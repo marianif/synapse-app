@@ -1,34 +1,65 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
+import { Colors, Surface } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-export default function TabLayout() {
+export default function TabLayout(): React.ReactElement {
   const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme];
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
-      }}>
+        tabBarActiveTintColor: theme.tint,
+        tabBarInactiveTintColor: theme.tabIconDefault,
+        tabBarStyle: {
+          backgroundColor: Surface.containerLow,
+          borderTopWidth: 0,        // No 1px borders — DESIGN.md rule
+          elevation: 0,
+        },
+        tabBarShowLabel: false,
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol name="view-grid" size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="calendar"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol name="calendar" size={24} color={color} />
+          ),
         }}
+      />
+      <Tabs.Screen
+        name="stats"
+        options={{
+          tabBarIcon: ({ color }) => (
+            <IconSymbol name="chart-bar" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          tabBarIcon: ({ color }) => (
+            <IconSymbol name="cog-outline" size={24} color={color} />
+          ),
+        }}
+      />
+      {/* Hidden from tab bar — exists only for routing compatibility */}
+      <Tabs.Screen
+        name="explore"
+        options={{ href: null }}
       />
     </Tabs>
   );

@@ -8,11 +8,13 @@ import { WeekdayRow } from '@/components/molecules/weekday-row';
 import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
 
 import type { EntryType } from '@/components/atoms/entry-dot';
+import type { ItemStatus } from '@/components/molecules/list-item';
 
 interface WeekdayEntry {
   day: string;
   title?: string;
   entryType?: EntryType;
+  status?: ItemStatus;
 }
 
 interface WeeklyOverviewCardProps {
@@ -73,6 +75,7 @@ export function WeeklyOverviewCard({
                 day={entry.day}
                 title={entry.title}
                 entryType={entry.entryType ?? 'task'}
+                status={entry.status}
               />
             ))}
           </View>

@@ -7,9 +7,12 @@ import { BentoCardHeader } from '@/components/molecules/bento-card-header';
 import { WeekdayRow } from '@/components/molecules/weekday-row';
 import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
 
+import type { ItemStatus } from '@/components/molecules/list-item';
+
 interface DeadlineEntry {
   day: string;
   title?: string;
+  status?: ItemStatus;
 }
 
 interface DeadlinesCardProps {
@@ -68,6 +71,7 @@ export function DeadlinesCard({
                 day={entry.day}
                 title={entry.title}
                 entryType="deadline"
+                status={entry.status}
               />
             ))}
           </View>

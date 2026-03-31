@@ -5,11 +5,13 @@ import { ThemedText } from '@/components/atoms/themed-text';
 import { Spacing, TextColors } from '@/constants/theme';
 
 import type { EntryType } from '@/components/atoms/entry-dot';
+import type { ItemStatus } from '@/components/molecules/list-item';
 
 interface WeekdayRowProps {
   day: string;           // e.g. "Mon", "Tue"
   title?: string;        // entry title — undefined = empty row (greyed day)
   entryType?: EntryType; // determines dot color
+  status?: ItemStatus;   // completed = strikethrough
 }
 
 /**
@@ -17,8 +19,9 @@ interface WeekdayRowProps {
  * Shows the abbreviated day on the left, a colored dot, and the entry title.
  * Rows without a title render as a faint empty row to preserve vertical rhythm.
  */
-export function WeekdayRow({ day, title, entryType = 'task' }: WeekdayRowProps): React.ReactElement {
+export function WeekdayRow({ day, title, entryType = 'task', status }: WeekdayRowProps): React.ReactElement {
   const hasEntry = Boolean(title);
+  const isCompleted = status === 'completed';
 
   return (
     <View style={styles.row}>
@@ -31,7 +34,14 @@ export function WeekdayRow({ day, title, entryType = 'task' }: WeekdayRowProps):
       {hasEntry ? (
         <>
           <EntryDot type={entryType} />
-          <ThemedText type="body" style={styles.title} numberOfLines={1}>
+          <ThemedText
+            type="body"
+            style={[
+              styles.title,
+              isCompleted && { textDecorationLine: 'line-through', color: TextColors.tertiary },
+            ]}
+            numberOfLines={1}
+          >
             {title}
           </ThemedText>
         </>

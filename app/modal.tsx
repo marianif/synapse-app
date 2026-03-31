@@ -8,12 +8,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/atoms/themed-text';
 import { useDatabase } from '@/hooks/use-database';
 import { Radius, Spacing, Surface, TextColors, EntryAccent } from '@/constants/theme';
+import DateInput from '@/components/atoms/DateInput';
+import TimeInput from '@/components/atoms/TimeInput';
 
 import type { EntryType } from '@/components/atoms/entry-dot';
 
@@ -62,6 +64,7 @@ export default function AddEntryModal(): React.ReactElement {
     } catch (error) {
       console.error('Failed to save entry:', error);
     }
+    router.back();
   }
 
   const canSave = title.trim().length > 0 && !isCreating;
@@ -151,35 +154,31 @@ export default function AddEntryModal(): React.ReactElement {
               </View>
             </View>
 
-            {/* Date/Time Fields (hidden for Someday) */}
-            {showDateTime && (
-              <View style={styles.row}>
-                <View style={[styles.field, styles.halfField]}>
-                  <ThemedText type="caption" muted style={styles.label}>
-                    {type === 'deadline' ? 'DUE DATE' : 'DATE'}
-                  </ThemedText>
-                  <TextInput
-                    style={styles.input}
-                    value={date}
-                    onChangeText={setDate}
-                    placeholder="e.g. Friday, Apr 4"
-                    placeholderTextColor={TextColors.disabled}
-                  />
-                </View>
-                <View style={[styles.field, styles.halfField]}>
-                  <ThemedText type="caption" muted style={styles.label}>
-                    TIME
-                  </ThemedText>
-                  <TextInput
-                    style={styles.input}
-                    value={time}
-                    onChangeText={setTime}
-                    placeholder="e.g. 02:00 PM"
-                    placeholderTextColor={TextColors.disabled}
-                  />
-                </View>
-              </View>
-            )}
+             {/* Date/Time Fields (hidden for Someday) */}
+             {showDateTime && (
+               <View style={styles.row}>
+                 <View style={[styles.field, styles.halfField]}>
+                   <ThemedText type="caption" muted style={styles.label}>
+                     {type === 'deadline' ? 'DUE DATE' : 'DATE'}
+                   </ThemedText>
+                   <DateInput
+                     value={date}
+                     onChange={setDate}
+                     style={styles.input}
+                   />
+                 </View>
+                 <View style={[styles.field, styles.halfField]}>
+                   <ThemedText type="caption" muted style={styles.label}>
+                     TIME
+                   </ThemedText>
+                   <TimeInput
+                     value={time}
+                     onChange={setTime}
+                     style={styles.input}
+                   />
+                 </View>
+               </View>
+             )}
 
             {/* Notes */}
             <View style={styles.field}>

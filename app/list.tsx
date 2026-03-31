@@ -151,7 +151,7 @@ export default function ListScreen(): React.ReactElement {
     resolvedType === 'someday' ? 'One Day' :
     'Weekly Tasks';
 
-  const { entries, ideas, updateEntryStatus, fetchEntries, fetchIdeas } = useDatabase();
+  const { entries, ideas, updateEntryStatus, deleteEntry, deleteIdea, fetchEntries, fetchIdeas } = useDatabase();
 
   useFocusEffect(
     useCallback(() => {
@@ -194,6 +194,16 @@ export default function ListScreen(): React.ReactElement {
     if (!entry) return;
     const nextStatus = entry.status === 'completed' ? 'scheduled' : 'completed';
     await updateEntryStatus(id, nextStatus);
+  }
+
+  // ── Delete handler ─────────────────────────────────────────────────────────────
+
+  async function handleDelete(id: string): Promise<void> {
+    if (resolvedType === 'someday') {
+      await deleteIdea(id);
+    } else {
+      await deleteEntry(id);
+    }
   }
 
   // ── Empty state config ────────────────────────────────────────────────────────
@@ -287,6 +297,7 @@ export default function ListScreen(): React.ReactElement {
                       onPress={() =>
                         router.push(`/detail?id=${entry.id}&entryType=${entry.entryType}`)
                       }
+                      onDelete={() => handleDelete(entry.id)}
                     />
                   ))}
                 </View>

@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     minHeight: 22,
   },
   day: {
-    width: 28,
+    width: 40,
     color: TextColors.secondary,
   },
   title: {

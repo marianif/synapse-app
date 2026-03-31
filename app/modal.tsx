@@ -8,7 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Link, router } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/atoms/themed-text';
@@ -19,19 +19,26 @@ import TimeInput from '@/components/atoms/TimeInput';
 
 import type { EntryType } from '@/components/atoms/entry-dot';
 
-type FormType = 'task' | 'deadline' | 'someday';
+type FormType = 'task' | 'deadline' | 'event' | 'someday';
 
 const TYPE_OPTIONS: { value: FormType; label: string }[] = [
   { value: 'task', label: 'Task' },
   { value: 'deadline', label: 'Deadline' },
+  { value: 'event', label: 'Event' },
   { value: 'someday', label: 'Someday' },
 ];
 
 export default function AddEntryModal(): React.ReactElement {
+  const searchParams = useLocalSearchParams<{
+    type?: FormType;
+    date?: string;
+    time?: string;
+  }>();
+
   const [title, setTitle] = useState('');
-  const [type, setType] = useState<FormType>('task');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [type, setType] = useState<FormType>(searchParams.type ?? 'task');
+  const [date, setDate] = useState(searchParams.date ?? '');
+  const [time, setTime] = useState(searchParams.time ?? '');
   const [notes, setNotes] = useState('');
   const { createEntry, createIdea, isCreating } = useDatabase();
 
@@ -39,7 +46,9 @@ export default function AddEntryModal(): React.ReactElement {
     ? EntryAccent.task
     : type === 'deadline'
       ? EntryAccent.deadline
-      : EntryAccent.someday;
+      : type === 'event'
+        ? EntryAccent.event
+        : EntryAccent.someday;
 
   async function handleSave(): Promise<void> {
     if (!title.trim() || isCreating) return;
@@ -87,7 +96,25 @@ export default function AddEntryModal(): React.ReactElement {
               </Pressable>
             </Link>
             <ThemedText type="headline">Add Entry</ThemedText>
-            <View style={styles.headerButton} /> {/* Spacer */}
+            <Pressable
+              onPress={handleSave}
+              disabled={!canSave}
+              style={({ pressed }) => [
+                styles.headerSaveButton,
+                !canSave && styles.headerSaveButtonDisabled,
+                pressed && styles.headerSaveButtonPressed,
+              ]}
+            >
+              <ThemedText
+                type="bodyBold"
+                style={[
+                  styles.headerSaveButtonText,
+                  { color: accentColor },
+                ]}
+              >
+                {isCreating ? 'Saving...' : 'Save'}
+              </ThemedText>
+            </Pressable>
           </View>
 
           {/* Form */}
@@ -125,7 +152,9 @@ export default function AddEntryModal(): React.ReactElement {
                       ? EntryAccent.task
                       : option.value === 'deadline'
                         ? EntryAccent.deadline
-                        : EntryAccent.someday;
+                        : option.value === 'event'
+                          ? EntryAccent.event
+                          : EntryAccent.someday;
 
                   return (
                     <Pressable
@@ -158,9 +187,9 @@ export default function AddEntryModal(): React.ReactElement {
              {showDateTime && (
                <View style={styles.row}>
                  <View style={[styles.field, styles.halfField]}>
-                   <ThemedText type="caption" muted style={styles.label}>
-                     {type === 'deadline' ? 'DUE DATE' : 'DATE'}
-                   </ThemedText>
+                    <ThemedText type="caption" muted style={styles.label}>
+                      {type === 'deadline' ? 'DUE DATE' : 'DATE'}
+                    </ThemedText>
                    <DateInput
                      value={date}
                      onChange={setDate}
@@ -197,24 +226,6 @@ export default function AddEntryModal(): React.ReactElement {
               />
             </View>
           </ScrollView>
-
-          {/* Action Bar */}
-          <View style={styles.actionBar}>
-            <Pressable
-              onPress={handleSave}
-              disabled={!canSave}
-              style={({ pressed }) => [
-                styles.saveButton,
-                { backgroundColor: accentColor },
-                !canSave && styles.saveButtonDisabled,
-                pressed && styles.saveButtonPressed,
-              ]}
-            >
-              <ThemedText type="bodyBold" style={styles.saveButtonText}>
-                {isCreating ? 'Saving...' : 'Save'}
-              </ThemedText>
-            </Pressable>
-          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -242,7 +253,26 @@ const styles = StyleSheet.create({
     borderBottomColor: Surface.outlineVariant,
   },
   headerButton: {
-    width: 60,
+    minWidth: 60,
+  },
+  headerSaveButton: {
+    minWidth: 50,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: Surface.outlineVariant,
+  },
+  headerSaveButtonDisabled: {
+    opacity: 0.5,
+  },
+  headerSaveButtonPressed: {
+    opacity: 0.7,
+  },
+  headerSaveButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   scroll: {
     flex: 1,

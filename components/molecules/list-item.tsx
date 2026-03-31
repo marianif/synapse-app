@@ -3,6 +3,7 @@ import { Pressable, View, StyleSheet, Text } from 'react-native';
 
 import { EntryDot } from '@/components/atoms/entry-dot';
 import { ThemedText } from '@/components/atoms/themed-text';
+import { SwipeableRow } from '@/components/organisms/swipeable-row';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
 
@@ -23,6 +24,8 @@ interface ListItemProps {
   accentColor: string;
   onToggle?: () => void;
   onPress?: () => void;
+  /** Called when user swipes and confirms deletion */
+  onDelete?: () => void;
 }
 
 /**
@@ -46,135 +49,144 @@ export function ListItem({
   accentColor,
   onToggle,
   onPress,
+  onDelete,
 }: ListItemProps): React.ReactElement {
   const isSomeday = entryType === 'someday';
 
-  if (isSomeday) {
+  const renderContent = (): React.ReactElement => {
+    if (isSomeday) {
+      return (
+        <Pressable
+          onPress={onPress}
+          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+          accessibilityRole="button"
+          accessibilityLabel={`Open ${title}`}
+        >
+          {/* Sparkle icon slot */}
+          <View style={styles.sparkleSlot}>
+            <IconSymbol name="star-four-points" size={18} color={EntryAccent.someday} />
+          </View>
+
+          {/* Dot + content */}
+          <View style={styles.content}>
+            <View style={styles.titleRow}>
+              <EntryDot type="someday" size={8} />
+              <ThemedText type="bodyBold" numberOfLines={1} style={styles.titleText}>
+                {title}
+              </ThemedText>
+            </View>
+            {subtitle ? (
+              <ThemedText type="caption" muted style={styles.somedaySubtitle}>
+                {subtitle}
+              </ThemedText>
+            ) : null}
+          </View>
+
+          {/* Amber arrow */}
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={18}
+            color={EntryAccent.someday + '80'}
+          />
+        </Pressable>
+      );
+    }
+
+    // ── Task / Deadline variant ──────────────────────────────────────────────────
+    const isCompleted = status === 'completed';
+    const isActive = status === 'active';
+
+    const statusLabel =
+      isCompleted ? 'COMPLETED' : isActive ? 'ACTIVE NOW' : 'SCHEDULED';
+
+    const statusColor = isCompleted
+      ? TextColors.tertiary
+      : isActive
+        ? accentColor
+        : TextColors.tertiary;
+
     return (
       <Pressable
         onPress={onPress}
         style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
         accessibilityRole="button"
-        accessibilityLabel={`Open ${title}`}
+        accessibilityLabel={title}
       >
-        {/* Sparkle icon slot */}
-        <View style={styles.sparkleSlot}>
-          <IconSymbol name="star-four-points" size={18} color={EntryAccent.someday} />
-        </View>
+        {/* Checkbox */}
+        <Pressable
+          onPress={onToggle}
+          hitSlop={8}
+          style={[
+            styles.checkbox,
+            isCompleted && styles.checkboxCompleted,
+            isActive && { borderColor: accentColor },
+          ]}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: isCompleted }}
+          accessibilityLabel={`Mark "${title}" as ${isCompleted ? 'incomplete' : 'complete'}`}
+        >
+          {isCompleted && (
+            <MaterialCommunityIcons name="check" size={16} color={TextColors.primary} />
+          )}
+        </Pressable>
 
         {/* Dot + content */}
         <View style={styles.content}>
           <View style={styles.titleRow}>
-            <EntryDot type="someday" size={8} />
-            <ThemedText type="bodyBold" numberOfLines={1} style={styles.titleText}>
-              {title}
+            <EntryDot type={entryType} size={8} />
+            {isCompleted ? (
+              <Text
+                style={[styles.titleStrike, { color: TextColors.tertiary }]}
+                numberOfLines={1}
+              >
+                {title}
+              </Text>
+            ) : (
+              <ThemedText
+                type="bodyBold"
+                numberOfLines={1}
+                style={styles.titleText}
+              >
+                {title}
+              </ThemedText>
+            )}
+          </View>
+          <View style={styles.statusRow}>
+            <ThemedText type="caption" style={[styles.statusLabel, { color: statusColor }]}>
+              {statusLabel}
+            </ThemedText>
+            {time ? (
+              <ThemedText type="caption" style={styles.statusTime}>
+                {' • '}
+                {time}
+              </ThemedText>
+            ) : null}
+            {subtitle && !time ? (
+              <ThemedText type="caption" muted>
+                {' • '}
+                {subtitle}
+              </ThemedText>
+            ) : null}
+          </View>
+        </View>
+
+        {/* Optional time chip (e.g. "10:00") */}
+        {timeChip ? (
+          <View style={styles.timeChip}>
+            <ThemedText type="caption" style={styles.timeChipText}>
+              {timeChip}
             </ThemedText>
           </View>
-          {subtitle ? (
-            <ThemedText type="caption" muted style={styles.somedaySubtitle}>
-              {subtitle}
-            </ThemedText>
-          ) : null}
-        </View>
-
-        {/* Amber arrow */}
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={18}
-          color={EntryAccent.someday + '80'}
-        />
+        ) : null}
       </Pressable>
     );
+  };
+
+  if (onDelete) {
+    return <SwipeableRow onDelete={onDelete}>{renderContent()}</SwipeableRow>;
   }
 
-  // ── Task / Deadline variant ──────────────────────────────────────────────────
-  const isCompleted = status === 'completed';
-  const isActive = status === 'active';
-
-  const statusLabel =
-    isCompleted ? 'COMPLETED' : isActive ? 'ACTIVE NOW' : 'SCHEDULED';
-
-  const statusColor = isCompleted
-    ? TextColors.tertiary
-    : isActive
-      ? accentColor
-      : TextColors.tertiary;
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-      accessibilityRole="button"
-      accessibilityLabel={title}
-    >
-      {/* Checkbox */}
-      <Pressable
-        onPress={onToggle}
-        hitSlop={8}
-        style={[
-          styles.checkbox,
-          isCompleted && styles.checkboxCompleted,
-          isActive && { borderColor: accentColor },
-        ]}
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: isCompleted }}
-        accessibilityLabel={`Mark "${title}" as ${isCompleted ? 'incomplete' : 'complete'}`}
-      >
-        {isCompleted && (
-          <MaterialCommunityIcons name="check" size={16} color={TextColors.primary} />
-        )}
-      </Pressable>
-
-      {/* Dot + content */}
-      <View style={styles.content}>
-        <View style={styles.titleRow}>
-          <EntryDot type={entryType} size={8} />
-          {isCompleted ? (
-            <Text
-              style={[styles.titleStrike, { color: TextColors.tertiary }]}
-              numberOfLines={1}
-            >
-              {title}
-            </Text>
-          ) : (
-            <ThemedText
-              type="bodyBold"
-              numberOfLines={1}
-              style={styles.titleText}
-            >
-              {title}
-            </ThemedText>
-          )}
-        </View>
-        <View style={styles.statusRow}>
-          <ThemedText type="caption" style={[styles.statusLabel, { color: statusColor }]}>
-            {statusLabel}
-          </ThemedText>
-          {time ? (
-            <ThemedText type="caption" style={styles.statusTime}>
-              {' • '}
-              {time}
-            </ThemedText>
-          ) : null}
-          {subtitle && !time ? (
-            <ThemedText type="caption" muted>
-              {' • '}
-              {subtitle}
-            </ThemedText>
-          ) : null}
-        </View>
-      </View>
-
-      {/* Optional time chip (e.g. "10:00") */}
-      {timeChip ? (
-        <View style={styles.timeChip}>
-          <ThemedText type="caption" style={styles.timeChipText}>
-            {timeChip}
-          </ThemedText>
-        </View>
-      ) : null}
-    </Pressable>
-  );
+  return renderContent();
 }
 
 const styles = StyleSheet.create({

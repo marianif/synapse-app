@@ -8,7 +8,7 @@ import type { ColorScheme } from "@/constants/theme";
  */
 export function useColorScheme(): ColorScheme {
   let scheme = useRNColorScheme();
-
   scheme = "dark";
+
   return scheme === "light" ? "light" : "dark";
 }

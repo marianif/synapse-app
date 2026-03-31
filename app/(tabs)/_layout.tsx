@@ -51,6 +51,7 @@ export default function TabLayout(): React.ReactElement {
       <Tabs.Screen
         name="settings"
         options={{
+          href: null, // Accessed via menu, not tab bar
           tabBarIcon: ({ color }) => (
             <IconSymbol name="cog-outline" size={24} color={color} />
           ),

@@ -1,9 +1,16 @@
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from "react-native";
 
-import { ThemedText } from '@/components/atoms/themed-text';
-import { EmptyState } from '@/components/molecules/empty-state';
-import { TodayEventRow } from '@/components/molecules/today-event-row';
-import { Brand, EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { ThemedText } from "@/components/atoms/themed-text";
+import { EmptyState } from "@/components/molecules/empty-state";
+import { TodayEventRow } from "@/components/molecules/today-event-row";
+import {
+  Brand,
+  EntryAccent,
+  Radius,
+  Spacing,
+  Surface,
+  TextColors,
+} from "@/constants/theme";
 
 interface TodayEvent {
   id: string;
@@ -26,7 +33,11 @@ interface TodaySectionProps {
  * Shows "TODAY" / "CURRENT STATUS" header row and a list of today's events.
  * The active event displays a live countdown status badge.
  */
-export function TodaySection({ events, isEmpty = false, onAdd }: TodaySectionProps): React.ReactElement {
+export function TodaySection({
+  events,
+  isEmpty = false,
+  onAdd,
+}: TodaySectionProps): React.ReactElement {
   return (
     <View style={styles.section}>
       <View style={styles.header}>
@@ -42,7 +53,7 @@ export function TodaySection({ events, isEmpty = false, onAdd }: TodaySectionPro
           <EmptyState
             icon="calendar-clock"
             title="No events today"
-            description="Events with times show your real-time status here."
+            description="Your day is clear!"
             ctaLabel="+ Add Event"
             onCta={onAdd ?? (() => {})}
             accentColor={EntryAccent.event}
@@ -72,9 +83,9 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: Spacing.xs,
   },
   card: {
@@ -85,6 +96,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: "rgba(255,255,255,0.04)",
   },
 });

@@ -24,7 +24,7 @@ export interface UseDatabaseReturn {
   updateEntryStatus: (id: string, status: DbEntry['status']) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
   deleteIdea: (id: string) => Promise<void>;
-  fetchEntries: () => Promise<DbEntry[]>;
+  fetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
   fetchIdeas: () => Promise<DbIdea[]>;
 }
 

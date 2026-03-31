@@ -27,7 +27,6 @@ export default function CalendarScreen(): React.ReactElement {
     isCurrentMonth,
     today,
     getEntriesForDay,
-    monthCount,
     upcomingEntries,
     weekCounts,
   } = useCalendarData(entries, currentMonth);
@@ -107,11 +106,10 @@ export default function CalendarScreen(): React.ReactElement {
 
   const upcomingProps = useMemo(
     () => ({
-      monthCount,
       upcomingEntries,
       onAdd: handleOpenAddModal,
     }),
-    [monthCount, upcomingEntries, handleOpenAddModal],
+    [upcomingEntries, handleOpenAddModal],
   );
 
   const weekStripProps = useMemo(

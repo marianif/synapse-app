@@ -1,4 +1,4 @@
-import type { EntryType } from '@/components/atoms/entry-dot';
+import type { EntryType } from "@/components/atoms/entry-dot";
 
 /**
  * SQL schema for the Synapse app database.
@@ -48,7 +48,7 @@ export interface DbEntry {
   due_date: string | null;
   due_time: string | null;
   notes: string | null;
-  status: 'scheduled' | 'active' | 'completed' | 'pending' | 'met' | 'overdue';
+  status: "scheduled" | "active" | "completed" | "pending" | "met" | "overdue";
   created_at: number;
   updated_at: number;
 }

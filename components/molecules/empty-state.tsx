@@ -1,11 +1,9 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from "react-native";
 
-import { ThemedText } from '@/components/atoms/themed-text';
-import { Radius, Spacing, TextColors } from '@/constants/theme';
+import { ThemedText } from "@/components/atoms/themed-text";
+import { Radius, Spacing } from "@/constants/theme";
 
 interface EmptyStateProps {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
   title: string;
   description: string;
   ctaLabel: string;
@@ -14,7 +12,6 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  icon,
   title,
   description,
   ctaLabel,
@@ -23,17 +20,26 @@ export function EmptyState({
 }: EmptyStateProps): React.ReactElement {
   return (
     <View style={styles.container}>
-      <MaterialCommunityIcons name={icon} size={28} color={TextColors.tertiary} />
       <View style={styles.text}>
-        <ThemedText type="body" style={styles.title}>{title}</ThemedText>
-        <ThemedText type="caption" muted style={styles.description}>{description}</ThemedText>
+        <ThemedText
+          type="caption"
+          style={[styles.title, { color: accentColor }]}
+        >
+          {title}
+        </ThemedText>
+        <ThemedText type="caption" muted style={styles.description}>
+          {description}
+        </ThemedText>
       </View>
       <Pressable
         onPress={onCta}
-        style={[styles.cta, { backgroundColor: accentColor + '1A' }]}
+        style={[styles.cta, { backgroundColor: accentColor + "1A" }]}
         accessibilityRole="button"
       >
-        <ThemedText type="caption" style={[styles.ctaText, { color: accentColor }]}>
+        <ThemedText
+          type="caption"
+          style={[styles.ctaText, { color: accentColor }]}
+        >
           {ctaLabel}
         </ThemedText>
       </Pressable>
@@ -43,32 +49,31 @@ export function EmptyState({
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    gap: Spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: Spacing.lg,
   },
   text: {
-    alignItems: 'center',
+    flex: 1,
+    alignItems: "flex-start",
     gap: Spacing.xs,
   },
   title: {
-    fontFamily: 'Inter_600SemiBold',
-    color: TextColors.secondary,
-    textAlign: 'center',
+    fontFamily: "Inter_600SemiBold",
+    textTransform: "uppercase",
   },
   description: {
-    textAlign: 'center',
-    lineHeight: 18,
-    maxWidth: 220,
+    lineHeight: 16,
+    fontSize: 11,
   },
   cta: {
     borderRadius: Radius.full,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    marginTop: Spacing.xs,
   },
   ctaText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: "Inter_600SemiBold",
     letterSpacing: 0.4,
   },
 });

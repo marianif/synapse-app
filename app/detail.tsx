@@ -1,30 +1,49 @@
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback } from "react";
+import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { CountdownChip } from '@/components/atoms/countdown-chip';
-import { EntryDot } from '@/components/atoms/entry-dot';
-import { ThemedText } from '@/components/atoms/themed-text';
-import { DetailActionBar } from '@/components/molecules/detail-action-bar';
-import { DetailMetadataRow } from '@/components/molecules/detail-metadata-row';
-import { DetailSomedayHero } from '@/components/molecules/detail-someday-hero';
-import { EmptyState } from '@/components/molecules/empty-state';
-import { ListScreenHeader } from '@/components/organisms/list-screen-header';
-import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
-import { useDatabase } from '@/hooks/use-database';
+import { CountdownChip } from "@/components/atoms/countdown-chip";
+import { EntryDot } from "@/components/atoms/entry-dot";
+import { ThemedText } from "@/components/atoms/themed-text";
+import { DetailActionBar } from "@/components/molecules/detail-action-bar";
+import { DetailMetadataRow } from "@/components/molecules/detail-metadata-row";
+import { DetailSomedayHero } from "@/components/molecules/detail-someday-hero";
+import { EmptyState } from "@/components/molecules/empty-state";
+import { ListScreenHeader } from "@/components/organisms/list-screen-header";
+import {
+  EntryAccent,
+  Radius,
+  Spacing,
+  Surface,
+  TextColors,
+} from "@/constants/theme";
+import { useDatabase } from "@/hooks/use-database";
 
-import type { EntryType } from '@/components/atoms/entry-dot';
-import type { ActionItem } from '@/components/molecules/detail-action-bar';
+import type { EntryType } from "@/components/atoms/entry-dot";
+import type { ActionItem } from "@/components/molecules/detail-action-bar";
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
-const MONTH_ABBRS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_ABBRS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 function parseDaysRemaining(dueDateStr: string | null): number {
   if (!dueDateStr) return 0;
   // Expects "DayName, Mon DD" e.g. "Thursday, Apr 10"
-  const parts = dueDateStr.replace(',', '').split(' ');
+  const parts = dueDateStr.replace(",", "").split(" ");
   if (parts.length < 3) return 0;
   const monthIndex = MONTH_ABBRS.indexOf(parts[1]);
   const day = parseInt(parts[2], 10);
@@ -38,18 +57,18 @@ function parseDaysRemaining(dueDateStr: string | null): number {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<string, string> = {
-  scheduled: 'SCHEDULED',
-  active: 'ACTIVE NOW',
-  completed: 'COMPLETED',
-  pending: 'PENDING',
-  overdue: 'OVERDUE',
-  met: 'MET',
+  scheduled: "SCHEDULED",
+  active: "ACTIVE NOW",
+  completed: "COMPLETED",
+  pending: "PENDING",
+  overdue: "OVERDUE",
+  met: "MET",
 };
 
 function getStatusColor(status: string, accentColor: string): string {
-  if (status === 'completed' || status === 'met') return '#52C87A';
-  if (status === 'overdue') return '#FF4444';
-  if (status === 'active') return accentColor;
+  if (status === "completed" || status === "met") return "#52C87A";
+  if (status === "overdue") return "#FF4444";
+  if (status === "active") return accentColor;
   return TextColors.tertiary;
 }
 
@@ -63,15 +82,18 @@ function TypeChip({
   accentColor: string;
 }): React.ReactElement {
   const labels: Record<EntryType, string> = {
-    task: 'TASK',
-    deadline: 'DEADLINE',
-    event: 'EVENT',
-    someday: 'ONE DAY',
+    task: "TASK",
+    deadline: "DEADLINE",
+    event: "EVENT",
+    someday: "ONE DAY",
   };
   return (
-    <View style={[styles.typeChip, { backgroundColor: accentColor + '20' }]}>
+    <View style={[styles.typeChip, { backgroundColor: accentColor + "20" }]}>
       <EntryDot type={entryType} size={6} />
-      <ThemedText type="caption" style={[styles.typeChipText, { color: accentColor }]}>
+      <ThemedText
+        type="caption"
+        style={[styles.typeChipText, { color: accentColor }]}
+      >
         {labels[entryType]}
       </ThemedText>
     </View>
@@ -94,8 +116,13 @@ function TaskHero({
   const statusColor = getStatusColor(status, accentColor);
   return (
     <View style={styles.heroBlock}>
-      <View style={[styles.statusChip, { backgroundColor: statusColor + '18' }]}>
-        <ThemedText type="label" style={[styles.statusLabel, { color: statusColor }]}>
+      <View
+        style={[styles.statusChip, { backgroundColor: statusColor + "18" }]}
+      >
+        <ThemedText
+          type="label"
+          style={[styles.statusLabel, { color: statusColor }]}
+        >
           {STATUS_LABELS[status] ?? status.toUpperCase()}
         </ThemedText>
       </View>
@@ -139,7 +166,7 @@ function DeadlineHero({
     <View style={styles.heroBlock}>
       <CountdownChip
         daysRemaining={daysRemaining}
-        state={status as 'pending' | 'overdue' | 'met'}
+        state={status as "pending" | "overdue" | "met"}
       />
       <View style={styles.metaList}>
         {dueDate ? (
@@ -167,29 +194,33 @@ function DeadlineHero({
 
 export default function DetailScreen(): React.ReactElement {
   const router = useRouter();
-  const { id, entryType } = useLocalSearchParams<{ id?: string; entryType?: string }>();
+  const { id, entryType } = useLocalSearchParams<{
+    id?: string;
+    entryType?: string;
+  }>();
 
-  const resolvedType: EntryType =
-    entryType === 'deadline' ? 'deadline' :
-    entryType === 'someday' ? 'someday' :
-    entryType === 'event' ? 'event' :
-    'task';
+  const accentColor = EntryAccent[entryType];
 
-  const accentColor = EntryAccent[resolvedType];
+  const isSomeday = entryType === "someday";
 
-  const isSomeday = resolvedType === 'someday';
-
-  const { entries, ideas, isLoading, updateEntryStatus, deleteEntry, fetchEntries, fetchIdeas } =
-    useDatabase();
+  const {
+    entries,
+    ideas,
+    isLoading,
+    updateEntryStatus,
+    deleteEntry,
+    fetchEntries,
+    fetchIdeas,
+  } = useDatabase();
 
   useFocusEffect(
     useCallback(() => {
       if (isSomeday) {
         fetchIdeas();
       } else {
-        fetchEntries(resolvedType);
+        fetchEntries();
       }
-    }, [isSomeday, resolvedType, fetchEntries, fetchIdeas]),
+    }, [isSomeday, fetchEntries, fetchIdeas]),
   );
 
   // ── Resolve entry ────────────────────────────────────────────────────────────
@@ -197,14 +228,14 @@ export default function DetailScreen(): React.ReactElement {
   const entry = isSomeday ? null : entries.find((e) => e.id === id);
   const idea = isSomeday ? ideas.find((i) => i.id === id) : null;
 
-  const title = entry?.title ?? idea?.title ?? '';
+  const title = entry?.title ?? idea?.title ?? "";
   const notes = entry?.notes ?? idea?.notes ?? null;
 
   // ── Loading ──────────────────────────────────────────────────────────────────
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
         <ListScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
           <ActivityIndicator color={accentColor} />
@@ -217,7 +248,7 @@ export default function DetailScreen(): React.ReactElement {
 
   if (!entry && !idea) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
         <ListScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
           <EmptyState
@@ -237,13 +268,13 @@ export default function DetailScreen(): React.ReactElement {
 
   async function handleComplete(): Promise<void> {
     if (!entry) return;
-    const nextStatus = entry.status === 'completed' ? 'scheduled' : 'completed';
+    const nextStatus = entry.status === "completed" ? "scheduled" : "completed";
     await updateEntryStatus(entry.id, nextStatus);
   }
 
   async function handleMarkMet(): Promise<void> {
     if (!entry) return;
-    const nextStatus = entry.status === 'met' ? 'pending' : 'met';
+    const nextStatus = entry.status === "met" ? "pending" : "met";
     await updateEntryStatus(entry.id, nextStatus);
   }
 
@@ -255,50 +286,62 @@ export default function DetailScreen(): React.ReactElement {
   }
 
   const actions: [ActionItem, ActionItem, ActionItem] =
-    resolvedType === 'task' || resolvedType === 'event'
+    entryType === "task" || entryType === "event"
       ? [
           {
-            icon: 'check-circle-outline',
-            label: entry?.status === 'completed' ? 'Completed' : 'Complete',
+            icon: "check-circle-outline",
+            label: entry?.status === "completed" ? "Completed" : "Complete",
             onPress: handleComplete,
             isPrimary: true,
             accentColor,
           },
-          { icon: 'calendar-clock', label: 'Reschedule', onPress: () => {} },
-          { icon: 'trash-can-outline', label: 'Delete', onPress: handleDelete, isDanger: true },
+          { icon: "calendar-clock", label: "Reschedule", onPress: () => {} },
+          {
+            icon: "trash-can-outline",
+            label: "Delete",
+            onPress: handleDelete,
+            isDanger: true,
+          },
         ]
-      : resolvedType === 'deadline'
+      : entryType === "deadline"
         ? [
             {
-              icon: 'check-decagram-outline',
-              label: entry?.status === 'met' ? 'Met' : 'Mark Met',
+              icon: "check-decagram-outline",
+              label: entry?.status === "met" ? "Met" : "Mark Met",
               onPress: handleMarkMet,
               isPrimary: true,
               accentColor,
             },
-            { icon: 'calendar-clock', label: 'Reschedule', onPress: () => {} },
-            { icon: 'trash-can-outline', label: 'Delete', onPress: handleDelete, isDanger: true },
+            { icon: "calendar-clock", label: "Reschedule", onPress: () => {} },
+            {
+              icon: "trash-can-outline",
+              label: "Delete",
+              onPress: handleDelete,
+              isDanger: true,
+            },
           ]
         : [
             {
-              icon: 'arrow-up-circle-outline',
-              label: 'Promote',
+              icon: "arrow-up-circle-outline",
+              label: "Promote",
               onPress: () => {},
               isPrimary: true,
               accentColor,
             },
-            { icon: 'pencil-outline', label: 'Edit', onPress: () => {} },
-            { icon: 'trash-can-outline', label: 'Delete', onPress: () => router.back(), isDanger: true },
+            { icon: "pencil-outline", label: "Edit", onPress: () => {} },
+            {
+              icon: "trash-can-outline",
+              label: "Delete",
+              onPress: () => router.back(),
+              isDanger: true,
+            },
           ];
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <View style={styles.screen}>
         {/* ── Header ───────────────────────────────────────────── */}
-        <ListScreenHeader
-          title=""
-          onBack={() => router.back()}
-        />
+        <ListScreenHeader title="" onBack={() => router.back()} />
 
         {/* ── Scrollable content ──────────────────────────────── */}
         <ScrollView
@@ -307,7 +350,7 @@ export default function DetailScreen(): React.ReactElement {
           showsVerticalScrollIndicator={false}
         >
           {/* Type chip */}
-          <TypeChip entryType={resolvedType} accentColor={accentColor} />
+          <TypeChip entryType={entryType} accentColor={accentColor} />
 
           {/* Title */}
           <ThemedText type="headline" style={styles.title}>
@@ -315,14 +358,14 @@ export default function DetailScreen(): React.ReactElement {
           </ThemedText>
 
           {/* Type-specific hero block */}
-          {entry && (resolvedType === 'task' || resolvedType === 'event') ? (
+          {entry && (entryType === "task" || entryType === "event") ? (
             <TaskHero
               status={entry.status}
               scheduledDate={entry.scheduled_date}
               scheduledTime={entry.scheduled_time}
               accentColor={accentColor}
             />
-          ) : entry && resolvedType === 'deadline' ? (
+          ) : entry && entryType === "deadline" ? (
             <DeadlineHero
               status={entry.status}
               dueDate={entry.due_date}
@@ -380,8 +423,8 @@ const styles = StyleSheet.create({
   },
   centered: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   scroll: {
     flex: 1,
@@ -392,29 +435,29 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   typeChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
     borderRadius: Radius.full,
     paddingVertical: Spacing.xs,
     paddingHorizontal: Spacing.md,
     gap: Spacing.xs,
   },
   typeChipText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: "Inter_600SemiBold",
     letterSpacing: 0.6,
   },
   title: {
     fontSize: 28,
     lineHeight: 34,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: "Inter_700Bold",
   },
   // ── Hero block ──────────────────────────────────────────────
   heroBlock: {
     gap: Spacing.md,
   },
   statusChip: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     borderRadius: Radius.full,
     paddingVertical: Spacing.xs,
     paddingHorizontal: Spacing.md,

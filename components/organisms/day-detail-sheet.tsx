@@ -1,13 +1,13 @@
-import { Modal, Pressable, View, StyleSheet, Dimensions } from 'react-native';
+import { Dimensions, Modal, Pressable, StyleSheet, View } from "react-native";
 
-import { ThemedText } from '@/components/atoms/themed-text';
-import { EntryRow } from '@/components/molecules/entry-row';
-import { EmptyState } from '@/components/molecules/empty-state';
-import { Brand, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { ThemedText } from "@/components/atoms/themed-text";
+import { EmptyState } from "@/components/molecules/empty-state";
+import { EntryRow } from "@/components/molecules/entry-row";
+import { Brand, Radius, Spacing, Surface, TextColors } from "@/constants/theme";
 
-import type { CalendarEntry } from '@/hooks/use-calendar-data';
+import type { CalendarEntry } from "@/hooks/use-calendar-data";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.5;
 
 interface DayDetailSheetProps {
@@ -19,10 +19,10 @@ interface DayDetailSheetProps {
 }
 
 function formatDateLabel(date: Date): string {
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
   });
 }
 
@@ -56,8 +56,8 @@ export function DayDetailSheet({
               </ThemedText>
               <ThemedText type="caption" muted>
                 {hasEntries
-                  ? `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`
-                  : 'No entries'}
+                  ? `${entries.length} ${entries.length === 1 ? "entry" : "entries"}`
+                  : "No entries"}
               </ThemedText>
             </View>
           )}
@@ -76,7 +76,6 @@ export function DayDetailSheet({
               </View>
             ) : (
               <EmptyState
-                icon="calendar-blank"
                 title="Nothing here"
                 description="No entries scheduled for this day."
                 ctaLabel="+ Add Entry"
@@ -106,11 +105,11 @@ export function DayDetailSheet({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
   },
   sheet: {
     backgroundColor: Surface.containerLow,
@@ -124,7 +123,7 @@ const styles = StyleSheet.create({
     height: 4,
     backgroundColor: TextColors.disabled,
     borderRadius: 2,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginTop: Spacing.sm,
     marginBottom: Spacing.md,
   },
@@ -150,12 +149,12 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.lg,
     marginTop: Spacing.md,
     paddingVertical: Spacing.md,
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: Brand.fabGlow,
     borderRadius: Radius.md,
   },
   addButtonText: {
     color: Brand.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

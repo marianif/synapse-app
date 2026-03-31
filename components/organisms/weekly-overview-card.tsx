@@ -2,9 +2,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, View, StyleSheet } from 'react-native';
 
+import { EmptyState } from '@/components/molecules/empty-state';
 import { BentoCardHeader } from '@/components/molecules/bento-card-header';
 import { WeekdayRow } from '@/components/molecules/weekday-row';
-import { Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
 
 import type { EntryType } from '@/components/atoms/entry-dot';
 
@@ -18,6 +19,8 @@ interface WeeklyOverviewCardProps {
   totalCount: number;
   spanDays: number;
   entries: WeekdayEntry[];
+  isEmpty?: boolean;
+  onAdd?: () => void;
 }
 
 /**
@@ -28,6 +31,8 @@ export function WeeklyOverviewCard({
   totalCount,
   spanDays,
   entries,
+  isEmpty = false,
+  onAdd,
 }: WeeklyOverviewCardProps): React.ReactElement {
   const router = useRouter();
 
@@ -42,7 +47,7 @@ export function WeeklyOverviewCard({
           count={totalCount}
           accentType="task"
           label="Weekly Overview"
-          description={`Across ${spanDays} days`}
+          description={isEmpty ? 'No tasks yet' : `Across ${spanDays} days`}
           icon={
             <MaterialCommunityIcons
               name="chart-bar"
@@ -51,16 +56,27 @@ export function WeeklyOverviewCard({
             />
           }
         />
-        <View style={styles.rows}>
-          {entries.map((entry) => (
-            <WeekdayRow
-              key={entry.day}
-              day={entry.day}
-              title={entry.title}
-              entryType={entry.entryType ?? 'task'}
-            />
-          ))}
-        </View>
+        {isEmpty ? (
+          <EmptyState
+            icon="checkbox-marked-circle-plus-outline"
+            title="No tasks this week"
+            description="Schedule tasks to track your weekly momentum."
+            ctaLabel="+ Add Task"
+            onCta={onAdd ?? (() => router.push('/list?entryType=task'))}
+            accentColor={EntryAccent.task}
+          />
+        ) : (
+          <View style={styles.rows}>
+            {entries.map((entry) => (
+              <WeekdayRow
+                key={entry.day}
+                day={entry.day}
+                title={entry.title}
+                entryType={entry.entryType ?? 'task'}
+              />
+            ))}
+          </View>
+        )}
       </View>
     </Pressable>
   );

@@ -1,4 +1,5 @@
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -10,70 +11,85 @@ import { Fab } from "@/components/organisms/fab";
 import { TodaySection } from "@/components/organisms/today-section";
 import { WeeklyOverviewCard } from "@/components/organisms/weekly-overview-card";
 import { Spacing, Surface } from "@/constants/theme";
+import { useDatabase } from "@/hooks/use-database";
 
-// ─── Mock data (matches design/home-screem.png) ───────────────────────────────
+// ─── Date helpers ─────────────────────────────────────────────────────────────
 
-const WEEKLY_ENTRIES = [
-  { day: "Mon", title: "Team standup @ 10am", entryType: "task" as const },
-  { day: "Tue", title: "Submit weekly report", entryType: "task" as const },
-  { day: "Wed", title: "Client presentation", entryType: "task" as const },
-  { day: "Thu" },
-  { day: "Fri", title: "Design system sync", entryType: "task" as const },
-];
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTH_ABBRS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const DEADLINE_ENTRIES = [
-  { day: "Mon" },
-  { day: "Tue", title: "Product Launch v1" },
-  { day: "Wed" },
-  { day: "Thu" },
-  { day: "Fri", title: "Quarterly Tax Filing" },
-];
+function formatDateLabel(d: Date): string {
+  return `${DAY_NAMES[d.getDay()]}, ${MONTH_ABBRS[d.getMonth()]} ${d.getDate()}`;
+}
 
-const TODAY_EVENTS = [
-  {
-    id: "1",
-    title: "Sync with Design Team",
-    timeRange: "10:30 - 11:15 AM",
-    isActive: true,
-    statusTime: "10:42",
-    statusLabel: "12M LEFT",
-  },
-  {
-    id: "2",
-    title: "Quarterly Review",
-    subtitle: "Tomorrow's Focus",
-    isActive: false,
-  },
-];
-
-const AGENDA_ENTRIES = [
-  {
-    id: "1",
-    title: "Update Brand Guidelines",
-    subtitle: "Internal Project",
-    time: "02:00 PM",
-    entryType: "task" as const,
-  },
-  {
-    id: "2",
-    title: "Product Launch Deadline",
-    subtitle: "Marketing Phase 1",
-    time: "04:30 PM",
-    entryType: "deadline" as const,
-  },
-  {
-    id: "3",
-    title: "Community Meetup",
-    subtitle: "Social Event",
-    time: "06:00 PM",
-    entryType: "event" as const,
-  },
-];
+function getWeekDays(): { abbr: string; fullName: string }[] {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((abbr, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return { abbr, fullName: DAY_NAMES[d.getDay()] };
+  });
+}
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
+
+  const { entries, ideas, fetchEntries, fetchIdeas } = useDatabase();
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchEntries();
+      fetchIdeas();
+    }, [fetchEntries, fetchIdeas]),
+  );
+
+  const today = new Date();
+  const todayDayName = DAY_NAMES[today.getDay()];
+  const todayLabel = formatDateLabel(today);
+  const weekDays = getWeekDays();
+
+  // ── Weekly tasks ─────────────────────────────────────────────────────────────
+  const taskEntries = entries.filter((e) => e.type === 'task');
+  const weeklyEntries = weekDays.map(({ abbr, fullName }) => ({
+    day: abbr,
+    title: taskEntries.find((e) => e.scheduled_date?.startsWith(fullName))?.title,
+    entryType: 'task' as const,
+  }));
+
+  // ── Deadlines ────────────────────────────────────────────────────────────────
+  const deadlineEntries = entries.filter((e) => e.type === 'deadline');
+  const weeklyDeadlines = weekDays.map(({ abbr, fullName }) => ({
+    day: abbr,
+    title: deadlineEntries.find((e) => e.due_date?.startsWith(fullName))?.title,
+  }));
+
+  // ── Today's events ────────────────────────────────────────────────────────────
+  const todayEvents = entries
+    .filter((e) => e.type === 'event' && e.scheduled_date?.startsWith(todayDayName))
+    .map((e) => ({
+      id: e.id,
+      title: e.title,
+      timeRange: e.scheduled_time ?? undefined,
+      isActive: e.status === 'active',
+    }));
+
+  // ── Today's agenda (all types) ────────────────────────────────────────────────
+  const todayAgenda = entries
+    .filter((e) => e.scheduled_date?.startsWith(todayDayName))
+    .map((e) => ({
+      id: e.id,
+      title: e.title,
+      time: e.scheduled_time ?? e.due_time ?? undefined,
+      entryType: e.type,
+    }));
+
+  // ── Someday inspiration ───────────────────────────────────────────────────────
+  const firstIdea = ideas[0];
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -85,14 +101,32 @@ export default function HomeScreen(): React.ReactElement {
           showsVerticalScrollIndicator={false}
         >
           <WeeklyOverviewCard
-            totalCount={18}
-            spanDays={5}
-            entries={WEEKLY_ENTRIES}
+            totalCount={taskEntries.length}
+            spanDays={weeklyEntries.filter((e) => e.title).length || 5}
+            entries={weeklyEntries}
+            isEmpty={taskEntries.length === 0}
+            onAdd={() => router.push('/modal')}
           />
-          <DeadlinesCard totalCount={2} entries={DEADLINE_ENTRIES} />
-          <TodaySection events={TODAY_EVENTS} />
-          <SomedayItem quote="If you can't explain it to a six year old, you don't understand it yourself." />
-          <AgendaSection date="Friday, Oct 24" entries={AGENDA_ENTRIES} />
+          <DeadlinesCard
+            totalCount={deadlineEntries.length}
+            entries={weeklyDeadlines}
+            isEmpty={deadlineEntries.length === 0}
+            onAdd={() => router.push('/modal')}
+          />
+          <TodaySection
+            events={todayEvents}
+            isEmpty={todayEvents.length === 0}
+            onAdd={() => router.push('/modal')}
+          />
+          {firstIdea ? (
+            <SomedayItem quote={firstIdea.inspiration ?? firstIdea.title} />
+          ) : null}
+          <AgendaSection
+            date={todayLabel}
+            entries={todayAgenda}
+            isEmpty={todayAgenda.length === 0}
+            onAdd={() => router.push('/modal')}
+          />
           {/* Bottom padding so FAB never overlaps the last entry */}
           <View style={styles.fabSpacer} />
         </ScrollView>

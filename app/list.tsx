@@ -1,18 +1,21 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/atoms/themed-text';
+import { EmptyState } from '@/components/molecules/empty-state';
 import { ListItem } from '@/components/molecules/list-item';
 import { WrapupCard } from '@/components/molecules/wrapup-card';
 import { Fab } from '@/components/organisms/fab';
 import { ListProgress } from '@/components/organisms/list-progress';
 import { ListScreenHeader } from '@/components/organisms/list-screen-header';
 import { EntryAccent, Radius, Spacing, Surface } from '@/constants/theme';
+import { useDatabase } from '@/hooks/use-database';
 
 import type { EntryType } from '@/components/atoms/entry-dot';
 import type { ItemStatus } from '@/components/molecules/list-item';
+import type { DbEntry, DbIdea } from '@/lib/schema';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,143 +34,103 @@ interface Section {
   entries: ListEntry[];
 }
 
-// ─── Mock data ─────────────────────────────────────────────────────────────────
+// ─── Date helpers ─────────────────────────────────────────────────────────────
 
-const TASK_SECTIONS: Section[] = [
-  {
-    label: 'Today',
-    entries: [
-      {
-        id: 't1',
-        title: 'Morning Sync: Design Review',
-        time: '09:30 AM',
-        entryType: 'task',
-        status: 'completed',
-      },
-      {
-        id: 't2',
-        title: 'User Interview: Tech Stack',
-        time: '02:00 PM',
-        entryType: 'task',
-        status: 'active',
-      },
-      {
-        id: 't3',
-        title: 'Weekly Sync with Product',
-        time: '04:00 PM',
-        entryType: 'task',
-        status: 'scheduled',
-      },
-    ],
-  },
-  {
-    label: 'Tomorrow',
-    entries: [
-      {
-        id: 't4',
-        title: 'Strategy Workshop',
-        subtitle: 'Q3 Planning',
-        timeChip: '10:00',
-        entryType: 'task',
-        status: 'scheduled',
-      },
-      {
-        id: 't5',
-        title: 'Update Documentation',
-        subtitle: 'API endpoints',
-        entryType: 'task',
-        status: 'scheduled',
-      },
-    ],
-  },
-];
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-const DEADLINE_SECTIONS: Section[] = [
-  {
-    label: 'This Week',
-    entries: [
-      {
-        id: 'd1',
-        title: 'Product Launch v1',
-        subtitle: 'Marketing Phase 1',
-        time: '05:00 PM',
-        entryType: 'deadline',
-        status: 'active',
-      },
-      {
-        id: 'd2',
-        title: 'Quarterly Tax Filing',
-        subtitle: 'Finance',
-        time: '11:59 PM',
-        entryType: 'deadline',
-        status: 'scheduled',
-      },
-    ],
-  },
-  {
-    label: 'Next Week',
-    entries: [
-      {
-        id: 'd3',
-        title: 'Design System Handoff',
-        subtitle: 'Product Team',
-        timeChip: 'Mon',
-        entryType: 'deadline',
-        status: 'scheduled',
-      },
-      {
-        id: 'd4',
-        title: 'Client Proposal Due',
-        subtitle: 'Agency Project',
-        timeChip: 'Thu',
-        entryType: 'deadline',
-        status: 'scheduled',
-      },
-    ],
-  },
-];
+function getWeekFullNames(): string[] {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  return Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return DAY_NAMES[d.getDay()];
+  });
+}
 
-const SOMEDAY_SECTIONS: Section[] = [
-  {
-    label: 'Ideas',
-    entries: [
-      {
-        id: 's1',
-        title: 'Build a personal design system from scratch',
-        subtitle: 'Design & Development',
-        entryType: 'someday',
-        status: 'scheduled',
-      },
-      {
-        id: 's2',
-        title: 'Write a short guide on async communication',
-        subtitle: 'Writing',
-        entryType: 'someday',
-        status: 'scheduled',
-      },
-      {
-        id: 's3',
-        title: 'Learn Rust basics',
-        subtitle: 'Engineering',
-        entryType: 'someday',
-        status: 'scheduled',
-      },
-    ],
-  },
-];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getSectionCount(sections: Section[]): { completed: number; total: number } {
-  let completed = 0;
-  let total = 0;
-  for (const section of sections) {
-    for (const entry of section.entries) {
-      total++;
-      if (entry.status === 'completed') completed++;
-    }
+function classifyEntry(
+  dateStr: string | null,
+  todayName: string,
+  weekNames: string[],
+): 'today' | 'thisWeek' | 'later' {
+  if (!dateStr) return 'later';
+  if (dateStr.startsWith(todayName)) return 'today';
+  for (const name of weekNames) {
+    if (dateStr.startsWith(name)) return 'thisWeek';
   }
-  return { completed, total };
+  return 'later';
+}
+
+// ─── Mappers ──────────────────────────────────────────────────────────────────
+
+function entryToListEntry(e: DbEntry): ListEntry {
+  const rawStatus = e.status;
+  const status: ItemStatus =
+    rawStatus === 'completed' || rawStatus === 'met' ? 'completed' :
+    rawStatus === 'active' || rawStatus === 'overdue' ? 'active' :
+    'scheduled';
+  return {
+    id: e.id,
+    title: e.title,
+    time: e.scheduled_time ?? e.due_time ?? undefined,
+    entryType: e.type,
+    status,
+  };
+}
+
+function ideaToListEntry(idea: DbIdea): ListEntry {
+  return {
+    id: idea.id,
+    title: idea.title,
+    subtitle: idea.subtitle ?? undefined,
+    entryType: 'someday',
+    status: 'scheduled',
+  };
+}
+
+function buildTaskSections(entries: DbEntry[]): Section[] {
+  const todayName = DAY_NAMES[new Date().getDay()];
+  const weekNames = getWeekFullNames();
+
+  const today: ListEntry[] = [];
+  const thisWeek: ListEntry[] = [];
+  const later: ListEntry[] = [];
+
+  for (const e of entries) {
+    const bucket = classifyEntry(e.scheduled_date, todayName, weekNames);
+    const item = entryToListEntry(e);
+    if (bucket === 'today') today.push(item);
+    else if (bucket === 'thisWeek') thisWeek.push(item);
+    else later.push(item);
+  }
+
+  const sections: Section[] = [];
+  if (today.length > 0) sections.push({ label: 'Today', entries: today });
+  if (thisWeek.length > 0) sections.push({ label: 'This Week', entries: thisWeek });
+  if (later.length > 0) sections.push({ label: 'Later', entries: later });
+  return sections;
+}
+
+function buildDeadlineSections(entries: DbEntry[]): Section[] {
+  const todayName = DAY_NAMES[new Date().getDay()];
+  const weekNames = getWeekFullNames();
+
+  const thisWeek: ListEntry[] = [];
+  const later: ListEntry[] = [];
+
+  for (const e of entries) {
+    const bucket = classifyEntry(e.due_date, todayName, weekNames);
+    const item = entryToListEntry(e);
+    if (bucket === 'today' || bucket === 'thisWeek') thisWeek.push(item);
+    else later.push(item);
+  }
+
+  const sections: Section[] = [];
+  if (thisWeek.length > 0) sections.push({ label: 'This Week', entries: thisWeek });
+  if (later.length > 0) sections.push({ label: 'Upcoming', entries: later });
+  return sections;
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -177,60 +140,83 @@ export default function ListScreen(): React.ReactElement {
   const { entryType } = useLocalSearchParams<{ entryType?: string }>();
 
   const resolvedType: EntryType =
-    entryType === 'deadline'
-      ? 'deadline'
-      : entryType === 'someday'
-        ? 'someday'
-        : 'task';
+    entryType === 'deadline' ? 'deadline' :
+    entryType === 'someday' ? 'someday' :
+    'task';
 
   const accentColor = EntryAccent[resolvedType];
 
   const screenTitle =
-    resolvedType === 'deadline'
-      ? 'Deadlines'
-      : resolvedType === 'someday'
-        ? 'One Day'
-        : 'Weekly Tasks';
+    resolvedType === 'deadline' ? 'Deadlines' :
+    resolvedType === 'someday' ? 'One Day' :
+    'Weekly Tasks';
 
-  const sections =
-    resolvedType === 'deadline'
-      ? DEADLINE_SECTIONS
-      : resolvedType === 'someday'
-        ? SOMEDAY_SECTIONS
-        : TASK_SECTIONS;
+  const { entries, ideas, updateEntryStatus, fetchEntries, fetchIdeas } = useDatabase();
 
-  // Local status state (someday items have no meaningful status toggling)
-  const [statuses, setStatuses] = useState<Record<string, ItemStatus>>(() => {
-    const map: Record<string, ItemStatus> = {};
-    for (const section of sections) {
-      for (const entry of section.entries) {
-        map[entry.id] = entry.status;
+  useFocusEffect(
+    useCallback(() => {
+      if (resolvedType === 'someday') {
+        fetchIdeas();
+      } else {
+        fetchEntries(resolvedType);
       }
-    }
-    return map;
-  });
+    }, [resolvedType, fetchEntries, fetchIdeas]),
+  );
 
-  function toggleItem(id: string): void {
-    setStatuses((prev) => ({
-      ...prev,
-      [id]: prev[id] === 'completed' ? 'scheduled' : 'completed',
-    }));
-  }
+  // ── Build sections ────────────────────────────────────────────────────────────
 
-  const completedCount = Object.values(statuses).filter((s) => s === 'completed').length;
-  const { total } = getSectionCount(sections);
+  const sections: Section[] =
+    resolvedType === 'someday'
+      ? ideas.length > 0
+        ? [{ label: 'Ideas', entries: ideas.map(ideaToListEntry) }]
+        : []
+      : resolvedType === 'deadline'
+        ? buildDeadlineSections(entries)
+        : buildTaskSections(entries);
 
-  // Badge count = non-completed entries in first section
-  const firstSectionCount = sections[0]?.entries.filter(
-    (e) => statuses[e.id] !== 'completed',
-  ).length ?? 0;
+  // ── Progress counts ───────────────────────────────────────────────────────────
+
+  const allItems = sections.flatMap((s) => s.entries);
+  const total = allItems.length;
+  const completedCount = allItems.filter((e) => e.status === 'completed').length;
+
+  const firstSectionCount = sections[0]?.entries.filter((e) => e.status !== 'completed').length ?? 0;
 
   const badgeLabel =
-    resolvedType === 'deadline'
-      ? 'DEADLINES'
-      : resolvedType === 'someday'
-        ? 'IDEAS'
-        : 'TASKS';
+    resolvedType === 'deadline' ? 'DEADLINES' :
+    resolvedType === 'someday' ? 'IDEAS' :
+    'TASKS';
+
+  // ── Toggle handler ────────────────────────────────────────────────────────────
+
+  async function toggleItem(id: string): Promise<void> {
+    const entry = entries.find((e) => e.id === id);
+    if (!entry) return;
+    const nextStatus = entry.status === 'completed' ? 'scheduled' : 'completed';
+    await updateEntryStatus(id, nextStatus);
+  }
+
+  // ── Empty state config ────────────────────────────────────────────────────────
+
+  const emptyIcon =
+    resolvedType === 'deadline' ? 'calendar-alert' :
+    resolvedType === 'someday' ? 'lightbulb-on-outline' :
+    'checkbox-marked-circle-plus-outline';
+
+  const emptyTitle =
+    resolvedType === 'deadline' ? 'No deadlines tracked' :
+    resolvedType === 'someday' ? 'Your ideas list is empty' :
+    'No tasks yet';
+
+  const emptyDescription =
+    resolvedType === 'deadline' ? 'Add a deadline to stay ahead of critical dates.' :
+    resolvedType === 'someday' ? 'Capture things you want to explore someday.' :
+    'Add tasks to build your weekly focus.';
+
+  const emptyCtaLabel =
+    resolvedType === 'deadline' ? '+ Add Deadline' :
+    resolvedType === 'someday' ? '+ Capture Idea' :
+    '+ Add Task';
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -245,56 +231,70 @@ export default function ListScreen(): React.ReactElement {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {/* Progress header — hidden for someday (no completion concept) */}
+          {/* Progress header — hidden for someday */}
           {resolvedType !== 'someday' ? (
             <ListProgress
               completed={completedCount}
               total={total}
-              streak={8}
+              streak={0}
               entryType={resolvedType}
             />
           ) : null}
 
-          {sections.map((section, sectionIndex) => (
-            <View key={section.label} style={styles.section}>
-              {/* Section header */}
-              <View style={styles.sectionHeader}>
-                <ThemedText type="headline">{section.label}</ThemedText>
-                {sectionIndex === 0 && firstSectionCount > 0 ? (
-                  <View style={[styles.countBadge, { backgroundColor: accentColor + '22' }]}>
-                    <ThemedText
-                      type="caption"
-                      style={[styles.countBadgeText, { color: accentColor }]}
-                    >
-                      {firstSectionCount} {badgeLabel}
-                    </ThemedText>
-                  </View>
-                ) : null}
-              </View>
-
-              {/* Items */}
-              <View style={styles.itemList}>
-                {section.entries.map((entry) => (
-                  <ListItem
-                    key={entry.id}
-                    title={entry.title}
-                    subtitle={entry.subtitle}
-                    time={entry.time}
-                    timeChip={entry.timeChip}
-                    entryType={entry.entryType}
-                    status={statuses[entry.id] ?? entry.status}
-                    accentColor={accentColor}
-                    onToggle={() => toggleItem(entry.id)}
-                    onPress={() =>
-                      router.push(`/detail?id=${entry.id}&entryType=${entry.entryType}`)
-                    }
-                  />
-                ))}
-              </View>
+          {/* Empty state — full-screen when no entries */}
+          {sections.length === 0 ? (
+            <View style={styles.emptyWrapper}>
+              <EmptyState
+                icon={emptyIcon}
+                title={emptyTitle}
+                description={emptyDescription}
+                ctaLabel={emptyCtaLabel}
+                onCta={() => router.push('/modal')}
+                accentColor={accentColor}
+              />
             </View>
-          ))}
+          ) : (
+            sections.map((section, sectionIndex) => (
+              <View key={section.label} style={styles.section}>
+                {/* Section header */}
+                <View style={styles.sectionHeader}>
+                  <ThemedText type="headline">{section.label}</ThemedText>
+                  {sectionIndex === 0 && firstSectionCount > 0 ? (
+                    <View style={[styles.countBadge, { backgroundColor: accentColor + '22' }]}>
+                      <ThemedText
+                        type="caption"
+                        style={[styles.countBadgeText, { color: accentColor }]}
+                      >
+                        {firstSectionCount} {badgeLabel}
+                      </ThemedText>
+                    </View>
+                  ) : null}
+                </View>
 
-          {resolvedType !== 'someday' ? (
+                {/* Items */}
+                <View style={styles.itemList}>
+                  {section.entries.map((entry) => (
+                    <ListItem
+                      key={entry.id}
+                      title={entry.title}
+                      subtitle={entry.subtitle}
+                      time={entry.time}
+                      timeChip={entry.timeChip}
+                      entryType={entry.entryType}
+                      status={entry.status}
+                      accentColor={accentColor}
+                      onToggle={resolvedType !== 'someday' ? () => toggleItem(entry.id) : undefined}
+                      onPress={() =>
+                        router.push(`/detail?id=${entry.id}&entryType=${entry.entryType}`)
+                      }
+                    />
+                  ))}
+                </View>
+              </View>
+            ))
+          )}
+
+          {resolvedType !== 'someday' && sections.length > 0 ? (
             <WrapupCard onViewStats={() => {}} />
           ) : null}
 
@@ -324,6 +324,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     gap: Spacing.xl,
     paddingBottom: Spacing.xl,
+  },
+  emptyWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingTop: Spacing.xl * 2,
   },
   section: {
     gap: Spacing.md,

@@ -2,9 +2,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, View, StyleSheet } from 'react-native';
 
+import { EmptyState } from '@/components/molecules/empty-state';
 import { BentoCardHeader } from '@/components/molecules/bento-card-header';
 import { WeekdayRow } from '@/components/molecules/weekday-row';
-import { Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
 
 interface DeadlineEntry {
   day: string;
@@ -14,6 +15,8 @@ interface DeadlineEntry {
 interface DeadlinesCardProps {
   totalCount: number;
   entries: DeadlineEntry[];
+  isEmpty?: boolean;
+  onAdd?: () => void;
 }
 
 /**
@@ -23,6 +26,8 @@ interface DeadlinesCardProps {
 export function DeadlinesCard({
   totalCount,
   entries,
+  isEmpty = false,
+  onAdd,
 }: DeadlinesCardProps): React.ReactElement {
   const router = useRouter();
 
@@ -37,7 +42,7 @@ export function DeadlinesCard({
           count={totalCount}
           accentType="deadline"
           label="Deadlines"
-          description="Critical milestones"
+          description={isEmpty ? 'Nothing due yet' : 'Critical milestones'}
           icon={
             <MaterialCommunityIcons
               name="bell-outline"
@@ -46,16 +51,27 @@ export function DeadlinesCard({
             />
           }
         />
-        <View style={styles.rows}>
-          {entries.map((entry) => (
-            <WeekdayRow
-              key={entry.day}
-              day={entry.day}
-              title={entry.title}
-              entryType="deadline"
-            />
-          ))}
-        </View>
+        {isEmpty ? (
+          <EmptyState
+            icon="calendar-alert"
+            title="No deadlines ahead"
+            description="Add deadlines to track critical milestones."
+            ctaLabel="+ Add Deadline"
+            onCta={onAdd ?? (() => router.push('/list?entryType=deadline'))}
+            accentColor={EntryAccent.deadline}
+          />
+        ) : (
+          <View style={styles.rows}>
+            {entries.map((entry) => (
+              <WeekdayRow
+                key={entry.day}
+                day={entry.day}
+                title={entry.title}
+                entryType="deadline"
+              />
+            ))}
+          </View>
+        )}
       </View>
     </Pressable>
   );

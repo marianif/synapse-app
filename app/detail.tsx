@@ -1,5 +1,6 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CountdownChip } from '@/components/atoms/countdown-chip';
@@ -8,158 +9,31 @@ import { ThemedText } from '@/components/atoms/themed-text';
 import { DetailActionBar } from '@/components/molecules/detail-action-bar';
 import { DetailMetadataRow } from '@/components/molecules/detail-metadata-row';
 import { DetailSomedayHero } from '@/components/molecules/detail-someday-hero';
+import { EmptyState } from '@/components/molecules/empty-state';
 import { ListScreenHeader } from '@/components/organisms/list-screen-header';
 import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { useDatabase } from '@/hooks/use-database';
 
 import type { EntryType } from '@/components/atoms/entry-dot';
 import type { ActionItem } from '@/components/molecules/detail-action-bar';
 
-// ─── Data models ──────────────────────────────────────────────────────────────
+// ─── Date helpers ─────────────────────────────────────────────────────────────
 
-interface TaskDetail {
-  id: string;
-  title: string;
-  subtitle?: string;
-  scheduledDate: string;
-  scheduledTime?: string;
-  status: 'scheduled' | 'active' | 'completed';
-  estimatedDuration?: string;
-  notes?: string;
+const MONTH_ABBRS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function parseDaysRemaining(dueDateStr: string | null): number {
+  if (!dueDateStr) return 0;
+  // Expects "DayName, Mon DD" e.g. "Thursday, Apr 10"
+  const parts = dueDateStr.replace(',', '').split(' ');
+  if (parts.length < 3) return 0;
+  const monthIndex = MONTH_ABBRS.indexOf(parts[1]);
+  const day = parseInt(parts[2], 10);
+  if (monthIndex === -1 || isNaN(day)) return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(today.getFullYear(), monthIndex, day);
+  return Math.max(0, Math.ceil((due.getTime() - today.getTime()) / 86_400_000));
 }
-
-interface DeadlineDetail {
-  id: string;
-  title: string;
-  subtitle?: string;
-  dueDate: string;
-  dueTime?: string;
-  status: 'pending' | 'overdue' | 'met';
-  daysRemaining: number;
-  notes?: string;
-}
-
-interface SomedayDetail {
-  id: string;
-  title: string;
-  subtitle?: string;
-  inspiration?: string;
-  notes?: string;
-}
-
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const MOCK_TASKS: Record<string, TaskDetail> = {
-  t1: {
-    id: 't1',
-    title: 'Morning Sync: Design Review',
-    subtitle: 'Design Team',
-    scheduledDate: 'Tuesday, Mar 31',
-    scheduledTime: '09:30 AM',
-    status: 'completed',
-    estimatedDuration: '45 min',
-    notes: 'Go through the latest Figma frames with the team. Focus on the onboarding flow and the new component library.',
-  },
-  t2: {
-    id: 't2',
-    title: 'User Interview: Tech Stack',
-    subtitle: 'Research Sprint',
-    scheduledDate: 'Tuesday, Mar 31',
-    scheduledTime: '02:00 PM',
-    status: 'active',
-    estimatedDuration: '60 min',
-    notes: 'Interview with the lead engineer about the current stack. Prepare questions around CI/CD and deployment pipeline.',
-  },
-  t3: {
-    id: 't3',
-    title: 'Weekly Sync with Product',
-    subtitle: 'Product Team',
-    scheduledDate: 'Tuesday, Mar 31',
-    scheduledTime: '04:00 PM',
-    status: 'scheduled',
-    estimatedDuration: '30 min',
-  },
-  t4: {
-    id: 't4',
-    title: 'Strategy Workshop',
-    subtitle: 'Q3 Planning',
-    scheduledDate: 'Wednesday, Apr 1',
-    scheduledTime: '10:00 AM',
-    status: 'scheduled',
-    estimatedDuration: '3 hr',
-    notes: 'Quarterly strategy alignment session. Bring the roadmap draft and competitive analysis.',
-  },
-  t5: {
-    id: 't5',
-    title: 'Update Documentation',
-    subtitle: 'API endpoints',
-    scheduledDate: 'Wednesday, Apr 1',
-    status: 'scheduled',
-    notes: 'Update the REST API docs with the new authentication endpoints. Use OpenAPI 3.0 format.',
-  },
-};
-
-const MOCK_DEADLINES: Record<string, DeadlineDetail> = {
-  d1: {
-    id: 'd1',
-    title: 'Product Launch v1',
-    subtitle: 'Marketing Phase 1',
-    dueDate: 'Friday, Apr 4',
-    dueTime: '05:00 PM',
-    status: 'pending',
-    daysRemaining: 3,
-    notes: 'All marketing assets must be approved. Coordinate with the comms team on the press release timing.',
-  },
-  d2: {
-    id: 'd2',
-    title: 'Quarterly Tax Filing',
-    subtitle: 'Finance',
-    dueDate: 'Sunday, Apr 6',
-    dueTime: '11:59 PM',
-    status: 'pending',
-    daysRemaining: 6,
-    notes: 'Send all receipts and expense reports to the accountant by Friday EOD.',
-  },
-  d3: {
-    id: 'd3',
-    title: 'Design System Handoff',
-    subtitle: 'Product Team',
-    dueDate: 'Monday, Apr 7',
-    status: 'pending',
-    daysRemaining: 7,
-  },
-  d4: {
-    id: 'd4',
-    title: 'Client Proposal Due',
-    subtitle: 'Agency Project',
-    dueDate: 'Thursday, Apr 10',
-    status: 'pending',
-    daysRemaining: 10,
-    notes: 'Final proposal with scope, timeline, and pricing. Awaiting legal review.',
-  },
-};
-
-const MOCK_SOMEDAY: Record<string, SomedayDetail> = {
-  s1: {
-    id: 's1',
-    title: 'Build a personal design system from scratch',
-    subtitle: 'Design & Development',
-    inspiration: 'If you can\'t explain it to a six year old, you don\'t understand it yourself.',
-    notes: 'Start with tokens — colors, spacing, typography. Build components in Storybook. Document everything.',
-  },
-  s2: {
-    id: 's2',
-    title: 'Write a short guide on async communication',
-    subtitle: 'Writing',
-    inspiration: 'The single biggest problem in communication is the illusion that it has taken place.',
-    notes: 'Cover the difference between synchronous and asynchronous work. Include templates for status updates.',
-  },
-  s3: {
-    id: 's3',
-    title: 'Learn Rust basics',
-    subtitle: 'Engineering',
-    notes: 'Go through the official Rust book. Build a small CLI tool as a side project.',
-  },
-};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -207,40 +81,38 @@ function TypeChip({
 // ─── Section: Task hero ───────────────────────────────────────────────────────
 
 function TaskHero({
-  task,
+  status,
+  scheduledDate,
+  scheduledTime,
   accentColor,
 }: {
-  task: TaskDetail;
+  status: string;
+  scheduledDate: string | null;
+  scheduledTime: string | null;
   accentColor: string;
 }): React.ReactElement {
-  const statusColor = getStatusColor(task.status, accentColor);
+  const statusColor = getStatusColor(status, accentColor);
   return (
     <View style={styles.heroBlock}>
       <View style={[styles.statusChip, { backgroundColor: statusColor + '18' }]}>
         <ThemedText type="label" style={[styles.statusLabel, { color: statusColor }]}>
-          {STATUS_LABELS[task.status]}
+          {STATUS_LABELS[status] ?? status.toUpperCase()}
         </ThemedText>
       </View>
       <View style={styles.metaList}>
-        <DetailMetadataRow
-          icon="calendar-outline"
-          label="Date"
-          value={task.scheduledDate}
-          accentColor={accentColor}
-        />
-        {task.scheduledTime ? (
+        {scheduledDate ? (
           <DetailMetadataRow
-            icon="clock-outline"
-            label="Time"
-            value={task.scheduledTime}
+            icon="calendar-outline"
+            label="Date"
+            value={scheduledDate}
             accentColor={accentColor}
           />
         ) : null}
-        {task.estimatedDuration ? (
+        {scheduledTime ? (
           <DetailMetadataRow
-            icon="timer-outline"
-            label="Duration"
-            value={task.estimatedDuration}
+            icon="clock-outline"
+            label="Time"
+            value={scheduledTime}
             accentColor={accentColor}
           />
         ) : null}
@@ -252,30 +124,37 @@ function TaskHero({
 // ─── Section: Deadline hero ───────────────────────────────────────────────────
 
 function DeadlineHero({
-  deadline,
+  status,
+  dueDate,
+  dueTime,
   accentColor,
 }: {
-  deadline: DeadlineDetail;
+  status: string;
+  dueDate: string | null;
+  dueTime: string | null;
   accentColor: string;
 }): React.ReactElement {
+  const daysRemaining = parseDaysRemaining(dueDate);
   return (
     <View style={styles.heroBlock}>
       <CountdownChip
-        daysRemaining={deadline.daysRemaining}
-        state={deadline.status}
+        daysRemaining={daysRemaining}
+        state={status as 'pending' | 'overdue' | 'met'}
       />
       <View style={styles.metaList}>
-        <DetailMetadataRow
-          icon="calendar-alert"
-          label="Due Date"
-          value={deadline.dueDate}
-          accentColor={accentColor}
-        />
-        {deadline.dueTime ? (
+        {dueDate ? (
+          <DetailMetadataRow
+            icon="calendar-alert"
+            label="Due Date"
+            value={dueDate}
+            accentColor={accentColor}
+          />
+        ) : null}
+        {dueTime ? (
           <DetailMetadataRow
             icon="clock-outline"
             label="Due Time"
-            value={deadline.dueTime}
+            value={dueTime}
             accentColor={accentColor}
           />
         ) : null}
@@ -291,48 +170,114 @@ export default function DetailScreen(): React.ReactElement {
   const { id, entryType } = useLocalSearchParams<{ id?: string; entryType?: string }>();
 
   const resolvedType: EntryType =
-    entryType === 'deadline'
-      ? 'deadline'
-      : entryType === 'someday'
-        ? 'someday'
-        : 'task';
+    entryType === 'deadline' ? 'deadline' :
+    entryType === 'someday' ? 'someday' :
+    entryType === 'event' ? 'event' :
+    'task';
 
   const accentColor = EntryAccent[resolvedType];
 
-  // ── Resolve mock data ────────────────────────────────────────────────────────
-  const task = resolvedType === 'task' ? (MOCK_TASKS[id ?? 't1'] ?? MOCK_TASKS['t1']) : null;
-  const deadline = resolvedType === 'deadline' ? (MOCK_DEADLINES[id ?? 'd1'] ?? MOCK_DEADLINES['d1']) : null;
-  const someday = resolvedType === 'someday' ? (MOCK_SOMEDAY[id ?? 's1'] ?? MOCK_SOMEDAY['s1']) : null;
+  const isSomeday = resolvedType === 'someday';
 
-  const title = task?.title ?? deadline?.title ?? someday?.title ?? '';
-  const subtitle = task?.subtitle ?? deadline?.subtitle ?? someday?.subtitle;
-  const notes = task?.notes ?? deadline?.notes ?? someday?.notes;
+  const { entries, ideas, isLoading, updateEntryStatus, deleteEntry, fetchEntries, fetchIdeas } =
+    useDatabase();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isSomeday) {
+        fetchIdeas();
+      } else {
+        fetchEntries(resolvedType);
+      }
+    }, [isSomeday, resolvedType, fetchEntries, fetchIdeas]),
+  );
+
+  // ── Resolve entry ────────────────────────────────────────────────────────────
+
+  const entry = isSomeday ? null : entries.find((e) => e.id === id);
+  const idea = isSomeday ? ideas.find((i) => i.id === id) : null;
+
+  const title = entry?.title ?? idea?.title ?? '';
+  const notes = entry?.notes ?? idea?.notes ?? null;
+
+  // ── Loading ──────────────────────────────────────────────────────────────────
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <ListScreenHeader title="" onBack={() => router.back()} />
+        <View style={styles.centered}>
+          <ActivityIndicator color={accentColor} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Not found ────────────────────────────────────────────────────────────────
+
+  if (!entry && !idea) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <ListScreenHeader title="" onBack={() => router.back()} />
+        <View style={styles.centered}>
+          <EmptyState
+            icon="alert-circle-outline"
+            title="Entry not found"
+            description="This entry may have been deleted."
+            ctaLabel="Go Back"
+            onCta={() => router.back()}
+            accentColor={accentColor}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // ── Action bar ───────────────────────────────────────────────────────────────
+
+  async function handleComplete(): Promise<void> {
+    if (!entry) return;
+    const nextStatus = entry.status === 'completed' ? 'scheduled' : 'completed';
+    await updateEntryStatus(entry.id, nextStatus);
+  }
+
+  async function handleMarkMet(): Promise<void> {
+    if (!entry) return;
+    const nextStatus = entry.status === 'met' ? 'pending' : 'met';
+    await updateEntryStatus(entry.id, nextStatus);
+  }
+
+  async function handleDelete(): Promise<void> {
+    if (entry) {
+      await deleteEntry(entry.id);
+    }
+    router.back();
+  }
+
   const actions: [ActionItem, ActionItem, ActionItem] =
-    resolvedType === 'task'
+    resolvedType === 'task' || resolvedType === 'event'
       ? [
           {
             icon: 'check-circle-outline',
-            label: task?.status === 'completed' ? 'Completed' : 'Complete',
-            onPress: () => {},
+            label: entry?.status === 'completed' ? 'Completed' : 'Complete',
+            onPress: handleComplete,
             isPrimary: true,
             accentColor,
           },
           { icon: 'calendar-clock', label: 'Reschedule', onPress: () => {} },
-          { icon: 'trash-can-outline', label: 'Delete', onPress: () => {}, isDanger: true },
+          { icon: 'trash-can-outline', label: 'Delete', onPress: handleDelete, isDanger: true },
         ]
       : resolvedType === 'deadline'
         ? [
             {
               icon: 'check-decagram-outline',
-              label: deadline?.status === 'met' ? 'Met' : 'Mark Met',
-              onPress: () => {},
+              label: entry?.status === 'met' ? 'Met' : 'Mark Met',
+              onPress: handleMarkMet,
               isPrimary: true,
               accentColor,
             },
             { icon: 'calendar-clock', label: 'Reschedule', onPress: () => {} },
-            { icon: 'trash-can-outline', label: 'Delete', onPress: () => {}, isDanger: true },
+            { icon: 'trash-can-outline', label: 'Delete', onPress: handleDelete, isDanger: true },
           ]
         : [
             {
@@ -343,7 +288,7 @@ export default function DetailScreen(): React.ReactElement {
               accentColor,
             },
             { icon: 'pencil-outline', label: 'Edit', onPress: () => {} },
-            { icon: 'trash-can-outline', label: 'Delete', onPress: () => {}, isDanger: true },
+            { icon: 'trash-can-outline', label: 'Delete', onPress: () => router.back(), isDanger: true },
           ];
 
   return (
@@ -370,20 +315,30 @@ export default function DetailScreen(): React.ReactElement {
           </ThemedText>
 
           {/* Type-specific hero block */}
-          {resolvedType === 'task' && task ? (
-            <TaskHero task={task} accentColor={accentColor} />
-          ) : resolvedType === 'deadline' && deadline ? (
-            <DeadlineHero deadline={deadline} accentColor={accentColor} />
-          ) : someday ? (
-            <DetailSomedayHero inspiration={someday.inspiration} />
+          {entry && (resolvedType === 'task' || resolvedType === 'event') ? (
+            <TaskHero
+              status={entry.status}
+              scheduledDate={entry.scheduled_date}
+              scheduledTime={entry.scheduled_time}
+              accentColor={accentColor}
+            />
+          ) : entry && resolvedType === 'deadline' ? (
+            <DeadlineHero
+              status={entry.status}
+              dueDate={entry.due_date}
+              dueTime={entry.due_time}
+              accentColor={accentColor}
+            />
+          ) : idea ? (
+            <DetailSomedayHero inspiration={idea.inspiration ?? undefined} />
           ) : null}
 
-          {/* Project / subtitle */}
-          {subtitle ? (
+          {/* Project / subtitle (ideas only) */}
+          {idea?.subtitle ? (
             <DetailMetadataRow
               icon="folder-outline"
               label="Project"
-              value={subtitle}
+              value={idea.subtitle}
               accentColor={accentColor}
             />
           ) : null}
@@ -422,6 +377,11 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: Surface.base,
+  },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scroll: {
     flex: 1,

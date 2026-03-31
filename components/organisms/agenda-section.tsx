@@ -1,11 +1,11 @@
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from "react-native";
 
-import { ThemedText } from '@/components/atoms/themed-text';
-import { EmptyState } from '@/components/molecules/empty-state';
-import { EntryRow } from '@/components/molecules/entry-row';
-import { Brand, Spacing, TextColors } from '@/constants/theme';
+import { ThemedText } from "@/components/atoms/themed-text";
+import { EmptyState } from "@/components/molecules/empty-state";
+import { EntryRow } from "@/components/molecules/entry-row";
+import { Brand, Spacing, TextColors } from "@/constants/theme";
 
-import type { EntryType } from '@/components/atoms/entry-dot';
+import type { EntryType } from "@/components/atoms/entry-dot";
 
 interface AgendaEntry {
   id: string;
@@ -16,7 +16,7 @@ interface AgendaEntry {
 }
 
 interface AgendaSectionProps {
-  date: string;   // e.g. "Tuesday, Mar 31"
+  date: string; // e.g. "Tuesday, Mar 31"
   entries: AgendaEntry[];
   isEmpty?: boolean;
   onAdd?: () => void;
@@ -27,13 +27,15 @@ interface AgendaSectionProps {
  * Full-bleed flat list (no card background) of the day's entries
  * sorted chronologically. No divider lines — spacing handles separation.
  */
-export function AgendaSection({ date, entries, isEmpty = false, onAdd }: AgendaSectionProps): React.ReactElement {
+export function AgendaSection({
+  date,
+  entries,
+  isEmpty = false,
+  onAdd,
+}: AgendaSectionProps): React.ReactElement {
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <ThemedText type="headline" style={styles.title}>
-          Agenda
-        </ThemedText>
         <ThemedText type="label" style={{ color: TextColors.tertiary }}>
           {date}
         </ThemedText>
@@ -42,7 +44,7 @@ export function AgendaSection({ date, entries, isEmpty = false, onAdd }: AgendaS
         <EmptyState
           icon="text-box-check-outline"
           title="Your day is clear"
-          description="Add a task, deadline, or event to build today's agenda."
+          description="Add a todo, deadline, or event to build today's agenda."
           ctaLabel="+ Add Entry"
           onCta={onAdd ?? (() => {})}
           accentColor={Brand.primary}
@@ -69,15 +71,12 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
     paddingHorizontal: Spacing.xs,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
+
   list: {
     gap: Spacing.xs,
   },

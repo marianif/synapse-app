@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { Link, router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -7,25 +8,31 @@ import {
   StyleSheet,
   TextInput,
   View,
-} from 'react-native';
-import { Link, router, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ThemedText } from '@/components/atoms/themed-text';
-import { useDatabase } from '@/hooks/use-database';
-import { Radius, Spacing, Surface, TextColors, EntryAccent } from '@/constants/theme';
-import DateInput from '@/components/atoms/DateInput';
-import TimeInput from '@/components/atoms/TimeInput';
+import DateInput from "@/components/atoms/DateInput";
+import { ThemedText } from "@/components/atoms/themed-text";
+import TimeInput from "@/components/atoms/TimeInput";
+import {
+  EntryAccent,
+  Radius,
+  Spacing,
+  Surface,
+  TextColors,
+} from "@/constants/theme";
+import { useDatabase } from "@/hooks/use-database";
 
-import type { EntryType } from '@/components/atoms/entry-dot';
+import type { EntryType } from "@/components/atoms/entry-dot";
+import dayjs from "dayjs";
 
-type FormType = 'task' | 'deadline' | 'event' | 'someday';
+type FormType = "todo" | "deadline" | "event" | "someday";
 
 const TYPE_OPTIONS: { value: FormType; label: string }[] = [
-  { value: 'task', label: 'Task' },
-  { value: 'deadline', label: 'Deadline' },
-  { value: 'event', label: 'Event' },
-  { value: 'someday', label: 'Someday' },
+  { value: "todo", label: "Todo" },
+  { value: "deadline", label: "Deadline" },
+  { value: "event", label: "Event" },
+  { value: "someday", label: "Someday" },
 ];
 
 export default function AddEntryModal(): React.ReactElement {
@@ -35,26 +42,27 @@ export default function AddEntryModal(): React.ReactElement {
     time?: string;
   }>();
 
-  const [title, setTitle] = useState('');
-  const [type, setType] = useState<FormType>(searchParams.type ?? 'task');
-  const [date, setDate] = useState(searchParams.date ?? '');
-  const [time, setTime] = useState(searchParams.time ?? '');
-  const [notes, setNotes] = useState('');
+  const [title, setTitle] = useState("");
+  const [type, setType] = useState<FormType>(searchParams.type ?? "todo");
+  const [date, setDate] = useState(searchParams.date ?? dayjs().format("DD/MM/YYYY"));
+  const [time, setTime] = useState(searchParams.time ?? dayjs().format("HH:MM"));
+  const [notes, setNotes] = useState("");
   const { createEntry, createIdea, isCreating } = useDatabase();
 
-  const accentColor = type === 'task'
-    ? EntryAccent.task
-    : type === 'deadline'
-      ? EntryAccent.deadline
-      : type === 'event'
-        ? EntryAccent.event
-        : EntryAccent.someday;
+  const accentColor =
+    type === "todo"
+      ? EntryAccent.todo
+      : type === "deadline"
+        ? EntryAccent.deadline
+        : type === "event"
+          ? EntryAccent.event
+          : EntryAccent.someday;
 
   async function handleSave(): Promise<void> {
     if (!title.trim() || isCreating) return;
 
     try {
-      if (type === 'someday') {
+      if (type === "someday") {
         await createIdea({
           title: title.trim(),
           inspiration: notes.trim() || undefined,
@@ -65,25 +73,25 @@ export default function AddEntryModal(): React.ReactElement {
           type: type as EntryType,
           scheduledDate: date.trim() || undefined,
           scheduledTime: time.trim() || undefined,
-          dueDate: type === 'deadline' ? date.trim() : undefined,
-          dueTime: type === 'deadline' ? time.trim() : undefined,
+          dueDate: type === "deadline" ? date.trim() : undefined,
+          dueTime: type === "deadline" ? time.trim() : undefined,
           notes: notes.trim() || undefined,
         });
       }
     } catch (error) {
-      console.error('Failed to save entry:', error);
+      console.error("Failed to save entry:", error);
     }
     router.back();
   }
 
   const canSave = title.trim().length > 0 && !isCreating;
-  const showDateTime = type !== 'someday';
+  const showDateTime = type !== "someday";
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <KeyboardAvoidingView
         style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.screen}>
           {/* Header */}
@@ -107,12 +115,9 @@ export default function AddEntryModal(): React.ReactElement {
             >
               <ThemedText
                 type="bodyBold"
-                style={[
-                  styles.headerSaveButtonText,
-                  { color: accentColor },
-                ]}
+                style={[styles.headerSaveButtonText, { color: accentColor }]}
               >
-                {isCreating ? 'Saving...' : 'Save'}
+                {isCreating ? "Saving..." : "Save"}
               </ThemedText>
             </Pressable>
           </View>
@@ -148,11 +153,11 @@ export default function AddEntryModal(): React.ReactElement {
                 {TYPE_OPTIONS.map((option) => {
                   const isSelected = type === option.value;
                   const optionAccent =
-                    option.value === 'task'
-                      ? EntryAccent.task
-                      : option.value === 'deadline'
+                    option.value === "todo"
+                      ? EntryAccent.todo
+                      : option.value === "deadline"
                         ? EntryAccent.deadline
-                        : option.value === 'event'
+                        : option.value === "event"
                           ? EntryAccent.event
                           : EntryAccent.someday;
 
@@ -163,7 +168,7 @@ export default function AddEntryModal(): React.ReactElement {
                       style={[
                         styles.typeOption,
                         isSelected && {
-                          backgroundColor: optionAccent + '20',
+                          backgroundColor: optionAccent + "20",
                           borderColor: optionAccent,
                         },
                       ]}
@@ -183,31 +188,31 @@ export default function AddEntryModal(): React.ReactElement {
               </View>
             </View>
 
-             {/* Date/Time Fields (hidden for Someday) */}
-             {showDateTime && (
-               <View style={styles.row}>
-                 <View style={[styles.field, styles.halfField]}>
-                    <ThemedText type="caption" muted style={styles.label}>
-                      {type === 'deadline' ? 'DUE DATE' : 'DATE'}
-                    </ThemedText>
-                   <DateInput
-                     value={date}
-                     onChange={setDate}
-                     style={styles.input}
-                   />
-                 </View>
-                 <View style={[styles.field, styles.halfField]}>
-                   <ThemedText type="caption" muted style={styles.label}>
-                     TIME
-                   </ThemedText>
-                   <TimeInput
-                     value={time}
-                     onChange={setTime}
-                     style={styles.input}
-                   />
-                 </View>
-               </View>
-             )}
+            {/* Date/Time Fields (hidden for Someday) */}
+            {showDateTime && (
+              <View style={styles.row}>
+                <View style={[styles.field, styles.halfField]}>
+                  <ThemedText type="caption" muted style={styles.label}>
+                    {type === "deadline" ? "DUE DATE" : "DATE"}
+                  </ThemedText>
+                  <DateInput
+                    value={date}
+                    onChange={setDate}
+                    style={styles.input}
+                  />
+                </View>
+                <View style={[styles.field, styles.halfField]}>
+                  <ThemedText type="caption" muted style={styles.label}>
+                    TIME
+                  </ThemedText>
+                  <TimeInput
+                    value={time ?? dayjs().format("HH:MM")}
+                    onChange={setTime}
+                    style={styles.input}
+                  />
+                </View>
+              </View>
+            )}
 
             {/* Notes */}
             <View style={styles.field}>
@@ -244,9 +249,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
@@ -271,8 +276,8 @@ const styles = StyleSheet.create({
   },
   headerSaveButtonText: {
     fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   scroll: {
     flex: 1,
@@ -297,13 +302,13 @@ const styles = StyleSheet.create({
   },
   titleInput: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   notesInput: {
     minHeight: 100,
   },
   typeSelector: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.sm,
   },
   typeOption: {
@@ -311,15 +316,15 @@ const styles = StyleSheet.create({
     backgroundColor: Surface.containerLow,
     borderRadius: Radius.lg,
     paddingVertical: Spacing.md,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: "transparent",
   },
   typeOptionText: {
     color: TextColors.secondary,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
   },
   halfField: {
@@ -335,7 +340,7 @@ const styles = StyleSheet.create({
   saveButton: {
     borderRadius: Radius.full,
     paddingVertical: Spacing.md,
-    alignItems: 'center',
+    alignItems: "center",
   },
   saveButtonDisabled: {
     opacity: 0.5,
@@ -344,8 +349,8 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   saveButtonText: {
-    color: '#131316',
+    color: "#131316",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

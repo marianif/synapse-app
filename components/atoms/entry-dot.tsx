@@ -1,8 +1,8 @@
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from "react-native";
 
-import { EntryAccent } from '@/constants/theme';
+import { EntryAccent } from "@/constants/theme";
 
-export type EntryType = 'task' | 'deadline' | 'event' | 'someday';
+export type EntryType = "todo" | "deadline" | "event" | "someday";
 
 interface EntryDotProps {
   type: EntryType;
@@ -13,7 +13,10 @@ interface EntryDotProps {
  * 6px colored dot representing an entry type.
  * Color = categorization, not urgency (DESIGN.md principle).
  */
-export function EntryDot({ type, size = 6 }: EntryDotProps): React.ReactElement {
+export function EntryDot({
+  type,
+  size = 6,
+}: EntryDotProps): React.ReactElement {
   return (
     <View
       style={[

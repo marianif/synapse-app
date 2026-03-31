@@ -1,7 +1,7 @@
-import { Pressable, View, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from "react-native";
 
-import { ThemedText } from '@/components/atoms/themed-text';
-import { Brand, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { ThemedText } from "@/components/atoms/themed-text";
+import { Brand, Radius, Spacing, Surface, TextColors } from "@/constants/theme";
 
 interface WrapupCardProps {
   title?: string;
@@ -14,8 +14,8 @@ interface WrapupCardProps {
  * Displays a motivational body text and a "View Stats" pill CTA.
  */
 export function WrapupCard({
-  title = 'Weekly Wrap-up',
-  body = "You're on track to finish 95% of tasks.",
+  title = "Weekly Wrap-up",
+  body = "You're on track to finish 95% of todos.",
   onViewStats,
 }: WrapupCardProps): React.ReactElement {
   return (
@@ -33,7 +33,7 @@ export function WrapupCard({
         accessibilityLabel="View stats"
       >
         <ThemedText type="bodyBold" style={styles.ctaText}>
-          View{'\n'}Stats
+          View{"\n"}Stats
         </ThemedText>
       </Pressable>
     </View>
@@ -45,8 +45,8 @@ const styles = StyleSheet.create({
     backgroundColor: Surface.containerLow,
     borderRadius: Radius.xl,
     padding: Spacing.xl,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.lg,
   },
   textBlock: {
@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.xl,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minWidth: 80,
   },
   ctaPressed: {
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     color: TextColors.disabled, // dark text on light pill
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 20,
   },
 });

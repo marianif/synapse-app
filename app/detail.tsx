@@ -82,7 +82,7 @@ function TypeChip({
   accentColor: string;
 }): React.ReactElement {
   const labels: Record<EntryType, string> = {
-    task: "TASK",
+    todo: "TODO",
     deadline: "DEADLINE",
     event: "EVENT",
     someday: "ONE DAY",
@@ -100,7 +100,7 @@ function TypeChip({
   );
 }
 
-// ─── Section: Task hero ───────────────────────────────────────────────────────
+// ─── Section: TODOS hero ───────────────────────────────────────────────────────
 
 function TaskHero({
   status,
@@ -286,7 +286,7 @@ export default function DetailScreen(): React.ReactElement {
   }
 
   const actions: [ActionItem, ActionItem, ActionItem] =
-    entryType === "task" || entryType === "event"
+    entryType === "todo" || entryType === "event"
       ? [
           {
             icon: "check-circle-outline",
@@ -358,7 +358,7 @@ export default function DetailScreen(): React.ReactElement {
           </ThemedText>
 
           {/* Type-specific hero block */}
-          {entry && (entryType === "task" || entryType === "event") ? (
+          {entry && (entryType === "todo" || entryType === "event") ? (
             <TaskHero
               status={entry.status}
               scheduledDate={entry.scheduled_date}

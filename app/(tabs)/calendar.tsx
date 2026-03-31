@@ -8,7 +8,6 @@ import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { Fab } from "@/components/organisms/fab";
 import { MonthGrid } from "@/components/organisms/month-grid";
 import { UpcomingPreviewCard } from "@/components/organisms/upcoming-preview-card";
-import { WeekStrip } from "@/components/organisms/week-strip";
 import { Spacing, Surface } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database";
@@ -28,7 +27,6 @@ export default function CalendarScreen(): React.ReactElement {
     today,
     getEntriesForDay,
     upcomingEntries,
-    weekCounts,
   } = useCalendarData(entries, currentMonth);
 
   const handleMonthChange = useCallback((direction: "prev" | "next") => {
@@ -59,6 +57,7 @@ export default function CalendarScreen(): React.ReactElement {
 
   const handleOpenAddModal = useCallback(
     (preselectedDate?: Date) => {
+      setSheetVisible(false);
       if (preselectedDate) {
         const dd = String(preselectedDate.getDate()).padStart(2, "0");
         const mm = String(preselectedDate.getMonth() + 1).padStart(2, "0");
@@ -112,14 +111,6 @@ export default function CalendarScreen(): React.ReactElement {
     [upcomingEntries, handleOpenAddModal],
   );
 
-  const weekStripProps = useMemo(
-    () => ({
-      weekCounts,
-      today,
-    }),
-    [weekCounts, today],
-  );
-
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.screen}>
@@ -131,15 +122,15 @@ export default function CalendarScreen(): React.ReactElement {
         >
           <MonthGrid {...monthGridProps} />
           <UpcomingPreviewCard {...upcomingProps} />
-          <WeekStrip {...weekStripProps} />
           <View style={styles.bottomSpacer} />
         </ScrollView>
-        <Fab onPress={handleOpenAddModal} />
+        <Fab onPress={() => handleOpenAddModal(today)} />
       </View>
       <DayDetailSheet
         visible={sheetVisible}
         date={selectedDate}
         entries={selectedEntries}
+        today={today}
         onClose={handleCloseSheet}
         onAdd={handleOpenAddModal}
       />

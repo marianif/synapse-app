@@ -1,14 +1,20 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Pressable, View, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, View } from "react-native";
 
-import { EmptyState } from '@/components/molecules/empty-state';
-import { BentoCardHeader } from '@/components/molecules/bento-card-header';
-import { WeekdayRow } from '@/components/molecules/weekday-row';
-import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { BentoCardHeader } from "@/components/molecules/bento-card-header";
+import { EmptyState } from "@/components/molecules/empty-state";
+import { WeekdayRow } from "@/components/molecules/weekday-row";
+import {
+  EntryAccent,
+  Radius,
+  Spacing,
+  Surface,
+  TextColors,
+} from "@/constants/theme";
 
-import type { EntryType } from '@/components/atoms/entry-dot';
-import type { ItemStatus } from '@/components/molecules/list-item';
+import type { EntryType } from "@/components/atoms/entry-dot";
+import type { ItemStatus } from "@/components/molecules/list-item";
 
 interface WeekdayEntry {
   day: string;
@@ -26,8 +32,8 @@ interface WeeklyOverviewCardProps {
 }
 
 /**
- * Bento card showing the weekly task overview.
- * Large blue counter + weekday rows with task dots.
+ * Bento card showing the weekly todo overview.
+ * Large blue counter + weekday rows with todo dots.
  */
 export function WeeklyOverviewCard({
   totalCount,
@@ -40,16 +46,16 @@ export function WeeklyOverviewCard({
 
   return (
     <Pressable
-      onPress={() => router.push('/list?entryType=task')}
+      onPress={() => router.push("/list?entryType=todo")}
       accessibilityRole="button"
-      accessibilityLabel="Open weekly tasks list"
+      accessibilityLabel="Open weekly todos list"
     >
       <View style={styles.card}>
         <BentoCardHeader
           count={totalCount}
-          accentType="task"
+          accentType="todo"
           label="Weekly Overview"
-          description={isEmpty ? 'No tasks yet' : `Across ${spanDays} days`}
+          description={isEmpty ? "No todos yet" : `Across ${spanDays} days`}
           icon={
             <MaterialCommunityIcons
               name="chart-bar"
@@ -60,12 +66,11 @@ export function WeeklyOverviewCard({
         />
         {isEmpty ? (
           <EmptyState
-            icon="checkbox-marked-circle-plus-outline"
-            title="No tasks this week"
-            description="Schedule tasks to track your weekly momentum."
-            ctaLabel="+ Add Task"
-            onCta={onAdd ?? (() => router.push('/list?entryType=task'))}
-            accentColor={EntryAccent.task}
+            title="No todos this week"
+            description="Schedule todos to track your weekly momentum."
+            ctaLabel="+ Add Todo"
+            onCta={onAdd ?? (() => router.push("/list?entryType=todo"))}
+            accentColor={EntryAccent.todo}
           />
         ) : (
           <View style={styles.rows}>
@@ -74,7 +79,7 @@ export function WeeklyOverviewCard({
                 key={entry.day}
                 day={entry.day}
                 title={entry.title}
-                entryType={entry.entryType ?? 'task'}
+                entryType={entry.entryType ?? "todo"}
                 status={entry.status}
               />
             ))}
@@ -89,10 +94,10 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: Surface.containerLow,
     borderRadius: Radius.xl,
-    padding: Spacing.xl,
-    gap: Spacing.lg,
+    padding: Spacing.lg,
+    gap: Spacing.md,
   },
   rows: {
-    gap: Spacing.sm,
+    gap: Spacing.xs,
   },
 });

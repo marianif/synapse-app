@@ -1,21 +1,21 @@
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ThemedText } from '@/components/atoms/themed-text';
-import { EmptyState } from '@/components/molecules/empty-state';
-import { ListItem } from '@/components/molecules/list-item';
-import { WrapupCard } from '@/components/molecules/wrapup-card';
-import { Fab } from '@/components/organisms/fab';
-import { ListProgress } from '@/components/organisms/list-progress';
-import { ListScreenHeader } from '@/components/organisms/list-screen-header';
-import { EntryAccent, Radius, Spacing, Surface } from '@/constants/theme';
-import { useDatabase } from '@/hooks/use-database';
+import { ThemedText } from "@/components/atoms/themed-text";
+import { EmptyState } from "@/components/molecules/empty-state";
+import { ListItem } from "@/components/molecules/list-item";
+import { WrapupCard } from "@/components/molecules/wrapup-card";
+import { Fab } from "@/components/organisms/fab";
+import { ListProgress } from "@/components/organisms/list-progress";
+import { ListScreenHeader } from "@/components/organisms/list-screen-header";
+import { EntryAccent, Radius, Spacing, Surface } from "@/constants/theme";
+import { useDatabase } from "@/hooks/use-database";
 
-import type { EntryType } from '@/components/atoms/entry-dot';
-import type { ItemStatus } from '@/components/molecules/list-item';
-import type { DbEntry, DbIdea } from '@/lib/schema';
+import type { EntryType } from "@/components/atoms/entry-dot";
+import type { ItemStatus } from "@/components/molecules/list-item";
+import type { DbEntry, DbIdea } from "@/lib/schema";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,7 +36,15 @@ interface Section {
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 function getWeekFullNames(): string[] {
   const today = new Date();
@@ -54,13 +62,13 @@ function classifyEntry(
   dateStr: string | null,
   todayName: string,
   weekNames: string[],
-): 'today' | 'thisWeek' | 'later' {
-  if (!dateStr) return 'later';
-  if (dateStr.startsWith(todayName)) return 'today';
+): "today" | "thisWeek" | "later" {
+  if (!dateStr) return "later";
+  if (dateStr.startsWith(todayName)) return "today";
   for (const name of weekNames) {
-    if (dateStr.startsWith(name)) return 'thisWeek';
+    if (dateStr.startsWith(name)) return "thisWeek";
   }
-  return 'later';
+  return "later";
 }
 
 // ─── Mappers ──────────────────────────────────────────────────────────────────
@@ -68,9 +76,11 @@ function classifyEntry(
 function entryToListEntry(e: DbEntry): ListEntry {
   const rawStatus = e.status;
   const status: ItemStatus =
-    rawStatus === 'completed' || rawStatus === 'met' ? 'completed' :
-    rawStatus === 'active' || rawStatus === 'overdue' ? 'active' :
-    'scheduled';
+    rawStatus === "completed" || rawStatus === "met"
+      ? "completed"
+      : rawStatus === "active" || rawStatus === "overdue"
+        ? "active"
+        : "scheduled";
   return {
     id: e.id,
     title: e.title,
@@ -85,8 +95,8 @@ function ideaToListEntry(idea: DbIdea): ListEntry {
     id: idea.id,
     title: idea.title,
     subtitle: idea.subtitle ?? undefined,
-    entryType: 'someday',
-    status: 'scheduled',
+    entryType: "someday",
+    status: "scheduled",
   };
 }
 
@@ -101,15 +111,16 @@ function buildTaskSections(entries: DbEntry[]): Section[] {
   for (const e of entries) {
     const bucket = classifyEntry(e.scheduled_date, todayName, weekNames);
     const item = entryToListEntry(e);
-    if (bucket === 'today') today.push(item);
-    else if (bucket === 'thisWeek') thisWeek.push(item);
+    if (bucket === "today") today.push(item);
+    else if (bucket === "thisWeek") thisWeek.push(item);
     else later.push(item);
   }
 
   const sections: Section[] = [];
-  if (today.length > 0) sections.push({ label: 'Today', entries: today });
-  if (thisWeek.length > 0) sections.push({ label: 'This Week', entries: thisWeek });
-  if (later.length > 0) sections.push({ label: 'Later', entries: later });
+  if (today.length > 0) sections.push({ label: "Today", entries: today });
+  if (thisWeek.length > 0)
+    sections.push({ label: "This Week", entries: thisWeek });
+  if (later.length > 0) sections.push({ label: "Later", entries: later });
   return sections;
 }
 
@@ -123,13 +134,14 @@ function buildDeadlineSections(entries: DbEntry[]): Section[] {
   for (const e of entries) {
     const bucket = classifyEntry(e.due_date, todayName, weekNames);
     const item = entryToListEntry(e);
-    if (bucket === 'today' || bucket === 'thisWeek') thisWeek.push(item);
+    if (bucket === "today" || bucket === "thisWeek") thisWeek.push(item);
     else later.push(item);
   }
 
   const sections: Section[] = [];
-  if (thisWeek.length > 0) sections.push({ label: 'This Week', entries: thisWeek });
-  if (later.length > 0) sections.push({ label: 'Upcoming', entries: later });
+  if (thisWeek.length > 0)
+    sections.push({ label: "This Week", entries: thisWeek });
+  if (later.length > 0) sections.push({ label: "Upcoming", entries: later });
   return sections;
 }
 
@@ -140,22 +152,34 @@ export default function ListScreen(): React.ReactElement {
   const { entryType } = useLocalSearchParams<{ entryType?: string }>();
 
   const resolvedType: EntryType =
-    entryType === 'deadline' ? 'deadline' :
-    entryType === 'someday' ? 'someday' :
-    'task';
+    entryType === "deadline"
+      ? "deadline"
+      : entryType === "someday"
+        ? "someday"
+        : "todo";
 
   const accentColor = EntryAccent[resolvedType];
 
   const screenTitle =
-    resolvedType === 'deadline' ? 'Deadlines' :
-    resolvedType === 'someday' ? 'One Day' :
-    'Weekly Tasks';
+    resolvedType === "deadline"
+      ? "Deadlines"
+      : resolvedType === "someday"
+        ? "One Day"
+        : "Weekly Todos";
 
-  const { entries, ideas, updateEntryStatus, deleteEntry, deleteIdea, fetchEntries, fetchIdeas } = useDatabase();
+  const {
+    entries,
+    ideas,
+    updateEntryStatus,
+    deleteEntry,
+    deleteIdea,
+    fetchEntries,
+    fetchIdeas,
+  } = useDatabase();
 
   useFocusEffect(
     useCallback(() => {
-      if (resolvedType === 'someday') {
+      if (resolvedType === "someday") {
         fetchIdeas();
       } else {
         fetchEntries(resolvedType);
@@ -166,11 +190,11 @@ export default function ListScreen(): React.ReactElement {
   // ── Build sections ────────────────────────────────────────────────────────────
 
   const sections: Section[] =
-    resolvedType === 'someday'
+    resolvedType === "someday"
       ? ideas.length > 0
-        ? [{ label: 'Ideas', entries: ideas.map(ideaToListEntry) }]
+        ? [{ label: "Ideas", entries: ideas.map(ideaToListEntry) }]
         : []
-      : resolvedType === 'deadline'
+      : resolvedType === "deadline"
         ? buildDeadlineSections(entries)
         : buildTaskSections(entries);
 
@@ -178,28 +202,33 @@ export default function ListScreen(): React.ReactElement {
 
   const allItems = sections.flatMap((s) => s.entries);
   const total = allItems.length;
-  const completedCount = allItems.filter((e) => e.status === 'completed').length;
+  const completedCount = allItems.filter(
+    (e) => e.status === "completed",
+  ).length;
 
-  const firstSectionCount = sections[0]?.entries.filter((e) => e.status !== 'completed').length ?? 0;
+  const firstSectionCount =
+    sections[0]?.entries.filter((e) => e.status !== "completed").length ?? 0;
 
   const badgeLabel =
-    resolvedType === 'deadline' ? 'DEADLINES' :
-    resolvedType === 'someday' ? 'IDEAS' :
-    'TASKS';
+    resolvedType === "deadline"
+      ? "DEADLINES"
+      : resolvedType === "someday"
+        ? "IDEAS"
+        : "TODOS";
 
   // ── Toggle handler ────────────────────────────────────────────────────────────
 
   async function toggleItem(id: string): Promise<void> {
     const entry = entries.find((e) => e.id === id);
     if (!entry) return;
-    const nextStatus = entry.status === 'completed' ? 'scheduled' : 'completed';
+    const nextStatus = entry.status === "completed" ? "scheduled" : "completed";
     await updateEntryStatus(id, nextStatus);
   }
 
   // ── Delete handler ─────────────────────────────────────────────────────────────
 
   async function handleDelete(id: string): Promise<void> {
-    if (resolvedType === 'someday') {
+    if (resolvedType === "someday") {
       await deleteIdea(id);
     } else {
       await deleteEntry(id);
@@ -209,32 +238,37 @@ export default function ListScreen(): React.ReactElement {
   // ── Empty state config ────────────────────────────────────────────────────────
 
   const emptyIcon =
-    resolvedType === 'deadline' ? 'calendar-alert' :
-    resolvedType === 'someday' ? 'lightbulb-on-outline' :
-    'checkbox-marked-circle-plus-outline';
+    resolvedType === "deadline"
+      ? "calendar-alert"
+      : resolvedType === "someday"
+        ? "lightbulb-on-outline"
+        : "checkbox-marked-circle-plus-outline";
 
   const emptyTitle =
-    resolvedType === 'deadline' ? 'No deadlines tracked' :
-    resolvedType === 'someday' ? 'Your ideas list is empty' :
-    'No tasks yet';
+    resolvedType === "deadline"
+      ? "No deadlines tracked"
+      : resolvedType === "someday"
+        ? "Your ideas list is empty"
+        : "No todos yet";
 
   const emptyDescription =
-    resolvedType === 'deadline' ? 'Add a deadline to stay ahead of critical dates.' :
-    resolvedType === 'someday' ? 'Capture things you want to explore someday.' :
-    'Add tasks to build your weekly focus.';
+    resolvedType === "deadline"
+      ? "Add a deadline to stay ahead of critical dates."
+      : resolvedType === "someday"
+        ? "Capture things you want to explore someday."
+        : "Add todos to build your weekly focus.";
 
   const emptyCtaLabel =
-    resolvedType === 'deadline' ? '+ Add Deadline' :
-    resolvedType === 'someday' ? '+ Capture Idea' :
-    '+ Add Task';
+    resolvedType === "deadline"
+      ? "+ Add Deadline"
+      : resolvedType === "someday"
+        ? "+ Capture Idea"
+        : "+ Add Todo";
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.screen}>
-        <ListScreenHeader
-          title={screenTitle}
-          onBack={() => router.back()}
-        />
+        <ListScreenHeader title={screenTitle} onBack={() => router.back()} />
 
         <ScrollView
           style={styles.scroll}
@@ -242,7 +276,7 @@ export default function ListScreen(): React.ReactElement {
           showsVerticalScrollIndicator={false}
         >
           {/* Progress header — hidden for someday */}
-          {resolvedType !== 'someday' ? (
+          {resolvedType !== "someday" ? (
             <ListProgress
               completed={completedCount}
               total={total}
@@ -259,7 +293,7 @@ export default function ListScreen(): React.ReactElement {
                 title={emptyTitle}
                 description={emptyDescription}
                 ctaLabel={emptyCtaLabel}
-                onCta={() => router.push('/modal')}
+                onCta={() => router.push("/modal")}
                 accentColor={accentColor}
               />
             </View>
@@ -270,7 +304,12 @@ export default function ListScreen(): React.ReactElement {
                 <View style={styles.sectionHeader}>
                   <ThemedText type="headline">{section.label}</ThemedText>
                   {sectionIndex === 0 && firstSectionCount > 0 ? (
-                    <View style={[styles.countBadge, { backgroundColor: accentColor + '22' }]}>
+                    <View
+                      style={[
+                        styles.countBadge,
+                        { backgroundColor: accentColor + "22" },
+                      ]}
+                    >
                       <ThemedText
                         type="caption"
                         style={[styles.countBadgeText, { color: accentColor }]}
@@ -293,9 +332,15 @@ export default function ListScreen(): React.ReactElement {
                       entryType={entry.entryType}
                       status={entry.status}
                       accentColor={accentColor}
-                      onToggle={resolvedType !== 'someday' ? () => toggleItem(entry.id) : undefined}
+                      onToggle={
+                        resolvedType !== "someday"
+                          ? () => toggleItem(entry.id)
+                          : undefined
+                      }
                       onPress={() =>
-                        router.push(`/detail?id=${entry.id}&entryType=${entry.entryType}`)
+                        router.push(
+                          `/detail?id=${entry.id}&entryType=${entry.entryType}`,
+                        )
                       }
                       onDelete={() => handleDelete(entry.id)}
                     />
@@ -305,7 +350,7 @@ export default function ListScreen(): React.ReactElement {
             ))
           )}
 
-          {resolvedType !== 'someday' && sections.length > 0 ? (
+          {resolvedType !== "someday" && sections.length > 0 ? (
             <WrapupCard onViewStats={() => {}} />
           ) : null}
 
@@ -313,7 +358,7 @@ export default function ListScreen(): React.ReactElement {
           <View style={styles.fabSpacer} />
         </ScrollView>
 
-        <Fab onPress={() => router.push('/modal')} />
+        <Fab onPress={() => router.push("/modal")} />
       </View>
     </SafeAreaView>
   );
@@ -338,16 +383,16 @@ const styles = StyleSheet.create({
   },
   emptyWrapper: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingTop: Spacing.xl * 2,
   },
   section: {
     gap: Spacing.md,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   countBadge: {
     borderRadius: Radius.full,
@@ -355,7 +400,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   countBadgeText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: "Inter_600SemiBold",
     letterSpacing: 0.5,
   },
   itemList: {

@@ -1,8 +1,13 @@
-import { Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text } from "react-native";
 
-import { EntryAccent, FontSize, LetterSpacing, LineHeight } from '@/constants/theme';
+import {
+  EntryAccent,
+  FontSize,
+  LetterSpacing,
+  LineHeight,
+} from "@/constants/theme";
 
-import type { EntryType } from '@/components/atoms/entry-dot';
+import type { EntryType } from "@/components/atoms/entry-dot";
 
 interface CounterDisplayProps {
   value: number;
@@ -14,7 +19,10 @@ interface CounterDisplayProps {
  * Color is derived from the entry type accent palette.
  * Per DESIGN.md: tracking set to -2% to feel confident and tight.
  */
-export function CounterDisplay({ value, accentType }: CounterDisplayProps): React.ReactElement {
+export function CounterDisplay({
+  value,
+  accentType,
+}: CounterDisplayProps): React.ReactElement {
   return (
     <Text style={[styles.counter, { color: EntryAccent[accentType] }]}>
       {value}
@@ -24,10 +32,10 @@ export function CounterDisplay({ value, accentType }: CounterDisplayProps): Reac
 
 const styles = StyleSheet.create({
   counter: {
-    fontSize: FontSize.displayLg,
+    fontSize: FontSize.displayLg - 10,
     lineHeight: LineHeight.displayLg,
     letterSpacing: LetterSpacing.displayLg,
-    fontWeight: '700',
+    fontWeight: "700",
     includeFontPadding: false,
   },
 });

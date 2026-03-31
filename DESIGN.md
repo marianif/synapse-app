@@ -6,7 +6,7 @@ The Creative North Star for this system is **"The Digital Sanctuary."**
 
 In an era of cognitive overload, this design system rejects the "dashboard" aesthetic in favor of a high-end editorial experience. It moves beyond the rigid, boxy nature of standard Bento grids by utilizing **Tonal Depth** and **Asymmetric Breathing Room**.
 
-We do not just "display" tasks; we curate time. The interface should feel like a premium physical planner—minimalist, tactile, and intentionally spacious. We break the "template" look by using extreme typographic scale (48pt hero counters) contrasted against micro-labels, creating a sophisticated visual rhythm that guides the eye without the need for intrusive structural lines.
+We do not just "display" todos; we curate time. The interface should feel like a premium physical planner—minimalist, tactile, and intentionally spacious. We break the "template" look by using extreme typographic scale (48pt hero counters) contrasted against micro-labels, creating a sophisticated visual rhythm that guides the eye without the need for intrusive structural lines.
 
 ---
 

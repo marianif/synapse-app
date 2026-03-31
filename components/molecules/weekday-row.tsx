@@ -1,17 +1,17 @@
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from "react-native";
 
-import { EntryDot } from '@/components/atoms/entry-dot';
-import { ThemedText } from '@/components/atoms/themed-text';
-import { Spacing, TextColors } from '@/constants/theme';
+import { EntryDot } from "@/components/atoms/entry-dot";
+import { ThemedText } from "@/components/atoms/themed-text";
+import { Spacing, TextColors } from "@/constants/theme";
 
-import type { EntryType } from '@/components/atoms/entry-dot';
-import type { ItemStatus } from '@/components/molecules/list-item';
+import type { EntryType } from "@/components/atoms/entry-dot";
+import type { ItemStatus } from "@/components/molecules/list-item";
 
 interface WeekdayRowProps {
-  day: string;           // e.g. "Mon", "Tue"
-  title?: string;        // entry title — undefined = empty row (greyed day)
+  day: string; // e.g. "Mon", "Tue"
+  title?: string; // entry title — undefined = empty row (greyed day)
   entryType?: EntryType; // determines dot color
-  status?: ItemStatus;   // completed = strikethrough
+  status?: ItemStatus; // completed = strikethrough
 }
 
 /**
@@ -19,9 +19,14 @@ interface WeekdayRowProps {
  * Shows the abbreviated day on the left, a colored dot, and the entry title.
  * Rows without a title render as a faint empty row to preserve vertical rhythm.
  */
-export function WeekdayRow({ day, title, entryType = 'task', status }: WeekdayRowProps): React.ReactElement {
+export function WeekdayRow({
+  day,
+  title,
+  entryType = "todo",
+  status,
+}: WeekdayRowProps): React.ReactElement {
   const hasEntry = Boolean(title);
-  const isCompleted = status === 'completed';
+  const isCompleted = status === "completed";
 
   return (
     <View style={styles.row}>
@@ -38,7 +43,10 @@ export function WeekdayRow({ day, title, entryType = 'task', status }: WeekdayRo
             type="body"
             style={[
               styles.title,
-              isCompleted && { textDecorationLine: 'line-through', color: TextColors.tertiary },
+              isCompleted && {
+                textDecorationLine: "line-through",
+                color: TextColors.tertiary,
+              },
             ]}
             numberOfLines={1}
           >
@@ -54,8 +62,8 @@ export function WeekdayRow({ day, title, entryType = 'task', status }: WeekdayRo
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.sm,
     minHeight: 22,
   },
@@ -69,7 +77,7 @@ const styles = StyleSheet.create({
   emptyLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: "rgba(255,255,255,0.06)",
     borderRadius: 1,
   },
 });

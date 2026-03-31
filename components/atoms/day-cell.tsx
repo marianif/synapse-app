@@ -1,7 +1,7 @@
 import { Pressable, View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Brand, EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
 
 import type { CalendarEntry } from '@/hooks/use-calendar-data';
 
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   cellToday: {
     backgroundColor: Surface.container,
     borderWidth: 2,
-    borderColor: Brand.primary,
+    borderColor: EntryAccent.today,
   },
   cellOutside: {
     backgroundColor: 'transparent',
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   dayNumberToday: {
-    color: Brand.primary,
+    color: EntryAccent.today,
     fontWeight: '700',
   },
   dayNumberOutside: {

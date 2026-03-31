@@ -14,6 +14,7 @@ interface DayDetailSheetProps {
   visible: boolean;
   date: Date | null;
   entries: CalendarEntry[];
+  today: Date;
   onClose: () => void;
   onAdd: (date: Date) => void;
 }
@@ -30,10 +31,13 @@ export function DayDetailSheet({
   visible,
   date,
   entries,
+  today,
   onClose,
   onAdd,
 }: DayDetailSheetProps): React.ReactElement {
   const hasEntries = entries.length > 0;
+  const isPastDay = date && date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const canAdd = !isPastDay;
 
   return (
     <Modal
@@ -74,7 +78,7 @@ export function DayDetailSheet({
                   />
                 ))}
               </View>
-            ) : (
+            ) : canAdd ? (
               <EmptyState
                 title="Nothing here"
                 description="No entries scheduled for this day."
@@ -82,10 +86,16 @@ export function DayDetailSheet({
                 onCta={() => date && onAdd(date)}
                 accentColor={Brand.primary}
               />
+            ) : (
+              <EmptyState
+                title="Past day"
+                description="No entries for this day."
+                accentColor={TextColors.disabled}
+              />
             )}
           </View>
 
-          {hasEntries && date && (
+          {hasEntries && date && canAdd && (
             <Pressable
               onPress={() => onAdd(date)}
               style={styles.addButton}

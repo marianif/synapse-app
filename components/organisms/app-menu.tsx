@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -29,15 +29,15 @@ interface MenuItem {
   route?: RouteString;
   dividerAfter?: boolean;
   accentColor?: string;
-  modalParams?: { type: "task" | "deadline" | "event" };
+  modalParams?: { type: "todo" | "deadline" | "event" };
 }
 
 const quickActions: MenuItem[] = [
   {
-    label: "Add Task",
+    label: "Add Todo",
     icon: "checkbox-marked-outline",
-    modalParams: { type: "task" },
-    accentColor: EntryAccent.task,
+    modalParams: { type: "todo" },
+    accentColor: EntryAccent.todo,
   },
   {
     label: "Add Event",
@@ -68,7 +68,9 @@ export function AppMenu({
 }: AppMenuProps): React.ReactElement | null {
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const [isDark, setIsDark] = useState<"light" | "dark">(colorScheme === "dark" ? "dark" : "light");
+  const [isDark, setIsDark] = useState<"light" | "dark">(
+    colorScheme === "dark" ? "dark" : "light",
+  );
 
   const toggleTheme = () => {
     setIsDark((prev) => (prev === "dark" ? "light" : "dark"));

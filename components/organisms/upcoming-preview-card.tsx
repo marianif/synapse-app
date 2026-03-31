@@ -39,12 +39,12 @@ function formatRelativeDate(dateStr: string): string {
 }
 
 function getNextEntryType(entries: UpcomingEntry[]): EntryType {
-  if (entries.length === 0) return "task";
+  if (entries.length === 0) return "todo";
   return entries[0].type;
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  task: "Task",
+  todo: "Todo",
   deadline: "Deadline",
   event: "Event",
   someday: "Someday",

@@ -47,11 +47,11 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
-    paddingVertical: Spacing.sm,
+    gap: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
   dotWrapper: {
-    width: 16,
+    width: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

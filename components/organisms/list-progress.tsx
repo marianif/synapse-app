@@ -1,10 +1,17 @@
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from "react-native";
 
-import { StreakBadge } from '@/components/atoms/streak-badge';
-import { ThemedText } from '@/components/atoms/themed-text';
-import { EntryAccent, FontSize, LetterSpacing, LineHeight, Spacing, TextColors } from '@/constants/theme';
+import { StreakBadge } from "@/components/atoms/streak-badge";
+import { ThemedText } from "@/components/atoms/themed-text";
+import {
+  EntryAccent,
+  FontSize,
+  LetterSpacing,
+  LineHeight,
+  Spacing,
+  TextColors,
+} from "@/constants/theme";
 
-import type { EntryType } from '@/components/atoms/entry-dot';
+import type { EntryType } from "@/components/atoms/entry-dot";
 
 interface ListProgressProps {
   completed: number;
@@ -24,7 +31,7 @@ export function ListProgress({
   streak,
   entryType,
 }: ListProgressProps): React.ReactElement {
-  const accentColor = EntryAccent[entryType] ?? EntryAccent.task;
+  const accentColor = EntryAccent[entryType] ?? EntryAccent.todo;
 
   return (
     <View style={styles.container}>
@@ -40,7 +47,7 @@ export function ListProgress({
             {completed}
           </ThemedText>
           <ThemedText style={styles.totalNum} numberOfLines={1}>
-            {'/ '}
+            {"/ "}
             {total}
           </ThemedText>
         </View>
@@ -53,9 +60,9 @@ export function ListProgress({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: Spacing.sm,
   },
   counterBlock: {
@@ -66,20 +73,20 @@ const styles = StyleSheet.create({
     color: TextColors.tertiary,
   },
   counterRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexDirection: "row",
+    alignItems: "flex-end",
     gap: Spacing.xs,
   },
   completedNum: {
     fontSize: FontSize.displayLg,
     lineHeight: LineHeight.displayLg,
     letterSpacing: LetterSpacing.displayLg,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: "Inter_700Bold",
   },
   totalNum: {
     fontSize: FontSize.headlineSm,
     lineHeight: LineHeight.headlineSm,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: "Inter_400Regular",
     color: TextColors.tertiary,
     paddingBottom: 4,
   },

@@ -6,8 +6,8 @@ import { Radius, Spacing } from "@/constants/theme";
 interface EmptyStateProps {
   title: string;
   description: string;
-  ctaLabel: string;
-  onCta: () => void;
+  ctaLabel?: string;
+  onCta?: () => void;
   accentColor: string;
 }
 
@@ -31,18 +31,20 @@ export function EmptyState({
           {description}
         </ThemedText>
       </View>
-      <Pressable
-        onPress={onCta}
-        style={[styles.cta, { backgroundColor: accentColor + "1A" }]}
-        accessibilityRole="button"
-      >
-        <ThemedText
-          type="caption"
-          style={[styles.ctaText, { color: accentColor }]}
+      {onCta && (
+        <Pressable
+          onPress={onCta}
+          style={[styles.cta, { backgroundColor: accentColor + "1A" }]}
+          accessibilityRole="button"
         >
-          {ctaLabel}
-        </ThemedText>
-      </Pressable>
+          <ThemedText
+            type="caption"
+            style={[styles.ctaText, { color: accentColor }]}
+          >
+            {ctaLabel}
+          </ThemedText>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -52,6 +54,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: Spacing.md,
     paddingVertical: Spacing.lg,
   },
   text: {

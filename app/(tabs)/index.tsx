@@ -1,18 +1,23 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { SomedayItem } from "@/components/molecules/someday-item";
 import { AgendaSection } from "@/components/organisms/agenda-section";
 import { AppHeader } from "@/components/organisms/app-header";
+import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { DeadlinesCard } from "@/components/organisms/deadlines-card";
 import { Fab } from "@/components/organisms/fab";
 import { TodaySection } from "@/components/organisms/today-section";
+import { WeekStrip } from "@/components/organisms/week-strip";
 import { WeeklyOverviewCard } from "@/components/organisms/weekly-overview-card";
+
+import type { EntryType } from "@/components/atoms/entry-dot";
+import { SomedayItem } from "@/components/molecules/someday-item";
 import { Spacing, Surface } from "@/constants/theme";
+import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database";
 
 dayjs.extend(customParseFormat);
@@ -84,6 +89,11 @@ export default function HomeScreen(): React.ReactElement {
 
   const { entries, ideas, fetchEntries, fetchIdeas } = useDatabase();
 
+  const { weekCounts, today: calendarToday } = useCalendarData(
+    entries,
+    new Date(),
+  );
+
   useFocusEffect(
     useCallback(() => {
       fetchEntries();
@@ -95,8 +105,66 @@ export default function HomeScreen(): React.ReactElement {
   const todayLabel = formatDateLabel(today);
   const weekDays = getWeekDays();
 
-  // ── Weekly tasks ─────────────────────────────────────────────────────────────
-  const taskEntries = entries.filter((e) => e.type === "task");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [sheetVisible, setSheetVisible] = useState(false);
+
+  const handleDayPress = useCallback((date: Date) => {
+    setSelectedDate(date);
+    setSheetVisible(true);
+  }, []);
+
+  const handleCloseSheet = useCallback(() => {
+    setSheetVisible(false);
+    setTimeout(() => setSelectedDate(null), 200);
+  }, []);
+
+  const handleOpenAddModal = useCallback(
+    (preselectedDate?: Date) => {
+      setSheetVisible(false);
+      if (preselectedDate) {
+        const dd = String(preselectedDate.getDate()).padStart(2, "0");
+        const mm = String(preselectedDate.getMonth() + 1).padStart(2, "0");
+        const yyyy = preselectedDate.getFullYear();
+        router.push({
+          pathname: "/modal",
+          params: { date: `${dd}/${mm}/${yyyy}` },
+        });
+      } else {
+        router.push("/modal");
+      }
+    },
+    [router],
+  );
+
+  const getEntriesForDay = useCallback(
+    (
+      date: Date,
+    ): {
+      id: string;
+      title: string;
+      type: EntryType;
+      date: string;
+      time: string | null;
+    }[] => {
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      return entries
+        .filter((e) => {
+          const entryDate = e.scheduled_date ?? e.due_date;
+          return entryDate === key;
+        })
+        .map((e) => ({
+          id: e.id,
+          title: e.title,
+          type: e.type as EntryType,
+          date: key,
+          time: e.scheduled_time ?? e.due_time ?? null,
+        }));
+    },
+    [entries],
+  );
+
+  // ── Weekly todos ─────────────────────────────────────────────────────────────
+  const taskEntries = entries.filter((e) => e.type === "todo");
   const weeklyEntries = weekDays.map(({ abbr, date }) => {
     const entry = taskEntries.find((e) => isSameDay(e.scheduled_date, date));
     const rawStatus = entry?.status;
@@ -159,9 +227,6 @@ export default function HomeScreen(): React.ReactElement {
       entryType: e.type,
     }));
 
-  // ── Someday inspiration ───────────────────────────────────────────────────────
-  const firstIdea = ideas[0];
-
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.screen}>
@@ -171,6 +236,18 @@ export default function HomeScreen(): React.ReactElement {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
+          <WeekStrip
+            weekCounts={weekCounts}
+            today={calendarToday}
+            onDayPress={handleDayPress}
+          />
+
+          <AgendaSection
+            date={todayLabel}
+            entries={todayAgenda}
+            isEmpty={todayAgenda.length === 0}
+            onAdd={() => router.push("/modal")}
+          />
           <WeeklyOverviewCard
             totalCount={taskEntries.length}
             spanDays={weeklyEntries.filter((e) => e.title).length || 5}
@@ -189,20 +266,22 @@ export default function HomeScreen(): React.ReactElement {
             isEmpty={todayEvents.length === 0}
             onAdd={() => router.push("/modal?type=event")}
           />
-          {firstIdea ? (
-            <SomedayItem quote={firstIdea.inspiration ?? firstIdea.title} />
-          ) : null}
-          <AgendaSection
-            date={todayLabel}
-            entries={todayAgenda}
-            isEmpty={todayAgenda.length === 0}
-            onAdd={() => router.push("/modal")}
-          />
+
+          {ideas.length > 0 && <SomedayItem ideas={ideas} />}
+
           {/* Bottom padding so FAB never overlaps the last entry */}
           <View style={styles.fabSpacer} />
         </ScrollView>
         <Fab onPress={() => router.push("/modal")} />
       </View>
+      <DayDetailSheet
+        visible={sheetVisible}
+        date={selectedDate}
+        entries={getEntriesForDay(selectedDate ?? new Date())}
+        today={calendarToday}
+        onClose={handleCloseSheet}
+        onAdd={handleOpenAddModal}
+      />
     </SafeAreaView>
   );
 }

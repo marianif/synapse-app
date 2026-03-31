@@ -1,7 +1,7 @@
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from "react-native";
 
-import { ThemedText } from '@/components/atoms/themed-text';
-import { EntryAccent, Radius, Spacing, TextColors } from '@/constants/theme';
+import { ThemedText } from "@/components/atoms/themed-text";
+import { EntryAccent, Radius, Spacing, TextColors } from "@/constants/theme";
 
 interface TodayEventRowProps {
   title: string;
@@ -57,26 +57,24 @@ export function TodayEventRow({
           </ThemedText>
         </View>
       ) : null}
-      {!isActive ? (
-        <View style={styles.iconPlaceholder} />
-      ) : null}
+      {!isActive ? <View style={styles.iconPlaceholder} /> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.md,
     paddingVertical: Spacing.sm,
   },
   leftBorder: {
     width: 3,
-    height: '100%',
+    height: "100%",
     minHeight: 36,
     borderRadius: Radius.sm,
-    backgroundColor: 'rgba(192,132,252,0.3)', // event color, dimmed
+    backgroundColor: "rgba(192,132,252,0.3)", // event color, dimmed
   },
   leftBorderActive: {
     backgroundColor: EntryAccent.event,
@@ -86,8 +84,8 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   timeRangeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.xs,
   },
   clockDot: {
@@ -97,11 +95,11 @@ const styles = StyleSheet.create({
     backgroundColor: TextColors.tertiary,
   },
   statusBlock: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     gap: 1,
   },
   statusLabel: {
-    color: EntryAccent.task, // blue accent for urgency-free status
+    color: EntryAccent.todo, // blue accent for urgency-free status
     letterSpacing: 0.5,
   },
   iconPlaceholder: {

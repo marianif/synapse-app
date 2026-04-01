@@ -3,10 +3,15 @@ import React, { createContext, useCallback, useEffect, useState } from "react";
 import * as SQLite from "expo-sqlite";
 
 import { generateId, initDatabase } from "@/lib/database";
-import type { DbEntry, DbIdea, DbRecurrenceCompletion } from "@/lib/schema";
 import { serializeRule, type RecurrenceRule } from "@/lib/recurrence";
+import type { DbEntry, DbIdea, DbRecurrenceCompletion } from "@/lib/schema";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
+import { ExtensionStorage } from "@bacons/apple-targets";
+
+// Shared storage between javascript and swift widgets
+const storage = new ExtensionStorage("group.dev.the-wedge.synapse-app");
+const STORAGE_KEY = "widget_entries";
 
 interface DatabaseContextValue {
   entries: DbEntry[];
@@ -21,9 +26,19 @@ interface DatabaseContextValue {
   deleteEntry: (id: string) => Promise<void>;
   deleteIdea: (id: string) => Promise<void>;
   refetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
-  completeRecurringInstance: (entryId: string, instanceDate: string, status: DbEntry["status"]) => Promise<void>;
-  uncompleteRecurringInstance: (entryId: string, instanceDate: string) => Promise<void>;
-  skipRecurringInstance: (entryId: string, instanceDate: string) => Promise<void>;
+  completeRecurringInstance: (
+    entryId: string,
+    instanceDate: string,
+    status: DbEntry["status"],
+  ) => Promise<void>;
+  uncompleteRecurringInstance: (
+    entryId: string,
+    instanceDate: string,
+  ) => Promise<void>;
+  skipRecurringInstance: (
+    entryId: string,
+    instanceDate: string,
+  ) => Promise<void>;
   deleteRecurringFuture: (entryId: string, fromDate: string) => Promise<void>;
   deleteRecurringSeries: (entryId: string) => Promise<void>;
 }
@@ -78,7 +93,9 @@ export function DatabaseProvider({
 }: DatabaseProviderProps): React.ReactElement {
   const [entries, setEntries] = useState<DbEntry[]>([]);
   const [ideas, setIdeas] = useState<DbIdea[]>([]);
-  const [recurrenceCompletions, setRecurrenceCompletions] = useState<DbRecurrenceCompletion[]>([]);
+  const [recurrenceCompletions, setRecurrenceCompletions] = useState<
+    DbRecurrenceCompletion[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -99,6 +116,7 @@ export function DatabaseProvider({
           );
         }
         setEntries(rows);
+        storage.set(STORAGE_KEY, rows as unknown as Parameters<typeof storage.set>[1]);
         return rows;
       } catch (error) {
         console.error("[DatabaseContext] fetchEntries failed:", error);
@@ -135,7 +153,10 @@ export function DatabaseProvider({
       );
       setRecurrenceCompletions(rows);
     } catch (error) {
-      console.error("[DatabaseContext] fetchRecurrenceCompletions failed:", error);
+      console.error(
+        "[DatabaseContext] fetchRecurrenceCompletions failed:",
+        error,
+      );
     }
   }, []);
 
@@ -180,7 +201,11 @@ export function DatabaseProvider({
 
         if (!created) throw new Error("Entry was not persisted");
 
-        setEntries((prev) => [created, ...prev]);
+        setEntries((prev) => {
+          const next = [created, ...prev];
+          storage.set(STORAGE_KEY, next as unknown as Parameters<typeof storage.set>[1]);
+          return next;
+        });
         return created;
       } catch (error) {
         console.error("[DatabaseContext] createEntry failed:", error);
@@ -260,10 +285,10 @@ export function DatabaseProvider({
       try {
         const db = await getDb();
         const now = Math.floor(Date.now() / 1000);
-        
+
         const updates: string[] = [];
         const values: (string | number | null)[] = [];
-        
+
         if (data.title !== undefined) {
           updates.push("title = ?");
           values.push(data.title);
@@ -290,24 +315,26 @@ export function DatabaseProvider({
         }
         if (data.recurrenceRule !== undefined) {
           updates.push("recurrence_rule = ?");
-          values.push(data.recurrenceRule ? serializeRule(data.recurrenceRule) : null);
+          values.push(
+            data.recurrenceRule ? serializeRule(data.recurrenceRule) : null,
+          );
         }
         if (data.recurrenceEndDate !== undefined) {
           updates.push("recurrence_end_date = ?");
           values.push(data.recurrenceEndDate);
         }
-        
+
         if (updates.length === 0) return;
-        
+
         updates.push("updated_at = ?");
         values.push(now);
         values.push(id);
-        
+
         await db.runAsync(
           `UPDATE entries SET ${updates.join(", ")} WHERE id = ?`,
           ...values,
         );
-        
+
         setEntries((prev) =>
           prev.map((e) =>
             e.id === id ? { ...e, ...data, updated_at: now } : e,
@@ -344,7 +371,11 @@ export function DatabaseProvider({
   }, []);
 
   const completeRecurringInstance = useCallback(
-    async (entryId: string, instanceDate: string, status: DbEntry["status"]): Promise<void> => {
+    async (
+      entryId: string,
+      instanceDate: string,
+      status: DbEntry["status"],
+    ): Promise<void> => {
       try {
         const db = await getDb();
         const id = generateId();
@@ -352,16 +383,33 @@ export function DatabaseProvider({
         await db.runAsync(
           `INSERT OR REPLACE INTO recurrence_completions (id, entry_id, instance_date, status, created_at)
            VALUES (?, ?, ?, ?, ?)`,
-          id, entryId, instanceDate, status, now,
+          id,
+          entryId,
+          instanceDate,
+          status,
+          now,
         );
         setRecurrenceCompletions((prev) => {
           const filtered = prev.filter(
-            (c) => !(c.entry_id === entryId && c.instance_date === instanceDate),
+            (c) =>
+              !(c.entry_id === entryId && c.instance_date === instanceDate),
           );
-          return [...filtered, { id, entry_id: entryId, instance_date: instanceDate, status: status as DbRecurrenceCompletion["status"], created_at: now }];
+          return [
+            ...filtered,
+            {
+              id,
+              entry_id: entryId,
+              instance_date: instanceDate,
+              status: status as DbRecurrenceCompletion["status"],
+              created_at: now,
+            },
+          ];
         });
       } catch (error) {
-        console.error("[DatabaseContext] completeRecurringInstance failed:", error);
+        console.error(
+          "[DatabaseContext] completeRecurringInstance failed:",
+          error,
+        );
         throw error;
       }
     },
@@ -374,13 +422,20 @@ export function DatabaseProvider({
         const db = await getDb();
         await db.runAsync(
           "DELETE FROM recurrence_completions WHERE entry_id = ? AND instance_date = ?",
-          entryId, instanceDate,
+          entryId,
+          instanceDate,
         );
         setRecurrenceCompletions((prev) =>
-          prev.filter((c) => !(c.entry_id === entryId && c.instance_date === instanceDate)),
+          prev.filter(
+            (c) =>
+              !(c.entry_id === entryId && c.instance_date === instanceDate),
+          ),
         );
       } catch (error) {
-        console.error("[DatabaseContext] uncompleteRecurringInstance failed:", error);
+        console.error(
+          "[DatabaseContext] uncompleteRecurringInstance failed:",
+          error,
+        );
         throw error;
       }
     },
@@ -400,7 +455,11 @@ export function DatabaseProvider({
       try {
         const db = await getDb();
         const parts = fromDate.split("/");
-        const d = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+        const d = new Date(
+          parseInt(parts[2], 10),
+          parseInt(parts[1], 10) - 1,
+          parseInt(parts[0], 10),
+        );
         d.setDate(d.getDate() - 1);
         const dd = String(d.getDate()).padStart(2, "0");
         const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -409,10 +468,16 @@ export function DatabaseProvider({
         const now = Math.floor(Date.now() / 1000);
         await db.runAsync(
           "UPDATE entries SET recurrence_end_date = ?, updated_at = ? WHERE id = ?",
-          endDate, now, entryId,
+          endDate,
+          now,
+          entryId,
         );
         setEntries((prev) =>
-          prev.map((e) => e.id === entryId ? { ...e, recurrence_end_date: endDate, updated_at: now } : e),
+          prev.map((e) =>
+            e.id === entryId
+              ? { ...e, recurrence_end_date: endDate, updated_at: now }
+              : e,
+          ),
         );
       } catch (error) {
         console.error("[DatabaseContext] deleteRecurringFuture failed:", error);
@@ -428,7 +493,9 @@ export function DatabaseProvider({
         const db = await getDb();
         await db.runAsync("DELETE FROM entries WHERE id = ?", entryId);
         setEntries((prev) => prev.filter((e) => e.id !== entryId));
-        setRecurrenceCompletions((prev) => prev.filter((c) => c.entry_id !== entryId));
+        setRecurrenceCompletions((prev) =>
+          prev.filter((c) => c.entry_id !== entryId),
+        );
       } catch (error) {
         console.error("[DatabaseContext] deleteRecurringSeries failed:", error);
         throw error;
@@ -462,14 +529,4 @@ export function DatabaseProvider({
       {children}
     </DatabaseContext.Provider>
   );
-}
-
-export function useDatabaseContext(): DatabaseContextValue {
-  const context = React.useContext(DatabaseContext);
-  if (!context) {
-    throw new Error(
-      "useDatabaseContext must be used within a DatabaseProvider",
-    );
-  }
-  return context;
 }

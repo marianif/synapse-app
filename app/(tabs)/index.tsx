@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AppState, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AgendaSection } from "@/components/organisms/agenda-section";
@@ -26,6 +26,7 @@ import {
   getWeeklyTodos,
 } from "@/hooks/use-database/use-database.helpers";
 import { DAY_NAMES, formatDateLabel } from "@/lib/date-utils";
+import { ExtensionStorage } from "@bacons/apple-targets";
 
 dayjs.extend(customParseFormat);
 
@@ -118,12 +119,21 @@ export default function HomeScreen(): React.ReactElement {
   );
 
   const entriesForSheet = useMemo(
-    () => getEntriesForDay(entries, recurrenceCompletions, selectedDate ?? today),
+    () =>
+      getEntriesForDay(entries, recurrenceCompletions, selectedDate ?? today),
     [entries, recurrenceCompletions, selectedDate, today],
   );
 
   const taskEntries = entries.filter((e) => e.type === "todo");
   const deadlineEntries = entries.filter((e) => e.type === "deadline");
+
+  useEffect(() => {
+    AppState.addEventListener("change", (status) => {
+      if (status === "background") {
+        ExtensionStorage.reloadWidget();
+      }
+    });
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>

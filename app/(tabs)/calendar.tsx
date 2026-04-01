@@ -18,7 +18,7 @@ export default function CalendarScreen(): React.ReactElement {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  const { entries } = useDatabase({ fetchEntriesOnMount: true });
+  const { entries } = useDatabase();
 
   const {
     calendarDays,

@@ -34,18 +34,52 @@ struct SimpleEntry: TimelineEntry {
     let configuration: ConfigurationAppIntent
 }
 
+struct EntryItem: Codable {
+    let id: String
+    let title: String
+    let type: String
+    let scheduledDate: String?
+    let scheduledTime: String?
+    let dueDate: String?
+    let dueTime: String?
+    let notes: String?
+    let status: String
+    let recurrenceRule: String?
+    let recurrenceEndDate: String?
+    let createdAt: Int
+    let updatedAt: Int
+}
+
 struct widgetEntryView : View {
     var entry: Provider.Entry
 
-    var body: some View {
-        VStack {
-            Text("Time:")
-            Text("Ciao Mondo!")
-            Text(entry.date, style: .time)
+    var entries: [EntryItem] {
+        let defaults = UserDefaults(suiteName: "group.dev.the-wedge.synapse-app")
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return (
+            defaults?.data(forKey: "widget_entries").flatMap {
+                try? decoder.decode([EntryItem].self, from: $0)
+            }
+        ) ?? []
+    }
 
-            Text("Favorite Emoji:")
-            Text(entry.configuration.favoriteEmoji)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if entries.isEmpty {
+                Text("No entries")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(entries.prefix(5), id: \.id) { entry in
+                    Text(entry.title)
+                        .font(.caption)
+                        .lineLimit(1)
+                }
+            }
         }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 

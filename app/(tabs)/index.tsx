@@ -3,10 +3,8 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppState, ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AgendaSection } from "@/components/organisms/agenda-section";
-import { AppHeader } from "@/components/organisms/app-header";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { DeadlinesCard } from "@/components/organisms/deadlines-card";
 import { Fab } from "@/components/organisms/fab";
@@ -136,52 +134,51 @@ export default function HomeScreen(): React.ReactElement {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.screen}>
-        <AppHeader />
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          <WeekStrip
-            weekCounts={weekCounts}
-            today={calendarToday}
-            onDayPress={handleDayPress}
-          />
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <WeekStrip
+          weekCounts={weekCounts}
+          today={calendarToday}
+          onDayPress={handleDayPress}
+        />
 
-          <AgendaSection
-            date={todayLabel}
-            entries={todayAgenda}
-            isEmpty={todayAgenda.length === 0}
-            onAdd={() => router.push("/modal")}
-          />
-          <WeeklyOverviewCard
-            totalCount={taskEntries.length}
-            spanDays={weeklyEntries.filter((e) => e.title).length || 5}
-            entries={weeklyEntries}
-            isEmpty={taskEntries.length === 0}
-            onAdd={() => router.push("/modal?type=task")}
-          />
-          <DeadlinesCard
-            totalCount={deadlineEntries.length}
-            entries={allDeadlines}
-            isEmpty={deadlineEntries.length === 0}
-            onAdd={() => router.push("/modal?type=deadline")}
-          />
-          <TodaySection
-            events={todayEvents}
-            isEmpty={todayEvents.length === 0}
-            onAdd={() => router.push("/modal?type=event")}
-          />
+        <AgendaSection
+          date={todayLabel}
+          entries={todayAgenda}
+          isEmpty={todayAgenda.length === 0}
+          onAdd={() => router.push("/modal")}
+        />
+        <WeeklyOverviewCard
+          totalCount={taskEntries.length}
+          spanDays={weeklyEntries.filter((e) => e.title).length || 5}
+          entries={weeklyEntries}
+          isEmpty={taskEntries.length === 0}
+          onAdd={() => router.push("/modal?type=task")}
+        />
+        <DeadlinesCard
+          totalCount={deadlineEntries.length}
+          entries={allDeadlines}
+          isEmpty={deadlineEntries.length === 0}
+          onAdd={() => router.push("/modal?type=deadline")}
+        />
+        <TodaySection
+          events={todayEvents}
+          isEmpty={todayEvents.length === 0}
+          onAdd={() => router.push("/modal?type=event")}
+        />
 
-          {ideas.length > 0 && <SomedayItem ideas={ideas} />}
+        {ideas.length > 0 && <SomedayItem ideas={ideas} />}
 
-          {/* Bottom padding so FAB never overlaps the last entry */}
-          <View style={styles.fabSpacer} />
-        </ScrollView>
-        <Fab onPress={() => router.push("/modal")} />
-      </View>
+        <View style={styles.fabSpacer} />
+      </ScrollView>
+      <Fab
+        onPress={() => router.push("/modal")}
+        onLongPress={() => router.push("/voice-input")}
+      />
       <DayDetailSheet
         visible={sheetVisible}
         date={selectedDate}
@@ -190,15 +187,11 @@ export default function HomeScreen(): React.ReactElement {
         onClose={handleCloseSheet}
         onAdd={handleOpenAddModal}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Surface.base,
-  },
   screen: {
     flex: 1,
     backgroundColor: Surface.base,

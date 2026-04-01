@@ -1,9 +1,7 @@
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AppHeader } from "@/components/organisms/app-header";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { Fab } from "@/components/organisms/fab";
 import { MonthGrid } from "@/components/organisms/month-grid";
@@ -112,20 +110,17 @@ export default function CalendarScreen(): React.ReactElement {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.screen}>
-        <AppHeader />
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          <MonthGrid {...monthGridProps} />
-          <UpcomingPreviewCard {...upcomingProps} />
-          <View style={styles.bottomSpacer} />
-        </ScrollView>
-        <Fab onPress={() => handleOpenAddModal(today)} />
-      </View>
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <MonthGrid {...monthGridProps} />
+        <UpcomingPreviewCard {...upcomingProps} />
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+      <Fab onPress={() => handleOpenAddModal(today)} />
       <DayDetailSheet
         visible={sheetVisible}
         date={selectedDate}
@@ -134,15 +129,11 @@ export default function CalendarScreen(): React.ReactElement {
         onClose={handleCloseSheet}
         onAdd={handleOpenAddModal}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Surface.base,
-  },
   screen: {
     flex: 1,
     backgroundColor: Surface.base,

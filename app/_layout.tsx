@@ -8,8 +8,8 @@ import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 
-import { useColorScheme } from "@/hooks/use-color-scheme";
 import { DatabaseProvider } from "@/contexts/database-context";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -26,12 +26,13 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="list" options={{ headerShown: false }} />
             <Stack.Screen name="detail" options={{ headerShown: false }} />
+            <Stack.Screen name="voice-input" options={{ headerShown: false }} />
             <Stack.Screen
               name="modal"
               options={{ presentation: "modal", headerShown: false }}
             />
           </Stack>
-          <StatusBar style="auto" />
+          <StatusBar style="light" />
         </DatabaseProvider>
       </ThemeProvider>
     </GestureHandlerRootView>

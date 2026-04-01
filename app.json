@@ -10,7 +10,13 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.synapse-app"
+      "bundleIdentifier": "dev.the-wedge.synapse-app",
+      "appleTeamId": "BK483NXCX5",
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.dev.the-wedge.synapse-app"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,7 +26,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "dev.thewedge.synapseapp"
     },
     "web": {
       "output": "static",
@@ -40,7 +47,8 @@
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "@bacons/apple-targets"
     ],
     "experiments": {
       "typedRoutes": true,

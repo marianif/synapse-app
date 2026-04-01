@@ -1,15 +1,21 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Pressable, View, StyleSheet, Text } from 'react-native';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { EntryDot } from '@/components/atoms/entry-dot';
-import { ThemedText } from '@/components/atoms/themed-text';
-import { SwipeableRow } from '@/components/organisms/swipeable-row';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { EntryDot } from "@/components/atoms/entry-dot";
+import { ThemedText } from "@/components/atoms/themed-text";
+import { SwipeableRow } from "@/components/organisms/swipeable-row";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import {
+  EntryAccent,
+  Radius,
+  Spacing,
+  Surface,
+  TextColors,
+} from "@/constants/theme";
 
-import type { EntryType } from '@/components/atoms/entry-dot';
+import type { EntryType } from "@/components/atoms/entry-dot";
 
-export type ItemStatus = 'scheduled' | 'active' | 'completed';
+export type ItemStatus = "scheduled" | "active" | "completed";
 
 interface ListItemProps {
   title: string;
@@ -22,6 +28,7 @@ interface ListItemProps {
   status?: ItemStatus;
   /** Accent color derived from entryType at the screen level */
   accentColor: string;
+  isRecurring?: boolean;
   onToggle?: () => void;
   onPress?: () => void;
   /** Called when user swipes and confirms deletion */
@@ -29,12 +36,12 @@ interface ListItemProps {
 }
 
 /**
- * List-screen task/deadline/someday row.
+ * List-screen todo/deadline/someday row.
  *
- * Task / Deadline layout: [Circle checkbox] [dot + title + status] [optional time chip]
+ * Todo / Deadline layout: [Circle checkbox] [dot + title + status] [optional time chip]
  * Someday layout:         [Sparkle icon]    [dot + title + subtitle] (no status row)
  *
- * States (task/deadline only):
+ * States (todo/deadline only):
  *  - scheduled  → empty circle, normal text
  *  - active     → circle with accent ring, "ACTIVE NOW" status label
  *  - completed  → checkmark circle, strikethrough text, muted colors
@@ -45,13 +52,14 @@ export function ListItem({
   time,
   timeChip,
   entryType,
-  status = 'scheduled',
+  status = "scheduled",
   accentColor,
+  isRecurring,
   onToggle,
   onPress,
   onDelete,
 }: ListItemProps): React.ReactElement {
-  const isSomeday = entryType === 'someday';
+  const isSomeday = entryType === "someday";
 
   const renderContent = (): React.ReactElement => {
     if (isSomeday) {
@@ -64,14 +72,22 @@ export function ListItem({
         >
           {/* Sparkle icon slot */}
           <View style={styles.sparkleSlot}>
-            <IconSymbol name="star-four-points" size={18} color={EntryAccent.someday} />
+            <IconSymbol
+              name="star-four-points"
+              size={18}
+              color={EntryAccent.someday}
+            />
           </View>
 
           {/* Dot + content */}
           <View style={styles.content}>
             <View style={styles.titleRow}>
               <EntryDot type="someday" size={8} />
-              <ThemedText type="bodyBold" numberOfLines={1} style={styles.titleText}>
+              <ThemedText
+                type="bodyBold"
+                numberOfLines={1}
+                style={styles.titleText}
+              >
                 {title}
               </ThemedText>
             </View>
@@ -86,18 +102,21 @@ export function ListItem({
           <MaterialCommunityIcons
             name="chevron-right"
             size={18}
-            color={EntryAccent.someday + '80'}
+            color={EntryAccent.someday + "80"}
           />
         </Pressable>
       );
     }
 
     // ── Task / Deadline variant ──────────────────────────────────────────────────
-    const isCompleted = status === 'completed';
-    const isActive = status === 'active';
+    const isCompleted = status === "completed";
+    const isActive = status === "active";
 
-    const statusLabel =
-      isCompleted ? 'COMPLETED' : isActive ? 'ACTIVE NOW' : 'SCHEDULED';
+    const statusLabel = isCompleted
+      ? "COMPLETED"
+      : isActive
+        ? "ACTIVE NOW"
+        : "SCHEDULED";
 
     const statusColor = isCompleted
       ? TextColors.tertiary
@@ -123,10 +142,14 @@ export function ListItem({
           ]}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: isCompleted }}
-          accessibilityLabel={`Mark "${title}" as ${isCompleted ? 'incomplete' : 'complete'}`}
+          accessibilityLabel={`Mark "${title}" as ${isCompleted ? "incomplete" : "complete"}`}
         >
           {isCompleted && (
-            <MaterialCommunityIcons name="check" size={16} color={TextColors.primary} />
+            <MaterialCommunityIcons
+              name="check"
+              size={16}
+              color={TextColors.primary}
+            />
           )}
         </Pressable>
 
@@ -152,18 +175,43 @@ export function ListItem({
             )}
           </View>
           <View style={styles.statusRow}>
-            <ThemedText type="caption" style={[styles.statusLabel, { color: statusColor }]}>
-              {statusLabel}
-            </ThemedText>
-            {time ? (
-              <ThemedText type="caption" style={styles.statusTime}>
-                {' • '}
-                {time}
+            {isRecurring && (
+              <View
+                style={[
+                  styles.recurringBadge,
+                  { backgroundColor: accentColor + "18" },
+                ]}
+              >
+                <MaterialCommunityIcons
+                  name="repeat"
+                  size={10}
+                  color={accentColor}
+                />
+                <ThemedText
+                  type="caption"
+                  style={[styles.recurringBadgeText, { color: accentColor }]}
+                >
+                  REPEATING
+                </ThemedText>
+              </View>
+            )}
+            <View style={styles.statusTextContainer}>
+              <ThemedText
+                type="caption"
+                style={[styles.statusLabel, { color: statusColor }]}
+              >
+                {statusLabel}
               </ThemedText>
-            ) : null}
+              {time ? (
+                <ThemedText type="caption" style={styles.statusTime}>
+                  {" • "}
+                  {time}
+                </ThemedText>
+              ) : null}
+            </View>
             {subtitle && !time ? (
               <ThemedText type="caption" muted>
-                {' • '}
+                {" • "}
                 {subtitle}
               </ThemedText>
             ) : null}
@@ -191,8 +239,8 @@ export function ListItem({
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Surface.containerLow,
     borderRadius: Radius.lg,
     paddingVertical: Spacing.md,
@@ -206,8 +254,8 @@ const styles = StyleSheet.create({
   sparkleSlot: {
     width: 36,
     height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     flexShrink: 0,
   },
   somedaySubtitle: {
@@ -220,8 +268,8 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1.5,
     borderColor: TextColors.disabled,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     flexShrink: 0,
   },
   checkboxCompleted: {
@@ -233,8 +281,8 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.sm,
   },
   titleText: {
@@ -242,21 +290,26 @@ const styles = StyleSheet.create({
   },
   titleStrike: {
     flex: 1,
-    fontFamily: 'Inter_500Medium',
+    fontFamily: "Inter_500Medium",
     fontSize: 14,
-    textDecorationLine: 'line-through',
+    textDecorationLine: "line-through",
   },
   statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: 16, // aligns with title (after dot + gap)
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   statusLabel: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: "Inter_600SemiBold",
     letterSpacing: 0.4,
   },
   statusTime: {
     color: TextColors.tertiary,
+  },
+  statusTextContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
   },
   timeChip: {
     backgroundColor: Surface.containerHigh,
@@ -268,5 +321,18 @@ const styles = StyleSheet.create({
   timeChipText: {
     color: TextColors.secondary,
     letterSpacing: 0.2,
+  },
+  recurringBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: Radius.full,
+    gap: Spacing.xs,
+    marginRight: Spacing.sm,
+  },
+  recurringBadgeText: {
+    fontFamily: "Inter_600SemiBold",
+    letterSpacing: 0.3,
   },
 });

@@ -10,7 +10,7 @@ import { MonthGrid } from "@/components/organisms/month-grid";
 import { UpcomingPreviewCard } from "@/components/organisms/upcoming-preview-card";
 import { Spacing, Surface } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
-import { useDatabase } from "@/hooks/use-database";
+import { useDatabase } from "@/hooks/use-database/use-database";
 
 export default function CalendarScreen(): React.ReactElement {
   const router = useRouter();

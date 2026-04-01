@@ -1,7 +1,12 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import {
   EntryAccent,
@@ -71,10 +76,23 @@ export function AppMenu({
   const [isDark, setIsDark] = useState<"light" | "dark">(
     colorScheme === "dark" ? "dark" : "light",
   );
+  const translateX = useSharedValue(MENU_WIDTH);
 
   const toggleTheme = () => {
     setIsDark((prev) => (prev === "dark" ? "light" : "dark"));
   };
+
+  useEffect(() => {
+    if (visible) {
+      translateX.value = withTiming(0, { duration: 300 });
+    } else {
+      translateX.value = withTiming(MENU_WIDTH, { duration: 250 });
+    }
+  }, [visible, translateX]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
 
   if (!visible) return null;
 
@@ -91,7 +109,7 @@ export function AppMenu({
   return (
     <View style={StyleSheet.absoluteFill}>
       <Pressable style={styles.backdrop} onPress={onClose} />
-      <View style={styles.blurContainer}>
+      <Animated.View style={[styles.blurContainer, animatedStyle]}>
         <View style={styles.menu}>
           <View style={styles.header}>
             <Text style={styles.logo}>Synapse</Text>
@@ -110,29 +128,6 @@ export function AppMenu({
                   color={TextColors.secondary}
                 />
               </Pressable>
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Quick Add</Text>
-            <View style={styles.quickActions}>
-              {quickActions.map((item) => (
-                <Pressable
-                  key={item.label}
-                  style={({ pressed }) => [
-                    styles.quickAction,
-                    pressed && styles.menuItemPressed,
-                  ]}
-                  onPress={() => handleItemPress(item)}
-                >
-                  <MaterialCommunityIcons
-                    name={item.icon as any}
-                    size={20}
-                    color={item.accentColor}
-                  />
-                  <Text style={styles.quickActionLabel}>{item.label}</Text>
-                </Pressable>
-              ))}
             </View>
           </View>
 
@@ -162,7 +157,7 @@ export function AppMenu({
             <Text style={styles.version}>v1.0.0</Text>
           </View>
         </View>
-      </View>
+      </Animated.View>
     </View>
   );
 }

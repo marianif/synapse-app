@@ -1,7 +1,14 @@
 import { useMemo } from 'react';
 
-import type { DbEntry } from '@/lib/schema';
+import type { DbEntry, DbRecurrenceCompletion } from '@/lib/schema';
+import { buildRecurringInstances, isRecurringEntry } from '@/lib/recurrence';
 import type { EntryType } from '@/components/atoms/entry-dot';
+import {
+  parseDate,
+  formatDateKey,
+  toDisplayDate,
+  isSameDayDate,
+} from '@/lib/date-utils';
 
 export interface CalendarEntry {
   id: string;
@@ -23,28 +30,6 @@ export interface UpcomingEntry {
   type: EntryType;
   date: string;
   time?: string | null;
-}
-
-function parseDate(dateStr: string | null): Date | null {
-  if (!dateStr) return null;
-  const parts = dateStr.split('/');
-  if (parts.length !== 3) return null;
-  const [dd, mm, yyyy] = parts;
-  return new Date(parseInt(yyyy, 10), parseInt(mm, 10) - 1, parseInt(dd, 10));
-}
-
-function formatDateKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function toDisplayDate(d: Date): string {
-  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-}
-
-function isSameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
 }
 
 function getDaysInMonth(year: number, month: number): Date[] {
@@ -86,6 +71,7 @@ function entryToCalendarEntry(entry: DbEntry): CalendarEntry | null {
 export function useCalendarData(
   entries: DbEntry[],
   currentMonth: Date,
+  recurrenceCompletions?: DbRecurrenceCompletion[],
 ): {
   calendarDays: Date[];
   currentMonthLabel: string;
@@ -107,17 +93,46 @@ export function useCalendarData(
   }, [currentMonth]);
 
   const isCurrentMonth = useMemo(() => {
-    return isSameDay(
+    return isSameDayDate(
       new Date(today.getFullYear(), today.getMonth(), 1),
       new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1),
     );
   }, [today, currentMonth]);
 
   const calendarEntries = useMemo(() => {
-    return entries
+    const nonRecurring = entries
+      .filter((e) => !isRecurringEntry(e))
       .map(entryToCalendarEntry)
       .filter((e): e is CalendarEntry => e !== null);
-  }, [entries]);
+
+    // Expand recurring entries for a window of 1 year from today
+    const recurringEntries = entries.filter(isRecurringEntry);
+    if (recurringEntries.length === 0) return nonRecurring;
+
+    const windowStart = new Date(today);
+    windowStart.setFullYear(windowStart.getFullYear() - 1);
+    const windowEnd = new Date(today);
+    windowEnd.setFullYear(windowEnd.getFullYear() + 1);
+
+    const instances = buildRecurringInstances(
+      recurringEntries,
+      recurrenceCompletions ?? [],
+      windowStart,
+      windowEnd,
+    );
+
+    const recurringCalendar: CalendarEntry[] = instances
+      .filter((inst) => !inst.isDone)
+      .map((inst) => ({
+        id: `${inst.entry.id}::${inst.instanceDate}`,
+        title: inst.entry.title,
+        type: inst.entry.type,
+        date: inst.instanceDate,
+        time: inst.entry.scheduled_time ?? inst.entry.due_time,
+      }));
+
+    return [...nonRecurring, ...recurringCalendar];
+  }, [entries, recurrenceCompletions, today]);
 
   const entriesByDate = useMemo(() => {
     const map = new Map<string, CalendarEntry[]>();

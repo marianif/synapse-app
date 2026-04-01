@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { View, Image, Pressable, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useState } from "react";
+import { Image, Pressable, StyleSheet, View } from "react-native";
 
-import { ThemedText } from '@/components/atoms/themed-text';
-import { Spacing, TextColors } from '@/constants/theme';
-import { AppMenu } from './app-menu';
+import { ThemedText } from "@/components/atoms/themed-text";
+import { Spacing, TextColors } from "@/constants/theme";
+import { AppMenu } from "./app-menu";
 
 interface AppHeaderProps {
   onAvatarPress?: () => void;
@@ -41,7 +41,11 @@ export function AppHeader({
             <Image source={{ uri: avatarUri }} style={styles.avatar} />
           ) : (
             <View style={styles.avatarFallback}>
-              <MaterialCommunityIcons name="account" size={20} color={TextColors.secondary} />
+              <MaterialCommunityIcons
+                name="account"
+                size={20}
+                color={TextColors.secondary}
+              />
             </View>
           )}
         </Pressable>
@@ -54,9 +58,9 @@ export function AppHeader({
 
 const styles = StyleSheet.create({
   bar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
   },
@@ -65,9 +69,9 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   avatar: {
     width: 34,
@@ -78,8 +82,8 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(255,255,255,0.08)",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

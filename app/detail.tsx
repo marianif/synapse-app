@@ -1,6 +1,13 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CountdownChip } from "@/components/atoms/countdown-chip";
@@ -18,7 +25,13 @@ import {
   Surface,
   TextColors,
 } from "@/constants/theme";
-import { useDatabase } from "@/hooks/use-database";
+import { useDatabase } from "@/hooks/use-database/use-database";
+import {
+  getEffectiveStatus,
+  humanizeRule,
+  isRecurringEntry,
+} from "@/lib/recurrence";
+import type { DbRecurrenceCompletion } from "@/lib/schema";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { ActionItem } from "@/components/molecules/detail-action-bar";
@@ -77,9 +90,11 @@ function getStatusColor(status: string, accentColor: string): string {
 function TypeChip({
   entryType,
   accentColor,
+  isRecurring,
 }: {
   entryType: EntryType;
   accentColor: string;
+  isRecurring?: boolean;
 }): React.ReactElement {
   const labels: Record<EntryType, string> = {
     todo: "TODO",
@@ -96,6 +111,14 @@ function TypeChip({
       >
         {labels[entryType]}
       </ThemedText>
+      {isRecurring && (
+        <ThemedText
+          type="caption"
+          style={[styles.typeChipText, { color: accentColor }]}
+        >
+          ↻
+        </ThemedText>
+      )}
     </View>
   );
 }
@@ -107,11 +130,15 @@ function TaskHero({
   scheduledDate,
   scheduledTime,
   accentColor,
+  recurrenceRule,
+  recurrenceEndDate,
 }: {
   status: string;
   scheduledDate: string | null;
   scheduledTime: string | null;
   accentColor: string;
+  recurrenceRule?: string | null;
+  recurrenceEndDate?: string | null;
 }): React.ReactElement {
   const statusColor = getStatusColor(status, accentColor);
   return (
@@ -143,6 +170,22 @@ function TaskHero({
             accentColor={accentColor}
           />
         ) : null}
+        {recurrenceRule ? (
+          <DetailMetadataRow
+            icon="repeat"
+            label="Repeat"
+            value={humanizeRule(recurrenceRule)}
+            accentColor={accentColor}
+          />
+        ) : null}
+        {recurrenceEndDate ? (
+          <DetailMetadataRow
+            icon="calendar-end"
+            label="Ends"
+            value={recurrenceEndDate}
+            accentColor={accentColor}
+          />
+        ) : null}
       </View>
     </View>
   );
@@ -155,11 +198,15 @@ function DeadlineHero({
   dueDate,
   dueTime,
   accentColor,
+  recurrenceRule,
+  recurrenceEndDate,
 }: {
   status: string;
   dueDate: string | null;
   dueTime: string | null;
   accentColor: string;
+  recurrenceRule?: string | null;
+  recurrenceEndDate?: string | null;
 }): React.ReactElement {
   const daysRemaining = parseDaysRemaining(dueDate);
   return (
@@ -185,8 +232,76 @@ function DeadlineHero({
             accentColor={accentColor}
           />
         ) : null}
+        {recurrenceRule ? (
+          <DetailMetadataRow
+            icon="repeat"
+            label="Repeat"
+            value={humanizeRule(recurrenceRule)}
+            accentColor={accentColor}
+          />
+        ) : null}
+        {recurrenceEndDate ? (
+          <DetailMetadataRow
+            icon="calendar-end"
+            label="Ends"
+            value={recurrenceEndDate}
+            accentColor={accentColor}
+          />
+        ) : null}
       </View>
     </View>
+  );
+}
+
+// ─── Delete scope sheet ────────────────────────────────────────────────────────
+
+function DeleteScopeSheet({
+  visible,
+  onClose,
+  onDeleteThis,
+  onDeleteFuture,
+  onDeleteAll,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onDeleteThis: () => void;
+  onDeleteFuture: () => void;
+  onDeleteAll: () => void;
+}): React.ReactElement {
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.sheetOverlay} onPress={onClose}>
+        <View style={styles.sheet}>
+          <ThemedText type="bodyBold" style={styles.sheetTitle}>
+            Delete recurring entry
+          </ThemedText>
+          <Pressable style={styles.sheetOption} onPress={onDeleteThis}>
+            <ThemedText type="body">Delete this occurrence</ThemedText>
+          </Pressable>
+          <View style={styles.sheetDivider} />
+          <Pressable style={styles.sheetOption} onPress={onDeleteFuture}>
+            <ThemedText type="body">Delete this and all future</ThemedText>
+          </Pressable>
+          <View style={styles.sheetDivider} />
+          <Pressable style={styles.sheetOption} onPress={onDeleteAll}>
+            <ThemedText type="body" style={{ color: "#FF6B6B" }}>
+              Delete entire series
+            </ThemedText>
+          </Pressable>
+          <View style={styles.sheetDivider} />
+          <Pressable style={styles.sheetOption} onPress={onClose}>
+            <ThemedText type="bodyBold" muted>
+              Cancel
+            </ThemedText>
+          </Pressable>
+        </View>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -194,21 +309,34 @@ function DeadlineHero({
 
 export default function DetailScreen(): React.ReactElement {
   const router = useRouter();
-  const { id, entryType } = useLocalSearchParams<{
+  const { id: rawId, entryType } = useLocalSearchParams<{
     id?: string;
     entryType?: string;
   }>();
 
-  const accentColor = EntryAccent[entryType];
+  const [deleteSheetVisible, setDeleteSheetVisible] = useState(false);
 
+  // Composite ID support: "masterId::instanceDate" for recurring instances
+  const isRecurringInstance = rawId?.includes("::") ?? false;
+  const [masterId, instanceDate] = isRecurringInstance
+    ? (rawId ?? "").split("::")
+    : [rawId, null];
+
+  const accentColor = EntryAccent[entryType as EntryType] ?? EntryAccent.todo;
   const isSomeday = entryType === "someday";
 
   const {
     entries,
     ideas,
+    recurrenceCompletions,
     isLoading,
     updateEntryStatus,
     deleteEntry,
+    completeRecurringInstance,
+    uncompleteRecurringInstance,
+    skipRecurringInstance,
+    deleteRecurringFuture,
+    deleteRecurringSeries,
     fetchEntries,
     fetchIdeas,
   } = useDatabase();
@@ -225,11 +353,22 @@ export default function DetailScreen(): React.ReactElement {
 
   // ── Resolve entry ────────────────────────────────────────────────────────────
 
-  const entry = isSomeday ? null : entries.find((e) => e.id === id);
-  const idea = isSomeday ? ideas.find((i) => i.id === id) : null;
+  const entry = isSomeday ? null : entries.find((e) => e.id === masterId);
+  const idea = isSomeday ? ideas.find((i) => i.id === masterId) : null;
 
   const title = entry?.title ?? idea?.title ?? "";
   const notes = entry?.notes ?? idea?.notes ?? null;
+
+  // Effective status: for recurring instances, use per-instance completion if present
+  const completionsByKey = new Map<string, DbRecurrenceCompletion>();
+  for (const c of recurrenceCompletions) {
+    completionsByKey.set(`${c.entry_id}::${c.instance_date}`, c);
+  }
+
+  const effectiveStatus =
+    entry && isRecurringInstance && instanceDate
+      ? getEffectiveStatus(entry, instanceDate, completionsByKey)
+      : (entry?.status ?? "scheduled");
 
   // ── Loading ──────────────────────────────────────────────────────────────────
 
@@ -252,7 +391,6 @@ export default function DetailScreen(): React.ReactElement {
         <ListScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
           <EmptyState
-            icon="alert-circle-outline"
             title="Entry not found"
             description="This entry may have been deleted."
             ctaLabel="Go Back"
@@ -268,34 +406,106 @@ export default function DetailScreen(): React.ReactElement {
 
   async function handleComplete(): Promise<void> {
     if (!entry) return;
-    const nextStatus = entry.status === "completed" ? "scheduled" : "completed";
-    await updateEntryStatus(entry.id, nextStatus);
+    if (isRecurringInstance && instanceDate) {
+      const isDone = effectiveStatus === "completed";
+      if (isDone) {
+        await uncompleteRecurringInstance(entry.id, instanceDate);
+      } else {
+        await completeRecurringInstance(entry.id, instanceDate, "completed");
+      }
+    } else {
+      const nextStatus =
+        entry.status === "completed" ? "scheduled" : "completed";
+      await updateEntryStatus(entry.id, nextStatus);
+    }
   }
 
   async function handleMarkMet(): Promise<void> {
     if (!entry) return;
-    const nextStatus = entry.status === "met" ? "pending" : "met";
-    await updateEntryStatus(entry.id, nextStatus);
+    if (isRecurringInstance && instanceDate) {
+      const isDone = effectiveStatus === "met";
+      if (isDone) {
+        await uncompleteRecurringInstance(entry.id, instanceDate);
+      } else {
+        await completeRecurringInstance(entry.id, instanceDate, "met");
+      }
+    } else {
+      const nextStatus = entry.status === "met" ? "pending" : "met";
+      await updateEntryStatus(entry.id, nextStatus);
+    }
   }
 
   async function handleDelete(): Promise<void> {
-    if (entry) {
-      await deleteEntry(entry.id);
+    if (!entry) {
+      router.back();
+      return;
     }
+    if (isRecurringInstance) {
+      setDeleteSheetVisible(true);
+    } else {
+      await deleteEntry(entry.id);
+      router.back();
+    }
+  }
+
+  async function handleDeleteThis(): Promise<void> {
+    if (!entry || !instanceDate) return;
+    setDeleteSheetVisible(false);
+    await skipRecurringInstance(entry.id, instanceDate);
     router.back();
   }
+
+  async function handleDeleteFuture(): Promise<void> {
+    if (!entry || !instanceDate) return;
+    setDeleteSheetVisible(false);
+    await deleteRecurringFuture(entry.id, instanceDate);
+    router.back();
+  }
+
+  async function handleDeleteAll(): Promise<void> {
+    if (!entry) return;
+    setDeleteSheetVisible(false);
+    await deleteRecurringSeries(entry.id);
+    router.back();
+  }
+
+  const isCompleted = effectiveStatus === "completed";
+  const isMet = effectiveStatus === "met";
 
   const actions: [ActionItem, ActionItem, ActionItem] =
     entryType === "todo" || entryType === "event"
       ? [
           {
             icon: "check-circle-outline",
-            label: entry?.status === "completed" ? "Completed" : "Complete",
+            label: isCompleted ? "Completed" : "Complete",
             onPress: handleComplete,
             isPrimary: true,
             accentColor,
           },
-          { icon: "calendar-clock", label: "Reschedule", onPress: () => {} },
+          {
+            icon: "pencil-outline",
+            label: "Edit",
+            onPress: () => {
+              if (!entry) return;
+              const params = new URLSearchParams();
+              params.set("entryId", entry.id);
+              params.set("type", entry.type);
+              params.set("title", entry.title);
+              if (entry.scheduled_date)
+                params.set("date", entry.scheduled_date);
+              if (entry.scheduled_time)
+                params.set("time", entry.scheduled_time);
+              if (entry.due_date) params.set("date", entry.due_date);
+              if (entry.due_time) params.set("time", entry.due_time);
+              if (entry.notes) params.set("notes", entry.notes);
+              if (entry.recurrence_rule)
+                params.set("recurrence", JSON.stringify(entry.recurrence_rule));
+              if (entry.recurrence_end_date)
+                params.set("recurrenceEndDate", entry.recurrence_end_date);
+              router.push(`/modal?${params.toString()}`);
+            },
+            accentColor,
+          },
           {
             icon: "trash-can-outline",
             label: "Delete",
@@ -307,12 +517,38 @@ export default function DetailScreen(): React.ReactElement {
         ? [
             {
               icon: "check-decagram-outline",
-              label: entry?.status === "met" ? "Met" : "Mark Met",
+              label: isMet ? "Met" : "Mark Met",
               onPress: handleMarkMet,
               isPrimary: true,
               accentColor,
             },
-            { icon: "calendar-clock", label: "Reschedule", onPress: () => {} },
+            {
+              icon: "pencil-outline",
+              label: "Edit",
+              onPress: () => {
+                if (!entry) return;
+                const params = new URLSearchParams();
+                params.set("entryId", entry.id);
+                params.set("type", entry.type);
+                params.set("title", entry.title);
+                if (entry.scheduled_date)
+                  params.set("date", entry.scheduled_date);
+                if (entry.scheduled_time)
+                  params.set("time", entry.scheduled_time);
+                if (entry.due_date) params.set("date", entry.due_date);
+                if (entry.due_time) params.set("time", entry.due_time);
+                if (entry.notes) params.set("notes", entry.notes);
+                if (entry.recurrence_rule)
+                  params.set(
+                    "recurrence",
+                    JSON.stringify(entry.recurrence_rule),
+                  );
+                if (entry.recurrence_end_date)
+                  params.set("recurrenceEndDate", entry.recurrence_end_date);
+                router.push(`/modal?${params.toString()}`);
+              },
+              accentColor,
+            },
             {
               icon: "trash-can-outline",
               label: "Delete",
@@ -341,7 +577,7 @@ export default function DetailScreen(): React.ReactElement {
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <View style={styles.screen}>
         {/* ── Header ───────────────────────────────────────────── */}
-        <ListScreenHeader title="" onBack={() => router.back()} />
+        <ListScreenHeader title="Detail" onBack={() => router.back()} />
 
         {/* ── Scrollable content ──────────────────────────────── */}
         <ScrollView
@@ -350,7 +586,11 @@ export default function DetailScreen(): React.ReactElement {
           showsVerticalScrollIndicator={false}
         >
           {/* Type chip */}
-          <TypeChip entryType={entryType} accentColor={accentColor} />
+          <TypeChip
+            entryType={entryType as EntryType}
+            accentColor={accentColor}
+            isRecurring={entry ? isRecurringEntry(entry) : false}
+          />
 
           {/* Title */}
           <ThemedText type="headline" style={styles.title}>
@@ -360,17 +600,21 @@ export default function DetailScreen(): React.ReactElement {
           {/* Type-specific hero block */}
           {entry && (entryType === "todo" || entryType === "event") ? (
             <TaskHero
-              status={entry.status}
+              status={effectiveStatus}
               scheduledDate={entry.scheduled_date}
               scheduledTime={entry.scheduled_time}
               accentColor={accentColor}
+              recurrenceRule={entry.recurrence_rule}
+              recurrenceEndDate={entry.recurrence_end_date}
             />
           ) : entry && entryType === "deadline" ? (
             <DeadlineHero
-              status={entry.status}
+              status={effectiveStatus}
               dueDate={entry.due_date}
               dueTime={entry.due_time}
               accentColor={accentColor}
+              recurrenceRule={entry.recurrence_rule}
+              recurrenceEndDate={entry.recurrence_end_date}
             />
           ) : idea ? (
             <DetailSomedayHero inspiration={idea.inspiration ?? undefined} />
@@ -406,6 +650,15 @@ export default function DetailScreen(): React.ReactElement {
           <DetailActionBar actions={actions} />
         </View>
       </View>
+
+      {/* ── Delete scope sheet (recurring only) ─────────────── */}
+      <DeleteScopeSheet
+        visible={deleteSheetVisible}
+        onClose={() => setDeleteSheetVisible(false)}
+        onDeleteThis={handleDeleteThis}
+        onDeleteFuture={handleDeleteFuture}
+        onDeleteAll={handleDeleteAll}
+      />
     </SafeAreaView>
   );
 }
@@ -491,5 +744,34 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.lg,
     paddingTop: Spacing.md,
     backgroundColor: Surface.base,
+  },
+  // ── Delete scope sheet ───────────────────────────────────────
+  sheetOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "flex-end",
+  },
+  sheet: {
+    backgroundColor: Surface.containerLow,
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xl,
+  },
+  sheetTitle: {
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.md,
+    color: TextColors.secondary,
+    fontSize: 13,
+    letterSpacing: 0.4,
+  },
+  sheetDivider: {
+    height: 1,
+    backgroundColor: Surface.outlineVariant,
+    marginHorizontal: Spacing.lg,
+  },
+  sheetOption: {
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
   },
 });

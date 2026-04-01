@@ -1,5 +1,5 @@
 import { Link, router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import DateInput from "@/components/atoms/DateInput";
 import { ThemedText } from "@/components/atoms/themed-text";
 import TimeInput from "@/components/atoms/TimeInput";
+import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
 import {
   EntryAccent,
   Radius,
@@ -21,7 +22,8 @@ import {
   Surface,
   TextColors,
 } from "@/constants/theme";
-import { useDatabase } from "@/hooks/use-database";
+import { useDatabase } from "@/hooks/use-database/use-database";
+import type { RecurrenceFrequency } from "@/lib/recurrence";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import dayjs from "dayjs";
@@ -35,19 +37,56 @@ const TYPE_OPTIONS: { value: FormType; label: string }[] = [
   { value: "someday", label: "Someday" },
 ];
 
+const isEditMode = (
+  params: ReturnType<typeof useLocalSearchParams>,
+): boolean => {
+  return !!params.entryId;
+};
+
 export default function AddEntryModal(): React.ReactElement {
   const searchParams = useLocalSearchParams<{
+    entryId?: string;
     type?: FormType;
+    title?: string;
     date?: string;
     time?: string;
+    notes?: string;
+    recurrence?: string;
+    recurrenceEndDate?: string;
   }>();
 
-  const [title, setTitle] = useState("");
+  const editing = isEditMode(searchParams);
+
+  const [title, setTitle] = useState(searchParams.title ?? "");
   const [type, setType] = useState<FormType>(searchParams.type ?? "todo");
-  const [date, setDate] = useState(searchParams.date ?? dayjs().format("DD/MM/YYYY"));
-  const [time, setTime] = useState(searchParams.time ?? dayjs().format("HH:MM"));
-  const [notes, setNotes] = useState("");
-  const { createEntry, createIdea, isCreating } = useDatabase();
+  const [date, setDate] = useState(
+    searchParams.date ?? dayjs().format("DD/MM/YYYY"),
+  );
+  const [time, setTime] = useState(
+    searchParams.time ?? dayjs().format("HH:MM"),
+  );
+  const [notes, setNotes] = useState(searchParams.notes ?? "");
+  const [recurrenceFreq, setRecurrenceFreq] =
+    useState<RecurrenceFrequency | null>(null);
+  const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState(
+    searchParams.recurrenceEndDate ?? "",
+  );
+  const { createEntry, createIdea, updateEntry, isCreating } = useDatabase();
+
+  useEffect(() => {
+    if (editing && searchParams.recurrence) {
+      try {
+        const parsed = JSON.parse(searchParams.recurrence);
+        if (parsed && parsed.freq) {
+          setRecurrenceFreq(parsed.freq);
+          setRecurrenceDays(parsed.days || []);
+        }
+      } catch (e) {
+        console.error("Failed to parse recurrence:", e);
+      }
+    }
+  }, [editing, searchParams.recurrence]);
 
   const accentColor =
     type === "todo"
@@ -62,12 +101,35 @@ export default function AddEntryModal(): React.ReactElement {
     if (!title.trim() || isCreating) return;
 
     try {
-      if (type === "someday") {
+      if (editing && searchParams.entryId) {
+        const recurrenceRule = recurrenceFreq
+          ? {
+              freq: recurrenceFreq,
+              days: recurrenceFreq === "weekly" ? recurrenceDays : undefined,
+            }
+          : undefined;
+        await updateEntry(searchParams.entryId, {
+          title: title.trim(),
+          scheduledDate: type !== "deadline" ? date.trim() || null : null,
+          scheduledTime: type !== "deadline" ? time.trim() || null : null,
+          dueDate: type === "deadline" ? date.trim() || null : null,
+          dueTime: type === "deadline" ? time.trim() || null : null,
+          notes: notes.trim() || null,
+          recurrenceRule: recurrenceRule || null,
+          recurrenceEndDate: recurrenceEndDate.trim() || null,
+        });
+      } else if (type === "someday") {
         await createIdea({
           title: title.trim(),
           inspiration: notes.trim() || undefined,
         });
       } else {
+        const recurrenceRule = recurrenceFreq
+          ? {
+              freq: recurrenceFreq,
+              days: recurrenceFreq === "weekly" ? recurrenceDays : undefined,
+            }
+          : undefined;
         await createEntry({
           title: title.trim(),
           type: type as EntryType,
@@ -76,6 +138,8 @@ export default function AddEntryModal(): React.ReactElement {
           dueDate: type === "deadline" ? date.trim() : undefined,
           dueTime: type === "deadline" ? time.trim() : undefined,
           notes: notes.trim() || undefined,
+          recurrenceRule,
+          recurrenceEndDate: recurrenceEndDate.trim() || undefined,
         });
       }
     } catch (error) {
@@ -103,7 +167,9 @@ export default function AddEntryModal(): React.ReactElement {
                 </ThemedText>
               </Pressable>
             </Link>
-            <ThemedText type="headline">Add Entry</ThemedText>
+            <ThemedText type="headline">
+              {editing ? "Edit Entry" : "Add Entry"}
+            </ThemedText>
             <Pressable
               onPress={handleSave}
               disabled={!canSave}
@@ -212,6 +278,23 @@ export default function AddEntryModal(): React.ReactElement {
                   />
                 </View>
               </View>
+            )}
+
+            {/* Recurrence (only for Todo) */}
+            {type === "todo" && (
+              <RecurrencePicker
+                frequency={recurrenceFreq}
+                days={recurrenceDays}
+                endDate={recurrenceEndDate}
+                accentColor={accentColor}
+                onFrequencyChange={(freq) => {
+                  setRecurrenceFreq(freq);
+                  setRecurrenceDays([]);
+                  setRecurrenceEndDate("");
+                }}
+                onDaysChange={setRecurrenceDays}
+                onEndDateChange={setRecurrenceEndDate}
+              />
             )}
 
             {/* Notes */}
@@ -351,6 +434,25 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "#131316",
     fontSize: 16,
+    fontWeight: "600",
+  },
+  weekdayRow: {
+    flexDirection: "row",
+    gap: Spacing.xs,
+    marginTop: Spacing.xs,
+  },
+  weekdayOption: {
+    flex: 1,
+    backgroundColor: Surface.containerLow,
+    borderRadius: Radius.md,
+    paddingVertical: Spacing.sm,
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "transparent",
+  },
+  weekdayOptionText: {
+    color: TextColors.secondary,
+    fontSize: 11,
     fontWeight: "600",
   },
 });

@@ -48,7 +48,8 @@
         }
       ],
       "expo-sqlite",
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      "./modules/speech-recognizer/plugin/withSpeechRecognizerPermissions"
     ],
     "experiments": {
       "typedRoutes": true,

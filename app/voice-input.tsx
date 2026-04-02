@@ -1,6 +1,4 @@
-import { useEventListener } from 'expo';
-import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   Pressable,
   StyleSheet,
@@ -19,48 +17,13 @@ import {
   Surface,
   TextColors,
 } from "@/constants/theme";
-import { SpeechRecognizerModule } from "@/modules/speech-recognizer";
-import type { TranscriptUpdateEvent } from "@/modules/speech-recognizer";
+import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
 export default function VoiceInputScreen(): React.ReactElement {
-  const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState("");
-  const [permissionsGranted, setPermissionsGranted] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    SpeechRecognizerModule.requestPermissions().then(({ speech, microphone }) => {
-      setPermissionsGranted(speech && microphone);
-    });
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      SpeechRecognizerModule.stopRecognition();
-    };
-  }, []);
-
-  useEventListener(SpeechRecognizerModule, "onTranscriptUpdate", (event: TranscriptUpdateEvent) => {
-    setTranscript(event.transcript);
-    if (event.isFinal) {
-      setIsRecording(false);
-    }
+  const { autoStart } = useLocalSearchParams<{ autoStart?: string }>();
+  const { transcript, toggleRecording, isRecording } = useSpeechRecognizer({
+    autoStart: autoStart === "true",
   });
-
-  const handleToggleRecording = useCallback(async (): Promise<void> => {
-    if (isRecording) {
-      await SpeechRecognizerModule.stopRecognition();
-      setIsRecording(false);
-    } else {
-      if (!permissionsGranted) {
-        const result = await SpeechRecognizerModule.requestPermissions();
-        if (!result.speech || !result.microphone) return;
-        setPermissionsGranted(true);
-      }
-      setTranscript("");
-      await SpeechRecognizerModule.startRecognition();
-      setIsRecording(true);
-    }
-  }, [isRecording, permissionsGranted]);
 
   const handleCancel = (): void => {
     router.back();
@@ -121,7 +84,7 @@ export default function VoiceInputScreen(): React.ReactElement {
         {/* Recording Controls */}
         <View style={styles.controls}>
           <Pressable
-            onPress={handleToggleRecording}
+            onPress={toggleRecording}
             style={({ pressed }) => [
               styles.recordButton,
               isRecording && styles.recordButtonActive,

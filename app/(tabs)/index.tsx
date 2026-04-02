@@ -23,12 +23,11 @@ import {
   getTodayEvents,
   getWeeklyTodos,
 } from "@/hooks/use-database/use-database.helpers";
+import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 import { DAY_NAMES, formatDateLabel } from "@/lib/date-utils";
 import { ExtensionStorage } from "@bacons/apple-targets";
 
 dayjs.extend(customParseFormat);
-
-// ─── Week days helper ─────────────────────────────────────────────────────────
 
 function getWeekDays(): { abbr: string; fullName: string; date: Date }[] {
   const today = new Date();
@@ -42,8 +41,6 @@ function getWeekDays(): { abbr: string; fullName: string; date: Date }[] {
   });
 }
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
-
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
 
@@ -55,6 +52,30 @@ export default function HomeScreen(): React.ReactElement {
     new Date(),
     recurrenceCompletions,
   );
+
+  const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
+  const [isRecording, setIsRecording] = useState(false);
+
+  const handleStartRecording = useCallback(async () => {
+    setIsRecording(true);
+    await startRecording();
+  }, [startRecording]);
+
+  const handleStopRecording = useCallback(async () => {
+    await stopRecording();
+    setIsRecording(false);
+    if (transcript.trim()) {
+      router.push({
+        pathname: "/modal",
+        params: { title: transcript.trim() },
+      });
+    }
+  }, [stopRecording, transcript, router]);
+
+  const handleCancelRecording = useCallback(async () => {
+    await stopRecording();
+    setIsRecording(false);
+  }, [stopRecording]);
 
   useFocusEffect(
     useCallback(() => {
@@ -98,7 +119,10 @@ export default function HomeScreen(): React.ReactElement {
     [router],
   );
 
-  // ── Derived data ─────────────────────────────────────────────────────────────
+  const handleFabPress = () => {
+    isRecording ? handleStopRecording() : router.push("/voice-input");
+  };
+
   const weeklyEntries = useMemo(
     () => getWeeklyTodos(entries, weekDays),
     [entries, weekDays],
@@ -175,7 +199,14 @@ export default function HomeScreen(): React.ReactElement {
 
         <View style={styles.fabSpacer} />
       </ScrollView>
-      <Fab onPress={() => router.push("/voice-input")} />
+      <Fab
+        onPress={handleFabPress}
+        onLongPress={handleStartRecording}
+        isRecording={isRecording}
+        transcript={transcript}
+        onStop={handleStopRecording}
+        onCancel={handleCancelRecording}
+      />
       <DayDetailSheet
         visible={sheetVisible}
         date={selectedDate}

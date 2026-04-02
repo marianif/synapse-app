@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,6 +10,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { Brand, Radius, Shadow, Spacing } from "@/constants/theme";
+
+const WAVEFORM_BARS = 10;
 
 interface FabProps {
   onPress?: () => void;
@@ -57,6 +59,35 @@ export function Fab({
   );
 }
 
+function WaveformBar({ index }: { index: number }): React.ReactElement {
+  const height = useSharedValue(8);
+
+  useEffect(() => {
+    const delay = index * 80;
+    const baseHeight = 8;
+    const maxHeight = 24;
+
+    height.value = withRepeat(
+      withSequence(
+        withTiming(maxHeight, { duration: 300 + Math.random() * 200 }),
+        withTiming(baseHeight + Math.random() * 8, {
+          duration: 200 + Math.random() * 150,
+        }),
+        withTiming(maxHeight - 4, { duration: 250 + Math.random() * 100 }),
+        withTiming(baseHeight, { duration: 180 + Math.random() * 120 }),
+      ),
+      -1,
+      false,
+    );
+  }, [height, index]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    height: height.value,
+  }));
+
+  return <Animated.View style={[styles.waveformBar, animatedStyle]} />;
+}
+
 function RecordingFab({
   transcript,
   onStop,
@@ -66,44 +97,13 @@ function RecordingFab({
   onStop?: () => void;
   onCancel?: () => void;
 }): React.ReactElement {
-  const dotOpacity = useSharedValue(1);
-
-  useEffect(() => {
-    dotOpacity.value = withRepeat(
-      withSequence(
-        withTiming(0.3, { duration: 600 }),
-        withTiming(1, { duration: 600 }),
-      ),
-      -1,
-      false,
-    );
-  }, [dotOpacity]);
-
-  const animatedDotStyle = useAnimatedStyle(() => ({
-    opacity: dotOpacity.value,
-  }));
-
   return (
     <View style={styles.recordingContainer}>
-      {transcript.length > 0 && (
-        <View style={styles.transcriptToast}>
-          <View style={styles.transcriptContent}>
-            <Animated.View style={[styles.recordingDot, animatedDotStyle]} />
-            <Text style={styles.transcriptText} numberOfLines={2}>
-              {transcript}
-            </Text>
-          </View>
-          <Pressable
-            onPress={onCancel}
-            hitSlop={12}
-            style={styles.cancelButton}
-            accessibilityLabel="Cancel recording"
-            accessibilityRole="button"
-          >
-            <MaterialCommunityIcons name="close" size={16} color="#A1A1AA" />
-          </Pressable>
-        </View>
-      )}
+      <View style={styles.waveformContainer}>
+        {Array.from({ length: WAVEFORM_BARS }).map((_, i) => (
+          <WaveformBar key={i} index={i} />
+        ))}
+      </View>
       <Pressable
         onPress={onStop}
         style={({ pressed }) => [
@@ -155,6 +155,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: Spacing.md,
   },
+  waveformContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 40,
+    gap: 4,
+  },
+  waveformBar: {
+    width: 4,
+    backgroundColor: "#FF6B6B",
+    borderRadius: 2,
+  },
   recordingGlow: {
     position: "absolute",
     width: 72,
@@ -172,31 +184,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     ...Shadow.fab,
   },
-  transcriptToast: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#2A2A2D",
-    borderRadius: 24,
-    maxWidth: 280,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
 
-    ...Shadow.card,
-  },
-  transcriptContent: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    marginLeft: Spacing.sm,
-  },
-  recordingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#FF6B6B",
-    flexShrink: 0,
-    marginRight: 8,
-  },
   cancelButton: {
     width: 44,
     height: 44,

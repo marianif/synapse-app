@@ -175,10 +175,7 @@ export default function HomeScreen(): React.ReactElement {
 
         <View style={styles.fabSpacer} />
       </ScrollView>
-      <Fab
-        onPress={() => router.push("/modal")}
-        onLongPress={() => router.push("/voice-input")}
-      />
+      <Fab onPress={() => router.push("/voice-input")} />
       <DayDetailSheet
         visible={sheetVisible}
         date={selectedDate}

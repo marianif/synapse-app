@@ -5,7 +5,6 @@ import { Brand, Radius, Shadow } from '@/constants/theme';
 
 interface FabProps {
   onPress?: () => void;
-  onLongPress?: () => void;
 }
 
 /**
@@ -13,18 +12,16 @@ interface FabProps {
  * Glassmorphic gradient + permanent glow effect per DESIGN.md.
  * Shape: pill (borderRadius: full).
  */
-export function Fab({ onPress, onLongPress }: FabProps): React.ReactElement {
+export function Fab({ onPress }: FabProps): React.ReactElement {
   return (
     <View style={styles.wrapper} pointerEvents="box-none">
       {/* Permanent glow layer behind the button */}
       <View style={styles.glow} />
       <Pressable
         onPress={onPress}
-        onLongPress={onLongPress}
-        delayLongPress={500}
         style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
       >
-        <MaterialCommunityIcons name="plus" size={28} color="#1A1A2E" />
+        <MaterialCommunityIcons name="microphone" size={28} color="#1A1A2E" />
       </Pressable>
     </View>
   );

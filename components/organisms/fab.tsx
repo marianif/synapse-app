@@ -1,8 +1,15 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 
 import { Brand, Radius, Shadow, Spacing } from "@/constants/theme";
-import { WaveformVisualizer } from "@/components/atoms/waveform-bar";
 
 const WAVEFORM_BARS = 10;
 
@@ -10,19 +17,27 @@ interface FabProps {
   onPress?: () => void;
   onLongPress?: () => void;
   isRecording?: boolean;
+  transcript?: string;
   onStop?: () => void;
+  onCancel?: () => void;
 }
 
 export function Fab({
   onPress,
   onLongPress,
   isRecording = false,
+  transcript = "",
   onStop,
+  onCancel,
 }: FabProps): React.ReactElement {
   if (isRecording) {
     return (
       <View style={styles.wrapper} pointerEvents="box-none">
-        <RecordingFab onStop={onStop} />
+        <RecordingFab
+          transcript={transcript}
+          onStop={onStop}
+          onCancel={onCancel}
+        />
       </View>
     );
   }
@@ -44,14 +59,50 @@ export function Fab({
   );
 }
 
+function WaveformBar({ index }: { index: number }): React.ReactElement {
+  const height = useSharedValue(8);
+
+  useEffect(() => {
+    const baseHeight = 8;
+    const maxHeight = 24;
+
+    height.value = withRepeat(
+      withSequence(
+        withTiming(maxHeight, { duration: 300 + Math.random() * 200 }),
+        withTiming(baseHeight + Math.random() * 8, {
+          duration: 200 + Math.random() * 150,
+        }),
+        withTiming(maxHeight - 4, { duration: 250 + Math.random() * 100 }),
+        withTiming(baseHeight, { duration: 180 + Math.random() * 120 }),
+      ),
+      -1,
+      false,
+    );
+  }, [height, index]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    height: height.value,
+  }));
+
+  return <Animated.View style={[styles.waveformBar, animatedStyle]} />;
+}
+
 function RecordingFab({
+  transcript,
   onStop,
+  onCancel,
 }: {
+  transcript: string;
   onStop?: () => void;
+  onCancel?: () => void;
 }): React.ReactElement {
   return (
     <View style={styles.recordingContainer}>
-      <WaveformVisualizer barCount={WAVEFORM_BARS} />
+      <View style={styles.waveformContainer}>
+        {Array.from({ length: WAVEFORM_BARS }).map((_, i) => (
+          <WaveformBar key={i} index={i} />
+        ))}
+      </View>
       <Pressable
         onPress={onStop}
         style={({ pressed }) => [
@@ -131,5 +182,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     ...Shadow.fab,
+  },
+
+  cancelButton: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9999,
+    marginLeft: 4,
+  },
+  transcriptText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#FAFAFA",
+    fontWeight: "400",
+    marginRight: 8,
   },
 });

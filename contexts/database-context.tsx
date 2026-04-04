@@ -1,12 +1,14 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
 
 import * as SQLite from "expo-sqlite";
+import { Platform } from "react-native";
 
 import { generateId, initDatabase } from "@/lib/database";
 import { serializeRule, type RecurrenceRule } from "@/lib/recurrence";
 import type { DbEntry, DbIdea, DbRecurrenceCompletion } from "@/lib/schema";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
+import { syncWidgetEntries } from "@/modules/widget-bridge";
 
 interface DatabaseContextValue {
   entries: DbEntry[];
@@ -77,6 +79,41 @@ async function getDb(): Promise<SQLite.SQLiteDatabase> {
     initPromise = initDatabase();
   }
   return initPromise;
+}
+
+async function syncToWidget(db: SQLite.SQLiteDatabase): Promise<void> {
+  if (Platform.OS !== "ios") return;
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    // ISO date for comparison: scheduled_date is stored as DD/MM/YYYY
+    const [dd, mm, yyyy] = [
+      String(new Date().getDate()).padStart(2, "0"),
+      String(new Date().getMonth() + 1).padStart(2, "0"),
+      String(new Date().getFullYear()),
+    ];
+    const todayFormatted = `${dd}/${mm}/${yyyy}`;
+    const rows = await db.getAllAsync<DbEntry>(
+      `SELECT * FROM entries
+       WHERE (scheduled_date = ? OR due_date = ?)
+         AND status NOT IN ('completed', 'met')
+       ORDER BY scheduled_date ASC, due_date ASC
+       LIMIT 10`,
+      todayFormatted,
+      todayFormatted,
+    );
+    await syncWidgetEntries(
+      rows.map((e) => ({
+        id: e.id,
+        title: e.title,
+        type: e.type,
+        status: e.status,
+        scheduled_date: e.scheduled_date,
+        due_date: e.due_date,
+      })),
+    );
+  } catch (error) {
+    console.error("[DatabaseContext] syncToWidget failed:", error);
+  }
 }
 
 interface DatabaseProviderProps {
@@ -199,6 +236,7 @@ export function DatabaseProvider({
           const next = [created, ...prev];
           return next;
         });
+        await syncToWidget(db);
         return created;
       } catch (error) {
         console.error("[DatabaseContext] createEntry failed:", error);
@@ -265,6 +303,7 @@ export function DatabaseProvider({
             e.id === id ? { ...e, status, updated_at: now } : e,
           ),
         );
+        await syncToWidget(db);
       } catch (error) {
         console.error("[DatabaseContext] updateEntryStatus failed:", error);
         throw error;
@@ -333,6 +372,7 @@ export function DatabaseProvider({
             e.id === id ? { ...e, ...data, updated_at: now } : e,
           ),
         );
+        await syncToWidget(db);
       } catch (error) {
         console.error("[DatabaseContext] updateEntry failed:", error);
         throw error;
@@ -346,6 +386,7 @@ export function DatabaseProvider({
       const db = await getDb();
       await db.runAsync("DELETE FROM entries WHERE id = ?", id);
       setEntries((prev) => prev.filter((e) => e.id !== id));
+      await syncToWidget(db);
     } catch (error) {
       console.error("[DatabaseContext] deleteEntry failed:", error);
       throw error;

@@ -7,11 +7,6 @@ import { serializeRule, type RecurrenceRule } from "@/lib/recurrence";
 import type { DbEntry, DbIdea, DbRecurrenceCompletion } from "@/lib/schema";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
-import { ExtensionStorage } from "@bacons/apple-targets";
-
-// Shared storage between javascript and swift widgets
-const storage = new ExtensionStorage("group.dev.the-wedge.synapse-app");
-const STORAGE_KEY = "widget_entries";
 
 interface DatabaseContextValue {
   entries: DbEntry[];
@@ -116,7 +111,6 @@ export function DatabaseProvider({
           );
         }
         setEntries(rows);
-        storage.set(STORAGE_KEY, rows as unknown as Parameters<typeof storage.set>[1]);
         return rows;
       } catch (error) {
         console.error("[DatabaseContext] fetchEntries failed:", error);
@@ -203,7 +197,6 @@ export function DatabaseProvider({
 
         setEntries((prev) => {
           const next = [created, ...prev];
-          storage.set(STORAGE_KEY, next as unknown as Parameters<typeof storage.set>[1]);
           return next;
         });
         return created;

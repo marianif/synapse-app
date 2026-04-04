@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppState, ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
 
 import { AgendaSection } from "@/components/organisms/agenda-section";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
@@ -25,7 +25,6 @@ import {
 } from "@/hooks/use-database/use-database.helpers";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 import { DAY_NAMES, formatDateLabel } from "@/lib/date-utils";
-import { ExtensionStorage } from "@bacons/apple-targets";
 
 dayjs.extend(customParseFormat);
 
@@ -148,14 +147,6 @@ export default function HomeScreen(): React.ReactElement {
 
   const taskEntries = entries.filter((e) => e.type === "todo");
   const deadlineEntries = entries.filter((e) => e.type === "deadline");
-
-  useEffect(() => {
-    AppState.addEventListener("change", (status) => {
-      if (status === "background") {
-        ExtensionStorage.reloadWidget();
-      }
-    });
-  }, []);
 
   return (
     <View style={styles.screen}>

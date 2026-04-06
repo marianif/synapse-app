@@ -3,23 +3,24 @@ import React, { createContext, useCallback, useEffect, useState } from "react";
 import * as SQLite from "expo-sqlite";
 
 import { generateId, initDatabase } from "@/lib/database";
-import { serializeRule, type RecurrenceRule } from "@/lib/recurrence";
-import type { DbEntry, DbIdea, DbRecurrenceCompletion } from "@/lib/schema";
+import { serializeRule } from "@/lib/recurrence";
+import type {
+  DbEntry,
+  DbRecurrenceCompletion,
+  RecurrenceRule,
+} from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
 interface DatabaseContextValue {
   entries: DbEntry[];
-  ideas: DbIdea[];
   recurrenceCompletions: DbRecurrenceCompletion[];
   isLoading: boolean;
   isCreating: boolean;
   createEntry: (data: CreateEntryInput) => Promise<DbEntry>;
-  createIdea: (data: CreateIdeaInput) => Promise<DbIdea>;
   updateEntry: (id: string, data: UpdateEntryInput) => Promise<void>;
   updateEntryStatus: (id: string, status: DbEntry["status"]) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
-  deleteIdea: (id: string) => Promise<void>;
   refetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
   completeRecurringInstance: (
     entryId: string,
@@ -43,6 +44,8 @@ export const DatabaseContext = createContext<DatabaseContextValue | null>(null);
 export interface CreateEntryInput {
   title: string;
   type: EntryType;
+  subtitle?: string;
+  inspiration?: string;
   scheduledDate?: string;
   scheduledTime?: string;
   dueDate?: string;
@@ -54,6 +57,8 @@ export interface CreateEntryInput {
 
 export interface UpdateEntryInput {
   title?: string;
+  subtitle?: string | null;
+  inspiration?: string | null;
   scheduledDate?: string | null;
   scheduledTime?: string | null;
   dueDate?: string | null;
@@ -61,13 +66,6 @@ export interface UpdateEntryInput {
   notes?: string | null;
   recurrenceRule?: RecurrenceRule | null;
   recurrenceEndDate?: string | null;
-}
-
-export interface CreateIdeaInput {
-  title: string;
-  subtitle?: string;
-  inspiration?: string;
-  notes?: string;
 }
 
 let initPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -87,7 +85,6 @@ export function DatabaseProvider({
   children,
 }: DatabaseProviderProps): React.ReactElement {
   const [entries, setEntries] = useState<DbEntry[]>([]);
-  const [ideas, setIdeas] = useState<DbIdea[]>([]);
   const [recurrenceCompletions, setRecurrenceCompletions] = useState<
     DbRecurrenceCompletion[]
   >([]);
@@ -122,23 +119,6 @@ export function DatabaseProvider({
     [],
   );
 
-  const fetchIdeas = useCallback(async (): Promise<DbIdea[]> => {
-    setIsLoading(true);
-    try {
-      const db = await getDb();
-      const rows = await db.getAllAsync<DbIdea>(
-        "SELECT * FROM ideas ORDER BY created_at DESC",
-      );
-      setIdeas(rows);
-      return rows;
-    } catch (error) {
-      console.error("[DatabaseContext] fetchIdeas failed:", error);
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   const fetchRecurrenceCompletions = useCallback(async (): Promise<void> => {
     try {
       const db = await getDb();
@@ -156,7 +136,6 @@ export function DatabaseProvider({
 
   useEffect(() => {
     fetchEntries();
-    fetchIdeas();
     fetchRecurrenceCompletions();
   }, []);
 
@@ -171,11 +150,13 @@ export function DatabaseProvider({
 
         await db.runAsync(
           `INSERT INTO entries
-           (id, title, type, scheduled_date, scheduled_time, due_date, due_time, notes, status, recurrence_rule, recurrence_end_date, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           (id, title, type, subtitle, inspiration, scheduled_date, scheduled_time, due_date, due_time, notes, status, recurrence_rule, recurrence_end_date, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           id,
           data.title,
           data.type,
+          data.subtitle ?? null,
+          data.inspiration ?? null,
           data.scheduledDate ?? null,
           data.scheduledTime ?? null,
           data.dueDate ?? null,
@@ -202,45 +183,6 @@ export function DatabaseProvider({
         return created;
       } catch (error) {
         console.error("[DatabaseContext] createEntry failed:", error);
-        throw error;
-      } finally {
-        setIsCreating(false);
-      }
-    },
-    [],
-  );
-
-  const createIdea = useCallback(
-    async (data: CreateIdeaInput): Promise<DbIdea> => {
-      setIsCreating(true);
-      try {
-        const db = await getDb();
-        const id = generateId();
-        const now = Math.floor(Date.now() / 1000);
-
-        await db.runAsync(
-          `INSERT INTO ideas (id, title, subtitle, inspiration, notes, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          id,
-          data.title,
-          data.subtitle ?? null,
-          data.inspiration ?? null,
-          data.notes ?? null,
-          now,
-          now,
-        );
-
-        const created = await db.getFirstAsync<DbIdea>(
-          "SELECT * FROM ideas WHERE id = ?",
-          id,
-        );
-
-        if (!created) throw new Error("Idea was not persisted");
-
-        setIdeas((prev) => [created, ...prev]);
-        return created;
-      } catch (error) {
-        console.error("[DatabaseContext] createIdea failed:", error);
         throw error;
       } finally {
         setIsCreating(false);
@@ -348,17 +290,6 @@ export function DatabaseProvider({
       setEntries((prev) => prev.filter((e) => e.id !== id));
     } catch (error) {
       console.error("[DatabaseContext] deleteEntry failed:", error);
-      throw error;
-    }
-  }, []);
-
-  const deleteIdea = useCallback(async (id: string): Promise<void> => {
-    try {
-      const db = await getDb();
-      await db.runAsync("DELETE FROM ideas WHERE id = ?", id);
-      setIdeas((prev) => prev.filter((i) => i.id !== id));
-    } catch (error) {
-      console.error("[DatabaseContext] deleteIdea failed:", error);
       throw error;
     }
   }, []);
@@ -499,16 +430,13 @@ export function DatabaseProvider({
 
   const value: DatabaseContextValue = {
     entries,
-    ideas,
     recurrenceCompletions,
     isLoading,
     isCreating,
     createEntry,
-    createIdea,
     updateEntry,
     updateEntryStatus,
     deleteEntry,
-    deleteIdea,
     refetchEntries: fetchEntries,
     completeRecurringInstance,
     uncompleteRecurringInstance,

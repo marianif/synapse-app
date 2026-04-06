@@ -23,7 +23,7 @@ import {
   TextColors,
 } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
-import type { RecurrenceFrequency } from "@/lib/recurrence";
+import type { RecurrenceFrequency } from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import dayjs from "dayjs";
@@ -72,7 +72,7 @@ export default function AddEntryModal(): React.ReactElement {
   const [recurrenceEndDate, setRecurrenceEndDate] = useState(
     searchParams.recurrenceEndDate ?? "",
   );
-  const { createEntry, createIdea, updateEntry, isCreating } = useDatabase();
+  const { createEntry, updateEntry, isCreating } = useDatabase();
 
   useEffect(() => {
     if (editing && searchParams.recurrence) {
@@ -118,27 +118,22 @@ export default function AddEntryModal(): React.ReactElement {
           recurrenceRule: recurrenceRule || null,
           recurrenceEndDate: recurrenceEndDate.trim() || null,
         });
-      } else if (type === "someday") {
-        await createIdea({
-          title: title.trim(),
-          inspiration: notes.trim() || undefined,
-        });
       } else {
-        const recurrenceRule = recurrenceFreq
-          ? {
-              freq: recurrenceFreq,
-              days: recurrenceFreq === "weekly" ? recurrenceDays : undefined,
-            }
-          : undefined;
         await createEntry({
           title: title.trim(),
           type: type as EntryType,
-          scheduledDate: date.trim() || undefined,
-          scheduledTime: time.trim() || undefined,
+          inspiration: notes.trim() || undefined,
+          scheduledDate: type !== "deadline" ? date.trim() || undefined : undefined,
+          scheduledTime: type !== "deadline" ? time.trim() || undefined : undefined,
           dueDate: type === "deadline" ? date.trim() : undefined,
           dueTime: type === "deadline" ? time.trim() : undefined,
           notes: notes.trim() || undefined,
-          recurrenceRule,
+          recurrenceRule: recurrenceFreq
+            ? {
+                freq: recurrenceFreq,
+                days: recurrenceFreq === "weekly" ? recurrenceDays : undefined,
+              }
+            : undefined,
           recurrenceEndDate: recurrenceEndDate.trim() || undefined,
         });
       }

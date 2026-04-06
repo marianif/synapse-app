@@ -1,24 +1,9 @@
-import type { DbEntry, DbRecurrenceCompletion } from "@/lib/schema";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export type RecurrenceFrequency = "daily" | "weekdays" | "weekly" | "monthly";
-
-export interface RecurrenceRule {
-  freq: RecurrenceFrequency;
-  /** Only used when freq = 'weekly'. 0=Sun, 1=Mon, …, 6=Sat. */
-  days?: number[];
-}
-
-export interface RecurringInstance {
-  entry: DbEntry;
-  /** DD/MM/YYYY */
-  instanceDate: string;
-  completion: DbRecurrenceCompletion | null;
-  effectiveStatus: DbEntry["status"];
-  /** true if this instance is completed or skipped */
-  isDone: boolean;
-}
+import type {
+  DbEntry,
+  DbRecurrenceCompletion,
+  RecurrenceRule,
+  RecurringInstance,
+} from "@/lib/types";
 
 // ─── Serialization ────────────────────────────────────────────────────────────
 
@@ -46,7 +31,11 @@ function parseDDMMYYYY(dateStr: string): Date | null {
   const parts = dateStr.split("/");
   if (parts.length !== 3) return null;
   const [dd, mm, yyyy] = parts;
-  const d = new Date(parseInt(yyyy, 10), parseInt(mm, 10) - 1, parseInt(dd, 10));
+  const d = new Date(
+    parseInt(yyyy, 10),
+    parseInt(mm, 10) - 1,
+    parseInt(dd, 10),
+  );
   if (isNaN(d.getTime())) return null;
   return d;
 }
@@ -139,7 +128,11 @@ export function expandRecurringEntry(
     // Rewind cursor to the Monday of startDate's week, then walk forward
     while (cursor <= effectiveEnd) {
       const dow = cursor.getDay();
-      if (targetDays.includes(dow) && cursor >= fromDate && cursor >= startDate) {
+      if (
+        targetDays.includes(dow) &&
+        cursor >= fromDate &&
+        cursor >= startDate
+      ) {
         occurrences.push(formatDDMMYYYY(cursor));
       }
       cursor.setDate(cursor.getDate() + 1);
@@ -200,15 +193,20 @@ export function buildRecurringInstances(
     for (const instanceDate of dates) {
       const key = `${entry.id}::${instanceDate}`;
       const completion = completionsByKey.get(key) ?? null;
-      const effectiveStatus = getEffectiveStatus(entry, instanceDate, completionsByKey);
+      const effectiveStatus = getEffectiveStatus(
+        entry,
+        instanceDate,
+        completionsByKey,
+      );
       instances.push({
         entry,
         instanceDate,
         completion,
         effectiveStatus,
-        isDone: completion?.status === "completed" ||
-                completion?.status === "met" ||
-                completion?.status === "skipped",
+        isDone:
+          completion?.status === "completed" ||
+          completion?.status === "met" ||
+          completion?.status === "skipped",
       });
     }
   }

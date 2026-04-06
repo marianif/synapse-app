@@ -1,8 +1,9 @@
 import { StyleSheet, View } from "react-native";
 
 import { EntryAccent } from "@/constants/theme";
+import { EntryType } from "@/lib/types";
 
-export type EntryType = "todo" | "deadline" | "event" | "someday";
+export type { EntryType };
 
 interface EntryDotProps {
   type: EntryType;

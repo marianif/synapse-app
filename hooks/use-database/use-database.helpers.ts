@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
-import type { DbEntry, DbRecurrenceCompletion } from "@/lib/schema";
+import type { DbEntry, DbRecurrenceCompletion } from "@/lib/types";
 import { buildRecurringInstances, isRecurringEntry } from "@/lib/recurrence";
 import { isSameDay, toDisplayDate } from "@/lib/date-utils";
 

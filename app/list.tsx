@@ -16,7 +16,7 @@ import { isRecurringEntry } from "@/lib/recurrence";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { ItemStatus } from "@/components/molecules/list-item";
-import type { DbEntry, DbIdea } from "@/lib/schema";
+import type { DbEntry } from "@/lib/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -93,11 +93,11 @@ function entryToListEntry(e: DbEntry): ListEntry {
   };
 }
 
-function ideaToListEntry(idea: DbIdea): ListEntry {
+function somedayEntryToListEntry(entry: DbEntry): ListEntry {
   return {
-    id: idea.id,
-    title: idea.title,
-    subtitle: idea.subtitle ?? undefined,
+    id: entry.id,
+    title: entry.title,
+    subtitle: entry.subtitle ?? undefined,
     entryType: "someday",
     status: "scheduled",
   };
@@ -176,30 +176,25 @@ export default function ListScreen(): React.ReactElement {
 
   const {
     entries,
-    ideas,
     updateEntryStatus,
     deleteEntry,
-    deleteIdea,
     fetchEntries,
-    fetchIdeas,
   } = useDatabase();
 
   useFocusEffect(
     useCallback(() => {
-      if (resolvedType === "someday") {
-        fetchIdeas();
-      } else {
-        fetchEntries(resolvedType);
-      }
-    }, [resolvedType, fetchEntries, fetchIdeas]),
+      fetchEntries(resolvedType);
+    }, [resolvedType, fetchEntries]),
   );
 
   // ── Build sections ────────────────────────────────────────────────────────────
 
+  const somedayEntries = entries.filter((e) => e.type === "someday" || e.type === "idea");
+
   const sections: Section[] =
     resolvedType === "someday"
-      ? ideas.length > 0
-        ? [{ label: "Ideas", entries: ideas.map(ideaToListEntry) }]
+      ? somedayEntries.length > 0
+        ? [{ label: "Ideas", entries: somedayEntries.map(somedayEntryToListEntry) }]
         : []
       : resolvedType === "deadline"
         ? buildDeadlineSections(entries)
@@ -235,11 +230,7 @@ export default function ListScreen(): React.ReactElement {
   // ── Delete handler ─────────────────────────────────────────────────────────────
 
   async function handleDelete(id: string): Promise<void> {
-    if (resolvedType === "someday") {
-      await deleteIdea(id);
-    } else {
-      await deleteEntry(id);
-    }
+    await deleteEntry(id);
   }
 
   // ── Empty state config ────────────────────────────────────────────────────────

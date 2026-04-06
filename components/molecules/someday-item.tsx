@@ -7,10 +7,10 @@ import { ThemedView } from "@/components/atoms/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { EntryAccent, Radius, Spacing, Surface, TextColors } from "@/constants/theme";
 
-import type { DbIdea } from "@/lib/schema";
+import type { DbEntry } from "@/lib/types";
 
 interface SomedayItemProps {
-  ideas: DbIdea[];
+  ideas: DbEntry[];
 }
 
 /**

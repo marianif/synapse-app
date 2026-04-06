@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 
-import { ALL_STATEMENTS, CREATE_RECURRENCE_COMPLETIONS_TABLE, SCHEMA_VERSION } from './schema';
+import { ALL_STATEMENTS, CREATE_ENTRIES_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, SCHEMA_VERSION } from './schema';
 
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 let isInitialized = false;
@@ -96,6 +96,47 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       // 5. Recreate recurrence_completions with updated FK (safe: cascade)
       await db.execAsync(CREATE_RECURRENCE_COMPLETIONS_TABLE);
       // 6. Record version
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
+
+  if (currentVersion < 4) {
+    // Migration 4: Consolidate ideas into entries table
+    await db.withTransactionAsync(async () => {
+      // 1. Add new columns to entries if they don't exist
+      try {
+        await db.execAsync('ALTER TABLE entries ADD COLUMN subtitle TEXT');
+      } catch {
+        // column already exists
+      }
+      try {
+        await db.execAsync('ALTER TABLE entries ADD COLUMN inspiration TEXT');
+      } catch {
+        // column already exists
+      }
+
+      // 2. Check if ideas table exists and has data
+      const ideasTableExists = await db.getFirstAsync<{ name: string }>(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='ideas'"
+      );
+
+      if (ideasTableExists) {
+        // 3. Move ideas to entries (insert as type='someday')
+        await db.execAsync(`
+          INSERT OR IGNORE INTO entries
+            (id, title, subtitle, inspiration, notes, status, created_at, updated_at)
+          SELECT id, title, subtitle, inspiration, notes, 'scheduled', created_at, updated_at
+          FROM ideas
+        `);
+
+        // 4. Drop the ideas table
+        await db.execAsync('DROP TABLE IF EXISTS ideas');
+      }
+
+      // 5. Update schema version
       await db.runAsync(
         "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
         String(SCHEMA_VERSION),

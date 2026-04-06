@@ -43,8 +43,10 @@ function getWeekDays(): { abbr: string; fullName: string; date: Date }[] {
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
 
-  const { entries, ideas, recurrenceCompletions, fetchEntries, fetchIdeas } =
+  const { entries, recurrenceCompletions, fetchEntries } =
     useDatabase();
+
+  const somedayEntries = entries.filter((e) => e.type === "someday" || e.type === "idea");
 
   const { weekCounts, today: calendarToday } = useCalendarData(
     entries,
@@ -79,8 +81,7 @@ export default function HomeScreen(): React.ReactElement {
   useFocusEffect(
     useCallback(() => {
       fetchEntries();
-      fetchIdeas();
-    }, [fetchEntries, fetchIdeas]),
+    }, [fetchEntries]),
   );
 
   const today = useMemo(() => new Date(), []);
@@ -186,7 +187,7 @@ export default function HomeScreen(): React.ReactElement {
           onAdd={() => router.push("/modal?type=event")}
         />
 
-        {ideas.length > 0 && <SomedayItem ideas={ideas} />}
+        {somedayEntries.length > 0 && <SomedayItem ideas={somedayEntries} />}
 
         <View style={styles.fabSpacer} />
       </ScrollView>

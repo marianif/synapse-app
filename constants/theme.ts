@@ -28,8 +28,9 @@ export const EntryAccent = {
   todo: "#6EA8FF", // Blue — todos
   deadline: "#FF6B6B", // Coral/Red — deadlines
   event: "#C084FC", // Purple — events (time-blocked)
-  someday: "#FBB040", // Amber — someday/ideas
-  today: "#90EE90", // Pastel Green — today
+  someday: "#40fbcfff", //
+  today: "#e5ee90ff", // Pastel Green — today
+  idea: "#FBB040",
 } as const;
 
 // ─── Primary Brand Colors ─────────────────────────────────────────────────────

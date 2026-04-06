@@ -31,7 +31,7 @@ import {
   humanizeRule,
   isRecurringEntry,
 } from "@/lib/recurrence";
-import type { DbRecurrenceCompletion } from "@/lib/schema";
+import type { DbRecurrenceCompletion } from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { ActionItem } from "@/components/molecules/detail-action-bar";
@@ -101,6 +101,7 @@ function TypeChip({
     deadline: "DEADLINE",
     event: "EVENT",
     someday: "ONE DAY",
+    idea: "IDEA",
   };
   return (
     <View style={[styles.typeChip, { backgroundColor: accentColor + "20" }]}>
@@ -323,11 +324,10 @@ export default function DetailScreen(): React.ReactElement {
     : [rawId, null];
 
   const accentColor = EntryAccent[entryType as EntryType] ?? EntryAccent.todo;
-  const isSomeday = entryType === "someday";
+  const isSomeday = entryType === "someday" || entryType === "idea";
 
   const {
     entries,
-    ideas,
     recurrenceCompletions,
     isLoading,
     updateEntryStatus,
@@ -338,26 +338,20 @@ export default function DetailScreen(): React.ReactElement {
     deleteRecurringFuture,
     deleteRecurringSeries,
     fetchEntries,
-    fetchIdeas,
   } = useDatabase();
 
   useFocusEffect(
     useCallback(() => {
-      if (isSomeday) {
-        fetchIdeas();
-      } else {
-        fetchEntries();
-      }
-    }, [isSomeday, fetchEntries, fetchIdeas]),
+      fetchEntries();
+    }, [fetchEntries]),
   );
 
   // ── Resolve entry ────────────────────────────────────────────────────────────
 
-  const entry = isSomeday ? null : entries.find((e) => e.id === masterId);
-  const idea = isSomeday ? ideas.find((i) => i.id === masterId) : null;
+  const entry = entries.find((e) => e.id === masterId);
 
-  const title = entry?.title ?? idea?.title ?? "";
-  const notes = entry?.notes ?? idea?.notes ?? null;
+  const title = entry?.title ?? "";
+  const notes = entry?.notes ?? null;
 
   // Effective status: for recurring instances, use per-instance completion if present
   const completionsByKey = new Map<string, DbRecurrenceCompletion>();
@@ -385,7 +379,7 @@ export default function DetailScreen(): React.ReactElement {
 
   // ── Not found ────────────────────────────────────────────────────────────────
 
-  if (!entry && !idea) {
+  if (!entry) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
         <ListScreenHeader title="" onBack={() => router.back()} />
@@ -607,25 +601,16 @@ export default function DetailScreen(): React.ReactElement {
               recurrenceRule={entry.recurrence_rule}
               recurrenceEndDate={entry.recurrence_end_date}
             />
-          ) : entry && entryType === "deadline" ? (
-            <DeadlineHero
-              status={effectiveStatus}
-              dueDate={entry.due_date}
-              dueTime={entry.due_time}
-              accentColor={accentColor}
-              recurrenceRule={entry.recurrence_rule}
-              recurrenceEndDate={entry.recurrence_end_date}
-            />
-          ) : idea ? (
-            <DetailSomedayHero inspiration={idea.inspiration ?? undefined} />
+          ) : entry && (entryType === "deadline" || isSomeday) ? (
+            <DetailSomedayHero inspiration={entry.inspiration ?? undefined} />
           ) : null}
 
           {/* Project / subtitle (ideas only) */}
-          {idea?.subtitle ? (
+          {entry?.subtitle ? (
             <DetailMetadataRow
               icon="folder-outline"
               label="Project"
-              value={idea.subtitle}
+              value={entry.subtitle}
               accentColor={accentColor}
             />
           ) : null}

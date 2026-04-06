@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import DateInput from "@/components/atoms/DateInput";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { Radius, Spacing, Surface, TextColors } from "@/constants/theme";
-import type { RecurrenceFrequency } from "@/lib/recurrence";
+import type { RecurrenceFrequency } from "@/lib/types";
 
 interface RecurrencePickerProps {
   frequency: RecurrenceFrequency | null;

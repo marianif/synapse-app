@@ -82,18 +82,18 @@ extension ConfigurationAppIntent {
 
 // MARK: - Hello Widget
 
-struct HelloProvider: AppIntentTimelineProvider {
+struct HelloProvider: TimelineProvider {
     func placeholder(in context: Context) -> HelloEntry {
         HelloEntry(date: Date())
     }
 
-    func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> HelloEntry {
-        HelloEntry(date: Date())
+    func getSnapshot(in context: Context, completion: @escaping (HelloEntry) -> Void) {
+        completion(HelloEntry(date: Date()))
     }
-    
-    func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<HelloEntry> {
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<HelloEntry>) -> Void) {
         let entry = HelloEntry(date: Date())
-        return Timeline(entries: [entry], policy: .never)
+        completion(Timeline(entries: [entry], policy: .atEnd))
     }
 }
 
@@ -117,12 +117,15 @@ struct helloWidgetEntryView: View {
 }
 
 struct helloWidget: Widget {
-    let kind: String = "helloWidget"
+    let kind: String = "helloWidgetV2"
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: HelloProvider()) { entry in
+        StaticConfiguration(kind: kind, provider: HelloProvider()) { entry in
             helloWidgetEntryView(entry: entry)
+                .containerBackground(.fill.tertiary, for: .widget)
         }
+        .configurationDisplayName("Hello Widget") // This helps it show in the gallery
+        .description("My second awesome widget.")
     }
 }
 

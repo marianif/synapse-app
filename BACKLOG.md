@@ -84,7 +84,7 @@
 ## Future Features (Backlog)
 
 - Widget support (iOS/Android home screen widgets)
-- Smart Watch widget
+- Smart Watch widget (Crucial allows live recording)
 - Calendar sync (Google Calendar, Apple Calendar)
 - Collaboration features (share lists)
 - Smart reminders based on location/context

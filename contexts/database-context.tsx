@@ -11,6 +11,23 @@ import type {
 } from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
+import { ExtensionStorage } from "@bacons/apple-targets";
+
+const storage = new ExtensionStorage("group.dev.the-wedge.synapse-app");
+
+function syncEntriesToWidget(entries: DbEntry[]): void {
+  try {
+    const widgetEntries = entries.slice(0, 10).map((e) => ({
+      id: e.id,
+      title: e.title,
+      status: e.status,
+    }));
+    storage.set("widget_entries", widgetEntries);
+    ExtensionStorage.reloadWidget("entriesWidget");
+  } catch (error) {
+    console.error("[DatabaseContext] syncEntriesToWidget failed:", error);
+  }
+}
 
 interface DatabaseContextValue {
   entries: DbEntry[];
@@ -108,6 +125,7 @@ export function DatabaseProvider({
           );
         }
         setEntries(rows);
+        syncEntriesToWidget(rows);
         return rows;
       } catch (error) {
         console.error("[DatabaseContext] fetchEntries failed:", error);
@@ -178,6 +196,7 @@ export function DatabaseProvider({
 
         setEntries((prev) => {
           const next = [created, ...prev];
+          syncEntriesToWidget(next);
           return next;
         });
         return created;
@@ -202,11 +221,13 @@ export function DatabaseProvider({
           now,
           id,
         );
-        setEntries((prev) =>
-          prev.map((e) =>
+        setEntries((prev) => {
+          const next = prev.map((e) =>
             e.id === id ? { ...e, status, updated_at: now } : e,
-          ),
-        );
+          );
+          syncEntriesToWidget(next);
+          return next;
+        });
       } catch (error) {
         console.error("[DatabaseContext] updateEntryStatus failed:", error);
         throw error;
@@ -270,11 +291,13 @@ export function DatabaseProvider({
           ...values,
         );
 
-        setEntries((prev) =>
-          prev.map((e) =>
+        setEntries((prev) => {
+          const next = prev.map((e) =>
             e.id === id ? { ...e, ...data, updated_at: now } : e,
-          ),
-        );
+          );
+          syncEntriesToWidget(next);
+          return next;
+        });
       } catch (error) {
         console.error("[DatabaseContext] updateEntry failed:", error);
         throw error;
@@ -287,7 +310,11 @@ export function DatabaseProvider({
     try {
       const db = await getDb();
       await db.runAsync("DELETE FROM entries WHERE id = ?", id);
-      setEntries((prev) => prev.filter((e) => e.id !== id));
+      setEntries((prev) => {
+        const next = prev.filter((e) => e.id !== id);
+        syncEntriesToWidget(next);
+        return next;
+      });
     } catch (error) {
       console.error("[DatabaseContext] deleteEntry failed:", error);
       throw error;
@@ -396,13 +423,15 @@ export function DatabaseProvider({
           now,
           entryId,
         );
-        setEntries((prev) =>
-          prev.map((e) =>
+        setEntries((prev) => {
+          const next = prev.map((e) =>
             e.id === entryId
               ? { ...e, recurrence_end_date: endDate, updated_at: now }
               : e,
-          ),
-        );
+          );
+          syncEntriesToWidget(next);
+          return next;
+        });
       } catch (error) {
         console.error("[DatabaseContext] deleteRecurringFuture failed:", error);
         throw error;
@@ -416,7 +445,11 @@ export function DatabaseProvider({
       try {
         const db = await getDb();
         await db.runAsync("DELETE FROM entries WHERE id = ?", entryId);
-        setEntries((prev) => prev.filter((e) => e.id !== entryId));
+        setEntries((prev) => {
+          const next = prev.filter((e) => e.id !== entryId);
+          syncEntriesToWidget(next);
+          return next;
+        });
         setRecurrenceCompletions((prev) =>
           prev.filter((c) => c.entry_id !== entryId),
         );

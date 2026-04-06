@@ -12,7 +12,13 @@ interface TabBarIconProps {
 }
 
 function TabIcon({ name, focused, color }: TabBarIconProps & { name: string }) {
-  return <IconSymbol name={name as "view-grid" | "calendar"} size={24} color={color} />;
+  return (
+    <IconSymbol
+      name={name as "view-grid" | "calendar"}
+      size={24}
+      color={color}
+    />
+  );
 }
 
 export function CustomTabBar(): React.ReactElement {
@@ -28,7 +34,10 @@ export function CustomTabBar(): React.ReactElement {
       <View style={styles.tabBar}>
         <Pressable
           onPress={() => router.push("/")}
-          style={({ pressed }) => [styles.tabButton, pressed && styles.tabButtonPressed]}
+          style={({ pressed }) => [
+            styles.tabButton,
+            pressed && styles.tabButtonPressed,
+          ]}
         >
           <TabIcon
             name="view-grid"
@@ -38,7 +47,14 @@ export function CustomTabBar(): React.ReactElement {
         </Pressable>
 
         <Pressable
-          onPress={() => router.push("/modal")}
+          onPress={() =>
+            router.push({
+              pathname: "/modal",
+              params: {
+                type: "todo",
+              },
+            })
+          }
           style={({ pressed }) => [
             styles.addButton,
             pressed && styles.addButtonPressed,
@@ -52,7 +68,10 @@ export function CustomTabBar(): React.ReactElement {
 
         <Pressable
           onPress={() => router.push("/(tabs)/calendar")}
-          style={({ pressed }) => [styles.tabButton, pressed && styles.tabButtonPressed]}
+          style={({ pressed }) => [
+            styles.tabButton,
+            pressed && styles.tabButtonPressed,
+          ]}
         >
           <TabIcon
             name="calendar"

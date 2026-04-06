@@ -13,7 +13,6 @@ struct Provider: AppIntentTimelineProvider {
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
         var entries: [SimpleEntry] = []
 
-        // Generate a timeline consisting of five entries an hour apart, starting from the current date.
         let currentDate = Date()
         for hourOffset in 0 ..< 5 {
             let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
@@ -23,10 +22,6 @@ struct Provider: AppIntentTimelineProvider {
 
         return Timeline(entries: entries, policy: .atEnd)
     }
-
-//    func relevances() async -> WidgetRelevances<ConfigurationAppIntent> {
-//        // Generate a list containing the contexts this widget is relevant in.
-//    }
 }
 
 struct SimpleEntry: TimelineEntry {
@@ -78,59 +73,4 @@ extension ConfigurationAppIntent {
 } timeline: {
     SimpleEntry(date: .now, configuration: .smiley)
     SimpleEntry(date: .now, configuration: .starEyes)
-}
-
-// MARK: - Hello Widget
-
-struct HelloProvider: TimelineProvider {
-    func placeholder(in context: Context) -> HelloEntry {
-        HelloEntry(date: Date())
-    }
-
-    func getSnapshot(in context: Context, completion: @escaping (HelloEntry) -> Void) {
-        completion(HelloEntry(date: Date()))
-    }
-
-    func getTimeline(in context: Context, completion: @escaping (Timeline<HelloEntry>) -> Void) {
-        let entry = HelloEntry(date: Date())
-        completion(Timeline(entries: [entry], policy: .atEnd))
-    }
-}
-
-struct HelloEntry: TimelineEntry {
-    let date: Date
-}
-
-struct helloWidgetEntryView: View {
-    var entry: HelloProvider.Entry
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Text("Hello")
-                .font(.headline)
-            Text("World!")
-                .font(.title)
-                .fontWeight(.bold)
-        }
-        .containerBackground(.fill.tertiary, for: .widget)
-    }
-}
-
-struct helloWidget: Widget {
-    let kind: String = "helloWidgetV2"
-
-    var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: HelloProvider()) { entry in
-            helloWidgetEntryView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
-        }
-        .configurationDisplayName("Hello Widget") // This helps it show in the gallery
-        .description("My second awesome widget.")
-    }
-}
-
-#Preview(as: .systemSmall) {
-    helloWidget()
-} timeline: {
-    HelloEntry(date: .now)
 }

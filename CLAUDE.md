@@ -1,4 +1,8 @@
-# AGENTS.md — Synapse App
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+# Synapse App
 
 Guidelines for agentic coding agents working in this repository.
 
@@ -53,6 +57,35 @@ npx jest                       # Run all tests
 npx jest path/to/file.test.ts  # Run a single test file
 npx jest -t "test name"        # Run tests by name
 ```
+
+---
+
+## Data Architecture
+
+### Entry Types & Schema
+
+Four entry types live in `lib/types.ts`: `todo`, `deadline`, `event`, `someday`, `idea`. Each maps to a `DbEntry` row with these key fields:
+- `scheduled_date` / `scheduled_time` — when to do it
+- `due_date` / `due_time` — when it's due (deadlines)
+- `status` — `"scheduled" | "active" | "completed" | "pending" | "met" | "overdue"`
+- `recurrence_rule` — JSON-serialized `RecurrenceRule` (see `lib/recurrence.ts`)
+
+Recurring entries use a separate `recurrence_completions` table. Never mutate a recurring entry's base row for a single instance — use `completeRecurringInstance` / `skipRecurringInstance`.
+
+### Database Layer
+
+- `lib/database.ts` — raw SQLite helpers (`initDatabase`, `generateId`, query runners)
+- `lib/schema.ts` — table definitions
+- `lib/recurrence.ts` — serialize/deserialize recurrence rules, expand instances
+- `lib/date-utils.ts` — date formatting helpers (dates stored as `DD/MM/YYYY` strings)
+- `contexts/database-context.tsx` — `DatabaseContext` + `DatabaseProvider`; the single source of truth for all entries in memory
+- `hooks/use-database/use-database.ts` — thin wrapper around `DatabaseContext`; the only hook components should import
+
+**Always consume data via `useDatabase()`**, not by importing context or SQLite directly.
+
+### iOS Widget Sync
+
+`DatabaseContext` calls `syncEntriesToWidget` after every mutation. It writes up to 10 entries to `ExtensionStorage` (App Group `group.dev.the-wedge.synapse-app`) and calls `ExtensionStorage.reloadWidget("entriesWidget")`. Any change to the entry model must stay compatible with this sync payload shape `{ id, title, status }`.
 
 ---
 
@@ -138,10 +171,19 @@ synapse-app/
 │       ├── plugin/             # Expo plugin (permissions)
 │       └── src/                # Native source code
 │
+├── contexts/
+│   └── database-context.tsx    # DatabaseProvider + DatabaseContext (single source of truth)
+│
+├── lib/                        # Pure logic, no React
+│   ├── types.ts                # DbEntry, EntryType, RecurrenceRule, RecurringInstance
+│   ├── database.ts             # SQLite helpers (initDatabase, generateId)
+│   ├── schema.ts               # Table definitions
+│   ├── recurrence.ts           # Recurrence rule serialization + instance expansion
+│   └── date-utils.ts           # Date helpers (dates stored as DD/MM/YYYY strings)
+│
 ├── assets/images/              # Static assets (icons, splash, etc.)
 ├── scripts/
 │   └── reset-project.js        # Reset app to blank starter state
-├── constants/theme.ts
 ├── eslint.config.js            # ESLint flat config
 ├── app.json                    # Expo config
 ├── tsconfig.json               # TypeScript config
@@ -230,8 +272,6 @@ Check `constants/theme.ts` for color tokens and spacing. Key principles:
 - **Glassmorphism** for floating elements (FAB, top navigation).
 - **Tonal depth** — depth via stacked surfaces, not shadows.
 - See `DESIGN.md` for full "Digital Sanctuary" design philosophy.
-
-This repo includes **`ui-ux-pro-max`** OpenCode skill:
 
 ---
 

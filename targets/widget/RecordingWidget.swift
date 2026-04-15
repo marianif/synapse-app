@@ -30,6 +30,38 @@ struct VoiceInputProvider: AppIntentTimelineProvider {
     }
 }
 
+// MARK: - Shared: Gradient mic button
+
+private struct MicButton: View {
+    let size: CGFloat
+    let iconSize: CGFloat
+
+    var body: some View {
+        ZStack {
+            // Ambient glow — tinted brand halo, not a black shadow
+            Circle()
+                .fill(Color.brandPrimary.opacity(0.20))
+                .frame(width: size + 16, height: size + 16)
+                .blur(radius: 10)
+
+            // Primary CTA gradient (135° brand → brandContainer per DESIGN.md)
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.brandPrimary, Color.brandPrimaryContainer],
+                        startPoint: UnitPoint(x: 0.15, y: 0.15), // ~135°
+                        endPoint: UnitPoint(x: 0.85, y: 0.85)
+                    )
+                )
+                .frame(width: size, height: size)
+
+            Image(systemName: "mic.fill")
+                .font(.system(size: iconSize, weight: .semibold))
+                .foregroundStyle(Color.surfaceBase)
+        }
+    }
+}
+
 // MARK: - Widget Entry View
 
 struct VoiceInputWidgetEntryView: View {
@@ -47,86 +79,61 @@ struct VoiceInputWidgetEntryView: View {
                 SmallVoiceWidgetView()
             }
         }
-        .containerBackground(Color.surfaceBase, for: .widget)
+        .containerBackground(Color.surfaceContainerLow, for: .widget)
     }
 }
 
-// MARK: - Small Widget (Main capture button)
+// MARK: - Small Widget
 
 struct SmallVoiceWidgetView: View {
     var body: some View {
-        Link(destination: URL(string: "synapseapp:///voice-input")!) {
+        Link(destination: URL(string: "synapseapp:///voice-input?autoStart=true")!) {
             VStack(spacing: Spacing.sm) {
-                // Microphone icon
-                ZStack {
-                    Circle()
-                        .fill(Color.brandPrimaryContainer)
-                        .frame(width: 56, height: 56)
-                    
-                    Image(systemName: "mic.fill")
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundStyle(Color.surfaceBase)
+                MicButton(size: 60, iconSize: 26)
+
+                VStack(spacing: 2) {
+                    Text("Voice Capture")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color.textPrimary)
+
+                    Text("TAP TO RECORD")
+                        .font(.system(size: 9, weight: .semibold))
+                        .tracking(0.55)
+                        .foregroundStyle(Color.textTertiary)
                 }
-                
-                Text("Voice")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color.textSecondary)
-                
-                Text("Capture")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(Color.textTertiary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
 
-// MARK: - Medium Widget (Capture + recent captures)
+// MARK: - Medium Widget
 
 struct MediumVoiceWidgetView: View {
     var body: some View {
-        HStack(spacing: Spacing.lg) {
-            // Main capture button
-Link(destination: URL(string: "synapseapp:///voice-input")!) {
-                VStack(spacing: Spacing.xs) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.brandPrimaryContainer)
-                            .frame(width: 48, height: 48)
-                        
-                        Image(systemName: "mic.fill")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(Color.surfaceBase)
-                    }
-                    
-                    Text("Record")
-                        .font(.system(size: 11, weight: .semibold))
+        Link(destination: URL(string: "synapseapp:///voice-input?autoStart=true")!) {
+            HStack(spacing: Spacing.xl) {
+                MicButton(size: 56, iconSize: 22)
+
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text("VOICE CAPTURE")
+                        .font(.system(size: 9, weight: .semibold))
+                        .tracking(0.55)
+                        .foregroundStyle(Color.textTertiary)
+
+                    Text("Capture a thought.")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.textPrimary)
+
+                    Text("Tap to start recording instantly.")
+                        .font(.system(size: 11, weight: .regular))
                         .foregroundStyle(Color.textSecondary)
+                        .lineLimit(2)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            
-            // Quick tips
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                Text("QUICK CAPTURE")
-                    .font(.system(size: 9, weight: .semibold))
-                    .tracking(0.5)
-                    .foregroundStyle(Color.textTertiary)
-                
-                Text("Tap to open voice input")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.textSecondary)
-                
-                Text("Capture ideas instantly")
-                    .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(Color.textTertiary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Spacing.lg)
         }
-        .padding(Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: Radius.lg)
-                .fill(Color.surfaceContainer)
-        )
     }
 }
 

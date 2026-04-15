@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "speech-recognizer": ["../src/index"],
+      "speech-recognizer/*": ["../src/*"]
+    }
+  }
+}

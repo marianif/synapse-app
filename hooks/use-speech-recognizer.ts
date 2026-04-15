@@ -12,6 +12,7 @@ export type UseSpeechRecognizerReturn = {
   isRecording: boolean;
   transcript: string;
   permissionsGranted: boolean | null;
+  error: string | null;
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<void>;
   toggleRecording: () => Promise<void>;
@@ -24,6 +25,7 @@ export function useSpeechRecognizer(
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [permissionsGranted, setPermissionsGranted] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const requestPermissions = useCallback(async (): Promise<boolean> => {
     const result = await SpeechRecognizerModule.requestPermissions();
@@ -38,8 +40,15 @@ export function useSpeechRecognizer(
       if (!granted) return;
     }
     setTranscript("");
-    await SpeechRecognizerModule.startRecognition();
-    setIsRecording(true);
+    setError(null);
+    try {
+      await SpeechRecognizerModule.startRecognition();
+      setIsRecording(true);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      setError(message);
+      console.error("[SpeechRecognizer] startRecognition failed:", message);
+    }
   }, [permissionsGranted, requestPermissions]);
 
   const stopRecording = useCallback(async (): Promise<void> => {
@@ -86,6 +95,7 @@ export function useSpeechRecognizer(
     isRecording,
     transcript,
     permissionsGranted,
+    error,
     startRecording,
     stopRecording,
     toggleRecording,

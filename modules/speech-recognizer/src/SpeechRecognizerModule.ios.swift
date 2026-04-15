@@ -8,7 +8,7 @@ public class SpeechRecognizerModule: Module {
   private var audioEngine: AVAudioEngine?
   private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
   private var recognitionTask: SFSpeechRecognitionTask?
-  private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "it-IT"))
+  private var speechRecognizer: SFSpeechRecognizer?
 
   public func definition() -> ModuleDefinition {
     Name("SpeechRecognizer")
@@ -53,13 +53,30 @@ public class SpeechRecognizerModule: Module {
   private func startRecognitionInternal() throws {
     stopRecognitionInternal()
 
-    guard let recognizer = speechRecognizer, recognizer.isAvailable else {
+    // Create recognizer: prefer it-IT, fall back to en-US, then system default.
+    // Note: isAvailable can be false on simulator even when recognition works,
+    // so we proceed as long as we can create an SFSpeechRecognizer instance.
+    if let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "it-IT")), recognizer.isAvailable {
+      speechRecognizer = recognizer
+    } else if let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US")), recognizer.isAvailable {
+      speechRecognizer = recognizer
+    } else if let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "it-IT")) {
+      // Simulator fallback: isAvailable may report false but recognition can still work
+      speechRecognizer = recognizer
+    } else if let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US")) {
+      speechRecognizer = recognizer
+    } else if let recognizer = SFSpeechRecognizer() {
+      speechRecognizer = recognizer
+    }
+
+    guard let recognizer = speechRecognizer else {
       throw NSError(
         domain: "SpeechRecognizer",
         code: 1,
         userInfo: [NSLocalizedDescriptionKey: "Speech recognizer not available"]
       )
     }
+    _ = recognizer // suppress unused warning
 
     let audioSession = AVAudioSession.sharedInstance()
     try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)

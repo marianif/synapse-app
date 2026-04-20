@@ -10,6 +10,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "clean:ios": "rm -rf ~/Library/Developer/Xcode/DerivedData/ && npx expo prebuild -p ios --clean",
+    "clean:prewidget": "rm -rf ~/Library/Developer/Xcode/DerivedData/ && npx expo prebuild -p ios --clean --template ./node_modules/@bacons/apple-targets/prebuild-blank.tgz",
     "prewidget": "EXPO_NO_GIT_STATUS=1 npx expo prebuild --template ./node_modules/@bacons/apple-targets/prebuild-blank.tgz --clean"
   },
   "dependencies": {

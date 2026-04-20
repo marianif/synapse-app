@@ -1,8 +1,12 @@
 /** @type {import('@bacons/apple-targets/app.plugin').ConfigFunction} */
-module.exports = config => ({
+module.exports = (config) => ({
   type: "watch-widget",
-  icon: 'https://github.com/expo.png',
-  colors: { $accent: "darkcyan", },
+  bundleIdentifier: config.ios.bundleIdentifier + ".watch.watchwidget",
+
+  colors: { $accent: "darkcyan" },
   deploymentTarget: "9.4",
-  entitlements: { /* Add entitlements */ },
+  entitlements: {
+    "com.apple.security.application-groups":
+      config.ios.entitlements["com.apple.security.application-groups"],
+  },
 });

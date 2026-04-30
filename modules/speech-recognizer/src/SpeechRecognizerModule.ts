@@ -19,6 +19,7 @@ declare class SpeechRecognizerNativeModule extends NativeModule<SpeechRecognizer
   requestPermissions(): Promise<PermissionsResult>;
   startRecognition(): Promise<void>;
   stopRecognition(): Promise<void>;
+  transcribeFile(fileUri: string): Promise<string>;
 }
 
 export default requireNativeModule<SpeechRecognizerNativeModule>('SpeechRecognizer');

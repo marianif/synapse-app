@@ -9,4 +9,7 @@ module.exports = (config) => ({
     "com.apple.security.application-groups":
       config.ios.entitlements["com.apple.security.application-groups"],
   },
+  infoPlist: {
+    NSMicrophoneUsageDescription: "This app needs access to the microphone to record notes.",
+  },
 });

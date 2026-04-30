@@ -15,6 +15,7 @@ import type {
 import type { EntryType } from "@/components/atoms/entry-dot";
 import { ExtensionStorage } from "@bacons/apple-targets";
 import * as WatchConnectivity from "@/modules/watch-connectivity";
+import { SpeechRecognizerModule } from "@/modules/speech-recognizer";
 
 const storage = new ExtensionStorage("group.dev.the-wedge.synapse-app");
 
@@ -286,6 +287,23 @@ export function DatabaseProvider({
         });
       }
     });
+    
+    // Listen for audio files from Watch
+    const watchFileSub = WatchConnectivity.addWatchFileListener(async (file) => {
+      console.log("[DatabaseContext] Received Watch file:", file.url);
+      try {
+        const transcript = await SpeechRecognizerModule.transcribeFile(file.url);
+        if (transcript) {
+          createEntry({
+            title: transcript,
+            type: "todo",
+            scheduledDate: dayjs().format("DD/MM/YYYY"),
+          });
+        }
+      } catch (error) {
+        console.error("[DatabaseContext] failed to transcribe Watch file:", error);
+      }
+    });
 
     const interval = setInterval(syncPendingNotes, 30000);
 
@@ -293,6 +311,7 @@ export function DatabaseProvider({
       subscription.remove();
       watchMsgSub.remove();
       watchCtxSub.remove();
+      watchFileSub.remove();
       clearInterval(interval);
     };
   }, [syncPendingNotes, createEntry]);

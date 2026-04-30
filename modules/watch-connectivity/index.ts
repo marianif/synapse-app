@@ -17,6 +17,10 @@ export function addWatchContextListener(listener: (event: WatchMessage) => void)
   return emitter.addListener('onWatchContextReceived', listener);
 }
 
+export function addWatchFileListener(listener: (event: { url: string; metadata: WatchMessage }) => void) {
+  return emitter.addListener('onWatchFileReceived', listener);
+}
+
 export async function updateWatchContext(context: WatchMessage): Promise<void> {
   return await WatchConnectivityModule.updateApplicationContext(context);
 }

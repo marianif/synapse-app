@@ -7,7 +7,7 @@ public class WatchConnectivityModule: Module {
   public func definition() -> ModuleDefinition {
     Name("WatchConnectivity")
 
-    Events("onWatchMessageReceived", "onWatchContextReceived")
+    Events("onWatchMessageReceived", "onWatchContextReceived", "onWatchFileReceived")
 
     OnCreate {
       if WCSession.isSupported() {
@@ -71,5 +71,13 @@ class WatchSessionDelegate: NSObject, WCSessionDelegate {
   
   func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any]) {
     module?.sendEvent("onWatchMessageReceived", userInfo)
+  }
+
+  func session(_ session: WCSession, didReceive file: WCSessionFile) {
+    // Files are temporary, we should pass the URL to JS immediately
+    module?.sendEvent("onWatchFileReceived", [
+      "url": file.fileURL.absoluteString,
+      "metadata": file.metadata ?? [:]
+    ])
   }
 }

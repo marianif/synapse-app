@@ -24,8 +24,23 @@ class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
     }
     
     func sendAudioFileToPhone(_ url: URL) {
-        guard WCSession.default.activationState == .activated else { return }
-        WCSession.default.transferFile(url, metadata: ["type": "voice_note"])
+        print("[SynapseWatch] Reading audio data for transfer...")
+        guard let audioData = try? Data(contentsOf: url) else {
+            print("[SynapseWatch] Error: Could not read audio data")
+            return
+        }
+        
+        guard WCSession.default.activationState == .activated else {
+            print("[SynapseWatch] Error: WCSession not activated")
+            return
+        }
+        
+        print("[SynapseWatch] Sending audio data (\(audioData.count) bytes) via sendMessage...")
+        WCSession.default.sendMessage(["audioData": audioData, "type": "voice_note"], replyHandler: { _ in
+            print("[SynapseWatch] Message delivery confirmed")
+        }) { error in
+            print("[SynapseWatch] Message failed: \(error.localizedDescription)")
+        }
     }
 }
 

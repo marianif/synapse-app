@@ -290,9 +290,16 @@ export function DatabaseProvider({
     
     // Listen for audio files from Watch
     const watchFileSub = WatchConnectivity.addWatchFileListener(async (file) => {
-      console.log("[DatabaseContext] Received Watch file:", file.url);
+      console.log("[DatabaseContext] Received Watch file event:", file);
+      if (!file.url) {
+        console.warn("[DatabaseContext] Received file event without URL");
+        return;
+      }
+      
       try {
+        console.log("[DatabaseContext] Triggering transcription for:", file.url);
         const transcript = await SpeechRecognizerModule.transcribeFile(file.url);
+        console.log("[DatabaseContext] Transcription result:", transcript);
         if (transcript) {
           createEntry({
             title: transcript,
@@ -301,7 +308,7 @@ export function DatabaseProvider({
           });
         }
       } catch (error) {
-        console.error("[DatabaseContext] failed to transcribe Watch file:", error);
+        console.error("[DatabaseContext] Transcription failed:", error);
       }
     });
 

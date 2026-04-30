@@ -4,7 +4,7 @@ module.exports = (config) => ({
   bundleIdentifier: config.ios.bundleIdentifier + ".watch",
   icon: "https://github.com/expo.png",
   colors: { $accent: "darkcyan" },
-  deploymentTarget: "9.4",
+  deploymentTarget: "10.6",
   entitlements: {
     "com.apple.security.application-groups":
       config.ios.entitlements["com.apple.security.application-groups"],

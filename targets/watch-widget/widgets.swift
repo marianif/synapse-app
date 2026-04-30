@@ -34,40 +34,88 @@ struct watchWidgetEntryView: View {
     @Environment(\.widgetFamily) var widgetFamily
     var entry: Provider.Entry
 
+    // Theme Colors
+    private let primaryColor = Color(red: 173/255, green: 198/255, blue: 255/255) // #ADC6FF
+    private let primaryContainer = Color(red: 77/255, green: 142/255, blue: 255/255) // #4D8EFF
+    private let surfaceColor = Color(red: 19/255, green: 19/255, blue: 22/255) // #131316
+    private let surfaceContainer = Color(red: 31/255, green: 31/255, blue: 34/255) // #1F1F22
+
     var body: some View {
-        switch widgetFamily {
-        case .accessoryCircular:
-            ZStack {
-                AccessoryWidgetBackground()
-                VStack {
-                    Image(systemName: "clock")
-                        .font(.title3)
-                    Text(entry.date, style: .time)
-                        .font(.caption)
-                        .widgetAccentable()
+        Group {
+            switch widgetFamily {
+            case .accessoryCircular:
+                ZStack {
+                    AccessoryWidgetBackground()
+                    
+                    // Styled Glow/Ring
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                colors: [primaryColor, primaryContainer],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 3
+                        )
+                        .padding(2)
+                    
+                    Image(systemName: "mic.fill")
+                        .font(.title2)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [primaryColor, .white],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                 }
-            }
-        case .accessoryRectangular:
-            VStack(alignment: .leading) {
-                HStack {
-                    Image(systemName: "clock")
-                    Text("Complication")
-                        .font(.headline)
-                        .widgetAccentable()
+            case .accessoryRectangular:
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        ZStack {
+                            Circle()
+                                .fill(primaryColor.opacity(0.2))
+                                .frame(width: 24, height: 24)
+                            Image(systemName: "mic.fill")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(primaryColor)
+                        }
+                        
+                        Text("SYNAPSE")
+                            .font(.system(size: 10, weight: .bold))
+                            .kerning(1.2)
+                            .foregroundColor(primaryColor.opacity(0.8))
+                    }
+                    
+                    Text("Capture Note")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                    
+                    Text("TAP TO RECORD")
+                        .font(.system(size: 8, weight: .bold))
+                        .kerning(0.5)
+                        .foregroundColor(.white.opacity(0.4))
                 }
-                Text(entry.date, style: .time)
-                    .font(.caption)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 8)
+            case .accessoryInline:
+                HStack(spacing: 4) {
+                    Image(systemName: "mic.fill")
+                        .foregroundColor(primaryColor)
+                    Text("NEW NOTE")
+                        .font(.system(size: 12, weight: .bold))
+                        .kerning(1.0)
+                }
+            default:
+                Image(systemName: "mic.fill")
+                    .foregroundColor(primaryColor)
             }
-        case .accessoryInline:
-            HStack {
-                Image(systemName: "clock")
-                Text(entry.date, style: .time)
-            }
-        default:
-            Text(entry.date, style: .time)
         }
+        .widgetURL(URL(string: "synapseapp://new-note"))
     }
 }
+
+
 
 struct watchWidget: Widget {
     let kind: String = "watchWidget"

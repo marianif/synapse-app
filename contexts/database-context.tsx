@@ -1,4 +1,7 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
+import { AppState } from "react-native";
+import dayjs from "dayjs";
+
 
 import * as SQLite from "expo-sqlite";
 
@@ -152,10 +155,53 @@ export function DatabaseProvider({
     }
   }, []);
 
+  const syncPendingNotes = useCallback(async () => {
+    try {
+      const pendingNotes = storage.get<string[]>("pending_notes") || [];
+      if (pendingNotes.length === 0) return;
+
+      console.log(`[DatabaseContext] found ${pendingNotes.length} pending notes from Watch`);
+
+      for (const title of pendingNotes) {
+        // Create the entry using the existing createEntry helper logic
+        // We call the internal createEntry logic or just invoke the function if defined
+        await createEntry({
+          title,
+          type: "todo",
+          scheduledDate: dayjs().format("DD/MM/YYYY"),
+        });
+      }
+
+      // Clear the storage
+      storage.set("pending_notes", []);
+    } catch (error) {
+      console.error("[DatabaseContext] syncPendingNotes failed:", error);
+    }
+  }, [createEntry]);
+
   useEffect(() => {
     fetchEntries();
     fetchRecurrenceCompletions();
-  }, []);
+
+    // Initial sync
+    syncPendingNotes();
+
+    // Sync on foreground
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        syncPendingNotes();
+      }
+    });
+
+    // Periodic sync while app is open (every 30s)
+    const interval = setInterval(syncPendingNotes, 30000);
+
+    return () => {
+      subscription.remove();
+      clearInterval(interval);
+    };
+  }, [fetchEntries, fetchRecurrenceCompletions, syncPendingNotes]);
+
 
   const createEntry = useCallback(
     async (data: CreateEntryInput): Promise<DbEntry> => {

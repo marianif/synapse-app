@@ -13,9 +13,9 @@ import type {
 } from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
-import { ExtensionStorage } from "@bacons/apple-targets";
-import * as WatchConnectivity from "@/modules/watch-connectivity";
 import { SpeechRecognizerModule } from "@/modules/speech-recognizer";
+import * as WatchConnectivity from "@/modules/watch-connectivity";
+import { ExtensionStorage } from "@bacons/apple-targets";
 
 const storage = new ExtensionStorage("group.dev.the-wedge.synapse-app");
 
@@ -225,15 +225,21 @@ export function DatabaseProvider({
       let pendingNotes: string[] = [];
       try {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) pendingNotes = parsed.filter((v) => typeof v === "string");
+        if (Array.isArray(parsed))
+          pendingNotes = parsed.filter((v) => typeof v === "string");
       } catch {
-        console.error("[DatabaseContext] failed to parse pending_notes JSON:", raw);
+        console.error(
+          "[DatabaseContext] failed to parse pending_notes JSON:",
+          raw,
+        );
         return;
       }
 
       if (pendingNotes.length === 0) return;
 
-      console.log(`[DatabaseContext] found ${pendingNotes.length} pending note(s) from Watch`);
+      console.log(
+        `[DatabaseContext] found ${pendingNotes.length} pending note(s) from Watch`,
+      );
 
       for (const title of pendingNotes) {
         await createEntry({
@@ -245,7 +251,9 @@ export function DatabaseProvider({
 
       // Clear by writing an empty JSON array as Data (matching Watch write format)
       storage.remove("pending_notes");
-      console.log(`[DatabaseContext] synced ${pendingNotes.length} Watch note(s)`);
+      console.log(
+        `[DatabaseContext] synced ${pendingNotes.length} Watch note(s)`,
+      );
     } catch (error) {
       console.error("[DatabaseContext] syncPendingNotes failed:", error);
     }
@@ -287,30 +295,37 @@ export function DatabaseProvider({
         });
       }
     });
-    
+
     // Listen for audio files from Watch
-    const watchFileSub = WatchConnectivity.addWatchFileListener(async (file) => {
-      console.log("[DatabaseContext] Received Watch file event:", file);
-      if (!file.url) {
-        console.warn("[DatabaseContext] Received file event without URL");
-        return;
-      }
-      
-      try {
-        console.log("[DatabaseContext] Triggering transcription for:", file.url);
-        const transcript = await SpeechRecognizerModule.transcribeFile(file.url);
-        console.log("[DatabaseContext] Transcription result:", transcript);
-        if (transcript) {
-          createEntry({
-            title: transcript,
-            type: "todo",
-            scheduledDate: dayjs().format("DD/MM/YYYY"),
-          });
+    const watchFileSub = WatchConnectivity.addWatchFileListener(
+      async (file) => {
+        console.log("[DatabaseContext] Received Watch file event:", file);
+        if (!file.url) {
+          console.warn("[DatabaseContext] Received file event without URL");
+          return;
         }
-      } catch (error) {
-        console.error("[DatabaseContext] Transcription failed:", error);
-      }
-    });
+
+        try {
+          console.log(
+            "[DatabaseContext] Triggering transcription for:",
+            file.url,
+          );
+          const transcript = await SpeechRecognizerModule.transcribeFile(
+            file.url,
+          );
+          console.log("[DatabaseContext] Transcription result:", transcript);
+          if (transcript) {
+            createEntry({
+              title: transcript,
+              type: "todo",
+              scheduledDate: dayjs().format("DD/MM/YYYY"),
+            });
+          }
+        } catch (error) {
+          console.error("[DatabaseContext] Transcription failed:", error);
+        }
+      },
+    );
 
     const interval = setInterval(syncPendingNotes, 30000);
 

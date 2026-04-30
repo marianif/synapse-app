@@ -151,30 +151,39 @@ struct ContentView: View {
     }
     
     private func triggerVoiceCapture() {
-        let outputURL = getDocumentsDirectory().appendingPathComponent("voice_note.wav")
+        // Use temporary directory for more stable file access
+        let tempDir = FileManager.default.temporaryDirectory
+        let outputURL = tempDir.appendingPathComponent("voice_note_\(UUID().uuidString).wav")
         
-        // This is the "Premium" native recording UI with waveforms
-        WKExtension.shared().visibleInterfaceController?.presentAudioRecorderController(
-            withOutputURL: outputURL,
-            preset: .highQualityAudio,
-            options: nil
-        ) { didSave, error in
-            if didSave {
-                sessionManager.sendAudioFileToPhone(outputURL)
-                withAnimation { showSuccess = true }
+        print("[SynapseWatch] Presenting recorder for: \(outputURL.lastPathComponent)")
+        
+        // Ensure we are on the main thread for UI presentation
+        DispatchQueue.main.async {
+            WKExtension.shared().visibleInterfaceController?.presentAudioRecorderController(
+                withOutputURL: outputURL,
+                preset: .highQualityAudio,
+                options: nil
+            ) { didSave, error in
+                if didSave {
+                    print("[SynapseWatch] Recording saved successfully")
+                    self.sessionManager.sendAudioFileToPhone(outputURL)
+                    withAnimation { self.showSuccess = true }
+                } else if let err = error {
+                    print("[SynapseWatch] Recording failed: \(err)")
+                }
             }
         }
     }
     
     private func triggerManualInput() {
-        WKExtension.shared().visibleInterfaceController?.presentTextInputController(
-            withSuggestions: nil, 
-            allowedInputMode: .plain
-        ) { results in
-            guard let result = results?.first as? String, !result.isEmpty else { return }
-            DispatchQueue.main.async {
-                sessionManager.syncNoteToPhone(result)
-                withAnimation { showSuccess = true }
+        DispatchQueue.main.async {
+            WKExtension.shared().visibleInterfaceController?.presentTextInputController(
+                withSuggestions: nil, 
+                allowedInputMode: .plain
+            ) { results in
+                guard let result = results?.first as? String, !result.isEmpty else { return }
+                self.sessionManager.syncNoteToPhone(result)
+                withAnimation { self.showSuccess = true }
             }
         }
     }

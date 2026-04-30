@@ -10,6 +10,7 @@ module.exports = (config) => ({
       config.ios.entitlements["com.apple.security.application-groups"],
   },
   infoPlist: {
-    NSMicrophoneUsageDescription: "This app needs access to the microphone to record notes.",
+    NSMicrophoneUsageDescription:
+      "This app needs access to the microphone to record notes.",
   },
 });

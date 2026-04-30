@@ -1,0 +1,9 @@
+{
+  "name": "watch-connectivity",
+  "version": "1.0.0",
+  "description": "WatchConnectivity module for Synapse",
+  "main": "index.ts",
+  "types": "index.ts",
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -17,8 +17,8 @@ and typed routes.
 See **DESIGN.md** for design guidelines (Dark Sanctuary aesthetic, tonal depth,
 no-line borders, glassmorphism).
 
-**Tech stack:** TypeScript · React 19 · Expo SDK 54 · expo-router v6 ·
-React Navigation v7 · react-native-reanimated v4 · expo-sqlite
+**Tech stack:** TypeScript · React 19 · Expo SDK 55 · expo-router v5 ·
+React Navigation v7 · react-native-reanimated v4 · expo-sqlite · `@bacons/apple-targets`
 
 ---
 
@@ -31,7 +31,27 @@ npx expo start            # Dev server (Expo Go or dev build)
 npx expo start --ios      # Open on iOS simulator
 npx expo start --android  # Open on Android emulator
 npx expo start --web      # Open in browser
+npm run ios               # Build and run on iOS simulator (native dev build)
+npm run android           # Build and run on Android emulator (native dev build)
 ```
+
+### Native Targets (iOS Widget & Watch)
+
+The app uses `@bacons/apple-targets` to manage native extension targets (iOS widget, Apple Watch app, Watch widget). Any change to `targets/` or `modules/` requires a prebuild before Xcode picks it up.
+
+```bash
+npm run prewidget         # Prebuild with apple-targets template (required after targets/ changes)
+npm run clean:ios         # Full DerivedData wipe + clean prebuild (use when prebuild alone isn't enough)
+```
+
+After `prewidget`, open `ios/synapseapp.xcworkspace` in Xcode and run from there. The `targets/` directory contains Swift source for each extension — do **not** edit generated files under `ios/` directly.
+
+Targets and their bundle identifiers:
+- `targets/widget/` — iOS home-screen widget (`dev.the-wedge.synapse-app` + App Group)
+- `targets/watch/` — Apple Watch companion app (`dev.the-wedge.synapse-app.watch`)
+- `targets/watch-widget/` — Watch complication widget (`dev.the-wedge.synapse-app.watch.watchwidget`)
+
+Each target has an `expo-target.config.js` that configures type, bundle ID, entitlements, and accent color.
 
 ### Lint
 
@@ -83,9 +103,13 @@ Recurring entries use a separate `recurrence_completions` table. Never mutate a 
 
 **Always consume data via `useDatabase()`**, not by importing context or SQLite directly.
 
-### iOS Widget Sync
+### iOS Widget & Watch Sync
 
 `DatabaseContext` calls `syncEntriesToWidget` after every mutation. It writes up to 10 entries to `ExtensionStorage` (App Group `group.dev.the-wedge.synapse-app`) and calls `ExtensionStorage.reloadWidget("entriesWidget")`. Any change to the entry model must stay compatible with this sync payload shape `{ id, title, status }`.
+
+### Speech Recognition
+
+A custom Expo native module (`modules/speech-recognizer/`) wraps iOS `SFSpeechRecognizer`. Use `useSpeechRecognizer()` from `hooks/use-speech-recognizer.ts` — it handles permissions, start/stop, and transcript streaming via the `onTranscriptUpdate` event. The module is iOS-only; a no-op web stub lives at `src/SpeechRecognizerModule.web.ts`.
 
 ---
 
@@ -130,8 +154,7 @@ synapse-app/
 │   │   ├── today-event-row.tsx # Today's event row
 │   │   ├── week-strip.tsx      # Week strip row
 │   │   ├── weekday-row.tsx     # Weekday header row
-│   │   ├── wrapup-card.tsx     # End-of-day summary card
-│   │   └── week-strip.tsx
+│   │   └── wrapup-card.tsx     # End-of-day summary card
 │   ├── organisms/              # Complex UI sections
 │   │   ├── agenda-section.tsx  # Agenda list section
 │   │   ├── app-header.tsx      # Top navigation header
@@ -164,12 +187,17 @@ synapse-app/
 │       └── use-database.helpers.ts
 │
 ├── modules/                    # Native modules / Expo plugins
-│   └── speech-recognizer/      # Custom speech recognition module
+│   └── speech-recognizer/      # Custom Expo module (iOS SFSpeechRecognizer)
 │       ├── expo-module.config.json
 │       ├── index.ts
 │       ├── SpeechRecognizer.podspec
 │       ├── plugin/             # Expo plugin (permissions)
-│       └── src/                # Native source code
+│       └── src/                # Native source code (Swift + TS stubs)
+│
+├── targets/                    # Native extension targets (@bacons/apple-targets)
+│   ├── widget/                 # iOS home-screen widget (Swift/WidgetKit)
+│   ├── watch/                  # Apple Watch companion app (SwiftUI)
+│   └── watch-widget/           # Watch complication widget
 │
 ├── contexts/
 │   └── database-context.tsx    # DatabaseProvider + DatabaseContext (single source of truth)

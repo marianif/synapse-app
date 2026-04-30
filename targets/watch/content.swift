@@ -1,12 +1,62 @@
 import SwiftUI
 import WatchConnectivity
 
+// MARK: - Session Manager
+class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
+    static let shared = WatchSessionManager()
+    
+    override init() {
+        super.init()
+        if WCSession.isSupported() {
+            WCSession.default.delegate = self
+            WCSession.default.activate()
+        }
+    }
+    
+    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        print("WCSession activated: \(activationState.rawValue)")
+    }
+    
+    func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
+        // Handle incoming data from phone (for future iteration)
+        if let phoneNotes = applicationContext["phone_notes"] as? [String] {
+            print("Received notes from phone: \(phoneNotes)")
+            // Here you could update a local @Published list of notes
+        }
+    }
+
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+        if let phoneNotes = message["phone_notes"] as? [String] {
+            print("Received immediate message from phone: \(phoneNotes)")
+        }
+    }
+    
+    func syncNoteToPhone(_ note: String) {
+        guard WCSession.default.activationState == .activated else {
+            print("WCSession not activated")
+            return
+        }
+        
+        // Option 1: Send immediate message
+        WCSession.default.sendMessage(["notes": [note]], replyHandler: nil) { error in
+            print("Error sending message: \(error.localizedDescription)")
+        }
+        
+        // Option 2: Update application context (more reliable for background)
+        var context = WCSession.default.applicationContext
+        var notes = context["notes"] as? [String] ?? []
+        notes.append(note)
+        try? WCSession.default.updateApplicationContext(["notes": notes])
+    }
+}
+
 struct ContentView: View {
 
     @State private var noteText: String = ""
     @State private var isSaving: Bool = false
     @State private var showSuccess: Bool = false
     
+    @StateObject private var sessionManager = WatchSessionManager.shared
 
     private let groupID = "group.dev.the-wedge.synapse-app"
     private let storageKey = "pending_notes"
@@ -109,9 +159,6 @@ struct ContentView: View {
     }
 
     private func triggerDictation() {
-        // Clear focus if any before opening dictation
-        // WKExtension.shared().visibleInterfaceController?.resignFirstResponder()
-        
         WKExtension.shared().visibleInterfaceController?.presentTextInputController(
             withSuggestions: nil, 
             allowedInputMode: .plain
@@ -120,10 +167,8 @@ struct ContentView: View {
             
             DispatchQueue.main.async {
                 self.noteText = result
-                // We play a success haptic when data is captured
                 WKInterfaceDevice.current().play(.click)
                 
-                // Allow user a moment to see the text before auto-saving
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                     if !self.noteText.isEmpty {
                         self.saveNote()
@@ -167,14 +212,24 @@ struct ContentView: View {
     private func saveNote() {
         guard !noteText.isEmpty else { return }
         isSaving = true
-        
+
+        // 1. Save to App Group local storage (for Watch widgets)
         if let defaults = UserDefaults(suiteName: groupID) {
-            var currentNotes = defaults.stringArray(forKey: storageKey) ?? []
+            var currentNotes: [String] = []
+            if let data = defaults.data(forKey: storageKey),
+               let decoded = try? JSONSerialization.jsonObject(with: data) as? [String] {
+                currentNotes = decoded
+            }
             currentNotes.append(noteText)
-            defaults.set(currentNotes, forKey: storageKey)
-            defaults.synchronize()
+            if let encoded = try? JSONSerialization.data(withJSONObject: currentNotes) {
+                defaults.set(encoded, forKey: storageKey)
+                defaults.synchronize()
+            }
         }
-        
+
+        // 2. Sync to Phone via WCSession (Real-time)
+        sessionManager.syncNoteToPhone(noteText)
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             withAnimation(.spring()) {
                 isSaving = false
@@ -190,4 +245,3 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
-

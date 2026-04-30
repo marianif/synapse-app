@@ -1,0 +1,7 @@
+{
+  "platforms": ["apple"],
+  "apple": {
+    "modules": ["WatchConnectivityModule"],
+    "podspecPath": "./SynapseWatchConnectivity.podspec"
+  }
+}

@@ -1,7 +1,6 @@
+import dayjs from "dayjs";
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import { AppState } from "react-native";
-import dayjs from "dayjs";
-
 
 import * as SQLite from "expo-sqlite";
 
@@ -15,6 +14,7 @@ import type {
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import { ExtensionStorage } from "@bacons/apple-targets";
+import * as WatchConnectivity from "@/modules/watch-connectivity";
 
 const storage = new ExtensionStorage("group.dev.the-wedge.synapse-app");
 
@@ -155,53 +155,10 @@ export function DatabaseProvider({
     }
   }, []);
 
-  const syncPendingNotes = useCallback(async () => {
-    try {
-      const pendingNotes = storage.get<string[]>("pending_notes") || [];
-      if (pendingNotes.length === 0) return;
-
-      console.log(`[DatabaseContext] found ${pendingNotes.length} pending notes from Watch`);
-
-      for (const title of pendingNotes) {
-        // Create the entry using the existing createEntry helper logic
-        // We call the internal createEntry logic or just invoke the function if defined
-        await createEntry({
-          title,
-          type: "todo",
-          scheduledDate: dayjs().format("DD/MM/YYYY"),
-        });
-      }
-
-      // Clear the storage
-      storage.set("pending_notes", []);
-    } catch (error) {
-      console.error("[DatabaseContext] syncPendingNotes failed:", error);
-    }
-  }, [createEntry]);
-
   useEffect(() => {
     fetchEntries();
     fetchRecurrenceCompletions();
-
-    // Initial sync
-    syncPendingNotes();
-
-    // Sync on foreground
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (nextAppState === "active") {
-        syncPendingNotes();
-      }
-    });
-
-    // Periodic sync while app is open (every 30s)
-    const interval = setInterval(syncPendingNotes, 30000);
-
-    return () => {
-      subscription.remove();
-      clearInterval(interval);
-    };
-  }, [fetchEntries, fetchRecurrenceCompletions, syncPendingNotes]);
-
+  }, [fetchEntries, fetchRecurrenceCompletions]);
 
   const createEntry = useCallback(
     async (data: CreateEntryInput): Promise<DbEntry> => {
@@ -255,6 +212,98 @@ export function DatabaseProvider({
     },
     [],
   );
+
+  const syncPendingNotes = useCallback(async () => {
+    try {
+      // get() returns a JSON string (e.g. '["note1","note2"]') because
+      // ExtensionStorage.get deserializes Data→JSON→string. Parse it manually.
+      const raw = storage.get("pending_notes") as string | null;
+      console.log("[DatabaseContext] pending_notes raw from Watch:", raw);
+      if (!raw) return;
+
+      let pendingNotes: string[] = [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) pendingNotes = parsed.filter((v) => typeof v === "string");
+      } catch {
+        console.error("[DatabaseContext] failed to parse pending_notes JSON:", raw);
+        return;
+      }
+
+      if (pendingNotes.length === 0) return;
+
+      console.log(`[DatabaseContext] found ${pendingNotes.length} pending note(s) from Watch`);
+
+      for (const title of pendingNotes) {
+        await createEntry({
+          title,
+          type: "todo",
+          scheduledDate: dayjs().format("DD/MM/YYYY"),
+        });
+      }
+
+      // Clear by writing an empty JSON array as Data (matching Watch write format)
+      storage.remove("pending_notes");
+      console.log(`[DatabaseContext] synced ${pendingNotes.length} Watch note(s)`);
+    } catch (error) {
+      console.error("[DatabaseContext] syncPendingNotes failed:", error);
+    }
+  }, [createEntry]);
+
+  useEffect(() => {
+    syncPendingNotes();
+
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        syncPendingNotes();
+      }
+    });
+
+    // Listen for real-time messages from Watch
+    const watchMsgSub = WatchConnectivity.addWatchMessageListener((message) => {
+      console.log("[DatabaseContext] Received Watch message:", message);
+      if (message.notes && Array.isArray(message.notes)) {
+        message.notes.forEach((title: string) => {
+          createEntry({
+            title,
+            type: "todo",
+            scheduledDate: dayjs().format("DD/MM/YYYY"),
+          });
+        });
+      }
+    });
+
+    // Listen for context updates (more reliable for background sync)
+    const watchCtxSub = WatchConnectivity.addWatchContextListener((context) => {
+      console.log("[DatabaseContext] Received Watch context:", context);
+      if (context.notes && Array.isArray(context.notes)) {
+        context.notes.forEach((title: string) => {
+          createEntry({
+            title,
+            type: "todo",
+            scheduledDate: dayjs().format("DD/MM/YYYY"),
+          });
+        });
+      }
+    });
+
+    const interval = setInterval(syncPendingNotes, 30000);
+
+    return () => {
+      subscription.remove();
+      watchMsgSub.remove();
+      watchCtxSub.remove();
+      clearInterval(interval);
+    };
+  }, [syncPendingNotes, createEntry]);
+
+  // Push latest notes to Watch for bidirectional sync
+  useEffect(() => {
+    if (entries.length > 0) {
+      const titles = entries.slice(0, 20).map((e) => e.title);
+      WatchConnectivity.updateWatchContext({ phone_notes: titles });
+    }
+  }, [entries]);
 
   const updateEntryStatus = useCallback(
     async (id: string, status: DbEntry["status"]): Promise<void> => {

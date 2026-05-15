@@ -63,7 +63,7 @@ export default function AddEntryModal(): React.ReactElement {
     searchParams.date ?? dayjs().format("DD/MM/YYYY"),
   );
   const [time, setTime] = useState(
-    searchParams.time ?? dayjs().format("HH:MM"),
+    searchParams.time ?? dayjs().format("HH:mm"),
   );
   const [notes, setNotes] = useState(searchParams.notes ?? "");
   const [recurrenceFreq, setRecurrenceFreq] =
@@ -267,7 +267,7 @@ export default function AddEntryModal(): React.ReactElement {
                     TIME
                   </ThemedText>
                   <TimeInput
-                    value={time ?? dayjs().format("HH:MM")}
+                    value={time ?? dayjs().format("HH:mm")}
                     onChange={setTime}
                     style={styles.input}
                   />

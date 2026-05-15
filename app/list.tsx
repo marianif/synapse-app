@@ -12,6 +12,7 @@ import { ListProgress } from "@/components/organisms/list-progress";
 import { ListScreenHeader } from "@/components/organisms/list-screen-header";
 import { EntryAccent, Radius, Spacing, Surface } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
+import { isSameDay, parseDate } from "@/lib/date-utils";
 import { isRecurringEntry } from "@/lib/recurrence";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
@@ -38,38 +39,27 @@ interface Section {
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
-const DAY_NAMES = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
+function classifyEntry(
+  dateStr: string | null,
+  today: Date,
+): "today" | "thisWeek" | "later" {
+  if (!dateStr) return "later";
 
-function getWeekFullNames(): string[] {
-  const today = new Date();
+  const entryDate = parseDate(dateStr);
+  if (!entryDate) return "later";
+
+  if (isSameDay(dateStr, today)) return "today";
+
+  // Calculate end of current week (Friday)
   const dow = today.getDay();
   const monday = new Date(today);
   monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-  return Array.from({ length: 5 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return DAY_NAMES[d.getDay()];
-  });
-}
+  const friday = new Date(monday);
+  friday.setDate(monday.getDate() + 4);
+  friday.setHours(23, 59, 59, 999);
 
-function classifyEntry(
-  dateStr: string | null,
-  todayName: string,
-  weekNames: string[],
-): "today" | "thisWeek" | "later" {
-  if (!dateStr) return "later";
-  if (dateStr.startsWith(todayName)) return "today";
-  for (const name of weekNames) {
-    if (dateStr.startsWith(name)) return "thisWeek";
-  }
+  if (entryDate > today && entryDate <= friday) return "thisWeek";
+
   return "later";
 }
 
@@ -105,15 +95,13 @@ function somedayEntryToListEntry(entry: DbEntry): ListEntry {
 
 function buildTaskSections(entries: DbEntry[]): Section[] {
   const now = new Date();
-  const todayName = DAY_NAMES[now.getDay()];
-  const weekNames = getWeekFullNames();
 
   const todayItems: ListEntry[] = [];
   const thisWeekItems: ListEntry[] = [];
   const laterItems: ListEntry[] = [];
 
   for (const e of entries) {
-    const bucket = classifyEntry(e.scheduled_date, todayName, weekNames);
+    const bucket = classifyEntry(e.scheduled_date, now);
     const item = entryToListEntry(e);
     if (bucket === "today") todayItems.push(item);
     else if (bucket === "thisWeek") thisWeekItems.push(item);
@@ -131,14 +119,13 @@ function buildTaskSections(entries: DbEntry[]): Section[] {
 }
 
 function buildDeadlineSections(entries: DbEntry[]): Section[] {
-  const todayName = DAY_NAMES[new Date().getDay()];
-  const weekNames = getWeekFullNames();
+  const now = new Date();
 
   const thisWeekItems: ListEntry[] = [];
   const laterItems: ListEntry[] = [];
 
   for (const e of entries) {
-    const bucket = classifyEntry(e.due_date, todayName, weekNames);
+    const bucket = classifyEntry(e.due_date, now);
     const item = entryToListEntry(e);
     if (bucket === "today" || bucket === "thisWeek") thisWeekItems.push(item);
     else laterItems.push(item);

@@ -24,22 +24,33 @@ class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
     }
     
     func sendAudioFileToPhone(_ url: URL) {
-        print("[SynapseWatch] Reading audio data for transfer...")
-        guard let audioData = try? Data(contentsOf: url) else {
-            print("[SynapseWatch] Error: Could not read audio data")
-            return
-        }
+        print("[SynapseWatch] Preparing to send audio: \(url.lastPathComponent)")
         
         guard WCSession.default.activationState == .activated else {
             print("[SynapseWatch] Error: WCSession not activated")
             return
         }
-        
-        print("[SynapseWatch] Sending audio data (\(audioData.count) bytes) via sendMessage...")
-        WCSession.default.sendMessage(["audioData": audioData, "type": "voice_note"], replyHandler: { _ in
-            print("[SynapseWatch] Message delivery confirmed")
-        }) { error in
-            print("[SynapseWatch] Message failed: \(error.localizedDescription)")
+
+        // 1. Try sending via sendMessage (Faster, but limited to ~64KB-1MB)
+        if let audioData = try? Data(contentsOf: url) {
+            print("[SynapseWatch] Attempting sendMessage (\(audioData.count) bytes)...")
+            WCSession.default.sendMessage(["audioData": audioData, "type": "voice_note"], replyHandler: { _ in
+                print("[SynapseWatch] sendMessage success!")
+            }) { error in
+                let nsError = error as NSError
+                print("[SynapseWatch] sendMessage failed. Code: \(nsError.code), Domain: \(nsError.domain)")
+                
+                if nsError.code == 7009 { // WCErrorPayloadTooLarge
+                    print("[SynapseWatch] Payload too large (7009). Falling back to transferFile...")
+                    WCSession.default.transferFile(url, metadata: ["type": "voice_note"])
+                } else {
+                    print("[SynapseWatch] sendMessage failed with error: \(error.localizedDescription). Falling back anyway...")
+                    WCSession.default.transferFile(url, metadata: ["type": "voice_note"])
+                }
+            }
+        } else {
+            print("[SynapseWatch] Could not read Data. Using transferFile directly...")
+            WCSession.default.transferFile(url, metadata: ["type": "voice_note"])
         }
     }
 }

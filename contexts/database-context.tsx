@@ -342,7 +342,9 @@ export function DatabaseProvider({
   useEffect(() => {
     if (entries.length > 0) {
       const titles = entries.slice(0, 20).map((e) => e.title);
-      WatchConnectivity.updateWatchContext({ phone_notes: titles });
+      WatchConnectivity.updateWatchContext({ phone_notes: titles }).catch((err) => {
+        console.warn("[DatabaseContext] Failed to sync to Watch:", err.message);
+      });
     }
   }, [entries]);
 

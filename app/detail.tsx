@@ -55,15 +55,15 @@ const MONTH_ABBRS = [
 
 function parseDaysRemaining(dueDateStr: string | null): number {
   if (!dueDateStr) return 0;
-  // Expects "DayName, Mon DD" e.g. "Thursday, Apr 10"
-  const parts = dueDateStr.replace(",", "").split(" ");
+  const parts = dueDateStr.split("/");
   if (parts.length < 3) return 0;
-  const monthIndex = MONTH_ABBRS.indexOf(parts[1]);
-  const day = parseInt(parts[2], 10);
-  if (monthIndex === -1 || isNaN(day)) return 0;
+  const dd = parseInt(parts[0], 10);
+  const mm = parseInt(parts[1], 10);
+  const yyyy = parseInt(parts[2], 10);
+  if (isNaN(dd) || isNaN(mm) || isNaN(yyyy)) return 0;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const due = new Date(today.getFullYear(), monthIndex, day);
+  const due = new Date(yyyy, mm - 1, dd);
   return Math.max(0, Math.ceil((due.getTime() - today.getTime()) / 86_400_000));
 }
 

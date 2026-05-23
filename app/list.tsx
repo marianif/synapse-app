@@ -10,7 +10,13 @@ import { WrapupCard } from "@/components/molecules/wrapup-card";
 import { Fab } from "@/components/organisms/fab";
 import { ListProgress } from "@/components/organisms/list-progress";
 import { ListScreenHeader } from "@/components/organisms/list-screen-header";
-import { EntryAccent, Radius, Spacing, Surface } from "@/constants/theme";
+import {
+  EntryAccent,
+  Radius,
+  Spacing,
+  Surface,
+  TextColors,
+} from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { isSameDay, parseDate } from "@/lib/date-utils";
 import { isRecurringEntry } from "@/lib/recurrence";
@@ -161,12 +167,8 @@ export default function ListScreen(): React.ReactElement {
         ? "One Day"
         : "Weekly Todos";
 
-  const {
-    entries,
-    updateEntryStatus,
-    deleteEntry,
-    fetchEntries,
-  } = useDatabase();
+  const { entries, updateEntryStatus, deleteEntry, fetchEntries } =
+    useDatabase();
 
   useFocusEffect(
     useCallback(() => {
@@ -176,12 +178,19 @@ export default function ListScreen(): React.ReactElement {
 
   // ── Build sections ────────────────────────────────────────────────────────────
 
-  const somedayEntries = entries.filter((e) => e.type === "someday" || e.type === "idea");
+  const somedayEntries = entries.filter(
+    (e) => e.type === "someday" || e.type === "idea",
+  );
 
   const sections: Section[] =
     resolvedType === "someday"
       ? somedayEntries.length > 0
-        ? [{ label: "Ideas", entries: somedayEntries.map(somedayEntryToListEntry) }]
+        ? [
+            {
+              label: "Ideas",
+              entries: somedayEntries.map(somedayEntryToListEntry),
+            },
+          ]
         : []
       : resolvedType === "deadline"
         ? buildDeadlineSections(entries)
@@ -279,12 +288,14 @@ export default function ListScreen(): React.ReactElement {
               <View key={section.label} style={styles.section}>
                 {/* Section header */}
                 <View style={styles.sectionHeader}>
-                  <ThemedText type="headline">{section.label}</ThemedText>
+                  <ThemedText type="label" style={styles.sectionLabel}>
+                    {section.label.toUpperCase()}
+                  </ThemedText>
                   {sectionIndex === 0 && firstSectionCount > 0 ? (
                     <View
                       style={[
                         styles.countBadge,
-                        { backgroundColor: accentColor + "22" },
+                        { backgroundColor: accentColor + "12" },
                       ]}
                     >
                       <ThemedText
@@ -329,7 +340,7 @@ export default function ListScreen(): React.ReactElement {
           )}
 
           {resolvedType !== "someday" && sections.length > 0 ? (
-            <WrapupCard onViewStats={() => {}} />
+            <WrapupCard />
           ) : null}
 
           {/* Bottom padding so FAB never overlaps the last entry */}
@@ -365,12 +376,20 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.xl * 2,
   },
   section: {
-    gap: Spacing.md,
+    gap: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: Spacing.xs,
+  },
+  sectionLabel: {
+    color: TextColors.tertiary,
+    letterSpacing: 1,
+    fontSize: 10,
+    fontWeight: "700",
   },
   countBadge: {
     borderRadius: Radius.full,

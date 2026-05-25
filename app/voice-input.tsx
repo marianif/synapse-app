@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect } from "react";
 import {
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -31,9 +32,10 @@ import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
 export default function VoiceInputScreen(): React.ReactElement {
   const { autoStart } = useLocalSearchParams<{ autoStart?: string }>();
-  const { transcript, toggleRecording, isRecording } = useSpeechRecognizer({
-    autoStart: autoStart === "true",
-  });
+  const { transcript, toggleRecording, isRecording, error, permissionsGranted } =
+    useSpeechRecognizer({ autoStart: autoStart === "true" });
+
+  const isPermissionDenied = permissionsGranted === false;
 
   const pulse = useSharedValue(1);
 
@@ -103,16 +105,38 @@ export default function VoiceInputScreen(): React.ReactElement {
 
         {/* Transcript Display */}
         <View style={styles.transcriptContainer}>
-          <Text
-            style={[
-              styles.transcript,
-              transcript
-                ? styles.transcriptActive
-                : styles.transcriptPlaceholder,
-            ]}
-          >
-            {transcript || "Speak to begin..."}
-          </Text>
+          {isPermissionDenied ? (
+            <View style={styles.errorBlock}>
+              <Text style={styles.errorText}>
+                Microphone access is off. Enable it in Settings to use voice
+                input.
+              </Text>
+              <Pressable
+                onPress={() => Linking.openSettings()}
+                style={({ pressed }) => [
+                  styles.settingsButton,
+                  pressed && styles.settingsButtonPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Open Settings"
+              >
+                <Text style={styles.settingsButtonText}>Open Settings</Text>
+              </Pressable>
+            </View>
+          ) : error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : (
+            <Text
+              style={[
+                styles.transcript,
+                transcript
+                  ? styles.transcriptActive
+                  : styles.transcriptPlaceholder,
+              ]}
+            >
+              {transcript || "Speak to begin..."}
+            </Text>
+          )}
         </View>
 
         {/* Recording Controls */}
@@ -122,13 +146,15 @@ export default function VoiceInputScreen(): React.ReactElement {
             {isRecording && (
               <Animated.View style={[styles.pulseRing, animatedRingStyle]} />
             )}
-            
+
             <Pressable
               onPress={toggleRecording}
+              disabled={isPermissionDenied}
               style={({ pressed }) => [
                 styles.recordButton,
                 isRecording && styles.recordButtonActive,
-                pressed && styles.recordButtonPressed,
+                isPermissionDenied && styles.recordButtonDisabled,
+                pressed && !isPermissionDenied && styles.recordButtonPressed,
               ]}
             >
               <View
@@ -259,5 +285,34 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     fontSize: 10,
     fontWeight: "700",
+  },
+  errorBlock: {
+    alignItems: "center",
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+  },
+  errorText: {
+    fontSize: FontSize.bodyMd,
+    lineHeight: LineHeight.bodyMd,
+    color: TextColors.secondary,
+    textAlign: "center",
+  },
+  settingsButton: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.lg,
+    backgroundColor: Surface.containerHigh,
+  },
+  settingsButtonPressed: {
+    opacity: 0.7,
+  },
+  settingsButtonText: {
+    fontSize: FontSize.bodyMd,
+    fontWeight: "600",
+    color: Brand.primary,
+    textAlign: "center",
+  },
+  recordButtonDisabled: {
+    opacity: 0.35,
   },
 });

@@ -332,8 +332,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Surface.outlineVariant,
+    backgroundColor: Surface.containerLow,
   },
   headerButton: {
     minWidth: 60,
@@ -343,8 +342,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Surface.outlineVariant,
+    backgroundColor: Surface.containerHigh,
   },
   headerSaveButtonDisabled: {
     opacity: 0.5,

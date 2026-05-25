@@ -10,6 +10,7 @@ import { DeadlinesCard } from "@/components/organisms/deadlines-card";
 import { Fab } from "@/components/organisms/fab";
 import { TodaySection } from "@/components/organisms/today-section";
 import { WeekStrip } from "@/components/organisms/week-strip";
+import { NextUpCard } from "@/components/organisms/next-up-card";
 import { WeeklyOverviewCard } from "@/components/organisms/weekly-overview-card";
 
 import { SomedayItem } from "@/components/molecules/someday-item";
@@ -161,6 +162,8 @@ export default function HomeScreen(): React.ReactElement {
           today={calendarToday}
           onDayPress={handleDayPress}
         />
+
+        <NextUpCard entries={entries} />
 
         <AgendaSection
           date={todayLabel}

@@ -1,11 +1,22 @@
 import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect } from "react";
 import {
+  Linking,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+  interpolate,
+  withSpring,
+} from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import {
@@ -21,8 +32,33 @@ import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
 export default function VoiceInputScreen(): React.ReactElement {
   const { autoStart } = useLocalSearchParams<{ autoStart?: string }>();
-  const { transcript, toggleRecording, isRecording } = useSpeechRecognizer({
-    autoStart: autoStart === "true",
+  const { transcript, toggleRecording, isRecording, error, permissionsGranted } =
+    useSpeechRecognizer({ autoStart: autoStart === "true" });
+
+  const isPermissionDenied = permissionsGranted === false;
+
+  const pulse = useSharedValue(1);
+
+  useEffect(() => {
+    if (isRecording) {
+      pulse.value = withRepeat(
+        withSequence(
+          withTiming(1.2, { duration: 1000 }),
+          withTiming(1, { duration: 1000 })
+        ),
+        -1,
+        true
+      );
+    } else {
+      pulse.value = withSpring(1);
+    }
+  }, [isRecording, pulse]);
+
+  const animatedRingStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: pulse.value }],
+      opacity: interpolate(pulse.value, [1, 1.2], [0.3, 0.1]),
+    };
   });
 
   const handleCancel = (): void => {
@@ -43,7 +79,7 @@ export default function VoiceInputScreen(): React.ReactElement {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <View style={styles.screen}>
-        {/* Header */}
+        {/* Header - No borders, just spacing and surface shifts */}
         <View style={styles.header}>
           <Pressable onPress={handleCancel} style={styles.headerButton} hitSlop={12}>
             <ThemedText type="body" muted>
@@ -69,38 +105,69 @@ export default function VoiceInputScreen(): React.ReactElement {
 
         {/* Transcript Display */}
         <View style={styles.transcriptContainer}>
-          <Text
-            style={[
-              styles.transcript,
-              transcript
-                ? styles.transcriptActive
-                : styles.transcriptPlaceholder,
-            ]}
-          >
-            {transcript || "Tap the microphone to start recording..."}
-          </Text>
+          {isPermissionDenied ? (
+            <View style={styles.errorBlock}>
+              <Text style={styles.errorText}>
+                Microphone access is off. Enable it in Settings to use voice
+                input.
+              </Text>
+              <Pressable
+                onPress={() => Linking.openSettings()}
+                style={({ pressed }) => [
+                  styles.settingsButton,
+                  pressed && styles.settingsButtonPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Open Settings"
+              >
+                <Text style={styles.settingsButtonText}>Open Settings</Text>
+              </Pressable>
+            </View>
+          ) : error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : (
+            <Text
+              style={[
+                styles.transcript,
+                transcript
+                  ? styles.transcriptActive
+                  : styles.transcriptPlaceholder,
+              ]}
+            >
+              {transcript || "Speak to begin..."}
+            </Text>
+          )}
         </View>
 
         {/* Recording Controls */}
         <View style={styles.controls}>
-          <Pressable
-            onPress={toggleRecording}
-            style={({ pressed }) => [
-              styles.recordButton,
-              isRecording && styles.recordButtonActive,
-              pressed && styles.recordButtonPressed,
-            ]}
-          >
-            <View
-              style={[
-                styles.recordButtonInner,
-                isRecording && styles.recordButtonInnerActive,
+          <View style={styles.recordButtonWrapper}>
+            {/* Pulsing rings for recording state */}
+            {isRecording && (
+              <Animated.View style={[styles.pulseRing, animatedRingStyle]} />
+            )}
+            
+            <Pressable
+              onPress={toggleRecording}
+              disabled={isPermissionDenied}
+              style={({ pressed }) => [
+                styles.recordButton,
+                isRecording && styles.recordButtonActive,
+                isPermissionDenied && styles.recordButtonDisabled,
+                pressed && !isPermissionDenied && styles.recordButtonPressed,
               ]}
-            />
-          </Pressable>
+            >
+              <View
+                style={[
+                  styles.recordButtonInner,
+                  isRecording && styles.recordButtonInnerActive,
+                ]}
+              />
+            </Pressable>
+          </View>
 
           <ThemedText type="body" style={styles.hint}>
-            {isRecording ? "Tap to stop" : "Hold to record"}
+            {isRecording ? "Listening..." : "Tap to start"}
           </ThemedText>
         </View>
       </View>
@@ -121,20 +188,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Surface.outlineVariant,
+    paddingVertical: Spacing.xl, // Increased padding to define section
   },
   headerButton: {
     minWidth: 60,
   },
   headerDoneButton: {
-    minWidth: 50,
+    minWidth: 60,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Surface.outlineVariant,
+    borderRadius: Radius.full, // Pill shape per DESIGN.md
+    backgroundColor: Surface.containerHigh, // Surface shift instead of border
   },
   headerDoneButtonPressed: {
     opacity: 0.7,
@@ -161,11 +225,26 @@ const styles = StyleSheet.create({
   },
   transcriptPlaceholder: {
     color: TextColors.tertiary,
+    opacity: 0.5,
   },
   controls: {
     alignItems: "center",
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.xxxl * 2,
     gap: Spacing.md,
+  },
+  recordButtonWrapper: {
+    width: 120,
+    height: 120,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pulseRing: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 4,
+    borderColor: "#FF6B6B",
   },
   recordButton: {
     width: 80,
@@ -174,11 +253,15 @@ const styles = StyleSheet.create({
     backgroundColor: Surface.containerHigh,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 3,
-    borderColor: Brand.primary,
+    // No hard borders, use subtle shadow or glow for elevation
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   recordButtonActive: {
-    borderColor: "#FF6B6B",
+    backgroundColor: Surface.containerHighest,
   },
   recordButtonPressed: {
     opacity: 0.8,
@@ -198,5 +281,38 @@ const styles = StyleSheet.create({
   },
   hint: {
     color: TextColors.tertiary,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    fontSize: 10,
+    fontWeight: "700",
+  },
+  errorBlock: {
+    alignItems: "center",
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+  },
+  errorText: {
+    fontSize: FontSize.bodyMd,
+    lineHeight: LineHeight.bodyMd,
+    color: TextColors.secondary,
+    textAlign: "center",
+  },
+  settingsButton: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.lg,
+    backgroundColor: Surface.containerHigh,
+  },
+  settingsButtonPressed: {
+    opacity: 0.7,
+  },
+  settingsButtonText: {
+    fontSize: FontSize.bodyMd,
+    fontWeight: "600",
+    color: Brand.primary,
+    textAlign: "center",
+  },
+  recordButtonDisabled: {
+    opacity: 0.35,
   },
 });

@@ -1,119 +1,477 @@
+---
+name: Synapse
+description: "Near-black obsidian surfaces with a blue-lavender primary, editorial type hierarchy, and tonal depth — a focused tool that feels like a trusted analog artifact."
+---
+
 # Design System: The Kinetic Equilibrium
 
-## 1. Overview & Creative North Star
+## Overview
 
-The Creative North Star for this system is **"The Digital Sanctuary."**
+**Creative North Star: "The Obsidian Field Ledger"**
 
-In an era of cognitive overload, this design system rejects the "dashboard" aesthetic in favor of a high-end editorial experience. It moves beyond the rigid, boxy nature of standard Bento grids by utilizing **Tonal Depth** and **Asymmetric Breathing Room**.
+A surveyor's notebook left on a still desk. The cover is worn-in obsidian — not decorative dark, but the dark of a tool that has been used. The blue-lavender ink appears only where it must: primary actions, a dot beside an entry type, the glow behind the FAB. Everything else is the paper and its shadows.
 
-We do not just "display" todos; we curate time. The interface should feel like a premium physical planner—minimalist, tactile, and intentionally spacious. We break the "template" look by using extreme typographic scale (48pt hero counters) contrasted against micro-labels, creating a sophisticated visual rhythm that guides the eye without the need for intrusive structural lines.
+This system rejects the dashboard reflex: the grid of identical cards, the badge economy, the gradient button that performs urgency. It rejects the productivity-as-performance aesthetic of Todoist and Things 3, the database density of Notion and Linear, the dopamine-loop cheerfulness of Any.do and TickTick, and the out-of-the-box feel of Material 3. None of those. The design is a tool, not a product. It is calm not because calm is trendy but because the people who open it are already overwhelmed — the app's job is to cost them nothing.
 
----
+The typographic scale is the most expressive thing about this system. A 48pt hero counter sits against 11pt all-caps metadata and 14pt body text. The contrast is extreme and intentional: the eye lands on the number, reads the label, moves. No explanation needed. Depth is tonal — six surface steps from `#0E0E11` to `#353438` replace every border and shadow that would otherwise be used. Shadow appears only on the FAB and floating cards, where physical lift is semantically meaningful.
 
-## 2. Colors & Surface Philosophy
+**Key Characteristics:**
+- Dark-first. No light-mode design ambition; light tokens exist for React Navigation compatibility only.
+- Inter exclusively, treated with the reverence of a serif. System fonts are not the answer here.
+- Six surface tones as the sole structural device. No 1px borders, ever.
+- One primary accent (blue-lavender #ADC6FF). Entry-type accents (blue, coral, purple, mint, amber) are categorization signals, not decoration.
+- Responsive motion: spring feedback on press, `withTiming` 200–300ms for state changes. No choreographed entrances.
+- Tonal-first elevation: surface color shifts carry depth. Shadow is the exception, not the rule.
 
-The palette is rooted in a "Deep Night" spectrum, using subtle shifts in value rather than hue to define space.
+**The No-Line Rule.** Structural boundaries are expressed solely through background color shifts. A `containerLow` section on a `base` background defines context. A 1px border is a failure of the tonal system.
 
-### The "No-Line" Rule
-
-**Explicit Instruction:** Designers are prohibited from using 1px solid borders for sectioning or layout containment. Structural boundaries must be defined solely through background color shifts. A `surface-container-low` section sitting on a `surface` background is the only way to denote a change in context.
-
-### Surface Hierarchy & Nesting
-
-Treat the UI as a series of physical layers—stacked sheets of obsidian glass.
-
-- **Base Layer:** `surface` (#131316) – The infinite void.
-
-- **Secondary Layer:** `surface-container-low` (#1B1B1E) – Large layout blocks.
-
-- **Action Layer:** `surface-container` (#1F1F22) – Interactive Bento cards.
-
-- **Elevated Layer:** `surface-container-highest` (#353438) – Pop-overs and active states.
-
-### The "Glass & Gradient" Rule
-
-To elevate the experience from "dark mode" to "premium," use Glassmorphism for floating elements (e.g., the FAB or Top Navigation). Use semi-transparent surface colors with a `20px` backdrop blur.
-
-- **Signature Textures:** For primary actions, use a subtle linear gradient from `primary` (#ADC6FF) to `primary-container` (#4D8EFF) at a 135° angle. This provides a "soul" to the UI that flat color cannot replicate.
+**The One-Accent Rule.** Blue-lavender (#ADC6FF) appears on primary actions and selected states. Entry-type accents (todo blue, deadline coral, event purple, someday mint, idea amber) appear on the 6px dot and the checked checkbox fill. Color categorizes; it does not decorate.
 
 ---
 
-## 3. Typography: Editorial Hierarchy
+## Tokens
 
-We use **Inter** exclusively, but we treat it with the reverence of a serif font.
+```ts
+// tokens.ts — generated by /impeccable-native document
+// Edit values to match your brand. Token names are stable; change values, not names.
+// Source of truth: constants/theme.ts
 
-- **Display-LG (48pt / Bold):** Reserved for "Hero Counters." These are the heartbeat of the system. Tracking should be set to `-2%` to feel confident and tight.
+const light = {
+  // Surfaces — dark-first; light values exist for React Navigation compatibility only
+  background:      '#F8F8FB',
+  surface:         '#FFFFFF',
+  surfaceSubtle:   '#F3F3F6',
+  surfaceElevated: '#EBEBEF',
 
-- **Headline-SM (1.5rem):** Used for Bento card titles.
+  // Text
+  textPrimary:   '#0F172A',
+  textSecondary: '#4B5563',
+  textTertiary:  '#9CA3AF',
+  textInverse:   '#FAFAFA',
 
-- **Body-MD (0.875rem):** The workhorse for task descriptions. Use `Secondary Text` (#A1A1AA) to maintain low cognitive load.
+  // Accent
+  accent:        '#4D8EFF',
+  accentSubtle:  '#ADC6FF',
+  accentStrong:  '#3A7AE4',
 
-- **Label-SM (0.6875rem / All Caps / Tracking 5%):** Used for metadata and categories. This adds a "technical" precision to the "calm" layout.
+  // Entry type accents (same in both schemes — categorization is fixed)
+  entryTodo:     '#6EA8FF',
+  entryDeadline: '#FF6B6B',
+  entryEvent:    '#C084FC',
+  entrySomeday:  '#40FBCF',
+  entryToday:    '#E5EE90',
+  entryIdea:     '#FBB040',
 
-The hierarchy is designed to create **Immediate Focal Points**. The eye should jump to the 48pt counter first, then glide over the micro-labels, creating a sense of "Airy" confidence.
+  // Semantic
+  error:   '#EF4444',
+  warning: '#F59E0B',
+  success: '#10B981',
+  info:    '#3B82F6',
+
+  // Borders
+  border:       'rgba(0,0,0,0.08)',
+  borderStrong: 'rgba(0,0,0,0.15)',
+};
+
+const dark: typeof light = {
+  // Surfaces — six tonal steps; obsidian glass stack
+  background:      '#131316', // The infinite void — root background
+  surface:         '#1F1F22', // Interactive Bento cards
+  surfaceSubtle:   '#1B1B1E', // Large layout blocks
+  surfaceElevated: '#2A2A2D', // Elevated sections
+
+  // Text
+  textPrimary:   '#FAFAFA', // Never pure white — tinted cool
+  textSecondary: '#A1A1AA', // Body text, low cognitive load
+  textTertiary:  '#71717A', // Metadata, muted labels
+  textInverse:   '#131316',
+
+  // Accent — blue-lavender primary
+  accent:        '#ADC6FF',
+  accentSubtle:  'rgba(173,198,255,0.15)',
+  accentStrong:  '#4D8EFF',
+
+  // Entry type accents — identical across schemes
+  entryTodo:     '#6EA8FF',
+  entryDeadline: '#FF6B6B',
+  entryEvent:    '#C084FC',
+  entrySomeday:  '#40FBCF',
+  entryToday:    '#E5EE90',
+  entryIdea:     '#FBB040',
+
+  // Semantic
+  error:   '#F87171',
+  warning: '#FBBF24',
+  success: '#34D399',
+  info:    '#60A5FA',
+
+  // Borders — ghost only; structural borders are forbidden
+  border:       'rgba(255,255,255,0.08)',
+  borderStrong: 'rgba(255,255,255,0.15)',
+};
+
+export const tokens = {
+  color: { light, dark },
+
+  type: {
+    // Hero counters — the heartbeat of the UI
+    displayLg: { fontSize: 48, lineHeight: 52, fontWeight: '700' as const, letterSpacing: -0.96 },
+    displayMd: { fontSize: 32, lineHeight: 38, fontWeight: '700' as const, letterSpacing: -0.5  },
+    // Bento card titles
+    headline:  { fontSize: 24, lineHeight: 30, fontWeight: '600' as const, letterSpacing: -0.3  },
+    // Section headings
+    title:     { fontSize: 18, lineHeight: 24, fontWeight: '600' as const, letterSpacing: -0.2  },
+    // Entry descriptions — the workhorse
+    body:      { fontSize: 14, lineHeight: 20, fontWeight: '400' as const                       },
+    // Metadata / categories — all-caps, technical precision
+    label:     { fontSize: 11, lineHeight: 14, fontWeight: '500' as const, letterSpacing: 0.55  },
+    // Extra-small labels
+    caption:   { fontSize: 10, lineHeight: 13, fontWeight: '400' as const                       },
+  },
+
+  // Font families — loaded via expo-font before splash clears
+  font: {
+    regular:  'Inter_400Regular',
+    medium:   'Inter_500Medium',
+    semiBold: 'Inter_600SemiBold',
+    bold:     'Inter_700Bold',
+  },
+
+  space: {
+    '1':  4,
+    '2':  8,
+    '3':  12,
+    '4':  16,
+    '5':  20,
+    '6':  24,
+    '8':  32,
+    '10': 40,
+  },
+
+  radius: {
+    sm:   4,    // Hover state background for task rows
+    md:   6,    // Checkboxes
+    lg:   16,   // Internal cards
+    xl:   24,   // Outer Bento containers
+    full: 9999, // Pill shapes (FAB)
+  },
+
+  // Tonal-first elevation. Shadow is the exception, not the rule.
+  // Used only where physical lift is semantically meaningful.
+  shadow: {
+    // Cards that float above the surface (bento cards)
+    card: {
+      ios: {
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 20 },
+        shadowOpacity: 0.4,
+        shadowRadius: 40,
+      },
+      android: { elevation: 8 },
+    },
+    // FAB — tinted glow, not structural shadow
+    fab: {
+      ios: {
+        shadowColor: '#ADC6FF',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
+      },
+      android: { elevation: 12 },
+    },
+  },
+
+  motion: {
+    duration: {
+      fast:   180, // Press feedback, micro state changes
+      normal: 300, // Menu open/close, card transitions
+      slow:   500, // Deliberate reveals (reserved)
+    },
+    // Use with Reanimated:
+    // withTiming(value, { duration: tokens.motion.duration.normal, easing: Easing.out(Easing.quart) })
+    // withSpring(value, { damping: 18, stiffness: 200 }) — ProMotion-aware, no overshoot
+  },
+
+  // Additional surface tokens (not in color map — used directly in StyleSheet)
+  surface: {
+    base:            '#131316',
+    containerLowest: '#0E0E11', // Recessed elements inside elevated sections
+    containerLow:    '#1B1B1E', // Large layout blocks
+    container:       '#1F1F22', // Interactive Bento cards
+    containerHigh:   '#2A2A2D', // Elevated sections
+    containerHighest:'#353438', // Popovers and active states
+    bright:          '#39393C', // Press / hover state background
+    fabGlow:         'rgba(173,198,255,0.20)',
+  },
+};
+
+export type ColorScheme = typeof light;
+```
 
 ---
 
-## 4. Elevation & Depth: Tonal Layering
+## Components
 
-Traditional shadows and borders are replaced by light-theory principles.
+### EntryRow
 
-- **The Layering Principle:** Depth is achieved by stacking. Place a `surface-container-lowest` (#0E0E11) card inside a `surface-container-high` (#2A2A2D) section to create a "recessed" look, or vice-versa for "lift."
+The workhorse. No borders, no dividers — white space and a 6px type-accent dot are the only structure.
 
-- **Ambient Glows:** When a card requires a "floating" effect, do not use a black shadow. Use a tinted shadow: `0px 20px 40px rgba(0, 0, 0, 0.4)` merged with a soft glow based on the task accent color (e.g., a 4% opacity Blue #3B82F6 glow for "Task" cards).
+```tsx
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { tokens } from '@/constants/theme';
 
-- **The Ghost Border Fallback:** If accessibility requires a border, use the `outline-variant` token at **15% opacity**. High-contrast borders are strictly forbidden.
+type EntryType = 'todo' | 'deadline' | 'event' | 'someday' | 'idea';
+
+const ACCENT: Record<EntryType, string> = {
+  todo:     tokens.color.dark.entryTodo,
+  deadline: tokens.color.dark.entryDeadline,
+  event:    tokens.color.dark.entryEvent,
+  someday:  tokens.color.dark.entrySomeday,
+  idea:     tokens.color.dark.entryIdea,
+};
+
+export function EntryRow({
+  title,
+  type,
+  meta,
+  onPress,
+}: {
+  title: string;
+  type: EntryType;
+  meta?: string;
+  onPress?: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+    >
+      <View style={[styles.dot, { backgroundColor: ACCENT[type] }]} />
+      <View style={styles.content}>
+        <Text style={styles.title} numberOfLines={1}>{title}</Text>
+        {meta ? <Text style={styles.meta}>{meta}</Text> : null}
+      </View>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: tokens.space['3'],
+    paddingHorizontal: tokens.space['4'],
+    gap: tokens.space['3'],
+  },
+  rowPressed: {
+    backgroundColor: tokens.surface.bright,
+    borderRadius: tokens.radius.sm,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  content: {
+    flex: 1,
+    gap: 2,
+  },
+  title: {
+    ...tokens.type.body,
+    fontFamily: tokens.font.regular,
+    color: tokens.color.dark.textPrimary,
+  },
+  meta: {
+    ...tokens.type.label,
+    fontFamily: tokens.font.medium,
+    color: tokens.color.dark.textTertiary,
+    textTransform: 'uppercase',
+  },
+});
+```
+
+### BentoCard
+
+Hero container. Outer radius xl (24pt), inner cards lg (16pt). Tonal lift via surface color, not shadow.
+
+```tsx
+import { StyleSheet, View, Text, Platform } from 'react-native';
+import { tokens } from '@/constants/theme';
+
+export function BentoCard({
+  counter,
+  label,
+  children,
+}: {
+  counter?: number;
+  label?: string;
+  children?: React.ReactNode;
+}) {
+  const shadow = Platform.OS === 'ios'
+    ? tokens.shadow.card.ios
+    : tokens.shadow.card.android;
+
+  return (
+    <View style={[styles.card, shadow]}>
+      {(counter !== undefined || label) && (
+        <View style={styles.header}>
+          {counter !== undefined && (
+            <Text style={styles.counter}>{counter}</Text>
+          )}
+          {label && <Text style={styles.label}>{label}</Text>}
+        </View>
+      )}
+      {children}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: tokens.surface.container,
+    borderRadius: tokens.radius.xl,
+    padding: tokens.space['6'],
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: tokens.space['4'],
+  },
+  counter: {
+    ...tokens.type.displayLg,
+    fontFamily: tokens.font.bold,
+    color: tokens.color.dark.textPrimary,
+  },
+  label: {
+    ...tokens.type.label,
+    fontFamily: tokens.font.medium,
+    color: tokens.color.dark.textTertiary,
+    textTransform: 'uppercase',
+    marginTop: tokens.space['1'],
+  },
+});
+```
+
+### PrimaryButton
+
+Solid accent fill. No gradient. No glow. The accent earns its presence by being rare.
+
+```tsx
+import { Pressable, StyleSheet, Text } from 'react-native';
+import { tokens } from '@/constants/theme';
+
+export function PrimaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.button,
+        pressed && styles.pressed,
+      ]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <Text style={styles.label}>{label}</Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    minHeight: 48,
+    paddingHorizontal: tokens.space['6'],
+    paddingVertical: tokens.space['3'],
+    borderRadius: tokens.radius.lg,
+    backgroundColor: tokens.color.dark.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pressed: {
+    backgroundColor: tokens.color.dark.accentStrong,
+    transform: [{ scale: 0.98 }],
+  },
+  label: {
+    ...tokens.type.label,
+    fontFamily: tokens.font.semiBold,
+    color: '#131316',
+  },
+});
+```
+
+### SectionLabel
+
+Uppercase metadata labels that mark content regions without structural lines.
+
+```tsx
+import { StyleSheet, Text } from 'react-native';
+import { tokens } from '@/constants/theme';
+
+export function SectionLabel({ children }: { children: string }) {
+  return (
+    <Text style={styles.label} accessibilityRole="header">
+      {children}
+    </Text>
+  );
+}
+
+const styles = StyleSheet.create({
+  label: {
+    ...tokens.type.label,
+    fontFamily: tokens.font.medium,
+    color: tokens.color.dark.textTertiary,
+    textTransform: 'uppercase',
+    paddingHorizontal: tokens.space['4'],
+    paddingBottom: tokens.space['2'],
+  },
+});
+```
 
 ---
 
-## 5. Signature Components
+## Platform Notes
 
-### Hero Bento Cards
+**Shadow.** iOS uses `shadow*` props. Android uses `elevation`. Every shadow token in this system ships both; spread the correct branch via `Platform.OS === 'ios' ? tokens.shadow.card.ios : tokens.shadow.card.android`. The FAB's tinted glow renders differently on Android (elevation cannot tint) — acceptable; the glow is an enhancement, not structure.
 
-The primary container.
+**Font family.** Inter is loaded via `expo-font` before the splash screen clears. All type tokens omit `fontFamily` — components add it from `tokens.font.*`. Never let a component render before fonts are ready; it will flash Roboto or SF Pro on the first frame.
 
-- **Radius:** `xl` (1.5rem / 24px) for outer containers; `lg` (1rem / 16px) for internal cards.
+**Safe areas.** `useSafeAreaInsets()` from `react-native-safe-area-context` everywhere. Compose with tokens: `paddingBottom: insets.bottom + tokens.space['4']`. The FAB sits at `bottom: 28` — confirm this clears the home indicator on all target devices.
 
-- **Content:** Large `Display-LG` counter in the top-left, a `Label-SM` in the top-right, and a subtle `surface-variant` glow in the corner.
+**Dynamic Type.** Inter scales with iOS Dynamic Type and Android font scale by default. Layouts must reflow correctly at 2x. The 48pt hero counter uses `Math.min(PixelRatio.getFontScale(), 1.3)` as a ceiling — beyond that, the visual hierarchy breaks. All other type steps scale freely.
 
-### Minimal Task Rows
+**Platform fidelity.** `custom-cross-platform`: one design language on both iOS and Android. No platform-conditional border radii, no ripple feedback on Android (use opacity/scale on Pressable instead), no iOS-only blur effects without an Android fallback.
 
-- **Structure:** No divider lines. Use `spacing-4` (1.4rem) of vertical white space between rows.
-
-- **Visual Cue:** A 6px circular dot using the Task Type Accents (Blue, Red, Purple, Amber) is the only vertical alignment anchor.
-
-- **Interaction:** On hover, the background shifts to `surface-bright` (#39393C) with a `sm` (0.25rem) radius.
-
-### Floating Action Button (FAB)
-
-- **Shape:** `full` (pill shape).
-
-- **Background:** `primary` (#ADC6FF) or Glassmorphic `surface-container`.
-
-- **Signature Effect:** A permanent `8px` blurred glow of the same color sits behind the FAB at 20% opacity, giving it a "weighted" presence.
-
-### Checkboxes
-
-- **Radius:** `0.35rem` (6px).
-
-- **States:** Unchecked is a `Ghost Border` (outline-variant @ 20%). Checked is a solid fill using the task’s specific accent color.
+**New Architecture.** This project runs New Architecture (Fabric + TurboModules). Avoid `findNodeHandle`, synchronous native module calls, and legacy bridge patterns in any new native work.
 
 ---
 
-## 6. Do’s and Don’ts
+## Do's and Don'ts
 
 ### Do
 
-- **Do** use extreme white space. If a layout feels "full," increase the spacing scale by one increment.
-
-- **Do** use asymmetrical Bento layouts. One card should always be significantly larger than its neighbors to create a hierarchy of intent.
-
-- **Do** use "Task Type Accents" sparingly. They are sparks of light in a dark room; if used too much, the "Calm" brand is lost.
+- **Do** route every color through the token system. Components read `tokens.color.dark.*` directly (dark-first); don't scatter `useColorScheme()` ternaries through component files.
+- **Do** put every reusable style in `StyleSheet.create` outside the component body, including styles passed to `FlatList` `renderItem`. Stable references keep virtualization fast.
+- **Do** animate `transform` and `opacity`. Both run on the Reanimated UI thread. Animating `height`, `width`, or `padding` drops to the JS thread and causes jank.
+- **Do** use tonal layering as the first depth tool. A `containerLow` section on a `base` background defines context without any border.
+- **Do** keep entry-type accent colors as categorization signals. They appear on the 6px dot and the checked checkbox. Nowhere else.
+- **Do** test layouts at 2x font scale before shipping any new screen.
 
 ### Don't
 
-- **Don't** use 1px solid dividers to separate list items. Use white space (`spacing-3`) or subtle color-blocking.
-
-- **Don't** use pure white (#FFFFFF). Always use `Primary Text` (#FAFAFA) to reduce eye strain and maintain the "Refined" tone.
-
-- **Don't** use traditional "Drop Shadows" with 100% black. Always tint shadows with the background or accent color to maintain a "Glassy" feel.
+- **Don't** use 1px borders for structural purposes. Ever. The No-Line Rule is absolute.
+- **Don't** use pure black (#000000) or pure white (#FFFFFF). `textPrimary` is `#FAFAFA`; `background` is `#131316`. Tinted extremes only.
+- **Don't** use drop shadows with black at full opacity. Shadow color is either tinted with the surface color (`rgba(0,0,0,0.4)`) or with the accent (`rgba(173,198,255,0.4)` for the FAB glow).
+- **Don't** produce another Todoist or Things 3 clone: lists of identical rows with color badges and completion checkmarks as the primary visual interest. The type hierarchy and surface depth are the design.
+- **Don't** produce another Notion or Linear: keyboard-first density, monospace labels, database-table aesthetic, or feature-maximalist information architecture.
+- **Don't** produce another Any.do or TickTick: gamification, streak badges, celebratory copy, progress bars for their own sake.
+- **Don't** apply Material 3 defaults: dynamic color, M3 button shapes, ripple everywhere, bottom app bar. This is a custom design language.
+- **Don't** add gradient buttons. A LinearGradient-wrapped Pressable with a glow shadow signals template UI. Use solid `accent` (#ADC6FF) on the dark scheme.
+- **Don't** use `withSpring` with default config on navigation transitions. Use `withTiming` with `Easing.out(Easing.quart)` at 250–300ms. No bounce on structural transitions.

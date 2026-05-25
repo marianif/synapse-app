@@ -10,8 +10,15 @@ import { WrapupCard } from "@/components/molecules/wrapup-card";
 import { Fab } from "@/components/organisms/fab";
 import { ListProgress } from "@/components/organisms/list-progress";
 import { ListScreenHeader } from "@/components/organisms/list-screen-header";
-import { EntryAccent, Radius, Spacing, Surface } from "@/constants/theme";
+import {
+  EntryAccent,
+  Radius,
+  Spacing,
+  Surface,
+  TextColors,
+} from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
+import { isSameDay, parseDate } from "@/lib/date-utils";
 import { isRecurringEntry } from "@/lib/recurrence";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
@@ -38,38 +45,27 @@ interface Section {
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
-const DAY_NAMES = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
+function classifyEntry(
+  dateStr: string | null,
+  today: Date,
+): "today" | "thisWeek" | "later" {
+  if (!dateStr) return "later";
 
-function getWeekFullNames(): string[] {
-  const today = new Date();
+  const entryDate = parseDate(dateStr);
+  if (!entryDate) return "later";
+
+  if (isSameDay(dateStr, today)) return "today";
+
+  // Calculate end of current week (Friday)
   const dow = today.getDay();
   const monday = new Date(today);
   monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-  return Array.from({ length: 5 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return DAY_NAMES[d.getDay()];
-  });
-}
+  const friday = new Date(monday);
+  friday.setDate(monday.getDate() + 4);
+  friday.setHours(23, 59, 59, 999);
 
-function classifyEntry(
-  dateStr: string | null,
-  todayName: string,
-  weekNames: string[],
-): "today" | "thisWeek" | "later" {
-  if (!dateStr) return "later";
-  if (dateStr.startsWith(todayName)) return "today";
-  for (const name of weekNames) {
-    if (dateStr.startsWith(name)) return "thisWeek";
-  }
+  if (entryDate > today && entryDate <= friday) return "thisWeek";
+
   return "later";
 }
 
@@ -105,15 +101,13 @@ function somedayEntryToListEntry(entry: DbEntry): ListEntry {
 
 function buildTaskSections(entries: DbEntry[]): Section[] {
   const now = new Date();
-  const todayName = DAY_NAMES[now.getDay()];
-  const weekNames = getWeekFullNames();
 
   const todayItems: ListEntry[] = [];
   const thisWeekItems: ListEntry[] = [];
   const laterItems: ListEntry[] = [];
 
   for (const e of entries) {
-    const bucket = classifyEntry(e.scheduled_date, todayName, weekNames);
+    const bucket = classifyEntry(e.scheduled_date, now);
     const item = entryToListEntry(e);
     if (bucket === "today") todayItems.push(item);
     else if (bucket === "thisWeek") thisWeekItems.push(item);
@@ -131,14 +125,13 @@ function buildTaskSections(entries: DbEntry[]): Section[] {
 }
 
 function buildDeadlineSections(entries: DbEntry[]): Section[] {
-  const todayName = DAY_NAMES[new Date().getDay()];
-  const weekNames = getWeekFullNames();
+  const now = new Date();
 
   const thisWeekItems: ListEntry[] = [];
   const laterItems: ListEntry[] = [];
 
   for (const e of entries) {
-    const bucket = classifyEntry(e.due_date, todayName, weekNames);
+    const bucket = classifyEntry(e.due_date, now);
     const item = entryToListEntry(e);
     if (bucket === "today" || bucket === "thisWeek") thisWeekItems.push(item);
     else laterItems.push(item);
@@ -174,12 +167,8 @@ export default function ListScreen(): React.ReactElement {
         ? "One Day"
         : "Weekly Todos";
 
-  const {
-    entries,
-    updateEntryStatus,
-    deleteEntry,
-    fetchEntries,
-  } = useDatabase();
+  const { entries, updateEntryStatus, deleteEntry, fetchEntries } =
+    useDatabase();
 
   useFocusEffect(
     useCallback(() => {
@@ -189,12 +178,19 @@ export default function ListScreen(): React.ReactElement {
 
   // ── Build sections ────────────────────────────────────────────────────────────
 
-  const somedayEntries = entries.filter((e) => e.type === "someday" || e.type === "idea");
+  const somedayEntries = entries.filter(
+    (e) => e.type === "someday" || e.type === "idea",
+  );
 
   const sections: Section[] =
     resolvedType === "someday"
       ? somedayEntries.length > 0
-        ? [{ label: "Ideas", entries: somedayEntries.map(somedayEntryToListEntry) }]
+        ? [
+            {
+              label: "Ideas",
+              entries: somedayEntries.map(somedayEntryToListEntry),
+            },
+          ]
         : []
       : resolvedType === "deadline"
         ? buildDeadlineSections(entries)
@@ -292,12 +288,14 @@ export default function ListScreen(): React.ReactElement {
               <View key={section.label} style={styles.section}>
                 {/* Section header */}
                 <View style={styles.sectionHeader}>
-                  <ThemedText type="headline">{section.label}</ThemedText>
+                  <ThemedText type="label" style={styles.sectionLabel}>
+                    {section.label.toUpperCase()}
+                  </ThemedText>
                   {sectionIndex === 0 && firstSectionCount > 0 ? (
                     <View
                       style={[
                         styles.countBadge,
-                        { backgroundColor: accentColor + "22" },
+                        { backgroundColor: accentColor + "12" },
                       ]}
                     >
                       <ThemedText
@@ -342,7 +340,7 @@ export default function ListScreen(): React.ReactElement {
           )}
 
           {resolvedType !== "someday" && sections.length > 0 ? (
-            <WrapupCard onViewStats={() => {}} />
+            <WrapupCard />
           ) : null}
 
           {/* Bottom padding so FAB never overlaps the last entry */}
@@ -378,12 +376,20 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.xl * 2,
   },
   section: {
-    gap: Spacing.md,
+    gap: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: Spacing.xs,
+  },
+  sectionLabel: {
+    color: TextColors.tertiary,
+    letterSpacing: 1,
+    fontSize: 10,
+    fontWeight: "700",
   },
   countBadge: {
     borderRadius: Radius.full,

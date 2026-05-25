@@ -43,6 +43,30 @@ public class SpeechRecognizerModule: Module {
       }
     }
 
+    AsyncFunction("transcribeFile") { (fileUri: String, promise: Promise) in
+      print("[SynapseNative] Transcription requested for: \(fileUri)")
+      guard let url = URL(string: fileUri) else {
+        promise.reject("INVALID_URL", "The provided file URI is invalid")
+        return
+      }
+      
+      let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+      let request = SFSpeechURLRecognitionRequest(url: url)
+      
+      print("[SynapseNative] Starting speech recognition task...")
+      recognizer?.recognitionTask(with: request) { result, error in
+        if let error = error {
+          print("[SynapseNative] Transcription error: \(error.localizedDescription)")
+          promise.reject("TRANSCRIBE_FAILED", error.localizedDescription)
+          return
+        }
+        if let result = result, result.isFinal {
+          print("[SynapseNative] Transcription success: \(result.bestTranscription.formattedString)")
+          promise.resolve(result.bestTranscription.formattedString)
+        }
+      }
+    }
+
     OnDestroy {
       self.stopRecognitionInternal()
     }

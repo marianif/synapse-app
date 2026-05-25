@@ -5,6 +5,11 @@ import { AppState } from "react-native";
 import * as SQLite from "expo-sqlite";
 
 import { generateId, initDatabase } from "@/lib/database";
+import {
+  cancelNotificationForEntry,
+  rescheduleAllEntries,
+  scheduleEntryNotification,
+} from "@/lib/notifications";
 import { serializeRule } from "@/lib/recurrence";
 import type {
   DbEntry,
@@ -13,8 +18,9 @@ import type {
 } from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
-import { ExtensionStorage } from "@bacons/apple-targets";
+import { SpeechRecognizerModule } from "@/modules/speech-recognizer";
 import * as WatchConnectivity from "@/modules/watch-connectivity";
+import { ExtensionStorage } from "@bacons/apple-targets";
 
 const storage = new ExtensionStorage("group.dev.the-wedge.synapse-app");
 
@@ -160,6 +166,17 @@ export function DatabaseProvider({
     fetchRecurrenceCompletions();
   }, [fetchEntries, fetchRecurrenceCompletions]);
 
+  // After the initial load, rebuild all scheduled notifications from scratch.
+  // This self-heals any stale state from a previous launch.
+  useEffect(() => {
+    if (entries.length > 0 && !isLoading) {
+      rescheduleAllEntries(entries).catch((err) => {
+        console.warn("[DatabaseContext] rescheduleAllEntries failed:", err);
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]); // intentionally runs once when initial load completes
+
   const createEntry = useCallback(
     async (data: CreateEntryInput): Promise<DbEntry> => {
       setIsCreating(true);
@@ -202,6 +219,12 @@ export function DatabaseProvider({
           syncEntriesToWidget(next);
           return next;
         });
+
+        // Schedule notification — failures must not block the mutation
+        scheduleEntryNotification(created).catch((err) => {
+          console.warn("[DatabaseContext] scheduleEntryNotification failed:", err);
+        });
+
         return created;
       } catch (error) {
         console.error("[DatabaseContext] createEntry failed:", error);
@@ -224,15 +247,21 @@ export function DatabaseProvider({
       let pendingNotes: string[] = [];
       try {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) pendingNotes = parsed.filter((v) => typeof v === "string");
+        if (Array.isArray(parsed))
+          pendingNotes = parsed.filter((v) => typeof v === "string");
       } catch {
-        console.error("[DatabaseContext] failed to parse pending_notes JSON:", raw);
+        console.error(
+          "[DatabaseContext] failed to parse pending_notes JSON:",
+          raw,
+        );
         return;
       }
 
       if (pendingNotes.length === 0) return;
 
-      console.log(`[DatabaseContext] found ${pendingNotes.length} pending note(s) from Watch`);
+      console.log(
+        `[DatabaseContext] found ${pendingNotes.length} pending note(s) from Watch`,
+      );
 
       for (const title of pendingNotes) {
         await createEntry({
@@ -244,7 +273,9 @@ export function DatabaseProvider({
 
       // Clear by writing an empty JSON array as Data (matching Watch write format)
       storage.remove("pending_notes");
-      console.log(`[DatabaseContext] synced ${pendingNotes.length} Watch note(s)`);
+      console.log(
+        `[DatabaseContext] synced ${pendingNotes.length} Watch note(s)`,
+      );
     } catch (error) {
       console.error("[DatabaseContext] syncPendingNotes failed:", error);
     }
@@ -287,12 +318,44 @@ export function DatabaseProvider({
       }
     });
 
+    // Listen for audio files from Watch
+    const watchFileSub = WatchConnectivity.addWatchFileListener(
+      async (file) => {
+        console.log("[DatabaseContext] Received Watch file event:", file);
+        if (!file.url) {
+          console.warn("[DatabaseContext] Received file event without URL");
+          return;
+        }
+
+        try {
+          console.log(
+            "[DatabaseContext] Triggering transcription for:",
+            file.url,
+          );
+          const transcript = await SpeechRecognizerModule.transcribeFile(
+            file.url,
+          );
+          console.log("[DatabaseContext] Transcription result:", transcript);
+          if (transcript) {
+            createEntry({
+              title: transcript,
+              type: "todo",
+              scheduledDate: dayjs().format("DD/MM/YYYY"),
+            });
+          }
+        } catch (error) {
+          console.error("[DatabaseContext] Transcription failed:", error);
+        }
+      },
+    );
+
     const interval = setInterval(syncPendingNotes, 30000);
 
     return () => {
       subscription.remove();
       watchMsgSub.remove();
       watchCtxSub.remove();
+      watchFileSub.remove();
       clearInterval(interval);
     };
   }, [syncPendingNotes, createEntry]);
@@ -301,7 +364,9 @@ export function DatabaseProvider({
   useEffect(() => {
     if (entries.length > 0) {
       const titles = entries.slice(0, 20).map((e) => e.title);
-      WatchConnectivity.updateWatchContext({ phone_notes: titles });
+      WatchConnectivity.updateWatchContext({ phone_notes: titles }).catch((err) => {
+        console.warn("[DatabaseContext] Failed to sync to Watch:", err.message);
+      });
     }
   }, [entries]);
 
@@ -316,13 +381,25 @@ export function DatabaseProvider({
           now,
           id,
         );
+        let updatedEntry: DbEntry | undefined;
         setEntries((prev) => {
-          const next = prev.map((e) =>
-            e.id === id ? { ...e, status, updated_at: now } : e,
-          );
+          const next = prev.map((e) => {
+            if (e.id === id) {
+              updatedEntry = { ...e, status, updated_at: now };
+              return updatedEntry;
+            }
+            return e;
+          });
           syncEntriesToWidget(next);
           return next;
         });
+
+        // Re-schedule notification with updated status — failures must not block
+        if (updatedEntry) {
+          scheduleEntryNotification(updatedEntry).catch((err) => {
+            console.warn("[DatabaseContext] scheduleEntryNotification (status) failed:", err);
+          });
+        }
       } catch (error) {
         console.error("[DatabaseContext] updateEntryStatus failed:", error);
         throw error;
@@ -386,13 +463,25 @@ export function DatabaseProvider({
           ...values,
         );
 
+        let updatedEntry: DbEntry | undefined;
         setEntries((prev) => {
-          const next = prev.map((e) =>
-            e.id === id ? { ...e, ...data, updated_at: now } : e,
-          );
+          const next = prev.map((e) => {
+            if (e.id === id) {
+              updatedEntry = { ...e, ...data, updated_at: now };
+              return updatedEntry;
+            }
+            return e;
+          });
           syncEntriesToWidget(next);
           return next;
         });
+
+        // Re-schedule notification with updated fields — failures must not block
+        if (updatedEntry) {
+          scheduleEntryNotification(updatedEntry).catch((err) => {
+            console.warn("[DatabaseContext] scheduleEntryNotification (update) failed:", err);
+          });
+        }
       } catch (error) {
         console.error("[DatabaseContext] updateEntry failed:", error);
         throw error;
@@ -409,6 +498,11 @@ export function DatabaseProvider({
         const next = prev.filter((e) => e.id !== id);
         syncEntriesToWidget(next);
         return next;
+      });
+
+      // Cancel any pending notification — failures must not block
+      cancelNotificationForEntry(id).catch((err) => {
+        console.warn("[DatabaseContext] cancelNotificationForEntry failed:", err);
       });
     } catch (error) {
       console.error("[DatabaseContext] deleteEntry failed:", error);
@@ -548,6 +642,11 @@ export function DatabaseProvider({
         setRecurrenceCompletions((prev) =>
           prev.filter((c) => c.entry_id !== entryId),
         );
+
+        // Cancel any pending notification — failures must not block
+        cancelNotificationForEntry(entryId).catch((err) => {
+          console.warn("[DatabaseContext] cancelNotificationForEntry (series) failed:", err);
+        });
       } catch (error) {
         console.error("[DatabaseContext] deleteRecurringSeries failed:", error);
         throw error;

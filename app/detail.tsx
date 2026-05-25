@@ -55,15 +55,15 @@ const MONTH_ABBRS = [
 
 function parseDaysRemaining(dueDateStr: string | null): number {
   if (!dueDateStr) return 0;
-  // Expects "DayName, Mon DD" e.g. "Thursday, Apr 10"
-  const parts = dueDateStr.replace(",", "").split(" ");
+  const parts = dueDateStr.split("/");
   if (parts.length < 3) return 0;
-  const monthIndex = MONTH_ABBRS.indexOf(parts[1]);
-  const day = parseInt(parts[2], 10);
-  if (monthIndex === -1 || isNaN(day)) return 0;
+  const dd = parseInt(parts[0], 10);
+  const mm = parseInt(parts[1], 10);
+  const yyyy = parseInt(parts[2], 10);
+  if (isNaN(dd) || isNaN(mm) || isNaN(yyyy)) return 0;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const due = new Date(today.getFullYear(), monthIndex, day);
+  const due = new Date(yyyy, mm - 1, dd);
   return Math.max(0, Math.ceil((due.getTime() - today.getTime()) / 86_400_000));
 }
 
@@ -254,7 +254,47 @@ function DeadlineHero({
   );
 }
 
-// ─── Delete scope sheet ────────────────────────────────────────────────────────
+// ─── Delete confirm sheet (non-recurring) ─────────────────────────────────────
+
+function DeleteConfirmSheet({
+  visible,
+  onClose,
+  onConfirm,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}): React.ReactElement {
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.sheetOverlay} onPress={onClose}>
+        <View style={styles.sheet}>
+          <ThemedText type="bodyBold" style={styles.sheetTitle}>
+            Delete entry
+          </ThemedText>
+          <Pressable style={styles.sheetOption} onPress={onConfirm}>
+            <ThemedText type="body" style={{ color: "#FF6B6B" }}>
+              Delete
+            </ThemedText>
+          </Pressable>
+          <View style={styles.sheetDivider} />
+          <Pressable style={styles.sheetOption} onPress={onClose}>
+            <ThemedText type="bodyBold" muted>
+              Cancel
+            </ThemedText>
+          </Pressable>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+}
+
+// ─── Delete scope sheet (recurring) ───────────────────────────────────────────
 
 function DeleteScopeSheet({
   visible,
@@ -316,6 +356,7 @@ export default function DetailScreen(): React.ReactElement {
   }>();
 
   const [deleteSheetVisible, setDeleteSheetVisible] = useState(false);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
 
   // Composite ID support: "masterId::instanceDate" for recurring instances
   const isRecurringInstance = rawId?.includes("::") ?? false;
@@ -437,9 +478,15 @@ export default function DetailScreen(): React.ReactElement {
     if (isRecurringInstance) {
       setDeleteSheetVisible(true);
     } else {
-      await deleteEntry(entry.id);
-      router.back();
+      setDeleteConfirmVisible(true);
     }
+  }
+
+  async function handleDeleteConfirmed(): Promise<void> {
+    if (!entry) return;
+    setDeleteConfirmVisible(false);
+    await deleteEntry(entry.id);
+    router.back();
   }
 
   async function handleDeleteThis(): Promise<void> {
@@ -635,6 +682,13 @@ export default function DetailScreen(): React.ReactElement {
           <DetailActionBar actions={actions} />
         </View>
       </View>
+
+      {/* ── Delete confirm sheet (non-recurring) ────────────── */}
+      <DeleteConfirmSheet
+        visible={deleteConfirmVisible}
+        onClose={() => setDeleteConfirmVisible(false)}
+        onConfirm={handleDeleteConfirmed}
+      />
 
       {/* ── Delete scope sheet (recurring only) ─────────────── */}
       <DeleteScopeSheet

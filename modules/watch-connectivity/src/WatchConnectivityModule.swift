@@ -7,7 +7,7 @@ public class WatchConnectivityModule: Module {
   public func definition() -> ModuleDefinition {
     Name("WatchConnectivity")
 
-    Events("onWatchMessageReceived", "onWatchContextReceived")
+    Events("onWatchMessageReceived", "onWatchContextReceived", "onWatchFileReceived")
 
     OnCreate {
       if WCSession.isSupported() {
@@ -62,7 +62,27 @@ class WatchSessionDelegate: NSObject, WCSessionDelegate {
   #endif
 
   func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
-    module?.sendEvent("onWatchMessageReceived", message)
+    print("[SynapseNative] Received message from Watch")
+    
+    // Check if this is an audio data message (Simulator bypass)
+    if let audioData = message["audioData"] as? Data {
+      print("[SynapseNative] Message contains audio data (\(audioData.count) bytes)")
+      let tempDir = FileManager.default.temporaryDirectory
+      let fileURL = tempDir.appendingPathComponent("watch_voice_\(UUID().uuidString).wav")
+      
+      do {
+        try audioData.write(to: fileURL)
+        print("[SynapseNative] Saved audio data to: \(fileURL.path)")
+        module?.sendEvent("onWatchFileReceived", [
+          "url": fileURL.absoluteString,
+          "metadata": ["type": "voice_note"]
+        ])
+      } catch {
+        print("[SynapseNative] Error saving audio data: \(error)")
+      }
+    } else {
+      module?.sendEvent("onWatchMessageReceived", message)
+    }
   }
 
   func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
@@ -71,5 +91,14 @@ class WatchSessionDelegate: NSObject, WCSessionDelegate {
   
   func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any]) {
     module?.sendEvent("onWatchMessageReceived", userInfo)
+  }
+
+  func session(_ session: WCSession, didReceive file: WCSessionFile) {
+    print("[SynapseNative] Received file from Watch: \(file.fileURL.lastPathComponent)")
+    // Files are temporary, we should pass the URL to JS immediately
+    module?.sendEvent("onWatchFileReceived", [
+      "url": file.fileURL.absoluteString,
+      "metadata": file.metadata ?? [:]
+    ])
   }
 }

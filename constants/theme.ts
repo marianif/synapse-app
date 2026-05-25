@@ -38,6 +38,7 @@ export const Brand = {
   primary: "#ADC6FF", // Primary action color
   primaryContainer: "#4D8EFF", // Gradient endpoint for CTAs
   fabGlow: "rgba(173,198,255,0.20)", // FAB permanent glow (20% opacity)
+  onPrimary: "#131316", // Ink color for elements placed on Brand.primary surfaces
 } as const;
 
 // ─── Typography Scale ─────────────────────────────────────────────────────────

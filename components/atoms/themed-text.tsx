@@ -2,6 +2,7 @@ import { StyleSheet, Text } from "react-native";
 
 import {
   Colors,
+  FontFamily,
   FontSize,
   LetterSpacing,
   LineHeight,
@@ -45,41 +46,44 @@ export function ThemedText({
   );
 }
 
+// TODO: wire up Inter via useFonts in app/_layout.tsx (expo-font / @expo-google-fonts/inter)
+// so FontFamily tokens resolve. Until then, omitting fontFamily lets RN inherit the
+// system Inter substitute rather than locking to "System".
 const styles = StyleSheet.create({
   base: {
-    fontFamily: "System",
+    // fontFamily intentionally omitted — see TODO above
   },
   display: {
     fontSize: FontSize.displayLg,
     lineHeight: LineHeight.displayLg,
     letterSpacing: LetterSpacing.displayLg,
-    fontWeight: "700",
+    fontFamily: FontFamily.bold,
   },
   headline: {
     fontSize: FontSize.headlineSm,
     lineHeight: LineHeight.headlineSm,
-    fontWeight: "600",
+    fontFamily: FontFamily.semiBold,
   },
   body: {
     fontSize: FontSize.bodyMd,
     lineHeight: LineHeight.bodyMd,
-    fontWeight: "400",
+    fontFamily: FontFamily.regular,
   },
   bodyBold: {
     fontSize: FontSize.bodyMd,
     lineHeight: LineHeight.bodyMd,
-    fontWeight: "600",
+    fontFamily: FontFamily.semiBold,
   },
   label: {
     fontSize: FontSize.labelSm,
     lineHeight: LineHeight.labelSm,
     letterSpacing: LetterSpacing.labelSm,
-    fontWeight: "600",
+    fontFamily: FontFamily.semiBold,
     textTransform: "uppercase",
   },
   caption: {
     fontSize: FontSize.labelXs,
     lineHeight: LineHeight.labelSm,
-    fontWeight: "400",
+    fontFamily: FontFamily.regular,
   },
 });

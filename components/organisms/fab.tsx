@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { Brand, Radius, Shadow, Spacing } from "@/constants/theme";
+import { Brand, EntryAccent, Radius, Shadow, Spacing } from "@/constants/theme";
 
 const WAVEFORM_BARS = 10;
 
@@ -53,7 +53,7 @@ export function Fab({
         ]}
       >
         <View style={styles.glow} />
-        <MaterialCommunityIcons name="microphone" size={28} color="#1A1A2E" />
+        <MaterialCommunityIcons name="microphone" size={28} color={Brand.onPrimary} />
       </Pressable>
     </View>
   );
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   waveformBar: {
     width: 4,
-    backgroundColor: "#FF6B6B",
+    backgroundColor: EntryAccent.deadline,
     borderRadius: 2,
   },
   recordingGlow: {
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: Radius.full,
-    backgroundColor: "#FF6B6B",
+    backgroundColor: EntryAccent.deadline,
     alignItems: "center",
     justifyContent: "center",
     ...Shadow.fab,

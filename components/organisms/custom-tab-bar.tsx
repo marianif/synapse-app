@@ -62,7 +62,7 @@ export function CustomTabBar(): React.ReactElement {
         >
           <View style={styles.addButtonGlow} />
           <View style={styles.addButtonInner}>
-            <MaterialCommunityIcons name="plus" size={24} color="#1A1A2E" />
+            <MaterialCommunityIcons name="plus" size={24} color={Brand.onPrimary} />
           </View>
         </Pressable>
 
@@ -135,11 +135,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     ...Shadow.fab,
-  },
-  addIcon: {
-    width: 20,
-    height: 3,
-    backgroundColor: "#1A1A2E",
-    borderRadius: 2,
   },
 });

@@ -5,6 +5,11 @@ import { AppState } from "react-native";
 import * as SQLite from "expo-sqlite";
 
 import { generateId, initDatabase } from "@/lib/database";
+import {
+  cancelNotificationForEntry,
+  rescheduleAllEntries,
+  scheduleEntryNotification,
+} from "@/lib/notifications";
 import { serializeRule } from "@/lib/recurrence";
 import type {
   DbEntry,
@@ -161,6 +166,17 @@ export function DatabaseProvider({
     fetchRecurrenceCompletions();
   }, [fetchEntries, fetchRecurrenceCompletions]);
 
+  // After the initial load, rebuild all scheduled notifications from scratch.
+  // This self-heals any stale state from a previous launch.
+  useEffect(() => {
+    if (entries.length > 0 && !isLoading) {
+      rescheduleAllEntries(entries).catch((err) => {
+        console.warn("[DatabaseContext] rescheduleAllEntries failed:", err);
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]); // intentionally runs once when initial load completes
+
   const createEntry = useCallback(
     async (data: CreateEntryInput): Promise<DbEntry> => {
       setIsCreating(true);
@@ -203,6 +219,12 @@ export function DatabaseProvider({
           syncEntriesToWidget(next);
           return next;
         });
+
+        // Schedule notification — failures must not block the mutation
+        scheduleEntryNotification(created).catch((err) => {
+          console.warn("[DatabaseContext] scheduleEntryNotification failed:", err);
+        });
+
         return created;
       } catch (error) {
         console.error("[DatabaseContext] createEntry failed:", error);
@@ -359,13 +381,25 @@ export function DatabaseProvider({
           now,
           id,
         );
+        let updatedEntry: DbEntry | undefined;
         setEntries((prev) => {
-          const next = prev.map((e) =>
-            e.id === id ? { ...e, status, updated_at: now } : e,
-          );
+          const next = prev.map((e) => {
+            if (e.id === id) {
+              updatedEntry = { ...e, status, updated_at: now };
+              return updatedEntry;
+            }
+            return e;
+          });
           syncEntriesToWidget(next);
           return next;
         });
+
+        // Re-schedule notification with updated status — failures must not block
+        if (updatedEntry) {
+          scheduleEntryNotification(updatedEntry).catch((err) => {
+            console.warn("[DatabaseContext] scheduleEntryNotification (status) failed:", err);
+          });
+        }
       } catch (error) {
         console.error("[DatabaseContext] updateEntryStatus failed:", error);
         throw error;
@@ -429,13 +463,25 @@ export function DatabaseProvider({
           ...values,
         );
 
+        let updatedEntry: DbEntry | undefined;
         setEntries((prev) => {
-          const next = prev.map((e) =>
-            e.id === id ? { ...e, ...data, updated_at: now } : e,
-          );
+          const next = prev.map((e) => {
+            if (e.id === id) {
+              updatedEntry = { ...e, ...data, updated_at: now };
+              return updatedEntry;
+            }
+            return e;
+          });
           syncEntriesToWidget(next);
           return next;
         });
+
+        // Re-schedule notification with updated fields — failures must not block
+        if (updatedEntry) {
+          scheduleEntryNotification(updatedEntry).catch((err) => {
+            console.warn("[DatabaseContext] scheduleEntryNotification (update) failed:", err);
+          });
+        }
       } catch (error) {
         console.error("[DatabaseContext] updateEntry failed:", error);
         throw error;
@@ -452,6 +498,11 @@ export function DatabaseProvider({
         const next = prev.filter((e) => e.id !== id);
         syncEntriesToWidget(next);
         return next;
+      });
+
+      // Cancel any pending notification — failures must not block
+      cancelNotificationForEntry(id).catch((err) => {
+        console.warn("[DatabaseContext] cancelNotificationForEntry failed:", err);
       });
     } catch (error) {
       console.error("[DatabaseContext] deleteEntry failed:", error);
@@ -591,6 +642,11 @@ export function DatabaseProvider({
         setRecurrenceCompletions((prev) =>
           prev.filter((c) => c.entry_id !== entryId),
         );
+
+        // Cancel any pending notification — failures must not block
+        cancelNotificationForEntry(entryId).catch((err) => {
+          console.warn("[DatabaseContext] cancelNotificationForEntry (series) failed:", err);
+        });
       } catch (error) {
         console.error("[DatabaseContext] deleteRecurringSeries failed:", error);
         throw error;

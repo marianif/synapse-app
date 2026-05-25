@@ -254,7 +254,47 @@ function DeadlineHero({
   );
 }
 
-// ─── Delete scope sheet ────────────────────────────────────────────────────────
+// ─── Delete confirm sheet (non-recurring) ─────────────────────────────────────
+
+function DeleteConfirmSheet({
+  visible,
+  onClose,
+  onConfirm,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}): React.ReactElement {
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.sheetOverlay} onPress={onClose}>
+        <View style={styles.sheet}>
+          <ThemedText type="bodyBold" style={styles.sheetTitle}>
+            Delete entry
+          </ThemedText>
+          <Pressable style={styles.sheetOption} onPress={onConfirm}>
+            <ThemedText type="body" style={{ color: "#FF6B6B" }}>
+              Delete
+            </ThemedText>
+          </Pressable>
+          <View style={styles.sheetDivider} />
+          <Pressable style={styles.sheetOption} onPress={onClose}>
+            <ThemedText type="bodyBold" muted>
+              Cancel
+            </ThemedText>
+          </Pressable>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+}
+
+// ─── Delete scope sheet (recurring) ───────────────────────────────────────────
 
 function DeleteScopeSheet({
   visible,
@@ -316,6 +356,7 @@ export default function DetailScreen(): React.ReactElement {
   }>();
 
   const [deleteSheetVisible, setDeleteSheetVisible] = useState(false);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
 
   // Composite ID support: "masterId::instanceDate" for recurring instances
   const isRecurringInstance = rawId?.includes("::") ?? false;
@@ -437,9 +478,15 @@ export default function DetailScreen(): React.ReactElement {
     if (isRecurringInstance) {
       setDeleteSheetVisible(true);
     } else {
-      await deleteEntry(entry.id);
-      router.back();
+      setDeleteConfirmVisible(true);
     }
+  }
+
+  async function handleDeleteConfirmed(): Promise<void> {
+    if (!entry) return;
+    setDeleteConfirmVisible(false);
+    await deleteEntry(entry.id);
+    router.back();
   }
 
   async function handleDeleteThis(): Promise<void> {
@@ -635,6 +682,13 @@ export default function DetailScreen(): React.ReactElement {
           <DetailActionBar actions={actions} />
         </View>
       </View>
+
+      {/* ── Delete confirm sheet (non-recurring) ────────────── */}
+      <DeleteConfirmSheet
+        visible={deleteConfirmVisible}
+        onClose={() => setDeleteConfirmVisible(false)}
+        onConfirm={handleDeleteConfirmed}
+      />
 
       {/* ── Delete scope sheet (recurring only) ─────────────── */}
       <DeleteScopeSheet

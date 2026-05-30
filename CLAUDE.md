@@ -24,6 +24,10 @@ React Navigation v7 · react-native-reanimated v4 · expo-sqlite · `@bacons/app
 
 ## Commands
 
+**Package manager: `bun`** (`bun.lock` is the committed lockfile — there is no
+`package-lock.json` or `yarn.lock`). Use `bun install` / `bun add`; the `npm run`
+and `npx` invocations below work but install deps with `bun`.
+
 ### Development
 
 ```bash
@@ -98,6 +102,7 @@ Recurring entries use a separate `recurrence_completions` table. Never mutate a 
 - `lib/schema.ts` — table definitions
 - `lib/recurrence.ts` — serialize/deserialize recurrence rules, expand instances
 - `lib/date-utils.ts` — date formatting helpers (dates stored as `DD/MM/YYYY` strings)
+- `lib/notifications.ts` — `expo-notifications` scheduling layer (`scheduleEntryNotification`, `cancelNotificationForEntry`, `rescheduleAllEntries`). `DatabaseContext` keeps scheduled notifications in sync with entry mutations
 - `contexts/database-context.tsx` — `DatabaseContext` + `DatabaseProvider`; the single source of truth for all entries in memory
 - `hooks/use-database/use-database.ts` — thin wrapper around `DatabaseContext`; the only hook components should import
 
@@ -110,6 +115,10 @@ Recurring entries use a separate `recurrence_completions` table. Never mutate a 
 ### Speech Recognition
 
 A custom Expo native module (`modules/speech-recognizer/`) wraps iOS `SFSpeechRecognizer`. Use `useSpeechRecognizer()` from `hooks/use-speech-recognizer.ts` — it handles permissions, start/stop, and transcript streaming via the `onTranscriptUpdate` event. The module is iOS-only; a no-op web stub lives at `src/SpeechRecognizerModule.web.ts`.
+
+### Watch Connectivity
+
+A second custom Expo native module (`modules/watch-connectivity/`, depended on via the local path `watch-connectivity` in `package.json`) bridges iOS `WatchConnectivity` for bidirectional sync and voice capture between the phone app and the Apple Watch companion (`targets/watch/`). Like `speech-recognizer`, it ships an Expo plugin and Swift source under `src/`. Both native modules require a prebuild (`npm run prewidget`) before Xcode picks up changes.
 
 ---
 
@@ -187,12 +196,13 @@ synapse-app/
 │       └── use-database.helpers.ts
 │
 ├── modules/                    # Native modules / Expo plugins
-│   └── speech-recognizer/      # Custom Expo module (iOS SFSpeechRecognizer)
-│       ├── expo-module.config.json
-│       ├── index.ts
-│       ├── SpeechRecognizer.podspec
-│       ├── plugin/             # Expo plugin (permissions)
-│       └── src/                # Native source code (Swift + TS stubs)
+│   ├── speech-recognizer/      # Custom Expo module (iOS SFSpeechRecognizer)
+│   │   ├── expo-module.config.json
+│   │   ├── index.ts
+│   │   ├── SpeechRecognizer.podspec
+│   │   ├── plugin/             # Expo plugin (permissions)
+│   │   └── src/                # Native source code (Swift + TS stubs)
+│   └── watch-connectivity/     # Custom Expo module (iOS WatchConnectivity bridge)
 │
 ├── targets/                    # Native extension targets (@bacons/apple-targets)
 │   ├── widget/                 # iOS home-screen widget (Swift/WidgetKit)
@@ -207,7 +217,8 @@ synapse-app/
 │   ├── database.ts             # SQLite helpers (initDatabase, generateId)
 │   ├── schema.ts               # Table definitions
 │   ├── recurrence.ts           # Recurrence rule serialization + instance expansion
-│   └── date-utils.ts           # Date helpers (dates stored as DD/MM/YYYY strings)
+│   ├── date-utils.ts           # Date helpers (dates stored as DD/MM/YYYY strings)
+│   └── notifications.ts        # expo-notifications scheduling (synced by DatabaseContext)
 │
 ├── assets/images/              # Static assets (icons, splash, etc.)
 ├── scripts/

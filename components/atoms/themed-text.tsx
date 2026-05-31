@@ -5,12 +5,14 @@ import { useTheme, tokens } from "@/constants/theme";
 import type { TextProps } from "react-native";
 
 export type TextType =
-  | "display" // 48pt hero counter
-  | "headline" // 24pt card title
-  | "body" // 14pt task description
-  | "bodyBold" // 14pt bold
-  | "label" // 11pt all-caps metadata
-  | "caption"; // 10pt extra-small
+  | "display" // 30pt Fraunces — home greeting
+  | "headline" // 22pt Fraunces — tile / section title (alias of title)
+  | "title" // 22pt Fraunces — tile / section title
+  | "item" // 17pt Inter — entry titles inside tiles
+  | "body" // 14pt Inter — detail / supporting
+  | "bodyBold" // 14pt Inter semibold
+  | "label" // 11pt all-caps Inter kicker
+  | "caption"; // 11pt Inter, no transform
 
 interface ThemedTextProps extends TextProps {
   type?: TextType;
@@ -38,23 +40,32 @@ export function ThemedText({
   );
 }
 
-// TODO: wire up Inter via useFonts in app/_layout.tsx (expo-font / @expo-google-fonts/inter)
-// so FontFamily tokens resolve. Until then, omitting fontFamily lets RN inherit the
-// system Inter substitute rather than locking to "System".
+// Fonts are loaded in app/_layout.tsx via useFonts and splash-gated. Hierarchy is
+// serif-vs-sans (DESIGN.md): Fraunces carries display/title, Inter carries the body.
 const styles = StyleSheet.create({
-  base: {
-    // fontFamily intentionally omitted — see TODO above
-  },
+  base: {},
   display: {
     fontSize: tokens.type.display.size,
     lineHeight: tokens.type.display.lineHeight,
     letterSpacing: tokens.type.display.tracking,
-    fontFamily: tokens.type.fontInter.bold,
+    fontFamily: tokens.type.fontFraunces.semiBold,
   },
   headline: {
     fontSize: tokens.type.title.size,
     lineHeight: tokens.type.title.lineHeight,
-    fontFamily: tokens.type.fontInter.semiBold,
+    letterSpacing: tokens.type.title.tracking,
+    fontFamily: tokens.type.fontFraunces.semiBold,
+  },
+  title: {
+    fontSize: tokens.type.title.size,
+    lineHeight: tokens.type.title.lineHeight,
+    letterSpacing: tokens.type.title.tracking,
+    fontFamily: tokens.type.fontFraunces.semiBold,
+  },
+  item: {
+    fontSize: tokens.type.item.size,
+    lineHeight: tokens.type.item.lineHeight,
+    fontFamily: tokens.type.fontInter.medium,
   },
   body: {
     fontSize: tokens.type.body.size,

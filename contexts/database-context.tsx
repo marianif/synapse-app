@@ -5,6 +5,7 @@ import { AppState } from "react-native";
 import * as SQLite from "expo-sqlite";
 
 import { generateId, initDatabase } from "@/lib/database";
+import { seedDevDataIfEmpty } from "@/lib/dev-seed";
 import {
   cancelNotificationForEntry,
   rescheduleAllEntries,
@@ -162,8 +163,17 @@ export function DatabaseProvider({
   }, []);
 
   useEffect(() => {
-    fetchEntries();
-    fetchRecurrenceCompletions();
+    (async () => {
+      // DEV: populate mock data once if the table is empty, then load.
+      try {
+        const db = await getDb();
+        await seedDevDataIfEmpty(db);
+      } catch (err) {
+        console.warn("[DatabaseContext] dev seed failed:", err);
+      }
+      fetchEntries();
+      fetchRecurrenceCompletions();
+    })();
   }, [fetchEntries, fetchRecurrenceCompletions]);
 
   // After the initial load, rebuild all scheduled notifications from scratch.

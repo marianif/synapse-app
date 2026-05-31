@@ -235,6 +235,37 @@ export function entryColor(type: EntryType): string {
 }
 
 /**
+ * Entry-type → AA-safe darker kicker shade. Use for the 11px all-caps label
+ * sitting on the soft tile tint (the saturated `entryColor` fails AA there).
+ * Shared across schemes, like the code.
+ */
+export function entryKicker(type: EntryType): string {
+  return color.typeKicker[ENTRY_TO_TYPE_KEY[type] ?? "todo"];
+}
+
+/**
+ * Entry-type → soft tile-body tint for the ACTIVE scheme. Scheme-dependent, so
+ * call inside a component via the `useTheme()` scheme (see `useEntryTint`).
+ */
+export function entryTint(type: EntryType, scheme: Scheme): string {
+  return color.typeTint[scheme][ENTRY_TO_TYPE_KEY[type] ?? "todo"];
+}
+
+export function useEntryTint(type: EntryType): string {
+  const { scheme } = useTheme();
+  return entryTint(type, scheme);
+}
+
+/**
+ * Foreground for text sitting on a saturated `entryKicker` chip fill. The kicker
+ * shades are mid-tone in both schemes, so the warm oat-cream (`color.light.paper`)
+ * is the AA-safe pairing regardless of active scheme — verified 4.9–5.4:1.
+ */
+export function chipInk(): string {
+  return color.light.paper;
+}
+
+/**
  * Legacy surface-layer name → resolved scheme surface. The old 6-tone tonal
  * stack collapses onto The Field's 3 warm surfaces. Use `useSurfaceColor` in
  * components so the value reacts to the active scheme.

@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -45,26 +44,6 @@ export function CustomTabBar(): React.ReactElement {
         </Pressable>
 
         <Pressable
-          onPress={() =>
-            router.push({
-              pathname: "/modal",
-              params: {
-                type: "todo",
-              },
-            })
-          }
-          style={({ pressed }) => [
-            styles.addButton,
-            pressed && styles.addButtonPressed,
-          ]}
-        >
-          <View style={[styles.addButtonGlow, { backgroundColor: colors.accent.clay }]} />
-          <View style={[styles.addButtonInner, { backgroundColor: colors.accent.clay }]}>
-            <MaterialCommunityIcons name="plus" size={24} color={colors.paper} />
-          </View>
-        </Pressable>
-
-        <Pressable
           onPress={() => router.push("/(tabs)/calendar")}
           style={({ pressed }) => [
             styles.tabButton,
@@ -103,32 +82,5 @@ const styles = StyleSheet.create({
   },
   tabButtonPressed: {
     opacity: 0.7,
-  },
-  addButton: {
-    width: 52,
-    height: 52,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: -26,
-  },
-  addButtonPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.95 }],
-  },
-  addButtonGlow: {
-    position: "absolute",
-    width: 56,
-    height: 56,
-    borderRadius: tokens.radius.pill,
-    opacity: 0.6,
-    ...tokens.elevation.capture,
-  },
-  addButtonInner: {
-    width: 48,
-    height: 48,
-    borderRadius: tokens.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-    ...tokens.elevation.capture,
   },
 });

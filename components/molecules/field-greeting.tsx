@@ -18,9 +18,9 @@ function greetingFor(hour: number): string {
 }
 
 /**
- * The Field's front-door greeting. A warm Fraunces line that addresses the
- * person, not the dashboard — the one element that owns the top of the home
- * screen and sets the serif-over-sans hierarchy for everything below.
+ * Field Lab's front-door greeting. A bold Inter line that reads like a status
+ * report addressed to the person — the one element that owns the top of the home
+ * screen and sets the activating, instrument-panel tone for everything below.
  */
 export function FieldGreeting({
   now,

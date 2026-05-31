@@ -30,55 +30,11 @@
       "file": "app/voice-input.tsx"
     }
   ],
-  "components": [
-    "components/atoms/countdown-chip.tsx",
-    "components/atoms/counter-display.tsx",
-    "components/atoms/DateInput.tsx",
-    "components/atoms/day-cell.tsx",
-    "components/atoms/entry-dot.tsx",
-    "components/atoms/month-navigator.tsx",
-    "components/atoms/streak-badge.tsx",
-    "components/atoms/themed-text.tsx",
-    "components/atoms/themed-view.tsx",
-    "components/atoms/TimeInput.tsx",
-    "components/error-boundary.tsx",
-    "components/molecules/bento-card-header.tsx",
-    "components/molecules/detail-action-bar.tsx",
-    "components/molecules/detail-metadata-row.tsx",
-    "components/molecules/detail-someday-hero.tsx",
-    "components/molecules/empty-state.tsx",
-    "components/molecules/entry-row.tsx",
-    "components/molecules/list-item.tsx",
-    "components/molecules/recurrence-picker.tsx",
-    "components/molecules/someday-item.tsx",
-    "components/molecules/today-event-row.tsx",
-    "components/molecules/weekday-row.tsx",
-    "components/molecules/wrapup-card.tsx",
-    "components/organisms/agenda-section.tsx",
-    "components/organisms/app-header.tsx",
-    "components/organisms/app-menu.tsx",
-    "components/organisms/custom-tab-bar.tsx",
-    "components/organisms/day-detail-sheet.tsx",
-    "components/organisms/deadlines-card.tsx",
-    "components/organisms/fab.tsx",
-    "components/organisms/list-progress.tsx",
-    "components/organisms/list-screen-header.tsx",
-    "components/organisms/month-grid.tsx",
-    "components/organisms/next-up-card.tsx",
-    "components/organisms/swipeable-row.tsx",
-    "components/organisms/today-section.tsx",
-    "components/organisms/upcoming-preview-card.tsx",
-    "components/organisms/week-strip.tsx",
-    "components/organisms/weekly-overview-card.tsx"
-  ],
+  "components": [],
   "excluded": [],
   "summary": {
     "screenCount": 6,
-    "componentCount": 39,
+    "componentCount": 0,
     "excludedCount": 0
-  },
-  "_rebuiltManually": {
-    "reason": "migration-scope.mjs parseJsonc bug: block-comment regex consumed the /* inside tsconfig path key \"@/*\", returning null aliasMap, so 0 components resolved. Rebuilt component list from grep of token/theme references under components/.",
-    "date": "2026-05-31"
   }
 }

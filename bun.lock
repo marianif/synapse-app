@@ -8,6 +8,7 @@
         "@bacons/apple-targets": "^4.0.6",
         "@expo-google-fonts/fraunces": "^0.4.1",
         "@expo-google-fonts/inter": "^0.4.2",
+        "@expo-google-fonts/jetbrains-mono": "^0.4.1",
         "@expo/vector-icons": "^15.0.3",
         "@kingstinct/expo-apple-targets": "^0.1.19",
         "@react-native-async-storage/async-storage": "2.2.0",
@@ -267,6 +268,8 @@
     "@expo-google-fonts/fraunces": ["@expo-google-fonts/fraunces@0.4.1", "", {}, "sha512-gYc9P92ObyWvz1rWPOeWSvVKyBFIuA8hgOdhvo4DSiPBaWLbFA6v8uLIEIBwW+0oWTlXbBzjeBReHQI2H7UNjQ=="],
 
     "@expo-google-fonts/inter": ["@expo-google-fonts/inter@0.4.2", "", {}, "sha512-syfiImMaDmq7cFi0of+waE2M4uSCyd16zgyWxdPOY7fN2VBmSLKEzkfbZgeOjJq61kSqPBNNtXjggiQiSD6gMQ=="],
+
+    "@expo-google-fonts/jetbrains-mono": ["@expo-google-fonts/jetbrains-mono@0.4.1", "", {}, "sha512-CslACrtMOcRwoWXCO7OMEI+9w3fukWSoBtvNz46OqPoogEuuoY0tkDY1O8sFumk8t0pC6Cx0Xr95O0TOQhpkug=="],
 
     "@expo-google-fonts/material-symbols": ["@expo-google-fonts/material-symbols@0.4.28", "", {}, "sha512-59qFO6w4W/wUZ6VuYfN1wtgyk4zFJspbKOdHYISMeDa2H4apZKY0Ab7K5ouee+C+s3/VfAp6tLK7ov+PsENhKw=="],
 

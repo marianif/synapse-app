@@ -4,10 +4,10 @@ import {
   ThemeProvider as NavThemeProvider,
 } from "@react-navigation/native";
 import {
-  Fraunces_400Regular,
-  Fraunces_500Medium,
-  Fraunces_600SemiBold,
-} from "@expo-google-fonts/fraunces";
+  JetBrainsMono_400Regular,
+  JetBrainsMono_500Medium,
+  JetBrainsMono_700Bold,
+} from "@expo-google-fonts/jetbrains-mono";
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -47,16 +47,17 @@ export default function RootLayout() {
 function ThemedNavigationShell(): React.ReactElement | null {
   const { resolvedScheme, isReady } = useThemeContext();
 
-  // The Field's hierarchy is serif-vs-sans (Fraunces display/title, Inter body).
-  // Load both before the splash clears so the greeting never flashes a fallback.
+  // Field Lab's hierarchy is sans + mono (Inter display/body, JetBrains Mono for the
+  // signal layer: counts/status/kickers). Load both before the splash clears so the
+  // greeting never flashes a fallback.
   const [fontsLoaded] = useFonts({
-    Fraunces_400Regular,
-    Fraunces_500Medium,
-    Fraunces_600SemiBold,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_500Medium,
+    JetBrainsMono_700Bold,
   });
 
   // Configure foreground notification display and request permissions once.

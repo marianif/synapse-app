@@ -5,13 +5,14 @@ import { useTheme, tokens } from "@/constants/theme";
 import type { TextProps } from "react-native";
 
 export type TextType =
-  | "display" // 30pt Fraunces — home greeting
-  | "headline" // 22pt Fraunces — tile / section title (alias of title)
-  | "title" // 22pt Fraunces — tile / section title
-  | "item" // 17pt Inter — entry titles inside tiles
+  | "display" // 28pt Inter bold — home greeting
+  | "headline" // 20pt Inter bold — tile / section title (alias of title)
+  | "title" // 20pt Inter bold — tile / section title
+  | "item" // 16pt Inter — entry titles inside tiles
   | "body" // 14pt Inter — detail / supporting
   | "bodyBold" // 14pt Inter semibold
-  | "label" // 11pt all-caps Inter kicker
+  | "label" // 11pt all-caps mono kicker
+  | "mono" // 13pt mono — counts / status / time
   | "caption"; // 11pt Inter, no transform
 
 interface ThemedTextProps extends TextProps {
@@ -41,26 +42,27 @@ export function ThemedText({
 }
 
 // Fonts are loaded in app/_layout.tsx via useFonts and splash-gated. Hierarchy is
-// serif-vs-sans (DESIGN.md): Fraunces carries display/title, Inter carries the body.
+// sans + mono (DESIGN.md): Inter carries display/title/body, JetBrains Mono carries
+// the signal layer (kicker label + mono counts/status). Hierarchy = size + weight.
 const styles = StyleSheet.create({
   base: {},
   display: {
     fontSize: tokens.type.display.size,
     lineHeight: tokens.type.display.lineHeight,
     letterSpacing: tokens.type.display.tracking,
-    fontFamily: tokens.type.fontFraunces.semiBold,
+    fontFamily: tokens.type.fontInter.bold,
   },
   headline: {
     fontSize: tokens.type.title.size,
     lineHeight: tokens.type.title.lineHeight,
     letterSpacing: tokens.type.title.tracking,
-    fontFamily: tokens.type.fontFraunces.semiBold,
+    fontFamily: tokens.type.fontInter.bold,
   },
   title: {
     fontSize: tokens.type.title.size,
     lineHeight: tokens.type.title.lineHeight,
     letterSpacing: tokens.type.title.tracking,
-    fontFamily: tokens.type.fontFraunces.semiBold,
+    fontFamily: tokens.type.fontInter.bold,
   },
   item: {
     fontSize: tokens.type.item.size,
@@ -81,8 +83,13 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.kicker.size,
     lineHeight: tokens.type.kicker.lineHeight,
     letterSpacing: tokens.type.kicker.tracking,
-    fontFamily: tokens.type.fontInter.semiBold,
+    fontFamily: tokens.type.fontMono.medium,
     textTransform: "uppercase",
+  },
+  mono: {
+    fontSize: tokens.type.mono.size,
+    lineHeight: tokens.type.mono.lineHeight,
+    fontFamily: tokens.type.fontMono.medium,
   },
   caption: {
     fontSize: tokens.type.kicker.size,

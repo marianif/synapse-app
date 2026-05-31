@@ -9,8 +9,8 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import {
   chipInk,
   entryColor,
-  entryKicker,
   tokens,
+  useEntryKicker,
   useEntryTint,
   useTheme,
 } from "@/constants/theme";
@@ -63,7 +63,7 @@ export function FieldTile({
   const { colors } = useTheme();
   const tint = useEntryTint(type);
   const code = entryColor(type);
-  const kicker = entryKicker(type);
+  const kicker = useEntryKicker(type);
   const reduced = useReducedMotion();
 
   // Looming items lead; distant ones recede to the tail. Cap the murmur so a

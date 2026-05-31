@@ -75,9 +75,9 @@ const color = {
       someday: "#222E10",
     },
   },
-  // Field Lab signature — glow opacity scales with tile content density + freshness
-  // (hue is applied per-type at runtime; cyan base shown here). Wired into FieldTile
-  // in a later pass; tokens land now so the value surface is complete.
+  // Field Lab signature — glow opacity scales with row heat (freshness + urgency);
+  // hue is applied per-type at runtime in FieldRow (cyan base shown here). The
+  // stalePulse outline (ideas/someday "still here") lands in a later motion pass.
   glow: {
     faint: "rgba(34,211,238,0.10)", // sparse / quiet tile
     strong: "rgba(34,211,238,0.28)", // full, fresh tile

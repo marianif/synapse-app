@@ -6,47 +6,45 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { FieldRow } from "@/components/molecules/field-row";
 import { tokens, useTheme } from "@/constants/theme";
 
-import type { FieldRowItem } from "@/components/molecules/field-row";
+import { PresentConstellation } from "./present-constellation";
+import { PresentMosaic } from "./present-mosaic";
+
+import type { PresentItem } from "@/lib/present";
 import type { Href } from "expo-router";
 
-interface FieldZoneProps {
-  /** Mono kicker: "STAKES" / "PRESENT". */
-  label: string;
-  /** One-line read of what this zone is for, shown muted under the label. */
-  caption: string;
-  items: FieldRowItem[];
-  /** Route a single row opens (detail by id). */
-  itemHref: (item: FieldRowItem) => Href;
-  /** Route the empty-state tap opens (capture / list for the zone). */
+interface PresentZoneProps {
+  items: PresentItem[];
+  itemHref: (item: PresentItem) => Href;
   zoneHref: Href;
   emptyHint: string;
-  /** Stagger index for the entrance spring. */
   index?: number;
 }
 
 /**
- * A band of the Field Lab board. Not a card — a labelled region of the
- * instrument panel. The mono kicker + tabular count read as a readout
- * ("PRESENT ·8"); the rows below glow by their own heat so the zone reads as a
- * charged field, not a list. STAKES and PRESENT use the same component at equal
- * visual volume — that equality is the whole point: nothing fades for lacking a
- * deadline.
+ * The PRESENT zone, split by how each kind of thing behaves — not one form.
+ * Ideas + somedays are formless thoughts with no shape or date, so they graze
+ * as a freshness CLOUD (bright when caught, ghosting as they age, never gone).
+ * Events have a date and a shape, so they get a MOSAIC of dated tiles. Same mono
+ * header as Stakes (siblings), but the body is two sub-fields, never a list.
  */
-export function FieldZone({
-  label,
-  caption,
+export function PresentZone({
   items,
   itemHref,
   zoneHref,
   emptyHint,
   index = 0,
-}: FieldZoneProps): React.ReactElement {
+}: PresentZoneProps): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
   const reduced = useReducedMotion();
+
+  // Cloud carries the formless thoughts; mosaic carries the dated events.
+  const thoughts = items.filter(
+    (i) => i.type === "idea" || i.type === "someday",
+  );
+  const events = items.filter((i) => i.type === "event");
 
   const entering = reduced
     ? undefined
@@ -58,13 +56,10 @@ export function FieldZone({
   return (
     <Animated.View entering={entering} style={styles.zone}>
       <View style={styles.header}>
-        <ThemedText
-          type="label"
-          style={[styles.kicker, { color: colors.inkMuted }]}
-        >
-          {label}
+        <ThemedText type="label" style={{ color: colors.inkMuted }}>
+          Present
         </ThemedText>
-        <ThemedText type="mono" style={[styles.count, { color: colors.ink }]}>
+        <ThemedText type="mono" style={{ color: colors.ink }}>
           {`·${items.length}`}
         </ThemedText>
       </View>
@@ -73,7 +68,7 @@ export function FieldZone({
         type="caption"
         style={[styles.caption, { color: colors.inkMuted }]}
       >
-        {caption}
+        Things to keep alive.
       </ThemedText>
 
       {items.length === 0 ? (
@@ -91,10 +86,22 @@ export function FieldZone({
           </ThemedText>
         </Pressable>
       ) : (
-        <View style={styles.rows}>
-          {items.map((item) => (
-            <FieldRow key={item.id} item={item} href={itemHref(item)} />
-          ))}
+        <View style={styles.body}>
+          {thoughts.length > 0 ? (
+            <PresentConstellation items={thoughts} itemHref={itemHref} />
+          ) : null}
+
+          {events.length > 0 ? (
+            <View style={styles.events}>
+              <ThemedText
+                type="label"
+                style={[styles.subhead, { color: colors.inkMuted }]}
+              >
+                Coming up
+              </ThemedText>
+              <PresentMosaic items={events} itemHref={itemHref} />
+            </View>
+          ) : null}
         </View>
       )}
     </Animated.View>
@@ -111,14 +118,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: tokens.space.md,
   },
-  kicker: {},
-  count: {},
   caption: {
     paddingHorizontal: tokens.space.md,
     paddingBottom: tokens.space.sm,
   },
-  rows: {
-    gap: tokens.space.xs,
+  body: {
+    gap: tokens.space.lg,
+  },
+  events: {
+    gap: tokens.space.sm,
+  },
+  subhead: {
+    paddingHorizontal: tokens.space.md,
   },
   empty: {
     minHeight: 56,

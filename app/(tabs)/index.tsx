@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
-import { FieldZone } from "@/components/organisms/field-zone";
+import { PresentZone } from "@/components/organisms/present/present-zone";
 import { StakesRunway } from "@/components/organisms/stakes-runway";
 
 import { FieldBriefing } from "@/components/molecules/field-briefing";
@@ -15,6 +15,7 @@ import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
+import { toPresentItems } from "@/lib/present";
 
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
 import type { RunwayItem } from "@/components/molecules/runway-gauge";
@@ -211,7 +212,7 @@ export default function HomeScreen(): React.ReactElement {
   // The field, split into the two zones the brief names: STAKES (consequence)
   // and PRESENT (must-not-fade). Each zone is sorted hottest-first, but heat is
   // aliveness not rank — a cool idea still glows beside a hot bill.
-  const { stakes, stakeGauges, present } = useMemo(() => {
+  const { stakes, stakeGauges, present, presentItems } = useMemo(() => {
     const open = entries.filter(
       (e) => e.status !== "completed" && e.status !== "met",
     );
@@ -223,12 +224,16 @@ export default function HomeScreen(): React.ReactElement {
     const stakeEntries = open
       .filter((e) => STAKES_TYPES.includes(e.type as EntryType))
       .sort(byRunway);
+    const presentEntries = open.filter((e) =>
+      PRESENT_TYPES.includes(e.type as EntryType),
+    );
     return {
       stakes: pick(STAKES_TYPES),
       stakeGauges: stakeEntries.map(toRunwayItem),
       present: pick(PRESENT_TYPES),
+      presentItems: toPresentItems(presentEntries, today.getTime()),
     };
-  }, [entries]);
+  }, [entries, today]);
 
   const entriesForSheet = useMemo(
     () =>
@@ -256,10 +261,8 @@ export default function HomeScreen(): React.ReactElement {
           index={0}
         />
 
-        <FieldZone
-          label="Present"
-          caption="Things to keep alive."
-          items={present}
+        <PresentZone
+          items={presentItems}
           itemHref={(item) => ({
             pathname: "/detail",
             params: { id: item.id },

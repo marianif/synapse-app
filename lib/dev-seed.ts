@@ -24,6 +24,8 @@ type Seed = {
   due_date?: string;
   due_time?: string;
   status?: string;
+  /** DEV: how long ago this was last touched — drives the Present freshness fade. */
+  touchedDaysAgo?: number;
 };
 
 const SEEDS: Seed[] = [
@@ -34,10 +36,12 @@ const SEEDS: Seed[] = [
   { title: "Car insurance renewal", type: "deadline", due_date: d(23) }, // distant
   { title: "Passport expires", type: "deadline", due_date: d(180) }, // distant
 
-  // ── Ideas — undated, so all distant murmurs ────────────────────────────
-  { title: "Newsletter about small tools", type: "idea", subtitle: "weekly, short" },
-  { title: "Repaint the hallway a warm white", type: "idea" },
-  { title: "Learn to make focaccia", type: "idea" },
+  // ── Ideas — undated; staggered freshness so the Present fade is visible ─
+  { title: "Newsletter about small tools", type: "idea", subtitle: "weekly, short", touchedDaysAgo: 0 },
+  { title: "Repaint the hallway a warm white", type: "idea", touchedDaysAgo: 6 },
+  { title: "Learn to make focaccia", type: "idea", touchedDaysAgo: 18 },
+  { title: "An app that names your plants", type: "idea", touchedDaysAgo: 1 },
+  { title: "Voice memos that auto-sort", type: "idea", touchedDaysAgo: 25 },
 
   // ── To-dos — today → next week ─────────────────────────────────────────
   { title: "Reply to Marco", type: "todo", scheduled_date: d(0) }, // looming (today)
@@ -51,11 +55,11 @@ const SEEDS: Seed[] = [
   { title: "Dinner with Sara", type: "event", scheduled_date: d(2), scheduled_time: "08:00 PM" }, // near
   { title: "Flight to Berlin", type: "event", scheduled_date: d(30), scheduled_time: "06:45 AM" }, // distant
 
-  // ── Someday — all distant by definition ────────────────────────────────
-  { title: "Visit the Dolomites", type: "someday" },
-  { title: "Read the Neapolitan novels", type: "someday" },
-  { title: "Take a pottery class", type: "someday" },
-  { title: "Build a standing desk", type: "someday" },
+  // ── Someday — staggered freshness too ──────────────────────────────────
+  { title: "Visit the Dolomites", type: "someday", touchedDaysAgo: 2 },
+  { title: "Read the Neapolitan novels", type: "someday", touchedDaysAgo: 9 },
+  { title: "Take a pottery class", type: "someday", touchedDaysAgo: 20 },
+  { title: "Build a standing desk", type: "someday", touchedDaysAgo: 14 },
 ];
 
 export async function seedDevDataIfEmpty(
@@ -69,7 +73,9 @@ export async function seedDevDataIfEmpty(
   if ((row?.n ?? 0) > 0) return false;
 
   const now = Math.floor(Date.now() / 1000);
+  const DAY_SECS = 86_400;
   for (const s of SEEDS) {
+    const touched = now - (s.touchedDaysAgo ?? 0) * DAY_SECS;
     await db.runAsync(
       `INSERT INTO entries
        (id, title, type, subtitle, inspiration, scheduled_date, scheduled_time, due_date, due_time, notes, status, recurrence_rule, recurrence_end_date, created_at, updated_at)
@@ -87,8 +93,8 @@ export async function seedDevDataIfEmpty(
       s.status ?? (s.type === "deadline" ? "pending" : "scheduled"),
       null,
       null,
-      now,
-      now,
+      touched,
+      touched,
     );
   }
 

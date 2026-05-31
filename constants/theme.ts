@@ -30,13 +30,24 @@ const color = {
     ink: "#F0EAE0", // primary text — warm cream, never #FFF
     inkMuted: "#A39B8C", // secondary / metadata
   },
-  // Entry-type codes — saturated kicker + edge-bar colors, shared across schemes.
+  // Entry-type codes — saturated colors for dots, edge-bars, fills. Shared across schemes.
   type: {
     bills: "#D98C6A", // peach-terracotta
     ideas: "#5B86A8", // powder-blue
     todo: "#6E9466", // sage
     event: "#8A6FA6", // lavender
     someday: "#C09A4B", // butter-ochre
+  },
+  // Darker type codes for the 11px all-caps KICKER text sitting on its soft tint.
+  // The saturated `type.*` above fails WCAG AA at small sizes on the pale tints
+  // (bills 2.14, todo 2.70, someday 2.13, …); these clear 4.5:1 — verified by audit.
+  // Same hue family, darker lightness. Use for kicker/label text only.
+  typeKicker: {
+    bills: "#8A5943", // 4.71:1 on billsTint
+    ideas: "#486B86", // 4.50:1 on ideasTint
+    todo: "#516D4B", // 4.52:1 on todoTint
+    event: "#6E5884", // 4.66:1 on eventTint
+    someday: "#7A622F", // 4.68:1 on somedayTint
   },
   // Soft tile-body tints per type — light + dark-adapted so pastels survive both.
   typeTint: {
@@ -176,6 +187,7 @@ export type ThemeColors = {
   ink: string;
   inkMuted: string;
   type: typeof color.type;
+  typeKicker: typeof color.typeKicker;
   typeTint: (typeof color.typeTint)["light"] | (typeof color.typeTint)["dark"];
   accent: typeof accent;
   feedback: typeof feedback;
@@ -190,6 +202,7 @@ function resolveColors(scheme: Scheme): ThemeColors {
     ink: c.ink,
     inkMuted: c.inkMuted,
     type: color.type,
+    typeKicker: color.typeKicker,
     typeTint: color.typeTint[scheme],
     accent,
     feedback,

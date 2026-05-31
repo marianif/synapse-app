@@ -2,31 +2,30 @@
   "findings": [
     {
       "kind": "perceptual-color-duplicate",
-      "severity": "severe",
-      "message": "5 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
+      "severity": "moderate",
+      "message": "2 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
       "evidence": {
         "leader": "#ffffff",
         "members": [
-          "#ffffff (used 16×, ΔE 0)",
-          "#fafafa (used 6×, ΔE 1)",
-          "#f8f8fb (used 2×, ΔE 2.1)",
-          "#f3f3f6 (used 2×, ΔE 2.9)",
-          "#eeeeee (used 2×, ΔE 3.5)"
+          "#ffffff (used 4×, ΔE 0)",
+          "#eeeeee (used 1×, ΔE 3.5)"
         ],
         "recommendation": "Collapse to a single token. The leader (#ffffff) is the most-used variant."
       }
     },
     {
       "kind": "perceptual-color-duplicate",
-      "severity": "moderate",
-      "message": "2 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
+      "severity": "severe",
+      "message": "4 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
       "evidence": {
-        "leader": "#000000",
+        "leader": "#f4efe6",
         "members": [
-          "#000000 (used 12×, ΔE 0)",
-          "#0e0e11 (used 2×, ΔE 2.9)"
+          "#f4efe6 (used 1×, ΔE 0)",
+          "#fbf7f0 (used 1×, ΔE 1.9)",
+          "#efe8db (used 1×, ΔE 2.3)",
+          "#f0eae0 (used 1×, ΔE 1.2)"
         ],
-        "recommendation": "Collapse to a single token. The leader (#000000) is the most-used variant."
+        "recommendation": "Collapse to a single token. The leader (#f4efe6) is the most-used variant."
       }
     },
     {
@@ -34,12 +33,12 @@
       "severity": "moderate",
       "message": "2 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
       "evidence": {
-        "leader": "#131316",
+        "leader": "#2a2622",
         "members": [
-          "#131316 (used 10×, ΔE 0)",
-          "#1b1b1e (used 2×, ΔE 2.4)"
+          "#2a2622 (used 1×, ΔE 0)",
+          "#211e18 (used 1×, ΔE 3.1)"
         ],
-        "recommendation": "Collapse to a single token. The leader (#131316) is the most-used variant."
+        "recommendation": "Collapse to a single token. The leader (#2a2622) is the most-used variant."
       }
     },
     {
@@ -47,76 +46,50 @@
       "severity": "moderate",
       "message": "2 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
       "evidence": {
-        "leader": "#1f1f22",
+        "leader": "#16140f",
         "members": [
-          "#1f1f22 (used 2×, ΔE 0)",
-          "#2a2a2d (used 2×, ΔE 3.5)"
+          "#16140f (used 1×, ΔE 0)",
+          "#1c1a14 (used 1×, ΔE 2.2)"
         ],
-        "recommendation": "Collapse to a single token. The leader (#1f1f22) is the most-used variant."
-      }
-    },
-    {
-      "kind": "perceptual-color-duplicate",
-      "severity": "moderate",
-      "message": "2 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
-      "evidence": {
-        "leader": "#353438",
-        "members": [
-          "#353438 (used 2×, ΔE 0)",
-          "#39393c (used 2×, ΔE 1.8)"
-        ],
-        "recommendation": "Collapse to a single token. The leader (#353438) is the most-used variant."
-      }
-    },
-    {
-      "kind": "perceptual-color-duplicate",
-      "severity": "moderate",
-      "message": "2 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
-      "evidence": {
-        "leader": "#a1a1aa",
-        "members": [
-          "#a1a1aa (used 2×, ΔE 0)",
-          "#9ca3af (used 2×, ΔE 3.4)"
-        ],
-        "recommendation": "Collapse to a single token. The leader (#a1a1aa) is the most-used variant."
+        "recommendation": "Collapse to a single token. The leader (#16140f) is the most-used variant."
       }
     },
     {
       "kind": "palette-overpopulated",
       "severity": "severe",
-      "message": "20 perceptually-distinct colors in the palette. Coherent apps usually live within 8.",
+      "message": "32 perceptually-distinct colors in the palette. Coherent apps usually live within 8.",
       "evidence": {
         "topColors": [
-          "#ffffff (×28)",
-          "#ff6b6b (×18)",
-          "#000000 (×14)",
-          "#131316 (×12)",
-          "#ff4444 (×6)",
-          "#4d8eff (×6)",
-          "#52c87a (×4)",
-          "#c084fc (×4)",
-          "#adc6ff (×4)",
-          "#1f1f22 (×4)"
+          "#000000 (×5)",
+          "#ffffff (×5)",
+          "#f4efe6 (×4)",
+          "#ff6b6b (×2)",
+          "#6e9466 (×2)",
+          "#c09a4b (×2)",
+          "#503219 (×2)",
+          "#2a2622 (×2)",
+          "#16140f (×2)",
+          "#6b6358 (×1)"
         ],
-        "rawColorCount": 29,
+        "rawColorCount": 38,
         "recommendation": "Restructure into roles (brand, surface, text, feedback) with one swatch each, optional accents."
       }
     },
     {
       "kind": "mixed-spacing-rhythm",
       "severity": "severe",
-      "message": "Dominant rhythm is 4pt-based (43% fit) but 2 off-beat spacing value(s) coexist.",
+      "message": "Dominant rhythm is 4pt-based (44% fit) but 2 off-beat spacing value(s) coexist.",
       "evidence": {
         "rhythmBase": 4,
-        "rhythmFit": 0.43,
+        "rhythmFit": 0.44,
         "offBeatValues": [
           {
             "value": 3,
-            "usages": 12
+            "usages": 7
           },
           {
             "value": 14,
-            "usages": 6
+            "usages": 3
           }
         ],
         "recommendation": "Pick one rhythm. The off-beat values (3, 14) are probably accidental."
@@ -128,10 +101,10 @@
       "message": "4 custom font families in use. A coherent app usually has 1–2.",
       "evidence": {
         "families": [
-          "Inter_600SemiBold (18×)",
-          "Inter_700Bold (6×)",
-          "Inter_500Medium (2×)",
-          "Inter_400Regular (2×)"
+          "Inter_600SemiBold (9×)",
+          "Inter_700Bold (3×)",
+          "Inter_500Medium (1×)",
+          "Inter_400Regular (1×)"
         ],
         "recommendation": "Pick a primary + optional accent. Retire the rest."
       }
@@ -142,30 +115,30 @@
       "message": "10 distinct font sizes in use. A coherent scale usually has 5–8 steps.",
       "evidence": {
         "topSizes": [
-          "10px (×24)",
-          "13px (×14)",
-          "15px (×10)",
-          "8px (×6)",
-          "20px (×6)",
-          "18px (×4)",
-          "22px (×2)",
-          "24px (×2)",
-          "28px (×2)",
-          "30px (×2)"
+          "10px (×12)",
+          "13px (×7)",
+          "15px (×5)",
+          "8px (×3)",
+          "20px (×3)",
+          "18px (×2)",
+          "22px (×1)",
+          "24px (×1)",
+          "28px (×1)",
+          "30px (×1)"
         ],
         "recommendation": "Define a 6-step scale with a clean ratio (e.g., 12/14/16/20/24/32). Map every usage onto the scale."
       }
     }
   ],
   "byKind": {
-    "perceptual-color-duplicate": 6,
+    "perceptual-color-duplicate": 4,
     "palette-overpopulated": 1,
     "mixed-spacing-rhythm": 1,
     "too-many-font-families": 1,
     "undisciplined-type-scale": 1
   },
   "summary": {
-    "findingCount": 10,
+    "findingCount": 8,
     "severeCount": 3,
     "verdict": "incoherent"
   }

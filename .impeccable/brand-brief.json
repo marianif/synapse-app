@@ -1,40 +1,41 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-05-30T21:45:34Z",
+  "generatedAt": "2026-05-31T15:26:13Z",
   "generatedBy": "rebrand direction",
   "sourceForensics": ".impeccable/forensics.json",
 
   "position": {
-    "name": "The Field",
-    "sceneSentence": "A capture-first person opens the app mid-thought to shoot a bill, an idea, or a to-do down before it is gone, and needs to see their entire mental field present and actionable at a glance.",
-    "oneParagraph": "The Field is a bento board of your whole brain. Open it and everything you are carrying is already there: bills, ideas, to-dos, events, somedays, each in its own soft-tinted tile, color-coded and packed with the real, tappable items rather than a count to click through. A warm Fraunces serif headline greets you like a person, not a dashboard. Capture lives in an always-on clay bar pinned to the bottom, one tap from any screen. The system is built for an ADHD glance: out of sight is out of mind, so nothing is hidden behind a filter, and nothing on screen is a dead label. It is bold the way an editorial page is bold, through confident type and a disciplined pastel system that survives both light and dark, never through gradients, badges, or decoration. The New Yorker organizing your life: warm, graphic, and unmistakably not a productivity template.",
-    "is": ["activating", "editorial", "warm"],
-    "isNot": ["corporate", "gamified", "minimalist-empty"],
-    "feelInFirst3Seconds": "Everything I am carrying is right here, and I can act on any of it without hunting. Warm, graspable, mine.",
-    "wouldBeWrongToFeel": "Curated-down, filtered, performative, or like another cheerful productivity app with streaks and badges.",
-    "appType": "tool"
+    "name": "Field Lab",
+    "sceneSentence": "An ADHD person opens the app mid-thought needing to feel switched-on, not soothed; they want their whole mental field present and alive on screen, every type pulling its own weight, so nothing they are carrying quietly disappears.",
+    "oneParagraph": "Field Lab is the bento board of your whole brain rebuilt as a charged, living instrument panel. Same everything-at-a-glance promise as before, but cool, sharp, and activated instead of warm and calm. The board is not a static list: tiles vary in size and glow-intensity by how full and how fresh each type is, so the surface looks different day to day and your brain re-engages instead of tuning it out. The whole field is organized into two charged neighborhoods — a STAKES zone (bills, due todos) and a PRESENT zone (ideas, somedays, events) — both lit, neither dimmed. Activation comes from charged presence, not pressure: every entry type glows in its own electric color at equal volume, so ideas and somedays are as alive as an overdue bill. Ideas and somedays that go untouched get a faint outline pulse — still here — the one place forgetting actually hurts. A companion voice reads the board like a status line: direct, stakes-aware, a little blunt. Nothing fades, nothing is hidden behind a filter, nothing rots in a grey corner.",
+    "is": ["activating", "charged", "alive"],
+    "isNot": ["warm", "calm", "static"],
+    "feelInFirst3Seconds": "Switched-on and oriented: my whole field is here, lit, and I can see at a glance what has stakes and what is just present, without anything shouting or anything fading.",
+    "wouldBeWrongToFeel": "Soothed, sleepy, or that the app is a quiet warm place to relax. Also wrong: alarmed or stressed, as if only deadlines matter and everything else is noise.",
+    "appType": "companion"
   },
 
   "axes": {
-    "temperature": "warm",
-    "density": "efficient",
+    "temperature": "cool",
+    "density": "generous",
     "voice": "direct",
     "posture": "expressive",
-    "era": "of-the-moment",
+    "era": "timeless",
     "convention": "distinct"
   },
 
   "inheritedFrom": {
     "references": [
-      { "type": "app", "ref": "The New Yorker (Discover sections grid)", "lesson": "Desaturated pastel category cards (powder blue, peach, sage, blush, lavender, butter) with ink-line icons and serif labels read beautifully in both light and dark mode. Pastels become the entry-type color system." },
-      { "type": "app", "ref": "The New Yorker (issue table of contents)", "lesson": "Tiny all-caps kicker over a serif headline gives editorial reverence to content. The kicker becomes each tile's color-coded type label." },
-      { "type": "app", "ref": "Tiimo", "lesson": "An editorial serif header and soft warm personality make a planner feel human, not corporate." },
-      { "type": "app", "ref": "Zalando", "lesson": "Color owning a zone (a drenched header block) is bolder than tinting everything evenly. Informs the saturated kicker and edge-bar carrying the type color while the tile body stays soft." },
-      { "type": "app", "ref": "Tolan", "lesson": "Large serif on warm cream is bold through scale, not decoration. Informs the Fraunces home headline." }
+      { "type": "app", "ref": "Network/observability dashboards", "lesson": "Glow and intensity encode activity — a board that visibly reflects what is in it stays alive and readable, never a dead grid." },
+      { "type": "app", "ref": "Linear", "lesson": "Cool, sharp, keyboard-first crispness; mono accents and disciplined restraint as the baseline an expressive layer sits on." },
+      { "type": "app", "ref": "Apple Weather", "lesson": "Data rendered as texture — size and color carry information so the layout itself is glanceable, not just labeled." },
+      { "type": "doc", "ref": ".impeccable/forensics.json", "lesson": "The old system read as warm/orange/soft/low-saturation — the derived vibe was the opposite of 'activating'. The brief is the gap: flip temperature, sharpen edges, charge the color." }
     ],
     "rejectedDirections": [
-      { "name": "The Almanac", "whyRejected": "Most elegant/editorial, but a single sectioned feed scrolls; The Field's spatial bento is more 'everything at a glance' and more ADHD-friendly, which the user prioritized." },
-      { "name": "The Margin", "whyRejected": "Beautiful risograph-quiet direction, but its generous spacing fights the user's hard requirement that everything be present and actionable at once." }
+      { "name": "Pulse (v1 D3)", "whyRejected": "Privileged time/countdowns, which makes anything without a deadline (ideas, somedays) second-class by design — the exact failure the user flagged: activation must not collapse into pressure." },
+      { "name": "Console (v2 D1)", "whyRejected": "Cockpit clarity was right but too restrained/efficient; the user wanted the board to feel more alive and expressive, with energy that changes day to day." },
+      { "name": "Voltage (v2 D2)", "whyRejected": "Loud uniform color-blocking risked the identical-card-grid slop and read as more launch-screen than living instrument; size/glow texture won over flat fill volume." },
+      { "name": "The Field (current shipped system)", "whyRejected": "Warm oat-cream/soot-brown, soft pastels, editorial calm — optimized for soothing, which the ADHD user experiences as sedating, not activating. Right structure (bento + capture bar), wrong temperature and energy." }
     ]
   },
 
@@ -44,133 +45,148 @@
         {
           "name": "surface",
           "tokens": [
-            { "name": "color.light.paper", "value": "#F4EFE6", "role": "Root background, light", "why": "Warm oat-cream paper. Never pure white, per hard requirement.", "disposition": "UPDATE", "previousValue": "#F8F8FB" },
-            { "name": "color.light.surface", "value": "#FBF7F0", "role": "Tile body, light", "why": "Soft near-paper tint so 5 tiles never read busy; color lives in kicker + edge-bar.", "disposition": "UPDATE", "previousValue": "#FFFFFF" },
-            { "name": "color.light.surfaceSubtle", "value": "#EFE8DB", "role": "Recessed / gutter, light", "why": "Slightly deeper oat to seat tiles tonally without borders.", "disposition": "UPDATE", "previousValue": "#F3F3F6" },
-            { "name": "color.dark.paper", "value": "#16140F", "role": "Root background, dark", "why": "Warm soot-brown, not pure black. Carries the same warmth as light paper.", "disposition": "UPDATE", "previousValue": "#131316" },
-            { "name": "color.dark.surface", "value": "#211E18", "role": "Tile body, dark", "why": "Warm-charcoal tile body; pastels sit on it legibly in dark mode.", "disposition": "UPDATE", "previousValue": "#1F1F22" },
-            { "name": "color.dark.surfaceSubtle", "value": "#1C1A14", "role": "Recessed / gutter, dark", "why": "Tonal seating layer for dark mode, no borders.", "disposition": "UPDATE", "previousValue": "#1B1B1E" }
+            { "name": "color.dark.paper", "value": "#171A20", "role": "Root background (dark)", "why": "Cool graphite, instrument-panel ground. Charged but breathable; never pure black (dead/harsh) and never warm (sedating).", "disposition": "UPDATE", "previousValue": "#16140F" },
+            { "name": "color.light.paper", "value": "#EEF1F5", "role": "Root background (light)", "why": "Cool crisp paper — light mode is also cool and sharp, never warm oat-cream. Keeps full parity.", "disposition": "UPDATE", "previousValue": "#F4EFE6" },
+            { "name": "color.dark.surface", "value": "#1F242C", "role": "Tile body (dark)", "why": "One tonal step up from paper; tiles separate by tone + glow, not borders or shadow.", "disposition": "UPDATE", "previousValue": "#211E18" },
+            { "name": "color.light.surface", "value": "#F8FAFC", "role": "Tile body (light)", "why": "Cool near-white tile, sits on cool paper. Color and glow live in the edge-bar, not the body.", "disposition": "UPDATE", "previousValue": "#FBF7F0" },
+            { "name": "color.dark.surfaceSubtle", "value": "#15181D", "role": "Recessed / gutter (dark)", "why": "Recessed seat for tiles; tonal-only sectioning.", "disposition": "UPDATE", "previousValue": "#1C1A14" },
+            { "name": "color.light.surfaceSubtle", "value": "#E4E8EE", "role": "Recessed / gutter (light)", "why": "Cool recessed gutter for the light scheme.", "disposition": "UPDATE", "previousValue": "#EFE8DB" }
           ]
         },
         {
           "name": "text",
           "tokens": [
-            { "name": "color.light.ink", "value": "#2A2622", "role": "Primary text, light", "why": "Warm near-black brown ink, never #000.", "disposition": "UPDATE", "previousValue": "#0F172A" },
-            { "name": "color.light.inkMuted", "value": "#6B6358", "role": "Secondary / metadata, light", "why": "Warm taupe for kicker metadata and due dates.", "disposition": "UPDATE", "previousValue": "#4B5563" },
-            { "name": "color.dark.ink", "value": "#F0EAE0", "role": "Primary text, dark", "why": "Warm cream, never #FFF.", "disposition": "UPDATE", "previousValue": "#FAFAFA" },
-            { "name": "color.dark.inkMuted", "value": "#A39B8C", "role": "Secondary / metadata, dark", "why": "Warm muted sand for dark-mode metadata.", "disposition": "UPDATE", "previousValue": "#A1A1AA" }
+            { "name": "color.dark.ink", "value": "#E9EDF3", "role": "Primary text (dark)", "why": "Cool near-white; high contrast on graphite for the jolt/lock-in feel.", "disposition": "UPDATE", "previousValue": "#F0EAE0" },
+            { "name": "color.light.ink", "value": "#1A1E25", "role": "Primary text (light)", "why": "Cool near-black, never pure black. Crisp on cool paper.", "disposition": "UPDATE", "previousValue": "#2A2622" },
+            { "name": "color.dark.inkMuted", "value": "#8A93A3", "role": "Secondary/metadata (dark)", "why": "Cool slate-grey for status lines, kickers, counts.", "disposition": "UPDATE", "previousValue": "#A39B8C" },
+            { "name": "color.light.inkMuted", "value": "#5A6473", "role": "Secondary/metadata (light)", "why": "Cool grey-blue muted text for the light scheme.", "disposition": "UPDATE", "previousValue": "#6B6358" }
           ]
         },
         {
-          "name": "type-accents",
+          "name": "entryType",
           "tokens": [
-            { "name": "color.type.billsTint", "value": "#F7E3D6", "role": "Bills/deadline tile body tint, light", "why": "Soft peach body; the saturated peach lives in kicker + edge-bar.", "disposition": "NEW", "previousValue": null },
-            { "name": "color.type.bills", "value": "#D98C6A", "role": "Bills/deadline kicker + edge-bar", "why": "Saturated peach-terracotta carries the type code.", "disposition": "UPDATE", "previousValue": "#FF6B6B" },
-            { "name": "color.type.ideasTint", "value": "#DDE7F0", "role": "Ideas tile body tint, light", "why": "Soft powder-blue body.", "disposition": "NEW", "previousValue": null },
-            { "name": "color.type.ideas", "value": "#5B86A8", "role": "Ideas kicker + edge-bar", "why": "Saturated powder-blue type code (was the amber idea accent).", "disposition": "UPDATE", "previousValue": "#FBB040" },
-            { "name": "color.type.todoTint", "value": "#DCE7D6", "role": "To-do tile body tint, light", "why": "Soft sage body.", "disposition": "NEW", "previousValue": null },
-            { "name": "color.type.todo", "value": "#6E9466", "role": "To-do kicker + edge-bar", "why": "Saturated sage type code.", "disposition": "UPDATE", "previousValue": "#6EA8FF" },
-            { "name": "color.type.eventTint", "value": "#E6DCEC", "role": "Event tile body tint, light", "why": "Soft lavender body.", "disposition": "NEW", "previousValue": null },
-            { "name": "color.type.event", "value": "#8A6FA6", "role": "Event kicker + edge-bar", "why": "Saturated lavender type code.", "disposition": "UPDATE", "previousValue": "#C084FC" },
-            { "name": "color.type.somedayTint", "value": "#F2E6C9", "role": "Someday tile body tint, light", "why": "Soft butter body.", "disposition": "NEW", "previousValue": null },
-            { "name": "color.type.someday", "value": "#C09A4B", "role": "Someday kicker + edge-bar", "why": "Saturated butter-ochre type code.", "disposition": "UPDATE", "previousValue": "#40fbcfff" }
+            { "name": "color.type.deadline", "value": "#FB7185", "role": "Bills / deadlines — code (dots, edge-bars, fills)", "why": "Cool-biased coral. STAKES zone. Reads as consequence without being a warm red; the one type whose color also carries urgency.", "disposition": "UPDATE", "previousValue": "#D98C6A" },
+            { "name": "color.type.todo", "value": "#22D3EE", "role": "Todo — code", "why": "Electric cyan. Deliberately NOT green: green reads as done/completed and would lie on an open todo. Cyan = active, charged, cool.", "disposition": "UPDATE", "previousValue": "#6E9466" },
+            { "name": "color.type.idea", "value": "#FBBF24", "role": "Idea — code", "why": "Cool-electric amber/gold. PRESENT zone. Glows for presence, not urgency — ideas pull the eye without alarming.", "disposition": "UPDATE", "previousValue": "#5B86A8" },
+            { "name": "color.type.someday", "value": "#A3E635", "role": "Someday — code", "why": "Electric lime. PRESENT zone. Distinct from cyan-todo and amber-idea; alive, not warm.", "disposition": "UPDATE", "previousValue": "#C09A4B" },
+            { "name": "color.type.event", "value": "#A78BFA", "role": "Event — code", "why": "Ultraviolet. The remaining cool slot; distinct from all four others, completes the five-type charged set.", "disposition": "UPDATE", "previousValue": "#8A6FA6" }
           ]
         },
         {
-          "name": "type-accents-dark",
+          "name": "entryTypeKicker",
           "tokens": [
-            { "name": "color.type.billsTintDark", "value": "#3A2A22", "role": "Bills tile body tint, dark", "why": "Warm-dark peach body; same hue, dark-adapted lightness so pastels survive dark mode.", "disposition": "NEW", "previousValue": null },
-            { "name": "color.type.ideasTintDark", "value": "#22303A", "role": "Ideas tile body tint, dark", "why": "Warm-dark powder-blue body.", "disposition": "NEW", "previousValue": null },
-            { "name": "color.type.todoTintDark", "value": "#26331F", "role": "To-do tile body tint, dark", "why": "Warm-dark sage body.", "disposition": "NEW", "previousValue": null },
-            { "name": "color.type.eventTintDark", "value": "#2E2638", "role": "Event tile body tint, dark", "why": "Warm-dark lavender body.", "disposition": "NEW", "previousValue": null },
-            { "name": "color.type.somedayTintDark", "value": "#352B14", "role": "Someday tile body tint, dark", "why": "Warm-dark butter body.", "disposition": "NEW", "previousValue": null }
+            { "name": "color.typeKicker.deadline", "value": "#C2415A", "role": "Bills kicker/label — AA on tint", "why": "Darker coral for 11px all-caps labels to clear WCAG AA on the dark/light tile.", "disposition": "UPDATE", "previousValue": "#8A5943" },
+            { "name": "color.typeKicker.todo", "value": "#0E8FA8", "role": "Todo kicker/label", "why": "Darker cyan for AA-legible kicker text.", "disposition": "UPDATE", "previousValue": "#516D4B" },
+            { "name": "color.typeKicker.idea", "value": "#A87908", "role": "Idea kicker/label", "why": "Darker amber for AA on tint.", "disposition": "UPDATE", "previousValue": "#486B86" },
+            { "name": "color.typeKicker.someday", "value": "#5E8B12", "role": "Someday kicker/label", "why": "Darker lime for AA on tint.", "disposition": "UPDATE", "previousValue": "#7A622F" },
+            { "name": "color.typeKicker.event", "value": "#6D4FCF", "role": "Event kicker/label", "why": "Darker violet for AA on tint.", "disposition": "UPDATE", "previousValue": "#6E5884" }
           ]
         },
         {
-          "name": "brand-feedback",
+          "name": "tint",
           "tokens": [
-            { "name": "color.accent.clay", "value": "#D86B3C", "role": "Primary accent — capture bar, active states", "why": "Warm clay-terracotta. The one action color, used sparingly. Replaces the blue-lavender primary the user found corporate.", "disposition": "UPDATE", "previousValue": "#ADC6FF" },
-            { "name": "color.accent.clayPressed", "value": "#BE5730", "role": "Capture bar pressed", "why": "Deeper clay for press feedback.", "disposition": "NEW", "previousValue": null },
-            { "name": "color.feedback.success", "value": "#6E9466", "role": "Completion", "why": "Reuse sage; completion is calm, not celebratory.", "disposition": "UPDATE", "previousValue": "#34D399" },
-            { "name": "color.feedback.warning", "value": "#C09A4B", "role": "Approaching due", "why": "Butter-ochre, warm not alarming.", "disposition": "UPDATE", "previousValue": "#FBBF24" },
-            { "name": "color.feedback.danger", "value": "#C8553D", "role": "Overdue / destructive", "why": "Deep terracotta-red; warm even when signalling.", "disposition": "UPDATE", "previousValue": "#F87171" }
+            { "name": "color.tint.deadline.dark", "value": "#2E1C20", "role": "Bills tile-tint dark", "why": "Charged dark coral wash; glow-intensity scales on top by content density.", "disposition": "UPDATE", "previousValue": "#3A2A22" },
+            { "name": "color.tint.deadline.light", "value": "#FCE0E4", "role": "Bills tile-tint light", "why": "Cool coral tint for light scheme.", "disposition": "UPDATE", "previousValue": "#F7E3D6" },
+            { "name": "color.tint.todo.dark", "value": "#102A30", "role": "Todo tile-tint dark", "why": "Charged dark cyan wash.", "disposition": "UPDATE", "previousValue": "#26331F" },
+            { "name": "color.tint.todo.light", "value": "#D6F2F7", "role": "Todo tile-tint light", "why": "Cool cyan tint for light.", "disposition": "UPDATE", "previousValue": "#DCE7D6" },
+            { "name": "color.tint.idea.dark", "value": "#2E2611", "role": "Idea tile-tint dark", "why": "Charged dark amber wash.", "disposition": "UPDATE", "previousValue": "#22303A" },
+            { "name": "color.tint.idea.light", "value": "#FBEFCF", "role": "Idea tile-tint light", "why": "Cool amber tint for light.", "disposition": "UPDATE", "previousValue": "#DDE7F0" },
+            { "name": "color.tint.someday.dark", "value": "#222E10", "role": "Someday tile-tint dark", "why": "Charged dark lime wash.", "disposition": "UPDATE", "previousValue": "#352B14" },
+            { "name": "color.tint.someday.light", "value": "#E8F5CE", "role": "Someday tile-tint light", "why": "Cool lime tint for light.", "disposition": "UPDATE", "previousValue": "#F2E6C9" },
+            { "name": "color.tint.event.dark", "value": "#241E33", "role": "Event tile-tint dark", "why": "Charged dark violet wash.", "disposition": "UPDATE", "previousValue": "#2E2638" },
+            { "name": "color.tint.event.light", "value": "#E7E0FB", "role": "Event tile-tint light", "why": "Cool violet tint for light.", "disposition": "UPDATE", "previousValue": "#E6DCEC" }
           ]
         },
         {
-          "name": "retired",
+          "name": "accent",
           "tokens": [
-            { "name": "Brand.primaryContainer", "value": null, "role": "Former CTA gradient endpoint", "why": "No gradients in The Field. CTAs use solid clay.", "disposition": "RETIRE", "previousValue": "#4D8EFF" },
-            { "name": "Brand.fabGlow", "value": null, "role": "Former FAB glow", "why": "FAB replaced by always-on capture bar; glow retired.", "disposition": "RETIRE", "previousValue": "rgba(173,198,255,0.20)" },
-            { "name": "EntryAccent.today", "value": null, "role": "Former 'today' accent", "why": "Folded into headline + tile ordering, not a color.", "disposition": "RETIRE", "previousValue": "#e5ee90ff" }
+            { "name": "accent.signal", "value": "#22D3EE", "role": "The one action color — capture bar active, primary actions", "why": "Electric cyan shared with todo as the universal 'go/active' charge. Replaces clay terracotta.", "disposition": "UPDATE", "previousValue": "#D86B3C" },
+            { "name": "accent.signalPressed", "value": "#0EA5C4", "role": "Pressed feedback", "why": "Deeper cyan for press state.", "disposition": "UPDATE", "previousValue": "#BE5730" }
+          ]
+        },
+        {
+          "name": "feedback",
+          "tokens": [
+            { "name": "feedback.success", "value": "#34D399", "role": "Completion", "why": "Cool emerald — completion is the ONLY place green is allowed, precisely because green means done. Reinforces that todo (cyan) is not done.", "disposition": "UPDATE", "previousValue": "#6E9466" },
+            { "name": "feedback.warning", "value": "#FBBF24", "role": "Warning", "why": "Reuses amber; cool-charged caution.", "disposition": "UPDATE", "previousValue": "#C09A4B" },
+            { "name": "feedback.danger", "value": "#F43F5E", "role": "Danger / destructive", "why": "Hot cool-red, the stakes signal at full intensity.", "disposition": "UPDATE", "previousValue": "#C8553D" }
+          ]
+        },
+        {
+          "name": "glow",
+          "tokens": [
+            { "name": "color.glow.faint", "value": "rgba(34,211,238,0.10)", "role": "Low-life tile glow", "why": "Field Lab signature: edge-bar/tile glow opacity scales with content density + freshness. Faint = sparse/quiet tile.", "disposition": "NEW", "previousValue": null },
+            { "name": "color.glow.strong", "value": "rgba(34,211,238,0.28)", "role": "High-life tile glow", "why": "Full, fresh tiles glow brighter — the board visibly reflects what is in it. (Hue is per-type at runtime; cyan shown as base.)", "disposition": "NEW", "previousValue": null },
+            { "name": "color.glow.stalePulse", "value": "rgba(251,191,36,0.45)", "role": "Stale idea/someday outline pulse", "why": "Faint outline pulse on untouched ideas/somedays (7d+) — 'still here'. Only on no-deadline types where forgetting hurts; kept rare to stay noticed.", "disposition": "NEW", "previousValue": null }
           ]
         }
       ]
     },
     "type": {
-      "family": { "value": "Fraunces (display/headline/kicker) + Inter (body/UI)", "why": "Fraunces is a warm, characterful old-style serif that delivers the human, non-corporate voice at the top of home; Inter keeps the dense tile content legible and fast. Hierarchy reads as serif-vs-sans plus size." },
+      "family": { "value": "Inter (UI/body/display) + SF Mono / JetBrains Mono (counts, kickers, status line)", "why": "Drops Fraunces entirely — serif is warm/editorial, the opposite of activating. Inter is cool, sharp, dense; a mono carries counts and the companion status line for an instrument-panel signal. Hierarchy = size + weight + sans/mono contrast, not serif-vs-sans." },
       "scale": [
-        { "name": "display", "size": 30, "lineHeight": 36, "weight": 600, "use": "Home greeting headline (Fraunces)" },
-        { "name": "title", "size": 22, "lineHeight": 28, "weight": 600, "use": "Tile / section headers (Fraunces)" },
-        { "name": "item", "size": 17, "lineHeight": 23, "weight": 500, "use": "Entry titles inside tiles (Inter)" },
+        { "name": "display", "size": 28, "lineHeight": 34, "weight": 700, "use": "Home greeting / companion headline (Inter)" },
+        { "name": "title", "size": 20, "lineHeight": 26, "weight": 700, "use": "Tile / section headers (Inter)" },
+        { "name": "item", "size": 16, "lineHeight": 22, "weight": 500, "use": "Entry titles inside tiles (Inter)" },
         { "name": "body", "size": 14, "lineHeight": 20, "weight": 400, "use": "Entry detail / supporting (Inter)" },
-        { "name": "kicker", "size": 11, "lineHeight": 14, "weight": 600, "use": "All-caps type label on each tile (Inter, +0.6 tracking)" }
+        { "name": "kicker", "size": 11, "lineHeight": 14, "weight": 600, "use": "All-caps type label, +0.8 tracking (mono)" },
+        { "name": "mono", "size": 13, "lineHeight": 18, "weight": 500, "use": "Counts, status line, time — tabular (mono)" }
       ],
-      "hierarchyStrategy": "serif+sans+size",
-      "why": "The serif/sans split does the heavy lifting so color can stay calm; the kicker is the only all-caps element and carries the type code."
+      "hierarchyStrategy": "size+weight, reinforced by sans/mono contrast",
+      "why": "Activation reads through sharp weight jumps and the mono signal layer; no serif warmth anywhere."
     },
     "spacing": {
       "base": 4,
       "rhythm": [4, 8, 12, 16, 20, 24, 32],
-      "why": "Keep the 4pt base (current code is already 4pt-based, only 43% fit). Enforcing this rhythm fixes the off-beat 3px/14px values the forensics flagged. Vary by zone: tighter inside tiles, generous between sections."
+      "why": "Keep the established 4pt base (fixes the 44%-fit drift the forensics flagged). Generous between zones, tighter inside tiles; Field Lab varies tile footprint by content, so the grid gutter rhythm must stay strict to keep the responsive board legible."
     },
     "radius": {
-      "language": "large",
-      "scale": { "sm": 10, "md": 14, "lg": 18, "pill": 999 },
-      "why": "Large soft radii make tiles feel like cards you could pick up — graphic and tactile. Replaces the current sharp 4/6px corner language the forensics called 'sharp'."
+      "language": "sharp",
+      "scale": { "sm": 6, "md": 10, "lg": 14, "pill": 999 },
+      "why": "Sharper than The Field's large-soft radii — crisp instrument-panel edges read as charged/surgical. Slightly above pure-sharp so resizing tiles still read as movable cards on a map, not hard chips."
     },
     "motion": {
       "posture": "expressive",
-      "durations": { "fast": 160, "base": 240, "slow": 360 },
+      "durations": { "fast": 140, "base": 220, "slow": 340 },
       "easings": { "standard": "cubic-bezier(0.22, 1, 0.36, 1)" },
-      "banned": ["gradient-glow pulses", "bounce/elastic on navigation", "continuous looping motion", "celebratory confetti"],
-      "why": "Tiles spring in subtly on open (Reanimated withSpring damping ~16) to feel alive on ProMotion; everything respects useReducedMotion. Transform/opacity only."
+      "banned": ["gradient-glow pulses as decoration", "bounce/elastic on navigation", "confetti / celebration", "warm easing or floaty drift"],
+      "why": "Tiles re-flow and resize with a quick spring (damping 18, stiffness 220) when content changes — the living board. The stale-pulse on untouched ideas/somedays is the ONE sanctioned continuous motion (slow, faint outline); it is the content, not decoration. Reduced-motion: resizing becomes instant, stale-pulse becomes a static outline ring."
     },
     "elevation": {
       "philosophy": "layered",
       "scale": [
-        { "name": "flat", "use": "Paper background", "shadow": "none" },
-        { "name": "tile", "use": "Bento tiles", "shadow": "warm soft: rgba(80,50,30,0.10), y8, blur20 (ios) / elevation 2 (android)" },
-        { "name": "capture", "use": "Pinned capture bar", "shadow": "warm soft: rgba(80,50,30,0.16), y-2, blur16 (ios) / elevation 8 (android)" }
+        { "name": "tile", "value": "cool shadow rgba(20,30,45,0.40), y6, blur18 / android elevation 2; fuller tiles lift slightly more", "why": "Depth encodes content density — a packed tile sits higher. No warm or pure-black shadow." },
+        { "name": "capture", "value": "cool shadow rgba(20,30,45,0.50), y-2, blur16 / android elevation 8", "why": "Always-on capture bar floats above the board." }
       ],
-      "why": "Gentle warm-tinted lift per tile gives the bento depth without borders; no pure-black shadows."
+      "why": "Layered, cool-tinted depth gives the bento its living-map quality without borders; elevation carries information (fuller = higher), not just decoration."
     }
   },
 
   "rules": {
     "ruledOut": [
-      "No FAB — capture is an always-on bottom bar",
-      "No gradients anywhere (no LinearGradient buttons or glows)",
-      "No pure white (#FFFFFF) or pure black (#000000) — warm extremes only",
-      "No 1px structural borders — tonal layering + edge-bars only",
-      "No streaks, badges, confetti, or any gamification",
-      "No dead count-only tiles — every tile shows real, tappable items",
-      "No curating the home down to 'today' — everything stays present and visible",
-      "No pastel-illustration mascots or decorative spot art",
-      "Kicker is the only all-caps text; no all-caps body or buttons"
+      "No warm tones anywhere — no oat-cream, no soot-brown-warm, no orange/terracotta. Cool only.",
+      "No serif (Fraunces removed) — Inter + mono only.",
+      "No pure black (#000000) or pure white (#FFFFFF) — cool extremes only.",
+      "No FAB — capture stays an always-on bottom bar.",
+      "No 1px structural borders — tonal layering, edge-bars, and glow carry structure.",
+      "No dimming or fading non-urgent types — ideas/somedays glow at equal volume; activation is presence, not pressure.",
+      "No urgency-only signaling — the board must not collapse into 'only deadlines matter'.",
+      "No uniform identical-card grid — tile size/glow varies by content (bounded), but every type keeps a visible minimum slot so nothing drops off.",
+      "No dead count-only tiles — every tile shows real, tappable items.",
+      "No 'today' curation or filters that hide things — whole field always present.",
+      "No streaks, badges, confetti, gamification, or celebration.",
+      "No gradients (no LinearGradient buttons/glows) — glow is solid-color opacity, not a gradient ramp.",
+      "Green is reserved for completion only (feedback.success) — never a type color, so todo (cyan) never reads as done.",
+      "Stale-pulse only on untouched ideas/somedays (7d+), kept rare so it stays noticed.",
+      "Rotation/AI resurfacing is OUT of this rebrand — parked for MVP 2."
     ],
-    "darkMode": {
-      "supported": true,
-      "strategy": "First-class light AND dark, full parity. Each type has both a light tile-tint and a dark tile-tint of the same hue (dark-adapted lightness) so pastels survive both. Saturated kicker/edge-bar colors are shared across schemes. Resolve via a single useTheme() hook returning the active token set at the provider level — no inline colorScheme ternaries in components."
-    },
-    "accessibility": {
-      "minContrast": "WCAG AA",
-      "notes": "Verify ink-on-tint pairs hit AA in both schemes; saturated kicker text on soft tint must clear 4.5:1. Dynamic Type / font scale to 2x with no fixed-height tiles. Touch targets 44pt iOS / 48dp Android; capture bar and tile items meet minimums."
-    }
+    "darkMode": { "supported": true, "strategy": "Full light + dark parity, both cool and sharp. Per-scheme paper/surface/ink and per-scheme type-tints; type codes shared across schemes. Resolved through the existing useTheme() / ThemeProvider System-Light-Dark preference." },
+    "accessibility": { "minContrast": "WCAG AA" }
   },
 
   "migrationHints": {
-    "suggestedNamespace": "tokens (replace constants/theme.ts named exports; keep a thin compat shim mapping old names during migration)",
-    "dualResidentStrategy": "side-by-side until cleanup — introduce new token object alongside existing Surface/TextColors/EntryAccent/Brand exports, migrate screen-by-screen, then delete old exports",
-    "phaseHints": "Phase 1: land the token object + useTheme() provider and light/dark resolution. Phase 2: build EntryTile (soft tint + kicker + edge-bar + actionable items) and the Fraunces headline; load Fraunces via expo-font before splash. Phase 3: convert home to the bento Field layout and add the always-on capture bar (remove FAB). Phase 4: migrate detail/list/calendar to the new tokens; fix the 418 hardcoded values flagged in forensics; collapse the 6 duplicate color clusters. Phase 5: rewrite PRODUCT.md/DESIGN.md to The Field, then audit on both platforms in both schemes."
+    "suggestedNamespace": "tokens (in-place update of constants/theme.ts)",
+    "dualResidentStrategy": "side-by-side until cleanup",
+    "phaseHints": "The structural shell (bento board, always-on capture bar, useTheme()/ThemeProvider, entryColor/useSurfaceColor accessors, FieldTile/CaptureBar/FieldGreeting components) already exists from the prior migration and is KEPT. This rebrand is primarily a token-value swap (color temperature flip, type family Inter+mono replacing Fraunces+Inter, sharper radii) PLUS three net-new behaviors on the existing components: (1) bounded tile resizing by content density with a per-type visible minimum, (2) per-type glow opacity scaling with density+freshness, (3) stale-pulse outline on untouched ideas/somedays. Phase 1: swap color/type/radius/motion/elevation token values. Phase 2: remove Fraunces from expo-font loading, wire mono font. Phase 3: implement glow + bounded-resize on FieldTile. Phase 4: implement stale-pulse (idea/someday only) respecting useReducedMotion(). Phase 5: re-verify WCAG AA on all kicker-on-tint pairs in both schemes. The 200 hardcoded values from forensics should be tokenized in the same pass or they will not respond to the new system."
   }
 }

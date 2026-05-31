@@ -1,1887 +1,6 @@
 {
   "violations": [
     {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/(tabs)/calendar.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 80",
-      "nearestToken": "spacing.5xl",
-      "line": 150,
-      "col": 5,
-      "context": "height: 80,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/(tabs)/index.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 80",
-      "nearestToken": "spacing.5xl",
-      "line": 231,
-      "col": 5,
-      "context": "height: 80,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "inline-color",
-      "value": "#52C87A",
-      "nearestToken": null,
-      "line": 82,
-      "col": 59,
-      "context": "if (status === \"completed\" || status === \"met\") return \"#52C87A\";"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "inline-color",
-      "value": "#FF4444",
-      "nearestToken": null,
-      "line": 83,
-      "col": 37,
-      "context": "if (status === \"overdue\") return \"#FF4444\";"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 281,
-      "col": 54,
-      "context": "<ThemedText type=\"body\" style={{ color: \"#FF6B6B\" }}>"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 333,
-      "col": 54,
-      "context": "<ThemedText type=\"body\" style={{ color: \"#FF6B6B\" }}>"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "inline-color",
-      "value": "rgba(0,0,0,0.6)",
-      "nearestToken": null,
-      "line": 790,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(0,0,0,0.6)\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.6",
-      "nearestToken": "type.xs",
-      "line": 740,
-      "col": 5,
-      "context": "letterSpacing: 0.6,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 28",
-      "nearestToken": "type.4xl",
-      "line": 743,
-      "col": 5,
-      "context": "fontSize: 28,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "magic-fontsize",
-      "value": "lineHeight: 34",
-      "nearestToken": "type.5xl",
-      "line": 744,
-      "col": 5,
-      "context": "lineHeight: 34,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.8",
-      "nearestToken": "type.xs",
-      "line": 758,
-      "col": 5,
-      "context": "letterSpacing: 0.8,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.6",
-      "nearestToken": "type.xs",
-      "line": 771,
-      "col": 5,
-      "context": "letterSpacing: 0.6,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "magic-fontsize",
-      "value": "lineHeight: 22",
-      "nearestToken": "type.2xl",
-      "line": 774,
-      "col": 5,
-      "context": "lineHeight: 22,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 13",
-      "nearestToken": "type.sm",
-      "line": 804,
-      "col": 5,
-      "context": "fontSize: 13,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.4",
-      "nearestToken": "type.xs",
-      "line": 805,
-      "col": 5,
-      "context": "letterSpacing: 0.4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/list.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 80",
-      "nearestToken": "spacing.5xl",
-      "line": 407,
-      "col": 5,
-      "context": "height: 80,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/list.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 10",
-      "nearestToken": "type.xs",
-      "line": 391,
-      "col": 5,
-      "context": "fontSize: 10,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/list.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.5",
-      "nearestToken": "type.xs",
-      "line": 401,
-      "col": 5,
-      "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx",
-      "kind": "inline-color",
-      "value": "#131316",
-      "nearestToken": null,
-      "line": 428,
-      "col": 13,
-      "context": "color: \"#131316\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx",
-      "kind": "magic-spacing",
-      "value": "minWidth: 60",
-      "nearestToken": "spacing.5xl",
-      "line": 338,
-      "col": 5,
-      "context": "minWidth: 60,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx",
-      "kind": "magic-spacing",
-      "value": "minWidth: 50",
-      "nearestToken": "spacing.5xl",
-      "line": 341,
-      "col": 5,
-      "context": "minWidth: 50,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 14",
-      "nearestToken": "type.md",
-      "line": 354,
-      "col": 5,
-      "context": "fontSize: 14,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.5",
-      "nearestToken": "type.xs",
-      "line": 369,
-      "col": 5,
-      "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 16",
-      "nearestToken": "type.lg",
-      "line": 377,
-      "col": 5,
-      "context": "fontSize: 16,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 18",
-      "nearestToken": "type.xl",
-      "line": 380,
-      "col": 5,
-      "context": "fontSize: 18,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 16",
-      "nearestToken": "type.lg",
-      "line": 429,
-      "col": 5,
-      "context": "fontSize: 16,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 11",
-      "nearestToken": "type.xs",
-      "line": 448,
-      "col": 5,
-      "context": "fontSize: 11,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 247,
-      "col": 19,
-      "context": "borderColor: \"#FF6B6B\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "inline-color",
-      "value": "#000",
-      "nearestToken": null,
-      "line": 257,
-      "col": 19,
-      "context": "shadowColor: \"#000\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 277,
-      "col": 23,
-      "context": "backgroundColor: \"#FF6B6B\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "minWidth: 60",
-      "nearestToken": "spacing.5xl",
-      "line": 194,
-      "col": 5,
-      "context": "minWidth: 60,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "minWidth: 60",
-      "nearestToken": "spacing.5xl",
-      "line": 197,
-      "col": 5,
-      "context": "minWidth: 60,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 120",
-      "nearestToken": "spacing.5xl",
-      "line": 236,
-      "col": 5,
-      "context": "width: 120,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 120",
-      "nearestToken": "spacing.5xl",
-      "line": 237,
-      "col": 5,
-      "context": "height: 120,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 80",
-      "nearestToken": "spacing.5xl",
-      "line": 250,
-      "col": 5,
-      "context": "width: 80,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 80",
-      "nearestToken": "spacing.5xl",
-      "line": 251,
-      "col": 5,
-      "context": "height: 80,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 4",
-      "nearestToken": "spacing.xs",
-      "line": 258,
-      "col": 31,
-      "context": "shadowOffset: { width: 0, height: 4 },"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 32",
-      "nearestToken": "spacing.3xl",
-      "line": 271,
-      "col": 5,
-      "context": "width: 32,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 32",
-      "nearestToken": "spacing.3xl",
-      "line": 272,
-      "col": 5,
-      "context": "height: 32,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 24",
-      "nearestToken": "spacing.2xl",
-      "line": 279,
-      "col": 5,
-      "context": "width: 24,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 24",
-      "nearestToken": "spacing.2xl",
-      "line": 280,
-      "col": 5,
-      "context": "height: 24,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-radius",
-      "value": "borderRadius: 50",
-      "nearestToken": "radii.2xl",
-      "line": 245,
-      "col": 5,
-      "context": "borderRadius: 50,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 14",
-      "nearestToken": "type.md",
-      "line": 207,
-      "col": 5,
-      "context": "fontSize: 14,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 10",
-      "nearestToken": "type.xs",
-      "line": 286,
-      "col": 5,
-      "context": "fontSize: 10,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/DateInput.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 16",
-      "nearestToken": "type.lg",
-      "line": 50,
-      "col": 11,
-      "context": "fontSize: 16,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/TimeInput.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 16",
-      "nearestToken": "type.lg",
-      "line": 68,
-      "col": 11,
-      "context": "fontSize: 16,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/countdown-chip.tsx",
-      "kind": "inline-color",
-      "value": "#52C87A",
-      "nearestToken": null,
-      "line": 25,
-      "col": 10,
-      "context": "? '#52C87A'                // soft green — met/done"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/countdown-chip.tsx",
-      "kind": "inline-color",
-      "value": "#FF4444",
-      "nearestToken": null,
-      "line": 27,
-      "col": 12,
-      "context": "? '#FF4444'              // bright red — past due"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/day-cell.tsx",
-      "kind": "magic-spacing",
-      "value": "maxHeight: 52",
-      "nearestToken": "spacing.5xl",
-      "line": 83,
-      "col": 5,
-      "context": "maxHeight: 52,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/day-cell.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 4",
-      "nearestToken": "spacing.xs",
-      "line": 129,
-      "col": 5,
-      "context": "width: 4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/day-cell.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 4",
-      "nearestToken": "spacing.xs",
-      "line": 130,
-      "col": 5,
-      "context": "height: 4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/day-cell.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 14",
-      "nearestToken": "type.md",
-      "line": 110,
-      "col": 5,
-      "context": "fontSize: 14,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/day-cell.tsx",
-      "kind": "magic-fontsize",
-      "value": "lineHeight: 18",
-      "nearestToken": "type.xl",
-      "line": 113,
-      "col": 5,
-      "context": "lineHeight: 18,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/day-cell.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 8",
-      "nearestToken": "type.xs",
-      "line": 135,
-      "col": 5,
-      "context": "fontSize: 8,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/month-navigator.tsx",
-      "kind": "inline-color",
-      "value": "rgba(255,255,255,0.05)",
-      "nearestToken": null,
-      "line": 85,
-      "col": 23,
-      "context": "backgroundColor: 'rgba(255,255,255,0.05)',"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/month-navigator.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 44",
-      "nearestToken": "spacing.4xl",
-      "line": 78,
-      "col": 5,
-      "context": "width: 44,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/month-navigator.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 44",
-      "nearestToken": "spacing.4xl",
-      "line": 79,
-      "col": 5,
-      "context": "height: 44,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/month-navigator.tsx",
-      "kind": "magic-radius",
-      "value": "borderRadius: 22",
-      "nearestToken": "radii.2xl",
-      "line": 80,
-      "col": 5,
-      "context": "borderRadius: 22,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/month-navigator.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 20",
-      "nearestToken": "type.2xl",
-      "line": 92,
-      "col": 5,
-      "context": "fontSize: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/month-navigator.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 10",
-      "nearestToken": "type.xs",
-      "line": 96,
-      "col": 5,
-      "context": "fontSize: 10,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/streak-badge.tsx",
-      "kind": "magic-spacing",
-      "value": "minWidth: 80",
-      "nearestToken": "spacing.5xl",
-      "line": 43,
-      "col": 5,
-      "context": "minWidth: 80,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/streak-badge.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.8",
-      "nearestToken": "type.xs",
-      "line": 46,
-      "col": 5,
-      "context": "letterSpacing: 0.8,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/streak-badge.tsx",
-      "kind": "magic-fontsize",
-      "value": "lineHeight: 28",
-      "nearestToken": "type.4xl",
-      "line": 50,
-      "col": 5,
-      "context": "lineHeight: 28,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/waveform-bar.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 18,
-      "col": 12,
-      "context": "color = \"#FF6B6B\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/waveform-bar.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 52,
-      "col": 12,
-      "context": "color = \"#FF6B6B\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/waveform-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 40",
-      "nearestToken": "spacing.4xl",
-      "line": 68,
-      "col": 5,
-      "context": "height: 40,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/waveform-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "gap: 4",
-      "nearestToken": "spacing.xs",
-      "line": 69,
-      "col": 5,
-      "context": "gap: 4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/waveform-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 4",
-      "nearestToken": "spacing.xs",
-      "line": 72,
-      "col": 5,
-      "context": "width: 4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/error-boundary.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.4",
-      "nearestToken": "type.xs",
-      "line": 97,
-      "col": 5,
-      "context": "letterSpacing: 0.4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-action-bar.tsx",
-      "kind": "inline-color",
-      "value": "#FF4444",
-      "nearestToken": null,
-      "line": 22,
-      "col": 23,
-      "context": "const DANGER_COLOR = '#FF4444';"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-action-bar.tsx",
-      "kind": "inline-color",
-      "value": "#131316",
-      "nearestToken": null,
-      "line": 35,
-      "col": 14,
-      "context": "? '#131316'"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-action-bar.tsx",
-      "kind": "inline-color",
-      "value": "#131316",
-      "nearestToken": null,
-      "line": 40,
-      "col": 14,
-      "context": "? '#131316'"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-action-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "minHeight: 60",
-      "nearestToken": "spacing.5xl",
-      "line": 83,
-      "col": 5,
-      "context": "minHeight: 60,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-action-bar.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.3",
-      "nearestToken": "type.xs",
-      "line": 89,
-      "col": 5,
-      "context": "letterSpacing: 0.3,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-metadata-row.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 36",
-      "nearestToken": "spacing.3xl",
-      "line": 52,
-      "col": 5,
-      "context": "width: 36,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-metadata-row.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 36",
-      "nearestToken": "spacing.3xl",
-      "line": 53,
-      "col": 5,
-      "context": "height: 36,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-metadata-row.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.5",
-      "nearestToken": "type.xs",
-      "line": 65,
-      "col": 5,
-      "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-someday-hero.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 40",
-      "nearestToken": "spacing.4xl",
-      "line": 76,
-      "col": 5,
-      "context": "width: 40,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-someday-hero.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 1.5",
-      "nearestToken": "spacing.xxs",
-      "line": 77,
-      "col": 5,
-      "context": "height: 1.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-someday-hero.tsx",
-      "kind": "magic-fontsize",
-      "value": "lineHeight: 24",
-      "nearestToken": "type.3xl",
-      "line": 67,
-      "col": 5,
-      "context": "lineHeight: 24,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/empty-state.tsx",
-      "kind": "magic-fontsize",
-      "value": "lineHeight: 16",
-      "nearestToken": "type.lg",
-      "line": 70,
-      "col": 5,
-      "context": "lineHeight: 16,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/empty-state.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 11",
-      "nearestToken": "type.xs",
-      "line": 71,
-      "col": 5,
-      "context": "fontSize: 11,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/empty-state.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.4",
-      "nearestToken": "type.xs",
-      "line": 80,
-      "col": 5,
-      "context": "letterSpacing: 0.4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/entry-row.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 12",
-      "nearestToken": "spacing.md",
-      "line": 54,
-      "col": 5,
-      "context": "width: 12,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/entry-row.tsx",
-      "kind": "magic-spacing",
-      "value": "minWidth: 52",
-      "nearestToken": "spacing.5xl",
-      "line": 63,
-      "col": 5,
-      "context": "minWidth: 52,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 36",
-      "nearestToken": "spacing.3xl",
-      "line": 255,
-      "col": 5,
-      "context": "width: 36,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 36",
-      "nearestToken": "spacing.3xl",
-      "line": 256,
-      "col": 5,
-      "context": "height: 36,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx",
-      "kind": "magic-spacing",
-      "value": "paddingLeft: 16",
-      "nearestToken": "spacing.lg",
-      "line": 262,
-      "col": 5,
-      "context": "paddingLeft: 16, // aligns under dot"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 36",
-      "nearestToken": "spacing.3xl",
-      "line": 266,
-      "col": 5,
-      "context": "width: 36,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 36",
-      "nearestToken": "spacing.3xl",
-      "line": 267,
-      "col": 5,
-      "context": "height: 36,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx",
-      "kind": "magic-radius",
-      "value": "borderRadius: 18",
-      "nearestToken": "radii.xl",
-      "line": 268,
-      "col": 5,
-      "context": "borderRadius: 18,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 14",
-      "nearestToken": "type.md",
-      "line": 294,
-      "col": 5,
-      "context": "fontSize: 14,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.4",
-      "nearestToken": "type.xs",
-      "line": 304,
-      "col": 5,
-      "context": "letterSpacing: 0.4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.2",
-      "nearestToken": "type.xs",
-      "line": 323,
-      "col": 5,
-      "context": "letterSpacing: 0.2,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.3",
-      "nearestToken": "type.xs",
-      "line": 336,
-      "col": 5,
-      "context": "letterSpacing: 0.3,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/recurrence-picker.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.5",
-      "nearestToken": "type.xs",
-      "line": 159,
-      "col": 5,
-      "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/recurrence-picker.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 11",
-      "nearestToken": "type.xs",
-      "line": 180,
-      "col": 5,
-      "context": "fontSize: 11,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/recurrence-picker.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 10",
-      "nearestToken": "type.xs",
-      "line": 198,
-      "col": 5,
-      "context": "fontSize: 10,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/someday-item.tsx",
-      "kind": "magic-spacing",
-      "value": "paddingLeft: 14",
-      "nearestToken": "spacing.md",
-      "line": 153,
-      "col": 5,
-      "context": "paddingLeft: 14,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/someday-item.tsx",
-      "kind": "magic-spacing",
-      "value": "paddingLeft: 14",
-      "nearestToken": "spacing.md",
-      "line": 156,
-      "col": 5,
-      "context": "paddingLeft: 14,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/someday-item.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.5",
-      "nearestToken": "type.xs",
-      "line": 118,
-      "col": 5,
-      "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx",
-      "kind": "inline-color",
-      "value": "rgba(192,132,252,0.3)",
-      "nearestToken": null,
-      "line": 77,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(192,132,252,0.3)\", // event color, dimmed"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 3",
-      "nearestToken": "spacing.xxs",
-      "line": 73,
-      "col": 5,
-      "context": "width: 3,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx",
-      "kind": "magic-spacing",
-      "value": "minHeight: 36",
-      "nearestToken": "spacing.3xl",
-      "line": 75,
-      "col": 5,
-      "context": "minHeight: 36,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx",
-      "kind": "magic-spacing",
-      "value": "gap: 3",
-      "nearestToken": "spacing.xxs",
-      "line": 84,
-      "col": 5,
-      "context": "gap: 3,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 6",
-      "nearestToken": "spacing.xs",
-      "line": 92,
-      "col": 5,
-      "context": "width: 6,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 6",
-      "nearestToken": "spacing.xs",
-      "line": 93,
-      "col": 5,
-      "context": "height: 6,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 20",
-      "nearestToken": "spacing.xl",
-      "line": 106,
-      "col": 5,
-      "context": "width: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 20",
-      "nearestToken": "spacing.xl",
-      "line": 107,
-      "col": 5,
-      "context": "height: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.5",
-      "nearestToken": "type.xs",
-      "line": 103,
-      "col": 5,
-      "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/weekday-row.tsx",
-      "kind": "inline-color",
-      "value": "rgba(255,255,255,0.06)",
-      "nearestToken": null,
-      "line": 80,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(255,255,255,0.06)\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/weekday-row.tsx",
-      "kind": "magic-spacing",
-      "value": "minHeight: 22",
-      "nearestToken": "spacing.xl",
-      "line": 68,
-      "col": 5,
-      "context": "minHeight: 22,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/weekday-row.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 40",
-      "nearestToken": "spacing.4xl",
-      "line": 71,
-      "col": 5,
-      "context": "width: 40,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/wrapup-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.5",
-      "nearestToken": "type.xs",
-      "line": 45,
-      "col": 5,
-      "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/wrapup-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "lineHeight: 20",
-      "nearestToken": "type.2xl",
-      "line": 48,
-      "col": 5,
-      "context": "lineHeight: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/wrapup-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 15",
-      "nearestToken": "type.md",
-      "line": 49,
-      "col": 5,
-      "context": "fontSize: 15,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-header.tsx",
-      "kind": "inline-color",
-      "value": "rgba(255,255,255,0.08)",
-      "nearestToken": null,
-      "line": 85,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(255,255,255,0.08)\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-header.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 34",
-      "nearestToken": "spacing.3xl",
-      "line": 77,
-      "col": 5,
-      "context": "width: 34,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-header.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 34",
-      "nearestToken": "spacing.3xl",
-      "line": 78,
-      "col": 5,
-      "context": "height: 34,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-header.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 34",
-      "nearestToken": "spacing.3xl",
-      "line": 82,
-      "col": 5,
-      "context": "width: 34,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-header.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 34",
-      "nearestToken": "spacing.3xl",
-      "line": 83,
-      "col": 5,
-      "context": "height: 34,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-header.tsx",
-      "kind": "magic-radius",
-      "value": "borderRadius: 17",
-      "nearestToken": "radii.xl",
-      "line": 79,
-      "col": 5,
-      "context": "borderRadius: 17,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-header.tsx",
-      "kind": "magic-radius",
-      "value": "borderRadius: 17",
-      "nearestToken": "radii.xl",
-      "line": 84,
-      "col": 5,
-      "context": "borderRadius: 17,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-header.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 18",
-      "nearestToken": "type.xl",
-      "line": 73,
-      "col": 5,
-      "context": "fontSize: 18,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-menu.tsx",
-      "kind": "inline-color",
-      "value": "rgba(0,0,0,0.5)",
-      "nearestToken": null,
-      "line": 193,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(0,0,0,0.5)\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-menu.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 24",
-      "nearestToken": "type.3xl",
-      "line": 222,
-      "col": 5,
-      "context": "fontSize: 24,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-menu.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.55",
-      "nearestToken": "type.xs",
-      "line": 233,
-      "col": 5,
-      "context": "letterSpacing: 0.55,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "paddingBottom: 20",
-      "nearestToken": "spacing.xl",
-      "line": 90,
-      "col": 5,
-      "context": "paddingBottom: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "paddingTop: 8",
-      "nearestToken": "spacing.sm",
-      "line": 91,
-      "col": 5,
-      "context": "paddingTop: 8,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "paddingHorizontal: 60",
-      "nearestToken": "spacing.5xl",
-      "line": 98,
-      "col": 5,
-      "context": "paddingHorizontal: 60,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 44",
-      "nearestToken": "spacing.4xl",
-      "line": 101,
-      "col": 5,
-      "context": "width: 44,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 44",
-      "nearestToken": "spacing.4xl",
-      "line": 102,
-      "col": 5,
-      "context": "height: 44,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 52",
-      "nearestToken": "spacing.5xl",
-      "line": 111,
-      "col": 5,
-      "context": "width: 52,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 52",
-      "nearestToken": "spacing.5xl",
-      "line": 112,
-      "col": 5,
-      "context": "height: 52,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 56",
-      "nearestToken": "spacing.5xl",
-      "line": 123,
-      "col": 5,
-      "context": "width: 56,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 56",
-      "nearestToken": "spacing.5xl",
-      "line": 124,
-      "col": 5,
-      "context": "height: 56,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 48",
-      "nearestToken": "spacing.5xl",
-      "line": 131,
-      "col": 5,
-      "context": "width: 48,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 48",
-      "nearestToken": "spacing.5xl",
-      "line": 132,
-      "col": 5,
-      "context": "height: 48,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/day-detail-sheet.tsx",
-      "kind": "inline-color",
-      "value": "rgba(0, 0, 0, 0.6)",
-      "nearestToken": null,
-      "line": 122,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(0, 0, 0, 0.6)\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/day-detail-sheet.tsx",
-      "kind": "magic-spacing",
-      "value": "paddingBottom: 40",
-      "nearestToken": "spacing.4xl",
-      "line": 129,
-      "col": 5,
-      "context": "paddingBottom: 40,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/day-detail-sheet.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 40",
-      "nearestToken": "spacing.4xl",
-      "line": 132,
-      "col": 5,
-      "context": "width: 40,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/day-detail-sheet.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 4",
-      "nearestToken": "spacing.xs",
-      "line": 133,
-      "col": 5,
-      "context": "height: 4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/day-detail-sheet.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 20",
-      "nearestToken": "type.2xl",
-      "line": 148,
-      "col": 5,
-      "context": "fontSize: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "inline-color",
-      "value": "#FAFAFA",
-      "nearestToken": null,
-      "line": 116,
-      "col": 62,
-      "context": "<MaterialCommunityIcons name=\"stop\" size={20} color=\"#FAFAFA\" />"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "inline-color",
-      "value": "#FAFAFA",
-      "nearestToken": null,
-      "line": 198,
-      "col": 13,
-      "context": "color: \"#FAFAFA\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "inline-color",
-      "value": "rgba(255, 107, 107, 0.2)",
-      "nearestToken": null,
-      "line": 174,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(255, 107, 107, 0.2)\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 72",
-      "nearestToken": "spacing.5xl",
-      "line": 125,
-      "col": 5,
-      "context": "width: 72,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 72",
-      "nearestToken": "spacing.5xl",
-      "line": 126,
-      "col": 5,
-      "context": "height: 72,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 56",
-      "nearestToken": "spacing.5xl",
-      "line": 132,
-      "col": 5,
-      "context": "width: 56,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 56",
-      "nearestToken": "spacing.5xl",
-      "line": 133,
-      "col": 5,
-      "context": "height: 56,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 40",
-      "nearestToken": "spacing.4xl",
-      "line": 161,
-      "col": 5,
-      "context": "height: 40,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "gap: 4",
-      "nearestToken": "spacing.xs",
-      "line": 162,
-      "col": 5,
-      "context": "gap: 4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 4",
-      "nearestToken": "spacing.xs",
-      "line": 165,
-      "col": 5,
-      "context": "width: 4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 72",
-      "nearestToken": "spacing.5xl",
-      "line": 171,
-      "col": 5,
-      "context": "width: 72,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 72",
-      "nearestToken": "spacing.5xl",
-      "line": 172,
-      "col": 5,
-      "context": "height: 72,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 56",
-      "nearestToken": "spacing.5xl",
-      "line": 178,
-      "col": 5,
-      "context": "width: 56,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 56",
-      "nearestToken": "spacing.5xl",
-      "line": 179,
-      "col": 5,
-      "context": "height: 56,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 44",
-      "nearestToken": "spacing.4xl",
-      "line": 188,
-      "col": 5,
-      "context": "width: 44,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 44",
-      "nearestToken": "spacing.4xl",
-      "line": 189,
-      "col": 5,
-      "context": "height: 44,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "marginLeft: 4",
-      "nearestToken": "spacing.xs",
-      "line": 193,
-      "col": 5,
-      "context": "marginLeft: 4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-spacing",
-      "value": "marginRight: 8",
-      "nearestToken": "spacing.sm",
-      "line": 200,
-      "col": 5,
-      "context": "marginRight: 8,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-radius",
-      "value": "borderRadius: 9999",
-      "nearestToken": "radii.full",
-      "line": 192,
-      "col": 5,
-      "context": "borderRadius: 9999,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 14",
-      "nearestToken": "type.md",
-      "line": 197,
-      "col": 5,
-      "context": "fontSize: 14,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/list-progress.tsx",
-      "kind": "magic-spacing",
-      "value": "paddingBottom: 4",
-      "nearestToken": "spacing.xs",
-      "line": 91,
-      "col": 5,
-      "context": "paddingBottom: 4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/list-progress.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.8",
-      "nearestToken": "type.xs",
-      "line": 72,
-      "col": 5,
-      "context": "letterSpacing: 0.8,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/list-screen-header.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 40",
-      "nearestToken": "spacing.4xl",
-      "line": 69,
-      "col": 5,
-      "context": "width: 40,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/list-screen-header.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 40",
-      "nearestToken": "spacing.4xl",
-      "line": 70,
-      "col": 5,
-      "context": "height: 40,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/month-grid.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 11",
-      "nearestToken": "type.xs",
-      "line": 123,
-      "col": 5,
-      "context": "fontSize: 11,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/next-up-card.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 8",
-      "nearestToken": "spacing.sm",
-      "line": 159,
-      "col": 5,
-      "context": "width: 8,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/next-up-card.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 8",
-      "nearestToken": "spacing.sm",
-      "line": 160,
-      "col": 5,
-      "context": "height: 8,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/next-up-card.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 120",
-      "nearestToken": "spacing.5xl",
-      "line": 179,
-      "col": 5,
-      "context": "width: 120,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/next-up-card.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 120",
-      "nearestToken": "spacing.5xl",
-      "line": 180,
-      "col": 5,
-      "context": "height: 120,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/next-up-card.tsx",
-      "kind": "magic-radius",
-      "value": "borderRadius: 60",
-      "nearestToken": "radii.2xl",
-      "line": 181,
-      "col": 5,
-      "context": "borderRadius: 60,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/next-up-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 22",
-      "nearestToken": "type.2xl",
-      "line": 150,
-      "col": 5,
-      "context": "fontSize: 22,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/next-up-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 10",
-      "nearestToken": "type.xs",
-      "line": 171,
-      "col": 5,
-      "context": "fontSize: 10,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/next-up-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.5",
-      "nearestToken": "type.xs",
-      "line": 172,
-      "col": 5,
-      "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/swipeable-row.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 68,
-      "col": 23,
-      "context": "backgroundColor: '#FF6B6B',"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/swipeable-row.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 64",
-      "nearestToken": "spacing.5xl",
-      "line": 71,
-      "col": 5,
-      "context": "width: 64,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/today-section.tsx",
-      "kind": "inline-color",
-      "value": "rgba(255,255,255,0.04)",
-      "nearestToken": null,
-      "line": 99,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(255,255,255,0.04)\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/upcoming-preview-card.tsx",
-      "kind": "magic-spacing",
-      "value": "minWidth: 64",
-      "nearestToken": "spacing.5xl",
-      "line": 158,
-      "col": 5,
-      "context": "minWidth: 64,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/upcoming-preview-card.tsx",
-      "kind": "magic-spacing",
-      "value": "minWidth: 70",
-      "nearestToken": "spacing.5xl",
-      "line": 205,
-      "col": 5,
-      "context": "minWidth: 70,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/upcoming-preview-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "lineHeight: 52",
-      "nearestToken": "type.5xl",
-      "line": 168,
-      "col": 5,
-      "context": "lineHeight: 52,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/upcoming-preview-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 10",
-      "nearestToken": "type.xs",
-      "line": 195,
-      "col": 5,
-      "context": "fontSize: 10,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/upcoming-preview-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "letterSpacing: 0.5",
-      "nearestToken": "type.xs",
-      "line": 197,
-      "col": 5,
-      "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/upcoming-preview-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 13",
-      "nearestToken": "type.sm",
-      "line": 201,
-      "col": 5,
-      "context": "fontSize: 13,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/upcoming-preview-card.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 10",
-      "nearestToken": "type.xs",
-      "line": 204,
-      "col": 5,
-      "context": "fontSize: 10,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx",
-      "kind": "inline-color",
-      "value": "rgba(144, 238, 144, 0.15)",
-      "nearestToken": null,
-      "line": 138,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(144, 238, 144, 0.15)\","
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 16",
-      "nearestToken": "spacing.lg",
-      "line": 127,
-      "col": 5,
-      "context": "height: 16,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx",
-      "kind": "magic-spacing",
-      "value": "padding: 4",
-      "nearestToken": "spacing.xs",
-      "line": 136,
-      "col": 5,
-      "context": "padding: 4,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 5",
-      "nearestToken": "spacing.xs",
-      "line": 141,
-      "col": 5,
-      "context": "width: 5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 5",
-      "nearestToken": "spacing.xs",
-      "line": 142,
-      "col": 5,
-      "context": "height: 5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx",
-      "kind": "magic-radius",
-      "value": "borderRadius: 2.5",
-      "nearestToken": "radii.xs",
-      "line": 143,
-      "col": 5,
-      "context": "borderRadius: 2.5,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 10",
-      "nearestToken": "type.xs",
-      "line": 121,
-      "col": 5,
-      "context": "fontSize: 10,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 9",
-      "nearestToken": "type.xs",
-      "line": 150,
-      "col": 5,
-      "context": "fontSize: 9,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 8",
-      "nearestToken": "type.xs",
-      "line": 153,
-      "col": 5,
-      "context": "fontSize: 8,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/constants/theme.ts",
-      "kind": "magic-spacing",
-      "value": "height: 20",
-      "nearestToken": "spacing.xl",
-      "line": 100,
-      "col": 31,
-      "context": "shadowOffset: { width: 0, height: 20 },"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx",
-      "kind": "inline-color",
-      "value": "#fff",
-      "nearestToken": null,
-      "line": 61,
-      "col": 23,
-      "context": "backgroundColor: '#fff',"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx",
-      "kind": "inline-color",
-      "value": "#eee",
-      "nearestToken": null,
-      "line": 67,
-      "col": 23,
-      "context": "backgroundColor: '#eee',"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx",
-      "kind": "magic-spacing",
-      "value": "margin: 20",
-      "nearestToken": "spacing.xl",
-      "line": 53,
-      "col": 5,
-      "context": "margin: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx",
-      "kind": "magic-spacing",
-      "value": "marginBottom: 20",
-      "nearestToken": "spacing.xl",
-      "line": 57,
-      "col": 5,
-      "context": "marginBottom: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx",
-      "kind": "magic-spacing",
-      "value": "margin: 20",
-      "nearestToken": "spacing.xl",
-      "line": 60,
-      "col": 5,
-      "context": "margin: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx",
-      "kind": "magic-spacing",
-      "value": "padding: 20",
-      "nearestToken": "spacing.xl",
-      "line": 63,
-      "col": 5,
-      "context": "padding: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 200",
-      "nearestToken": "spacing.5xl",
-      "line": 71,
-      "col": 5,
-      "context": "height: 200,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx",
-      "kind": "magic-radius",
-      "value": "borderRadius: 10",
-      "nearestToken": "radii.md",
-      "line": 62,
-      "col": 5,
-      "context": "borderRadius: 10,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 30",
-      "nearestToken": "type.4xl",
-      "line": 52,
-      "col": 5,
-      "context": "fontSize: 30,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx",
-      "kind": "magic-fontsize",
-      "value": "fontSize: 20",
-      "nearestToken": "type.2xl",
-      "line": 56,
-      "col": 5,
-      "context": "fontSize: 20,"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/speech-recognizer-example/App.tsx",
-      "kind": "inline-color",
-      "value": "#fff",
-      "nearestToken": null,
-      "line": 16,
-      "col": 23,
-      "context": "backgroundColor: '#fff',"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/targets/watch/expo-target.config.js",
-      "kind": "inline-color",
-      "value": "darkcyan",
-      "nearestToken": null,
-      "line": 6,
-      "col": 22,
-      "context": "colors: { $accent: \"darkcyan\" },"
-    },
-    {
-      "file": ".claude/worktrees/nifty-agnesi-17f8ab/targets/watch-widget/expo-target.config.js",
-      "kind": "inline-color",
-      "value": "darkcyan",
-      "nearestToken": null,
-      "line": 5,
-      "col": 22,
-      "context": "colors: { $accent: \"darkcyan\" },"
-    },
-    {
       "file": "app/(tabs)/calendar.tsx",
       "kind": "magic-spacing",
       "value": "height: 80",
@@ -1893,63 +12,18 @@
     {
       "file": "app/(tabs)/index.tsx",
       "kind": "magic-spacing",
-      "value": "height: 80",
+      "value": "height: 72",
       "nearestToken": "spacing.5xl",
-      "line": 231,
+      "line": 312,
       "col": 5,
-      "context": "height: 80,"
-    },
-    {
-      "file": "app/detail.tsx",
-      "kind": "inline-color",
-      "value": "#52C87A",
-      "nearestToken": null,
-      "line": 82,
-      "col": 59,
-      "context": "if (status === \"completed\" || status === \"met\") return \"#52C87A\";"
-    },
-    {
-      "file": "app/detail.tsx",
-      "kind": "inline-color",
-      "value": "#FF4444",
-      "nearestToken": null,
-      "line": 83,
-      "col": 37,
-      "context": "if (status === \"overdue\") return \"#FF4444\";"
-    },
-    {
-      "file": "app/detail.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 281,
-      "col": 54,
-      "context": "<ThemedText type=\"body\" style={{ color: \"#FF6B6B\" }}>"
-    },
-    {
-      "file": "app/detail.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 333,
-      "col": 54,
-      "context": "<ThemedText type=\"body\" style={{ color: \"#FF6B6B\" }}>"
-    },
-    {
-      "file": "app/detail.tsx",
-      "kind": "inline-color",
-      "value": "rgba(0,0,0,0.6)",
-      "nearestToken": null,
-      "line": 790,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(0,0,0,0.6)\","
+      "context": "height: 72,"
     },
     {
       "file": "app/detail.tsx",
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.6",
       "nearestToken": "type.xs",
-      "line": 740,
+      "line": 783,
       "col": 5,
       "context": "letterSpacing: 0.6,"
     },
@@ -1958,7 +32,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 28",
       "nearestToken": "type.4xl",
-      "line": 743,
+      "line": 786,
       "col": 5,
       "context": "fontSize: 28,"
     },
@@ -1967,7 +41,7 @@
       "kind": "magic-fontsize",
       "value": "lineHeight: 34",
       "nearestToken": "type.5xl",
-      "line": 744,
+      "line": 787,
       "col": 5,
       "context": "lineHeight: 34,"
     },
@@ -1976,7 +50,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.8",
       "nearestToken": "type.xs",
-      "line": 758,
+      "line": 801,
       "col": 5,
       "context": "letterSpacing: 0.8,"
     },
@@ -1985,7 +59,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.6",
       "nearestToken": "type.xs",
-      "line": 771,
+      "line": 813,
       "col": 5,
       "context": "letterSpacing: 0.6,"
     },
@@ -1994,7 +68,7 @@
       "kind": "magic-fontsize",
       "value": "lineHeight: 22",
       "nearestToken": "type.2xl",
-      "line": 774,
+      "line": 816,
       "col": 5,
       "context": "lineHeight: 22,"
     },
@@ -2003,7 +77,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 13",
       "nearestToken": "type.sm",
-      "line": 804,
+      "line": 842,
       "col": 5,
       "context": "fontSize: 13,"
     },
@@ -2012,7 +86,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.4",
       "nearestToken": "type.xs",
-      "line": 805,
+      "line": 843,
       "col": 5,
       "context": "letterSpacing: 0.4,"
     },
@@ -2021,7 +95,7 @@
       "kind": "magic-spacing",
       "value": "height: 80",
       "nearestToken": "spacing.5xl",
-      "line": 407,
+      "line": 405,
       "col": 5,
       "context": "height: 80,"
     },
@@ -2030,7 +104,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 10",
       "nearestToken": "type.xs",
-      "line": 391,
+      "line": 389,
       "col": 5,
       "context": "fontSize: 10,"
     },
@@ -2039,25 +113,16 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.5",
       "nearestToken": "type.xs",
-      "line": 401,
+      "line": 399,
       "col": 5,
       "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": "app/modal.tsx",
-      "kind": "inline-color",
-      "value": "#131316",
-      "nearestToken": null,
-      "line": 428,
-      "col": 13,
-      "context": "color: \"#131316\","
     },
     {
       "file": "app/modal.tsx",
       "kind": "magic-spacing",
       "value": "minWidth: 60",
       "nearestToken": "spacing.5xl",
-      "line": 338,
+      "line": 339,
       "col": 5,
       "context": "minWidth: 60,"
     },
@@ -2066,7 +131,7 @@
       "kind": "magic-spacing",
       "value": "minWidth: 50",
       "nearestToken": "spacing.5xl",
-      "line": 341,
+      "line": 342,
       "col": 5,
       "context": "minWidth: 50,"
     },
@@ -2093,7 +158,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 16",
       "nearestToken": "type.lg",
-      "line": 377,
+      "line": 375,
       "col": 5,
       "context": "fontSize: 16,"
     },
@@ -2102,7 +167,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 18",
       "nearestToken": "type.xl",
-      "line": 380,
+      "line": 378,
       "col": 5,
       "context": "fontSize: 18,"
     },
@@ -2111,7 +176,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 16",
       "nearestToken": "type.lg",
-      "line": 429,
+      "line": 423,
       "col": 5,
       "context": "fontSize: 16,"
     },
@@ -2120,43 +185,16 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 11",
       "nearestToken": "type.xs",
-      "line": 448,
+      "line": 440,
       "col": 5,
       "context": "fontSize: 11,"
-    },
-    {
-      "file": "app/voice-input.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 247,
-      "col": 19,
-      "context": "borderColor: \"#FF6B6B\","
-    },
-    {
-      "file": "app/voice-input.tsx",
-      "kind": "inline-color",
-      "value": "#000",
-      "nearestToken": null,
-      "line": 257,
-      "col": 19,
-      "context": "shadowColor: \"#000\","
-    },
-    {
-      "file": "app/voice-input.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 277,
-      "col": 23,
-      "context": "backgroundColor: \"#FF6B6B\","
     },
     {
       "file": "app/voice-input.tsx",
       "kind": "magic-spacing",
       "value": "minWidth: 60",
       "nearestToken": "spacing.5xl",
-      "line": 194,
+      "line": 199,
       "col": 5,
       "context": "minWidth: 60,"
     },
@@ -2165,7 +203,7 @@
       "kind": "magic-spacing",
       "value": "minWidth: 60",
       "nearestToken": "spacing.5xl",
-      "line": 197,
+      "line": 202,
       "col": 5,
       "context": "minWidth: 60,"
     },
@@ -2210,7 +248,7 @@
       "kind": "magic-spacing",
       "value": "height: 4",
       "nearestToken": "spacing.xs",
-      "line": 258,
+      "line": 257,
       "col": 31,
       "context": "shadowOffset: { width: 0, height: 4 },"
     },
@@ -2219,7 +257,7 @@
       "kind": "magic-spacing",
       "value": "width: 32",
       "nearestToken": "spacing.3xl",
-      "line": 271,
+      "line": 267,
       "col": 5,
       "context": "width: 32,"
     },
@@ -2228,7 +266,7 @@
       "kind": "magic-spacing",
       "value": "height: 32",
       "nearestToken": "spacing.3xl",
-      "line": 272,
+      "line": 268,
       "col": 5,
       "context": "height: 32,"
     },
@@ -2237,7 +275,7 @@
       "kind": "magic-spacing",
       "value": "width: 24",
       "nearestToken": "spacing.2xl",
-      "line": 279,
+      "line": 274,
       "col": 5,
       "context": "width: 24,"
     },
@@ -2246,7 +284,7 @@
       "kind": "magic-spacing",
       "value": "height: 24",
       "nearestToken": "spacing.2xl",
-      "line": 280,
+      "line": 275,
       "col": 5,
       "context": "height: 24,"
     },
@@ -2264,7 +302,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 14",
       "nearestToken": "type.md",
-      "line": 207,
+      "line": 211,
       "col": 5,
       "context": "fontSize: 14,"
     },
@@ -2273,7 +311,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 10",
       "nearestToken": "type.xs",
-      "line": 286,
+      "line": 280,
       "col": 5,
       "context": "fontSize: 10,"
     },
@@ -2282,7 +320,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 16",
       "nearestToken": "type.lg",
-      "line": 50,
+      "line": 51,
       "col": 11,
       "context": "fontSize: 16,"
     },
@@ -2291,34 +329,16 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 16",
       "nearestToken": "type.lg",
-      "line": 68,
+      "line": 69,
       "col": 11,
       "context": "fontSize: 16,"
-    },
-    {
-      "file": "components/atoms/countdown-chip.tsx",
-      "kind": "inline-color",
-      "value": "#52C87A",
-      "nearestToken": null,
-      "line": 25,
-      "col": 10,
-      "context": "? '#52C87A'                // soft green — met/done"
-    },
-    {
-      "file": "components/atoms/countdown-chip.tsx",
-      "kind": "inline-color",
-      "value": "#FF4444",
-      "nearestToken": null,
-      "line": 27,
-      "col": 12,
-      "context": "? '#FF4444'              // bright red — past due"
     },
     {
       "file": "components/atoms/day-cell.tsx",
       "kind": "magic-spacing",
       "value": "maxHeight: 52",
       "nearestToken": "spacing.5xl",
-      "line": 83,
+      "line": 86,
       "col": 5,
       "context": "maxHeight: 52,"
     },
@@ -2327,7 +347,7 @@
       "kind": "magic-spacing",
       "value": "width: 4",
       "nearestToken": "spacing.xs",
-      "line": 129,
+      "line": 124,
       "col": 5,
       "context": "width: 4,"
     },
@@ -2336,7 +356,7 @@
       "kind": "magic-spacing",
       "value": "height: 4",
       "nearestToken": "spacing.xs",
-      "line": 130,
+      "line": 125,
       "col": 5,
       "context": "height: 4,"
     },
@@ -2345,7 +365,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 14",
       "nearestToken": "type.md",
-      "line": 110,
+      "line": 109,
       "col": 5,
       "context": "fontSize: 14,"
     },
@@ -2354,7 +374,7 @@
       "kind": "magic-fontsize",
       "value": "lineHeight: 18",
       "nearestToken": "type.xl",
-      "line": 113,
+      "line": 111,
       "col": 5,
       "context": "lineHeight: 18,"
     },
@@ -2363,25 +383,16 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 8",
       "nearestToken": "type.xs",
-      "line": 135,
+      "line": 129,
       "col": 5,
       "context": "fontSize: 8,"
-    },
-    {
-      "file": "components/atoms/month-navigator.tsx",
-      "kind": "inline-color",
-      "value": "rgba(255,255,255,0.05)",
-      "nearestToken": null,
-      "line": 85,
-      "col": 23,
-      "context": "backgroundColor: 'rgba(255,255,255,0.05)',"
     },
     {
       "file": "components/atoms/month-navigator.tsx",
       "kind": "magic-spacing",
       "value": "width: 44",
       "nearestToken": "spacing.4xl",
-      "line": 78,
+      "line": 85,
       "col": 5,
       "context": "width: 44,"
     },
@@ -2390,7 +401,7 @@
       "kind": "magic-spacing",
       "value": "height: 44",
       "nearestToken": "spacing.4xl",
-      "line": 79,
+      "line": 86,
       "col": 5,
       "context": "height: 44,"
     },
@@ -2399,7 +410,7 @@
       "kind": "magic-radius",
       "value": "borderRadius: 22",
       "nearestToken": "radii.2xl",
-      "line": 80,
+      "line": 87,
       "col": 5,
       "context": "borderRadius: 22,"
     },
@@ -2408,7 +419,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 20",
       "nearestToken": "type.2xl",
-      "line": 92,
+      "line": 96,
       "col": 5,
       "context": "fontSize: 20,"
     },
@@ -2417,7 +428,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 10",
       "nearestToken": "type.xs",
-      "line": 96,
+      "line": 100,
       "col": 5,
       "context": "fontSize: 10,"
     },
@@ -2426,7 +437,7 @@
       "kind": "magic-spacing",
       "value": "minWidth: 80",
       "nearestToken": "spacing.5xl",
-      "line": 43,
+      "line": 44,
       "col": 5,
       "context": "minWidth: 80,"
     },
@@ -2435,7 +446,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.8",
       "nearestToken": "type.xs",
-      "line": 46,
+      "line": 47,
       "col": 5,
       "context": "letterSpacing: 0.8,"
     },
@@ -2498,43 +509,16 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.4",
       "nearestToken": "type.xs",
-      "line": 97,
+      "line": 98,
       "col": 5,
       "context": "letterSpacing: 0.4,"
-    },
-    {
-      "file": "components/molecules/detail-action-bar.tsx",
-      "kind": "inline-color",
-      "value": "#FF4444",
-      "nearestToken": null,
-      "line": 22,
-      "col": 23,
-      "context": "const DANGER_COLOR = '#FF4444';"
-    },
-    {
-      "file": "components/molecules/detail-action-bar.tsx",
-      "kind": "inline-color",
-      "value": "#131316",
-      "nearestToken": null,
-      "line": 35,
-      "col": 14,
-      "context": "? '#131316'"
-    },
-    {
-      "file": "components/molecules/detail-action-bar.tsx",
-      "kind": "inline-color",
-      "value": "#131316",
-      "nearestToken": null,
-      "line": 40,
-      "col": 14,
-      "context": "? '#131316'"
     },
     {
       "file": "components/molecules/detail-action-bar.tsx",
       "kind": "magic-spacing",
       "value": "minHeight: 60",
       "nearestToken": "spacing.5xl",
-      "line": 83,
+      "line": 82,
       "col": 5,
       "context": "minHeight: 60,"
     },
@@ -2543,7 +527,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.3",
       "nearestToken": "type.xs",
-      "line": 89,
+      "line": 88,
       "col": 5,
       "context": "letterSpacing: 0.3,"
     },
@@ -2570,7 +554,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.5",
       "nearestToken": "type.xs",
-      "line": 65,
+      "line": 64,
       "col": 5,
       "context": "letterSpacing: 0.5,"
     },
@@ -2579,7 +563,7 @@
       "kind": "magic-spacing",
       "value": "width: 40",
       "nearestToken": "spacing.4xl",
-      "line": 76,
+      "line": 75,
       "col": 5,
       "context": "width: 40,"
     },
@@ -2588,7 +572,7 @@
       "kind": "magic-spacing",
       "value": "height: 1.5",
       "nearestToken": "spacing.xxs",
-      "line": 77,
+      "line": 76,
       "col": 5,
       "context": "height: 1.5,"
     },
@@ -2597,7 +581,7 @@
       "kind": "magic-fontsize",
       "value": "lineHeight: 24",
       "nearestToken": "type.3xl",
-      "line": 67,
+      "line": 66,
       "col": 5,
       "context": "lineHeight: 24,"
     },
@@ -2606,7 +590,7 @@
       "kind": "magic-fontsize",
       "value": "lineHeight: 16",
       "nearestToken": "type.lg",
-      "line": 70,
+      "line": 72,
       "col": 5,
       "context": "lineHeight: 16,"
     },
@@ -2615,7 +599,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 11",
       "nearestToken": "type.xs",
-      "line": 71,
+      "line": 73,
       "col": 5,
       "context": "fontSize: 11,"
     },
@@ -2624,7 +608,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.4",
       "nearestToken": "type.xs",
-      "line": 80,
+      "line": 82,
       "col": 5,
       "context": "letterSpacing: 0.4,"
     },
@@ -2651,7 +635,7 @@
       "kind": "magic-spacing",
       "value": "width: 36",
       "nearestToken": "spacing.3xl",
-      "line": 255,
+      "line": 267,
       "col": 5,
       "context": "width: 36,"
     },
@@ -2660,7 +644,7 @@
       "kind": "magic-spacing",
       "value": "height: 36",
       "nearestToken": "spacing.3xl",
-      "line": 256,
+      "line": 268,
       "col": 5,
       "context": "height: 36,"
     },
@@ -2669,7 +653,7 @@
       "kind": "magic-spacing",
       "value": "paddingLeft: 16",
       "nearestToken": "spacing.lg",
-      "line": 262,
+      "line": 274,
       "col": 5,
       "context": "paddingLeft: 16, // aligns under dot"
     },
@@ -2678,7 +662,7 @@
       "kind": "magic-spacing",
       "value": "width: 36",
       "nearestToken": "spacing.3xl",
-      "line": 266,
+      "line": 278,
       "col": 5,
       "context": "width: 36,"
     },
@@ -2687,7 +671,7 @@
       "kind": "magic-spacing",
       "value": "height: 36",
       "nearestToken": "spacing.3xl",
-      "line": 267,
+      "line": 279,
       "col": 5,
       "context": "height: 36,"
     },
@@ -2696,7 +680,7 @@
       "kind": "magic-radius",
       "value": "borderRadius: 18",
       "nearestToken": "radii.xl",
-      "line": 268,
+      "line": 280,
       "col": 5,
       "context": "borderRadius: 18,"
     },
@@ -2705,7 +689,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 14",
       "nearestToken": "type.md",
-      "line": 294,
+      "line": 301,
       "col": 5,
       "context": "fontSize: 14,"
     },
@@ -2714,7 +698,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.4",
       "nearestToken": "type.xs",
-      "line": 304,
+      "line": 311,
       "col": 5,
       "context": "letterSpacing: 0.4,"
     },
@@ -2723,7 +707,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.2",
       "nearestToken": "type.xs",
-      "line": 323,
+      "line": 326,
       "col": 5,
       "context": "letterSpacing: 0.2,"
     },
@@ -2732,7 +716,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.3",
       "nearestToken": "type.xs",
-      "line": 336,
+      "line": 339,
       "col": 5,
       "context": "letterSpacing: 0.3,"
     },
@@ -2741,7 +725,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.5",
       "nearestToken": "type.xs",
-      "line": 159,
+      "line": 165,
       "col": 5,
       "context": "letterSpacing: 0.5,"
     },
@@ -2750,7 +734,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 11",
       "nearestToken": "type.xs",
-      "line": 180,
+      "line": 184,
       "col": 5,
       "context": "fontSize: 11,"
     },
@@ -2759,7 +743,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 10",
       "nearestToken": "type.xs",
-      "line": 198,
+      "line": 200,
       "col": 5,
       "context": "fontSize: 10,"
     },
@@ -2768,7 +752,7 @@
       "kind": "magic-spacing",
       "value": "paddingLeft: 14",
       "nearestToken": "spacing.md",
-      "line": 153,
+      "line": 151,
       "col": 5,
       "context": "paddingLeft: 14,"
     },
@@ -2777,7 +761,7 @@
       "kind": "magic-spacing",
       "value": "paddingLeft: 14",
       "nearestToken": "spacing.md",
-      "line": 156,
+      "line": 154,
       "col": 5,
       "context": "paddingLeft: 14,"
     },
@@ -2786,25 +770,16 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.5",
       "nearestToken": "type.xs",
-      "line": 118,
+      "line": 120,
       "col": 5,
       "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": "components/molecules/today-event-row.tsx",
-      "kind": "inline-color",
-      "value": "rgba(192,132,252,0.3)",
-      "nearestToken": null,
-      "line": 77,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(192,132,252,0.3)\", // event color, dimmed"
     },
     {
       "file": "components/molecules/today-event-row.tsx",
       "kind": "magic-spacing",
       "value": "width: 3",
       "nearestToken": "spacing.xxs",
-      "line": 73,
+      "line": 83,
       "col": 5,
       "context": "width: 3,"
     },
@@ -2813,7 +788,7 @@
       "kind": "magic-spacing",
       "value": "minHeight: 36",
       "nearestToken": "spacing.3xl",
-      "line": 75,
+      "line": 85,
       "col": 5,
       "context": "minHeight: 36,"
     },
@@ -2822,7 +797,7 @@
       "kind": "magic-spacing",
       "value": "gap: 3",
       "nearestToken": "spacing.xxs",
-      "line": 84,
+      "line": 90,
       "col": 5,
       "context": "gap: 3,"
     },
@@ -2831,7 +806,7 @@
       "kind": "magic-spacing",
       "value": "width: 6",
       "nearestToken": "spacing.xs",
-      "line": 92,
+      "line": 98,
       "col": 5,
       "context": "width: 6,"
     },
@@ -2840,7 +815,7 @@
       "kind": "magic-spacing",
       "value": "height: 6",
       "nearestToken": "spacing.xs",
-      "line": 93,
+      "line": 99,
       "col": 5,
       "context": "height: 6,"
     },
@@ -2849,7 +824,7 @@
       "kind": "magic-spacing",
       "value": "width: 20",
       "nearestToken": "spacing.xl",
-      "line": 106,
+      "line": 110,
       "col": 5,
       "context": "width: 20,"
     },
@@ -2858,7 +833,7 @@
       "kind": "magic-spacing",
       "value": "height: 20",
       "nearestToken": "spacing.xl",
-      "line": 107,
+      "line": 111,
       "col": 5,
       "context": "height: 20,"
     },
@@ -2867,25 +842,16 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.5",
       "nearestToken": "type.xs",
-      "line": 103,
+      "line": 107,
       "col": 5,
       "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": "components/molecules/weekday-row.tsx",
-      "kind": "inline-color",
-      "value": "rgba(255,255,255,0.06)",
-      "nearestToken": null,
-      "line": 80,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(255,255,255,0.06)\","
     },
     {
       "file": "components/molecules/weekday-row.tsx",
       "kind": "magic-spacing",
       "value": "minHeight: 22",
       "nearestToken": "spacing.xl",
-      "line": 68,
+      "line": 75,
       "col": 5,
       "context": "minHeight: 22,"
     },
@@ -2894,7 +860,7 @@
       "kind": "magic-spacing",
       "value": "width: 40",
       "nearestToken": "spacing.4xl",
-      "line": 71,
+      "line": 78,
       "col": 5,
       "context": "width: 40,"
     },
@@ -2903,7 +869,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.5",
       "nearestToken": "type.xs",
-      "line": 45,
+      "line": 44,
       "col": 5,
       "context": "letterSpacing: 0.5,"
     },
@@ -2912,7 +878,7 @@
       "kind": "magic-fontsize",
       "value": "lineHeight: 20",
       "nearestToken": "type.2xl",
-      "line": 48,
+      "line": 47,
       "col": 5,
       "context": "lineHeight: 20,"
     },
@@ -2921,25 +887,16 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 15",
       "nearestToken": "type.md",
-      "line": 49,
+      "line": 48,
       "col": 5,
       "context": "fontSize: 15,"
-    },
-    {
-      "file": "components/organisms/app-header.tsx",
-      "kind": "inline-color",
-      "value": "rgba(255,255,255,0.08)",
-      "nearestToken": null,
-      "line": 85,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(255,255,255,0.08)\","
     },
     {
       "file": "components/organisms/app-header.tsx",
       "kind": "magic-spacing",
       "value": "width: 34",
       "nearestToken": "spacing.3xl",
-      "line": 77,
+      "line": 83,
       "col": 5,
       "context": "width: 34,"
     },
@@ -2948,7 +905,7 @@
       "kind": "magic-spacing",
       "value": "height: 34",
       "nearestToken": "spacing.3xl",
-      "line": 78,
+      "line": 84,
       "col": 5,
       "context": "height: 34,"
     },
@@ -2957,7 +914,7 @@
       "kind": "magic-spacing",
       "value": "width: 34",
       "nearestToken": "spacing.3xl",
-      "line": 82,
+      "line": 88,
       "col": 5,
       "context": "width: 34,"
     },
@@ -2966,7 +923,7 @@
       "kind": "magic-spacing",
       "value": "height: 34",
       "nearestToken": "spacing.3xl",
-      "line": 83,
+      "line": 89,
       "col": 5,
       "context": "height: 34,"
     },
@@ -2975,7 +932,7 @@
       "kind": "magic-radius",
       "value": "borderRadius: 17",
       "nearestToken": "radii.xl",
-      "line": 79,
+      "line": 85,
       "col": 5,
       "context": "borderRadius: 17,"
     },
@@ -2984,7 +941,7 @@
       "kind": "magic-radius",
       "value": "borderRadius: 17",
       "nearestToken": "radii.xl",
-      "line": 84,
+      "line": 90,
       "col": 5,
       "context": "borderRadius: 17,"
     },
@@ -2993,25 +950,25 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 18",
       "nearestToken": "type.xl",
-      "line": 73,
+      "line": 79,
       "col": 5,
       "context": "fontSize: 18,"
     },
     {
       "file": "components/organisms/app-menu.tsx",
-      "kind": "inline-color",
-      "value": "rgba(0,0,0,0.5)",
-      "nearestToken": null,
-      "line": 193,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(0,0,0,0.5)\","
+      "kind": "magic-spacing",
+      "value": "minHeight: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 284,
+      "col": 5,
+      "context": "minHeight: 44,"
     },
     {
       "file": "components/organisms/app-menu.tsx",
       "kind": "magic-fontsize",
       "value": "fontSize: 24",
       "nearestToken": "type.3xl",
-      "line": 222,
+      "line": 259,
       "col": 5,
       "context": "fontSize: 24,"
     },
@@ -3020,16 +977,70 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.55",
       "nearestToken": "type.xs",
-      "line": 233,
+      "line": 268,
       "col": 5,
       "context": "letterSpacing: 0.55,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 56",
+      "nearestToken": "spacing.5xl",
+      "line": 171,
+      "col": 5,
+      "context": "minHeight: 56,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 187,
+      "col": 5,
+      "context": "width: 44,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 188,
+      "col": 5,
+      "context": "height: 44,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 24",
+      "nearestToken": "spacing.2xl",
+      "line": 195,
+      "col": 5,
+      "context": "height: 24,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "gap: 4",
+      "nearestToken": "spacing.xs",
+      "line": 196,
+      "col": 5,
+      "context": "gap: 4,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 3",
+      "nearestToken": "spacing.xxs",
+      "line": 199,
+      "col": 5,
+      "context": "width: 3,"
     },
     {
       "file": "components/organisms/custom-tab-bar.tsx",
       "kind": "magic-spacing",
       "value": "paddingBottom: 20",
       "nearestToken": "spacing.xl",
-      "line": 90,
+      "line": 66,
       "col": 5,
       "context": "paddingBottom: 20,"
     },
@@ -3038,7 +1049,7 @@
       "kind": "magic-spacing",
       "value": "paddingTop: 8",
       "nearestToken": "spacing.sm",
-      "line": 91,
+      "line": 67,
       "col": 5,
       "context": "paddingTop: 8,"
     },
@@ -3047,7 +1058,7 @@
       "kind": "magic-spacing",
       "value": "paddingHorizontal: 60",
       "nearestToken": "spacing.5xl",
-      "line": 98,
+      "line": 74,
       "col": 5,
       "context": "paddingHorizontal: 60,"
     },
@@ -3056,7 +1067,7 @@
       "kind": "magic-spacing",
       "value": "width: 44",
       "nearestToken": "spacing.4xl",
-      "line": 101,
+      "line": 77,
       "col": 5,
       "context": "width: 44,"
     },
@@ -3065,72 +1076,9 @@
       "kind": "magic-spacing",
       "value": "height: 44",
       "nearestToken": "spacing.4xl",
-      "line": 102,
+      "line": 78,
       "col": 5,
       "context": "height: 44,"
-    },
-    {
-      "file": "components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 52",
-      "nearestToken": "spacing.5xl",
-      "line": 111,
-      "col": 5,
-      "context": "width: 52,"
-    },
-    {
-      "file": "components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 52",
-      "nearestToken": "spacing.5xl",
-      "line": 112,
-      "col": 5,
-      "context": "height: 52,"
-    },
-    {
-      "file": "components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 56",
-      "nearestToken": "spacing.5xl",
-      "line": 123,
-      "col": 5,
-      "context": "width: 56,"
-    },
-    {
-      "file": "components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 56",
-      "nearestToken": "spacing.5xl",
-      "line": 124,
-      "col": 5,
-      "context": "height: 56,"
-    },
-    {
-      "file": "components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "width: 48",
-      "nearestToken": "spacing.5xl",
-      "line": 131,
-      "col": 5,
-      "context": "width: 48,"
-    },
-    {
-      "file": "components/organisms/custom-tab-bar.tsx",
-      "kind": "magic-spacing",
-      "value": "height: 48",
-      "nearestToken": "spacing.5xl",
-      "line": 132,
-      "col": 5,
-      "context": "height: 48,"
-    },
-    {
-      "file": "components/organisms/day-detail-sheet.tsx",
-      "kind": "inline-color",
-      "value": "rgba(0, 0, 0, 0.6)",
-      "nearestToken": null,
-      "line": 122,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(0, 0, 0, 0.6)\","
     },
     {
       "file": "components/organisms/day-detail-sheet.tsx",
@@ -3164,43 +1112,16 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 20",
       "nearestToken": "type.2xl",
-      "line": 148,
+      "line": 146,
       "col": 5,
       "context": "fontSize: 20,"
-    },
-    {
-      "file": "components/organisms/fab.tsx",
-      "kind": "inline-color",
-      "value": "#FAFAFA",
-      "nearestToken": null,
-      "line": 116,
-      "col": 62,
-      "context": "<MaterialCommunityIcons name=\"stop\" size={20} color=\"#FAFAFA\" />"
-    },
-    {
-      "file": "components/organisms/fab.tsx",
-      "kind": "inline-color",
-      "value": "#FAFAFA",
-      "nearestToken": null,
-      "line": 198,
-      "col": 13,
-      "context": "color: \"#FAFAFA\","
-    },
-    {
-      "file": "components/organisms/fab.tsx",
-      "kind": "inline-color",
-      "value": "rgba(255, 107, 107, 0.2)",
-      "nearestToken": null,
-      "line": 174,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(255, 107, 107, 0.2)\","
     },
     {
       "file": "components/organisms/fab.tsx",
       "kind": "magic-spacing",
       "value": "width: 72",
       "nearestToken": "spacing.5xl",
-      "line": 125,
+      "line": 136,
       "col": 5,
       "context": "width: 72,"
     },
@@ -3209,7 +1130,7 @@
       "kind": "magic-spacing",
       "value": "height: 72",
       "nearestToken": "spacing.5xl",
-      "line": 126,
+      "line": 137,
       "col": 5,
       "context": "height: 72,"
     },
@@ -3218,7 +1139,7 @@
       "kind": "magic-spacing",
       "value": "width: 56",
       "nearestToken": "spacing.5xl",
-      "line": 132,
+      "line": 142,
       "col": 5,
       "context": "width: 56,"
     },
@@ -3227,7 +1148,7 @@
       "kind": "magic-spacing",
       "value": "height: 56",
       "nearestToken": "spacing.5xl",
-      "line": 133,
+      "line": 143,
       "col": 5,
       "context": "height: 56,"
     },
@@ -3236,7 +1157,7 @@
       "kind": "magic-spacing",
       "value": "height: 40",
       "nearestToken": "spacing.4xl",
-      "line": 161,
+      "line": 170,
       "col": 5,
       "context": "height: 40,"
     },
@@ -3245,7 +1166,7 @@
       "kind": "magic-spacing",
       "value": "gap: 4",
       "nearestToken": "spacing.xs",
-      "line": 162,
+      "line": 171,
       "col": 5,
       "context": "gap: 4,"
     },
@@ -3254,7 +1175,7 @@
       "kind": "magic-spacing",
       "value": "width: 4",
       "nearestToken": "spacing.xs",
-      "line": 165,
+      "line": 174,
       "col": 5,
       "context": "width: 4,"
     },
@@ -3263,7 +1184,7 @@
       "kind": "magic-spacing",
       "value": "width: 72",
       "nearestToken": "spacing.5xl",
-      "line": 171,
+      "line": 179,
       "col": 5,
       "context": "width: 72,"
     },
@@ -3272,7 +1193,7 @@
       "kind": "magic-spacing",
       "value": "height: 72",
       "nearestToken": "spacing.5xl",
-      "line": 172,
+      "line": 180,
       "col": 5,
       "context": "height: 72,"
     },
@@ -3281,7 +1202,7 @@
       "kind": "magic-spacing",
       "value": "width: 56",
       "nearestToken": "spacing.5xl",
-      "line": 178,
+      "line": 185,
       "col": 5,
       "context": "width: 56,"
     },
@@ -3290,7 +1211,7 @@
       "kind": "magic-spacing",
       "value": "height: 56",
       "nearestToken": "spacing.5xl",
-      "line": 179,
+      "line": 186,
       "col": 5,
       "context": "height: 56,"
     },
@@ -3299,7 +1220,7 @@
       "kind": "magic-spacing",
       "value": "width: 44",
       "nearestToken": "spacing.4xl",
-      "line": 188,
+      "line": 194,
       "col": 5,
       "context": "width: 44,"
     },
@@ -3308,7 +1229,7 @@
       "kind": "magic-spacing",
       "value": "height: 44",
       "nearestToken": "spacing.4xl",
-      "line": 189,
+      "line": 195,
       "col": 5,
       "context": "height: 44,"
     },
@@ -3317,7 +1238,7 @@
       "kind": "magic-spacing",
       "value": "marginLeft: 4",
       "nearestToken": "spacing.xs",
-      "line": 193,
+      "line": 199,
       "col": 5,
       "context": "marginLeft: 4,"
     },
@@ -3326,7 +1247,7 @@
       "kind": "magic-spacing",
       "value": "marginRight: 8",
       "nearestToken": "spacing.sm",
-      "line": 200,
+      "line": 205,
       "col": 5,
       "context": "marginRight: 8,"
     },
@@ -3335,7 +1256,7 @@
       "kind": "magic-radius",
       "value": "borderRadius: 9999",
       "nearestToken": "radii.full",
-      "line": 192,
+      "line": 198,
       "col": 5,
       "context": "borderRadius: 9999,"
     },
@@ -3344,16 +1265,70 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 14",
       "nearestToken": "type.md",
-      "line": 197,
+      "line": 203,
       "col": 5,
       "context": "fontSize: 14,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 5",
+      "nearestToken": "spacing.xs",
+      "line": 212,
+      "col": 5,
+      "context": "width: 5,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 226,
+      "col": 5,
+      "context": "minHeight: 44,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 243,
+      "col": 5,
+      "context": "minHeight: 44,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 7",
+      "nearestToken": "spacing.sm",
+      "line": 246,
+      "col": 5,
+      "context": "width: 7,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 7",
+      "nearestToken": "spacing.sm",
+      "line": 247,
+      "col": 5,
+      "context": "height: 7,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 32",
+      "nearestToken": "spacing.3xl",
+      "line": 259,
+      "col": 5,
+      "context": "minHeight: 32,"
     },
     {
       "file": "components/organisms/list-progress.tsx",
       "kind": "magic-spacing",
       "value": "paddingBottom: 4",
       "nearestToken": "spacing.xs",
-      "line": 91,
+      "line": 89,
       "col": 5,
       "context": "paddingBottom: 4,"
     },
@@ -3371,7 +1346,7 @@
       "kind": "magic-spacing",
       "value": "width: 40",
       "nearestToken": "spacing.4xl",
-      "line": 69,
+      "line": 71,
       "col": 5,
       "context": "width: 40,"
     },
@@ -3380,7 +1355,7 @@
       "kind": "magic-spacing",
       "value": "height: 40",
       "nearestToken": "spacing.4xl",
-      "line": 70,
+      "line": 72,
       "col": 5,
       "context": "height: 40,"
     },
@@ -3398,7 +1373,7 @@
       "kind": "magic-spacing",
       "value": "width: 8",
       "nearestToken": "spacing.sm",
-      "line": 159,
+      "line": 151,
       "col": 5,
       "context": "width: 8,"
     },
@@ -3407,7 +1382,7 @@
       "kind": "magic-spacing",
       "value": "height: 8",
       "nearestToken": "spacing.sm",
-      "line": 160,
+      "line": 152,
       "col": 5,
       "context": "height: 8,"
     },
@@ -3416,7 +1391,7 @@
       "kind": "magic-spacing",
       "value": "width: 120",
       "nearestToken": "spacing.5xl",
-      "line": 179,
+      "line": 171,
       "col": 5,
       "context": "width: 120,"
     },
@@ -3425,7 +1400,7 @@
       "kind": "magic-spacing",
       "value": "height: 120",
       "nearestToken": "spacing.5xl",
-      "line": 180,
+      "line": 172,
       "col": 5,
       "context": "height: 120,"
     },
@@ -3434,7 +1409,7 @@
       "kind": "magic-radius",
       "value": "borderRadius: 60",
       "nearestToken": "radii.2xl",
-      "line": 181,
+      "line": 173,
       "col": 5,
       "context": "borderRadius: 60,"
     },
@@ -3443,7 +1418,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 22",
       "nearestToken": "type.2xl",
-      "line": 150,
+      "line": 142,
       "col": 5,
       "context": "fontSize: 22,"
     },
@@ -3452,7 +1427,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 10",
       "nearestToken": "type.xs",
-      "line": 171,
+      "line": 163,
       "col": 5,
       "context": "fontSize: 10,"
     },
@@ -3461,43 +1436,25 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.5",
       "nearestToken": "type.xs",
-      "line": 172,
+      "line": 164,
       "col": 5,
       "context": "letterSpacing: 0.5,"
-    },
-    {
-      "file": "components/organisms/swipeable-row.tsx",
-      "kind": "inline-color",
-      "value": "#FF6B6B",
-      "nearestToken": null,
-      "line": 68,
-      "col": 23,
-      "context": "backgroundColor: '#FF6B6B',"
     },
     {
       "file": "components/organisms/swipeable-row.tsx",
       "kind": "magic-spacing",
       "value": "width: 64",
       "nearestToken": "spacing.5xl",
-      "line": 71,
+      "line": 74,
       "col": 5,
       "context": "width: 64,"
-    },
-    {
-      "file": "components/organisms/today-section.tsx",
-      "kind": "inline-color",
-      "value": "rgba(255,255,255,0.04)",
-      "nearestToken": null,
-      "line": 99,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(255,255,255,0.04)\","
     },
     {
       "file": "components/organisms/upcoming-preview-card.tsx",
       "kind": "magic-spacing",
       "value": "minWidth: 64",
       "nearestToken": "spacing.5xl",
-      "line": 158,
+      "line": 154,
       "col": 5,
       "context": "minWidth: 64,"
     },
@@ -3506,7 +1463,7 @@
       "kind": "magic-spacing",
       "value": "minWidth: 70",
       "nearestToken": "spacing.5xl",
-      "line": 205,
+      "line": 200,
       "col": 5,
       "context": "minWidth: 70,"
     },
@@ -3515,7 +1472,7 @@
       "kind": "magic-fontsize",
       "value": "lineHeight: 52",
       "nearestToken": "type.5xl",
-      "line": 168,
+      "line": 164,
       "col": 5,
       "context": "lineHeight: 52,"
     },
@@ -3524,7 +1481,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 10",
       "nearestToken": "type.xs",
-      "line": 195,
+      "line": 190,
       "col": 5,
       "context": "fontSize: 10,"
     },
@@ -3533,7 +1490,7 @@
       "kind": "magic-fontsize",
       "value": "letterSpacing: 0.5",
       "nearestToken": "type.xs",
-      "line": 197,
+      "line": 192,
       "col": 5,
       "context": "letterSpacing: 0.5,"
     },
@@ -3542,7 +1499,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 13",
       "nearestToken": "type.sm",
-      "line": 201,
+      "line": 196,
       "col": 5,
       "context": "fontSize: 13,"
     },
@@ -3551,25 +1508,16 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 10",
       "nearestToken": "type.xs",
-      "line": 204,
+      "line": 199,
       "col": 5,
       "context": "fontSize: 10,"
-    },
-    {
-      "file": "components/organisms/week-strip.tsx",
-      "kind": "inline-color",
-      "value": "rgba(144, 238, 144, 0.15)",
-      "nearestToken": null,
-      "line": 138,
-      "col": 23,
-      "context": "backgroundColor: \"rgba(144, 238, 144, 0.15)\","
     },
     {
       "file": "components/organisms/week-strip.tsx",
       "kind": "magic-spacing",
       "value": "height: 16",
       "nearestToken": "spacing.lg",
-      "line": 127,
+      "line": 129,
       "col": 5,
       "context": "height: 16,"
     },
@@ -3578,7 +1526,7 @@
       "kind": "magic-spacing",
       "value": "padding: 4",
       "nearestToken": "spacing.xs",
-      "line": 136,
+      "line": 138,
       "col": 5,
       "context": "padding: 4,"
     },
@@ -3587,7 +1535,7 @@
       "kind": "magic-spacing",
       "value": "width: 5",
       "nearestToken": "spacing.xs",
-      "line": 141,
+      "line": 142,
       "col": 5,
       "context": "width: 5,"
     },
@@ -3596,7 +1544,7 @@
       "kind": "magic-spacing",
       "value": "height: 5",
       "nearestToken": "spacing.xs",
-      "line": 142,
+      "line": 143,
       "col": 5,
       "context": "height: 5,"
     },
@@ -3605,7 +1553,7 @@
       "kind": "magic-radius",
       "value": "borderRadius: 2.5",
       "nearestToken": "radii.xs",
-      "line": 143,
+      "line": 144,
       "col": 5,
       "context": "borderRadius: 2.5,"
     },
@@ -3614,7 +1562,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 10",
       "nearestToken": "type.xs",
-      "line": 121,
+      "line": 126,
       "col": 5,
       "context": "fontSize: 10,"
     },
@@ -3623,7 +1571,7 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 9",
       "nearestToken": "type.xs",
-      "line": 150,
+      "line": 147,
       "col": 5,
       "context": "fontSize: 9,"
     },
@@ -3632,18 +1580,108 @@
       "kind": "magic-fontsize",
       "value": "fontSize: 8",
       "nearestToken": "type.xs",
-      "line": 153,
+      "line": 150,
       "col": 5,
       "context": "fontSize: 8,"
     },
     {
       "file": "constants/theme.ts",
       "kind": "magic-spacing",
-      "value": "height: 20",
+      "value": "size: 30",
+      "nearestToken": "spacing.3xl",
+      "line": 104,
+      "col": 14,
+      "context": "display: { size: 30, lineHeight: 36, weight: \"600\" as const, tracking: -0.3 }, /"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "size: 22",
       "nearestToken": "spacing.xl",
-      "line": 100,
-      "col": 31,
-      "context": "shadowOffset: { width: 0, height: 20 },"
+      "line": 105,
+      "col": 12,
+      "context": "title: { size: 22, lineHeight: 28, weight: \"600\" as const, tracking: -0.2 }, // "
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "size: 17",
+      "nearestToken": "spacing.lg",
+      "line": 106,
+      "col": 11,
+      "context": "item: { size: 17, lineHeight: 23, weight: \"500\" as const, tracking: 0 }, // Inte"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "size: 14",
+      "nearestToken": "spacing.md",
+      "line": 107,
+      "col": 11,
+      "context": "body: { size: 14, lineHeight: 20, weight: \"400\" as const, tracking: 0 }, // Inte"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "size: 11",
+      "nearestToken": "spacing.md",
+      "line": 108,
+      "col": 13,
+      "context": "kicker: { size: 11, lineHeight: 14, weight: \"600\" as const, tracking: 0.6 }, // "
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "height: 8",
+      "nearestToken": "spacing.sm",
+      "line": 146,
+      "col": 33,
+      "context": "shadowOffset: { width: 0, height: 8 },"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 36",
+      "nearestToken": "type.5xl",
+      "line": 104,
+      "col": 24,
+      "context": "display: { size: 30, lineHeight: 36, weight: \"600\" as const, tracking: -0.3 }, /"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 28",
+      "nearestToken": "type.4xl",
+      "line": 105,
+      "col": 22,
+      "context": "title: { size: 22, lineHeight: 28, weight: \"600\" as const, tracking: -0.2 }, // "
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 23",
+      "nearestToken": "type.3xl",
+      "line": 106,
+      "col": 21,
+      "context": "item: { size: 17, lineHeight: 23, weight: \"500\" as const, tracking: 0 }, // Inte"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 20",
+      "nearestToken": "type.2xl",
+      "line": 107,
+      "col": 21,
+      "context": "body: { size: 14, lineHeight: 20, weight: \"400\" as const, tracking: 0 }, // Inte"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 14",
+      "nearestToken": "type.md",
+      "line": 108,
+      "col": 23,
+      "context": "kicker: { size: 11, lineHeight: 14, weight: \"600\" as const, tracking: 0.6 }, // "
     },
     {
       "file": "speech-recognizer/example/App.tsx",
@@ -3764,64 +1802,20 @@
     }
   ],
   "byFile": {
-    ".claude/worktrees/nifty-agnesi-17f8ab/app/(tabs)/calendar.tsx": 1,
-    ".claude/worktrees/nifty-agnesi-17f8ab/app/(tabs)/index.tsx": 1,
-    ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx": 13,
-    ".claude/worktrees/nifty-agnesi-17f8ab/app/list.tsx": 3,
-    ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx": 9,
-    ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx": 17,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/DateInput.tsx": 1,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/TimeInput.tsx": 1,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/countdown-chip.tsx": 2,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/day-cell.tsx": 6,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/month-navigator.tsx": 6,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/streak-badge.tsx": 3,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/waveform-bar.tsx": 5,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/error-boundary.tsx": 1,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-action-bar.tsx": 5,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-metadata-row.tsx": 3,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-someday-hero.tsx": 3,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/empty-state.tsx": 3,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/entry-row.tsx": 2,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx": 10,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/recurrence-picker.tsx": 3,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/someday-item.tsx": 3,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx": 9,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/weekday-row.tsx": 3,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/wrapup-card.tsx": 3,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-header.tsx": 8,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-menu.tsx": 3,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx": 11,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/day-detail-sheet.tsx": 5,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx": 20,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/list-progress.tsx": 2,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/list-screen-header.tsx": 2,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/month-grid.tsx": 1,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/next-up-card.tsx": 8,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/swipeable-row.tsx": 2,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/today-section.tsx": 1,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/upcoming-preview-card.tsx": 7,
-    ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx": 9,
-    ".claude/worktrees/nifty-agnesi-17f8ab/constants/theme.ts": 1,
-    ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx": 10,
-    ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/speech-recognizer-example/App.tsx": 1,
-    ".claude/worktrees/nifty-agnesi-17f8ab/targets/watch/expo-target.config.js": 1,
-    ".claude/worktrees/nifty-agnesi-17f8ab/targets/watch-widget/expo-target.config.js": 1,
     "app/(tabs)/calendar.tsx": 1,
     "app/(tabs)/index.tsx": 1,
-    "app/detail.tsx": 13,
+    "app/detail.tsx": 8,
     "app/list.tsx": 3,
-    "app/modal.tsx": 9,
-    "app/voice-input.tsx": 17,
+    "app/modal.tsx": 8,
+    "app/voice-input.tsx": 14,
     "components/atoms/DateInput.tsx": 1,
     "components/atoms/TimeInput.tsx": 1,
-    "components/atoms/countdown-chip.tsx": 2,
     "components/atoms/day-cell.tsx": 6,
-    "components/atoms/month-navigator.tsx": 6,
+    "components/atoms/month-navigator.tsx": 5,
     "components/atoms/streak-badge.tsx": 3,
     "components/atoms/waveform-bar.tsx": 5,
     "components/error-boundary.tsx": 1,
-    "components/molecules/detail-action-bar.tsx": 5,
+    "components/molecules/detail-action-bar.tsx": 2,
     "components/molecules/detail-metadata-row.tsx": 3,
     "components/molecules/detail-someday-hero.tsx": 3,
     "components/molecules/empty-state.tsx": 3,
@@ -3829,40 +1823,41 @@
     "components/molecules/list-item.tsx": 10,
     "components/molecules/recurrence-picker.tsx": 3,
     "components/molecules/someday-item.tsx": 3,
-    "components/molecules/today-event-row.tsx": 9,
-    "components/molecules/weekday-row.tsx": 3,
+    "components/molecules/today-event-row.tsx": 8,
+    "components/molecules/weekday-row.tsx": 2,
     "components/molecules/wrapup-card.tsx": 3,
-    "components/organisms/app-header.tsx": 8,
+    "components/organisms/app-header.tsx": 7,
     "components/organisms/app-menu.tsx": 3,
-    "components/organisms/custom-tab-bar.tsx": 11,
-    "components/organisms/day-detail-sheet.tsx": 5,
-    "components/organisms/fab.tsx": 20,
+    "components/organisms/capture-bar.tsx": 6,
+    "components/organisms/custom-tab-bar.tsx": 5,
+    "components/organisms/day-detail-sheet.tsx": 4,
+    "components/organisms/fab.tsx": 17,
+    "components/organisms/field-tile.tsx": 6,
     "components/organisms/list-progress.tsx": 2,
     "components/organisms/list-screen-header.tsx": 2,
     "components/organisms/month-grid.tsx": 1,
     "components/organisms/next-up-card.tsx": 8,
-    "components/organisms/swipeable-row.tsx": 2,
-    "components/organisms/today-section.tsx": 1,
+    "components/organisms/swipeable-row.tsx": 1,
     "components/organisms/upcoming-preview-card.tsx": 7,
-    "components/organisms/week-strip.tsx": 9,
-    "constants/theme.ts": 1,
+    "components/organisms/week-strip.tsx": 8,
+    "constants/theme.ts": 11,
     "speech-recognizer/example/App.tsx": 10,
     "speech-recognizer/speech-recognizer-example/App.tsx": 1,
     "targets/watch/expo-target.config.js": 1,
     "targets/watch-widget/expo-target.config.js": 1
   },
   "byKind": {
-    "magic-spacing": 202,
-    "inline-color": 66,
-    "magic-fontsize": 132,
-    "magic-radius": 18
+    "magic-spacing": 113,
+    "magic-fontsize": 71,
+    "magic-radius": 9,
+    "inline-color": 7
   },
-  "totalCount": 418,
+  "totalCount": 200,
   "verdict": "severe",
-  "recommendation": "418 hardcoded values found across multiple files. Resolve violations before migration — the new token system cannot reach these values and the migration will produce inconsistent results.",
+  "recommendation": "200 hardcoded values found across multiple files. Resolve violations before migration — the new token system cannot reach these values and the migration will produce inconsistent results.",
   "summary": {
-    "fileCount": 176,
-    "violationCount": 418,
+    "fileCount": 93,
+    "violationCount": 200,
     "verdict": "severe"
   }
 }

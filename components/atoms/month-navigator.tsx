@@ -2,7 +2,7 @@ import { Pressable, View, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Spacing, TextColors, tokens } from '@/constants/theme';
+import { Spacing, useTheme } from '@/constants/theme';
 
 interface MonthNavigatorProps {
   label: string;
@@ -19,18 +19,22 @@ export function MonthNavigator({
   onNext,
   onToday,
 }: MonthNavigatorProps): React.ReactElement {
+  const { colors } = useTheme();
   return (
     <View style={styles.container}>
       <Pressable
         onPress={onPrev}
-        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+        style={({ pressed }) => [
+          styles.button,
+          pressed && { backgroundColor: colors.surfaceSubtle },
+        ]}
         accessibilityRole="button"
         accessibilityLabel="Previous month"
       >
         <MaterialCommunityIcons
           name="chevron-left"
           size={24}
-          color={TextColors.primary}
+          color={colors.ink}
         />
       </Pressable>
 
@@ -52,14 +56,17 @@ export function MonthNavigator({
 
       <Pressable
         onPress={onNext}
-        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+        style={({ pressed }) => [
+          styles.button,
+          pressed && { backgroundColor: colors.surfaceSubtle },
+        ]}
         accessibilityRole="button"
         accessibilityLabel="Next month"
       >
         <MaterialCommunityIcons
           name="chevron-right"
           size={24}
-          color={TextColors.primary}
+          color={colors.ink}
         />
       </Pressable>
     </View>
@@ -80,9 +87,6 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  buttonPressed: {
-    backgroundColor: tokens.color.dark.surfaceSubtle,
   },
   labelWrapper: {
     alignItems: 'center',

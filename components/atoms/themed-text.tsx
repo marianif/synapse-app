@@ -1,14 +1,12 @@
 import { StyleSheet, Text } from "react-native";
 
 import {
-  Colors,
   FontFamily,
   FontSize,
   LetterSpacing,
   LineHeight,
-  TextColors,
+  useTheme,
 } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
 
 import type { TextProps } from "react-native";
 
@@ -36,8 +34,8 @@ export function ThemedText({
   children,
   ...rest
 }: ThemedTextProps): React.ReactElement {
-  const scheme = useColorScheme();
-  const color = muted ? TextColors.secondary : Colors[scheme].text;
+  const { colors } = useTheme();
+  const color = muted ? colors.inkMuted : colors.ink;
 
   return (
     <Text style={[styles.base, styles[type], { color }, style]} {...rest}>

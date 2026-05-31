@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { EntryAccent, Radius, Spacing, TextColors, tokens } from "@/constants/theme";
+import { Radius, Spacing, entryColor, useTheme } from "@/constants/theme";
 
 interface TodayEventRowProps {
   title: string;
@@ -28,23 +28,30 @@ export function TodayEventRow({
   statusTime,
   isActive = false,
 }: TodayEventRowProps): React.ReactElement {
+  const { colors } = useTheme();
   return (
     <View style={styles.row}>
-      <View style={[styles.leftBorder, isActive && styles.leftBorderActive]} />
+      <View
+        style={[
+          styles.leftBorder,
+          { backgroundColor: colors.type.event },
+          isActive && { backgroundColor: entryColor("event") },
+        ]}
+      />
       <View style={styles.content}>
         <ThemedText type="bodyBold" numberOfLines={1}>
           {title}
         </ThemedText>
         {timeRange ? (
           <View style={styles.timeRangeRow}>
-            <View style={styles.clockDot} />
+            <View style={[styles.clockDot, { backgroundColor: colors.inkMuted }]} />
             <ThemedText type="caption" muted>
               {timeRange}
             </ThemedText>
           </View>
         ) : null}
         {subtitle && !timeRange ? (
-          <ThemedText type="caption" style={{ color: TextColors.tertiary }}>
+          <ThemedText type="caption" style={{ color: colors.inkMuted }}>
             {subtitle}
           </ThemedText>
         ) : null}
@@ -52,7 +59,10 @@ export function TodayEventRow({
       {isActive && statusTime ? (
         <View style={styles.statusBlock}>
           <ThemedText type="bodyBold">{statusTime}</ThemedText>
-          <ThemedText type="label" style={styles.statusLabel}>
+          <ThemedText
+            type="label"
+            style={[styles.statusLabel, { color: entryColor("todo") }]}
+          >
             {statusLabel}
           </ThemedText>
         </View>
@@ -74,10 +84,6 @@ const styles = StyleSheet.create({
     height: "100%",
     minHeight: 36,
     borderRadius: Radius.sm,
-    backgroundColor: tokens.color.type.event, // event color, dimmed
-  },
-  leftBorderActive: {
-    backgroundColor: EntryAccent.event,
   },
   content: {
     flex: 1,
@@ -92,14 +98,12 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: TextColors.tertiary,
   },
   statusBlock: {
     alignItems: "flex-end",
     gap: 1,
   },
   statusLabel: {
-    color: EntryAccent.todo, // blue accent for urgency-free status
     letterSpacing: 0.5,
   },
   iconPlaceholder: {

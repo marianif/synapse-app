@@ -10,13 +10,7 @@ import { WrapupCard } from "@/components/molecules/wrapup-card";
 import { Fab } from "@/components/organisms/fab";
 import { ListProgress } from "@/components/organisms/list-progress";
 import { ListScreenHeader } from "@/components/organisms/list-screen-header";
-import {
-  EntryAccent,
-  Radius,
-  Spacing,
-  Surface,
-  TextColors,
-} from "@/constants/theme";
+import { entryColor, Radius, Spacing, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { isSameDay, parseDate } from "@/lib/date-utils";
 import { isRecurringEntry } from "@/lib/recurrence";
@@ -149,6 +143,7 @@ function buildDeadlineSections(entries: DbEntry[]): Section[] {
 
 export default function ListScreen(): React.ReactElement {
   const router = useRouter();
+  const { colors } = useTheme();
   const { entryType } = useLocalSearchParams<{ entryType?: string }>();
 
   const resolvedType: EntryType =
@@ -158,7 +153,7 @@ export default function ListScreen(): React.ReactElement {
         ? "someday"
         : "todo";
 
-  const accentColor = EntryAccent[resolvedType];
+  const accentColor = entryColor(resolvedType);
 
   const screenTitle =
     resolvedType === "deadline"
@@ -253,8 +248,11 @@ export default function ListScreen(): React.ReactElement {
         : "+ Add Todo";
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.screen}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.paper }]}
+      edges={["top"]}
+    >
+      <View style={[styles.screen, { backgroundColor: colors.paper }]}>
         <ListScreenHeader title={screenTitle} onBack={() => router.back()} />
 
         <ScrollView
@@ -288,7 +286,10 @@ export default function ListScreen(): React.ReactElement {
               <View key={section.label} style={styles.section}>
                 {/* Section header */}
                 <View style={styles.sectionHeader}>
-                  <ThemedText type="label" style={styles.sectionLabel}>
+                  <ThemedText
+                    type="label"
+                    style={[styles.sectionLabel, { color: colors.inkMuted }]}
+                  >
                     {section.label.toUpperCase()}
                   </ThemedText>
                   {sectionIndex === 0 && firstSectionCount > 0 ? (
@@ -356,11 +357,9 @@ export default function ListScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   screen: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   scroll: {
     flex: 1,
@@ -386,7 +385,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xs,
   },
   sectionLabel: {
-    color: TextColors.tertiary,
     letterSpacing: 1,
     fontSize: 10,
     fontWeight: "700",

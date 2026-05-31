@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { EntryRow } from "@/components/molecules/entry-row";
-import { Brand, Spacing, TextColors } from "@/constants/theme";
+import { Spacing, useTheme } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
@@ -33,10 +33,11 @@ export function AgendaSection({
   isEmpty = false,
   onAdd,
 }: AgendaSectionProps): React.ReactElement {
+  const { colors } = useTheme();
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <ThemedText type="label" style={{ color: TextColors.tertiary }}>
+        <ThemedText type="label" style={{ color: colors.inkMuted }}>
           {date}
         </ThemedText>
       </View>
@@ -47,7 +48,7 @@ export function AgendaSection({
           description="Add a todo, deadline, or event to build today's agenda."
           ctaLabel="+ Add Entry"
           onCta={onAdd ?? (() => {})}
-          accentColor={Brand.primary}
+          accentColor={colors.accent.clay}
         />
       ) : (
         <View style={styles.list}>

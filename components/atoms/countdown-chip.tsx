@@ -1,7 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { EntryAccent, FontSize, LetterSpacing, LineHeight, Radius, Spacing, tokens } from '@/constants/theme';
+import { entryColor, FontSize, LetterSpacing, LineHeight, Radius, Spacing, useTheme } from '@/constants/theme';
 
 type CountdownState = 'pending' | 'overdue' | 'met';
 
@@ -17,15 +17,17 @@ interface CountdownChipProps {
  * Color shifts from coral (pending) → red (overdue) → muted (met).
  */
 export function CountdownChip({ daysRemaining, state }: CountdownChipProps): React.ReactElement {
+  const { colors } = useTheme();
+
   const resolvedState: CountdownState =
     state ?? (daysRemaining < 0 ? 'overdue' : 'met');
 
   const color =
     resolvedState === 'met'
-      ? tokens.feedback.success                // soft green — met/done
+      ? colors.feedback.success                // soft green — met/done
       : resolvedState === 'overdue'
-        ? tokens.feedback.danger              // bright red — past due
-        : EntryAccent.deadline;  // coral — still pending
+        ? colors.feedback.danger              // bright red — past due
+        : entryColor('deadline');  // coral — still pending
 
   const bgColor = color + '18'; // 9% opacity tint
 

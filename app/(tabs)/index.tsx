@@ -14,7 +14,7 @@ import { NextUpCard } from "@/components/organisms/next-up-card";
 import { WeeklyOverviewCard } from "@/components/organisms/weekly-overview-card";
 
 import { SomedayItem } from "@/components/molecules/someday-item";
-import { Spacing, Surface } from "@/constants/theme";
+import { Spacing, useTheme } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import {
@@ -43,6 +43,7 @@ function getWeekDays(): { abbr: string; fullName: string; date: Date }[] {
 
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
+  const { colors } = useTheme();
 
   const { entries, recurrenceCompletions, fetchEntries } =
     useDatabase();
@@ -151,7 +152,7 @@ export default function HomeScreen(): React.ReactElement {
   const deadlineEntries = entries.filter((e) => e.type === "deadline");
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -217,7 +218,6 @@ export default function HomeScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   scroll: {
     flex: 1,

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Spacing, TextColors, tokens } from "@/constants/theme";
+import { Spacing, useTheme } from "@/constants/theme";
 import { AppMenu } from "./app-menu";
 
 interface AppHeaderProps {
@@ -15,6 +15,7 @@ export function AppHeader({
   onAvatarPress,
   avatarUri,
 }: AppHeaderProps): React.ReactElement {
+  const { colors } = useTheme();
   const [menuVisible, setMenuVisible] = useState(false);
 
   return (
@@ -28,7 +29,7 @@ export function AppHeader({
           <MaterialCommunityIcons
             name="menu"
             size={22}
-            color={TextColors.secondary}
+            color={colors.inkMuted}
           />
         </Pressable>
 
@@ -40,11 +41,16 @@ export function AppHeader({
           {avatarUri ? (
             <Image source={{ uri: avatarUri }} style={styles.avatar} />
           ) : (
-            <View style={styles.avatarFallback}>
+            <View
+              style={[
+                styles.avatarFallback,
+                { backgroundColor: colors.surface },
+              ]}
+            >
               <MaterialCommunityIcons
                 name="account"
                 size={20}
-                color={TextColors.secondary}
+                color={colors.inkMuted}
               />
             </View>
           )}
@@ -82,7 +88,6 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: tokens.color.dark.surface,
     alignItems: "center",
     justifyContent: "center",
   },

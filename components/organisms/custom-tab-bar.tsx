@@ -3,8 +3,7 @@ import { router, usePathname } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Brand, Colors, Radius, Shadow, Surface, tokens } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Radius, tokens, useTheme } from "@/constants/theme";
 
 interface TabBarIconProps {
   focused: boolean;
@@ -22,15 +21,14 @@ function TabIcon({ name, focused, color }: TabBarIconProps & { name: string }) {
 }
 
 export function CustomTabBar(): React.ReactElement {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme];
+  const { colors } = useTheme();
   const pathname = usePathname();
 
   const isHome = pathname === "/" || pathname === "/(tabs)";
   const isCalendar = pathname === "/(tabs)/calendar";
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceSubtle }]}>
       <View style={styles.tabBar}>
         <Pressable
           onPress={() => router.push("/")}
@@ -42,7 +40,7 @@ export function CustomTabBar(): React.ReactElement {
           <TabIcon
             name="view-grid"
             focused={isHome}
-            color={isHome ? theme.tint : theme.tabIconDefault}
+            color={isHome ? colors.accent.clay : colors.inkMuted}
           />
         </Pressable>
 
@@ -60,9 +58,9 @@ export function CustomTabBar(): React.ReactElement {
             pressed && styles.addButtonPressed,
           ]}
         >
-          <View style={styles.addButtonGlow} />
-          <View style={styles.addButtonInner}>
-            <MaterialCommunityIcons name="plus" size={24} color={Brand.onPrimary} />
+          <View style={[styles.addButtonGlow, { backgroundColor: colors.accent.clay }]} />
+          <View style={[styles.addButtonInner, { backgroundColor: colors.accent.clay }]}>
+            <MaterialCommunityIcons name="plus" size={24} color={colors.paper} />
           </View>
         </Pressable>
 
@@ -76,7 +74,7 @@ export function CustomTabBar(): React.ReactElement {
           <TabIcon
             name="calendar"
             focused={isCalendar}
-            color={isCalendar ? theme.tint : theme.tabIconDefault}
+            color={isCalendar ? colors.accent.clay : colors.inkMuted}
           />
         </Pressable>
       </View>
@@ -86,7 +84,6 @@ export function CustomTabBar(): React.ReactElement {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Surface.containerLow,
     paddingBottom: 20,
     paddingTop: 8,
     borderTopWidth: 0,
@@ -123,17 +120,15 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: Radius.full,
-    backgroundColor: tokens.accent.clay,
     opacity: 0.6,
-    ...Shadow.fab,
+    ...tokens.elevation.capture,
   },
   addButtonInner: {
     width: 48,
     height: 48,
     borderRadius: Radius.full,
-    backgroundColor: Brand.primary,
     alignItems: "center",
     justifyContent: "center",
-    ...Shadow.fab,
+    ...tokens.elevation.capture,
   },
 });

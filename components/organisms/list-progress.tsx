@@ -3,12 +3,12 @@ import { StyleSheet, View } from "react-native";
 import { StreakBadge } from "@/components/atoms/streak-badge";
 import { ThemedText } from "@/components/atoms/themed-text";
 import {
-  EntryAccent,
+  entryColor,
   FontSize,
   LetterSpacing,
   LineHeight,
   Spacing,
-  TextColors,
+  useTheme,
 } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
@@ -31,12 +31,16 @@ export function ListProgress({
   streak,
   entryType,
 }: ListProgressProps): React.ReactElement {
-  const accentColor = EntryAccent[entryType] ?? EntryAccent.todo;
+  const { colors } = useTheme();
+  const accentColor = entryColor(entryType);
 
   return (
     <View style={styles.container}>
       <View style={styles.counterBlock}>
-        <ThemedText type="caption" style={styles.progressLabel}>
+        <ThemedText
+          type="caption"
+          style={[styles.progressLabel, { color: colors.inkMuted }]}
+        >
           WEEKLY PROGRESS
         </ThemedText>
         <View style={styles.counterRow}>
@@ -46,7 +50,10 @@ export function ListProgress({
           >
             {completed}
           </ThemedText>
-          <ThemedText style={styles.totalNum} numberOfLines={1}>
+          <ThemedText
+            style={[styles.totalNum, { color: colors.inkMuted }]}
+            numberOfLines={1}
+          >
             {"/ "}
             {total}
           </ThemedText>
@@ -70,7 +77,6 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     letterSpacing: 0.8,
-    color: TextColors.tertiary,
   },
   counterRow: {
     flexDirection: "row",
@@ -87,7 +93,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.headlineSm,
     lineHeight: LineHeight.headlineSm,
     fontFamily: "Inter_400Regular",
-    color: TextColors.tertiary,
     paddingBottom: 4,
   },
 });

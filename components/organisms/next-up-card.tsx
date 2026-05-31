@@ -6,12 +6,11 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { CounterDisplay } from "@/components/atoms/counter-display";
 import { ThemedText } from "@/components/atoms/themed-text";
 import {
-  EntryAccent,
+  entryColor,
   FontSize,
   Radius,
   Spacing,
-  Surface,
-  TextColors,
+  useTheme,
 } from "@/constants/theme";
 import { DbEntry } from "@/lib/types";
 
@@ -26,6 +25,7 @@ interface NextUpCardProps {
  */
 export function NextUpCard({ entries }: NextUpCardProps): React.ReactElement | null {
   const router = useRouter();
+  const { colors } = useTheme();
 
   const nextItem = useMemo(() => {
     const today = dayjs().startOf("day");
@@ -85,16 +85,16 @@ export function NextUpCard({ entries }: NextUpCardProps): React.ReactElement | n
     unitLabel = "STARTING";
   }
 
-  const accentColor = entry.type === "event" ? EntryAccent.event : EntryAccent.deadline;
+  const accentColor = entryColor(entry.type);
 
   return (
     <Pressable
       onPress={() => router.push(`/detail?id=${entry.id}`)}
-      style={styles.card}
+      style={[styles.card, { backgroundColor: colors.surface }]}
     >
       <View style={styles.content}>
         <View style={styles.left}>
-          <ThemedText type="label" style={styles.label}>
+          <ThemedText type="label" style={[styles.label, { color: colors.inkMuted }]}>
             NEXT UP
           </ThemedText>
           <ThemedText type="headline" numberOfLines={1} style={styles.title}>
@@ -127,7 +127,6 @@ export function NextUpCard({ entries }: NextUpCardProps): React.ReactElement | n
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Surface.container,
     borderRadius: Radius.xl,
     padding: Spacing.xl,
     overflow: "hidden",
@@ -143,7 +142,6 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
   },
   label: {
-    color: TextColors.tertiary,
     letterSpacing: 1,
   },
   title: {

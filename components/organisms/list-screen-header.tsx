@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Spacing, TextColors } from '@/constants/theme';
+import { Spacing, useTheme } from '@/constants/theme';
 
 interface ListScreenHeaderProps {
   title: string;
@@ -20,6 +20,8 @@ export function ListScreenHeader({
   onBack,
   onOverflow,
 }: ListScreenHeaderProps): React.ReactElement {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.header}>
       <Pressable
@@ -32,7 +34,7 @@ export function ListScreenHeader({
         <MaterialCommunityIcons
           name="chevron-left"
           size={28}
-          color={TextColors.primary}
+          color={colors.ink}
         />
       </Pressable>
 
@@ -50,7 +52,7 @@ export function ListScreenHeader({
         <MaterialCommunityIcons
           name="dots-vertical"
           size={22}
-          color={TextColors.secondary}
+          color={colors.inkMuted}
         />
       </Pressable>
     </View>

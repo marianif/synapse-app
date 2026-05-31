@@ -6,12 +6,13 @@ import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { Fab } from "@/components/organisms/fab";
 import { MonthGrid } from "@/components/organisms/month-grid";
 import { UpcomingPreviewCard } from "@/components/organisms/upcoming-preview-card";
-import { Spacing, Surface } from "@/constants/theme";
+import { Spacing, useTheme } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
 
 export default function CalendarScreen(): React.ReactElement {
   const router = useRouter();
+  const { colors } = useTheme();
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -110,7 +111,7 @@ export default function CalendarScreen(): React.ReactElement {
   );
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -136,7 +137,6 @@ export default function CalendarScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   scroll: {
     flex: 1,

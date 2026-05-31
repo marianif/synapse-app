@@ -9,12 +9,13 @@ import Animated, {
 } from "react-native-reanimated";
 
 import {
-  EntryAccent,
+  entryColor,
   FontSize,
   Radius,
   Spacing,
-  Surface,
-  TextColors, tokens } from "@/constants/theme";
+  tokens,
+  useTheme,
+} from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -41,19 +42,19 @@ const quickActions: MenuItem[] = [
     label: "Add Todo",
     icon: "checkbox-marked-outline",
     modalParams: { type: "todo" },
-    accentColor: EntryAccent.todo,
+    accentColor: entryColor("todo"),
   },
   {
     label: "Add Event",
     icon: "calendar-clock",
     modalParams: { type: "event" },
-    accentColor: EntryAccent.event,
+    accentColor: entryColor("event"),
   },
   {
     label: "Add Deadline",
     icon: "clock-alert-outline",
     modalParams: { type: "deadline" },
-    accentColor: EntryAccent.deadline,
+    accentColor: entryColor("deadline"),
   },
 ];
 
@@ -71,6 +72,7 @@ export function AppMenu({
   onClose,
 }: AppMenuProps): React.ReactElement | null {
   const router = useRouter();
+  const { colors } = useTheme();
   const colorScheme = useColorScheme();
   const [isDark, setIsDark] = useState<"light" | "dark">(
     colorScheme === "dark" ? "dark" : "light",
@@ -109,29 +111,31 @@ export function AppMenu({
     <View style={StyleSheet.absoluteFill}>
       <Pressable style={styles.backdrop} onPress={onClose} />
       <Animated.View style={[styles.blurContainer, animatedStyle]}>
-        <View style={styles.menu}>
+        <View style={[styles.menu, { backgroundColor: colors.surfaceSubtle }]}>
           <View style={styles.header}>
-            <Text style={styles.logo}>Synapse</Text>
+            <Text style={[styles.logo, { color: colors.ink }]}>Synapse</Text>
             <View style={styles.headerActions}>
               <Pressable onPress={toggleTheme} hitSlop={8}>
                 <MaterialCommunityIcons
                   name={isDark ? "weather-sunny" : "weather-night"}
                   size={22}
-                  color={TextColors.secondary}
+                  color={colors.inkMuted}
                 />
               </Pressable>
               <Pressable onPress={onClose} hitSlop={8}>
                 <MaterialCommunityIcons
                   name="close"
                   size={24}
-                  color={TextColors.secondary}
+                  color={colors.inkMuted}
                 />
               </Pressable>
             </View>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Views</Text>
+            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
+              Views
+            </Text>
             {menuItems.slice(0, 4).map((item) => (
               <MenuRow
                 key={item.label}
@@ -142,7 +146,9 @@ export function AppMenu({
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>App</Text>
+            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
+              App
+            </Text>
             {menuItems.slice(4).map((item) => (
               <MenuRow
                 key={item.label}
@@ -153,7 +159,9 @@ export function AppMenu({
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.version}>v1.0.0</Text>
+            <Text style={[styles.version, { color: colors.inkMuted }]}>
+              v1.0.0
+            </Text>
           </View>
         </View>
       </Animated.View>
@@ -168,20 +176,23 @@ function MenuRow({
   item: MenuItem;
   onPress: () => void;
 }): React.ReactElement {
+  const { colors } = useTheme();
   return (
     <Pressable
       style={({ pressed }) => [
         styles.menuItem,
-        pressed && styles.menuItemPressed,
+        pressed && { backgroundColor: colors.surfaceSubtle },
       ]}
       onPress={onPress}
     >
       <MaterialCommunityIcons
         name={item.icon as any}
         size={22}
-        color={TextColors.primary}
+        color={colors.ink}
       />
-      <Text style={styles.menuLabel}>{item.label}</Text>
+      <Text style={[styles.menuLabel, { color: colors.ink }]}>
+        {item.label}
+      </Text>
     </Pressable>
   );
 }
@@ -202,7 +213,6 @@ const styles = StyleSheet.create({
   },
   menu: {
     flex: 1,
-    backgroundColor: Surface.containerLow,
     paddingTop: Spacing.xxxl + Spacing.lg,
     paddingHorizontal: Spacing.lg,
   },
@@ -220,14 +230,12 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 24,
     fontWeight: "700",
-    color: TextColors.primary,
   },
   section: {
     marginBottom: Spacing.xl,
   },
   sectionLabel: {
     fontSize: FontSize.labelSm,
-    color: TextColors.tertiary,
     textTransform: "uppercase",
     letterSpacing: 0.55,
     marginBottom: Spacing.md,
@@ -245,12 +253,10 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.sm,
     borderRadius: Radius.lg,
-    backgroundColor: Surface.container,
     gap: Spacing.xs,
   },
   quickActionLabel: {
     fontSize: FontSize.labelSm,
-    color: TextColors.primary,
     fontWeight: "500",
   },
   menuItem: {
@@ -261,12 +267,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     marginBottom: Spacing.xs,
   },
-  menuItemPressed: {
-    backgroundColor: Surface.bright,
-  },
   menuLabel: {
     fontSize: FontSize.bodyMd,
-    color: TextColors.primary,
     marginLeft: Spacing.md,
   },
   footer: {
@@ -277,7 +279,6 @@ const styles = StyleSheet.create({
   },
   version: {
     fontSize: FontSize.labelXs,
-    color: TextColors.tertiary,
     textAlign: "center",
   },
 });

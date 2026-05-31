@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleProp, TextInput, TextStyle } from 'react-native';
 
-import { Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { Radius, Spacing, useTheme } from '@/constants/theme';
 
 type DateInputProps = {
   value?: string;
@@ -10,6 +10,7 @@ type DateInputProps = {
 };
 
 export default function DateInput({ value, onChange, style }: DateInputProps): React.JSX.Element {
+  const { colors } = useTheme();
   const [internalValue, setInternalValue] = useState(value ?? '');
 
   useEffect(() => {
@@ -38,15 +39,15 @@ export default function DateInput({ value, onChange, style }: DateInputProps): R
       onChangeText={handleChange}
       keyboardType="numeric"
       placeholder="DD/MM/YYYY"
-      placeholderTextColor={TextColors.disabled}
+      placeholderTextColor={colors.inkMuted}
       maxLength={10}
       style={[
         {
-          backgroundColor: Surface.containerLow,
+          backgroundColor: colors.surfaceSubtle,
           borderRadius: Radius.lg,
           paddingHorizontal: Spacing.lg,
           paddingVertical: Spacing.md,
-          color: TextColors.primary,
+          color: colors.ink,
           fontSize: 16,
         },
         style,

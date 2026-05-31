@@ -1,7 +1,7 @@
 import { StyleSheet, Text } from "react-native";
 
 import {
-  EntryAccent,
+  entryColor,
   FontSize,
   LetterSpacing,
   LineHeight,
@@ -24,7 +24,7 @@ export function CounterDisplay({
   accentType,
 }: CounterDisplayProps): React.ReactElement {
   return (
-    <Text style={[styles.counter, { color: EntryAccent[accentType] }]}>
+    <Text style={[styles.counter, { color: entryColor(accentType) }]}>
       {value}
     </Text>
   );

@@ -12,6 +12,7 @@
 
 import { Platform } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import type { EntryType } from "@/lib/types";
 
 // ─── New token system: The Field ──────────────────────────────────────────────
 
@@ -212,6 +213,57 @@ function resolveColors(scheme: Scheme): ThemeColors {
 export function useTheme(): { scheme: Scheme; colors: ThemeColors } {
   const scheme: Scheme = useColorScheme() === "light" ? "light" : "dark";
   return { scheme, colors: resolveColors(scheme) };
+}
+
+// ─── Typed scheme-aware accessors (replace the shim's dynamic indexed access) ───
+
+/**
+ * Entry-type → saturated Field color (dot / edge-bar / fill). Maps the entry
+ * domain onto the type-code palette. Codes are SHARED across light/dark by
+ * design, so this needs no scheme argument.
+ */
+const ENTRY_TO_TYPE_KEY: Record<EntryType, keyof typeof color.type> = {
+  todo: "todo",
+  deadline: "bills",
+  event: "event",
+  someday: "someday",
+  idea: "ideas",
+};
+
+export function entryColor(type: EntryType): string {
+  return color.type[ENTRY_TO_TYPE_KEY[type] ?? "todo"];
+}
+
+/**
+ * Legacy surface-layer name → resolved scheme surface. The old 6-tone tonal
+ * stack collapses onto The Field's 3 warm surfaces. Use `useSurfaceColor` in
+ * components so the value reacts to the active scheme.
+ */
+export type SurfaceLayer =
+  | "base"
+  | "containerLow"
+  | "container"
+  | "containerHigh"
+  | "containerHighest"
+  | "containerLowest";
+
+function resolveSurface(layer: SurfaceLayer, colors: ThemeColors): string {
+  switch (layer) {
+    case "base":
+    case "containerLowest":
+      return colors.paper;
+    case "containerLow":
+      return colors.surfaceSubtle;
+    case "container":
+    case "containerHigh":
+    case "containerHighest":
+      return colors.surface;
+  }
+}
+
+export function useSurfaceColor(layer: SurfaceLayer): string {
+  const { colors } = useTheme();
+  return resolveSurface(layer, colors);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

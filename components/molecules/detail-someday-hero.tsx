@@ -2,7 +2,7 @@ import { View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { EntryAccent, Radius, Spacing, Surface } from '@/constants/theme';
+import { entryColor, Radius, Spacing, useTheme } from '@/constants/theme';
 
 interface DetailSomedayHeroProps {
   inspiration?: string;
@@ -17,10 +17,11 @@ interface DetailSomedayHeroProps {
 export function DetailSomedayHero({
   inspiration,
 }: DetailSomedayHeroProps): React.ReactElement {
-  const amber = EntryAccent.someday;
+  const { colors } = useTheme();
+  const amber = entryColor('someday');
 
   return (
-    <View style={styles.hero}>
+    <View style={[styles.hero, { backgroundColor: colors.surfaceSubtle }]}>
       <View style={styles.iconRow}>
         <IconSymbol name="star-four-points" size={24} color={amber} />
         <ThemedText type="label" style={[styles.oneDayLabel, { color: amber }]}>
@@ -45,7 +46,6 @@ export function DetailSomedayHero({
 
 const styles = StyleSheet.create({
   hero: {
-    backgroundColor: Surface.containerLow,
     borderRadius: Radius.xl,
     paddingVertical: Spacing.xxl,
     paddingHorizontal: Spacing.xl,
@@ -58,7 +58,6 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   oneDayLabel: {
-    color: EntryAccent.someday,
     letterSpacing: 1,
   },
   quote: {

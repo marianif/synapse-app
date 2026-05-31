@@ -19,11 +19,13 @@ import { DetailSomedayHero } from "@/components/molecules/detail-someday-hero";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { ListScreenHeader } from "@/components/organisms/list-screen-header";
 import {
-  EntryAccent,
+  entryColor,
   Radius,
   Spacing,
-  Surface,
-  TextColors, tokens } from "@/constants/theme";
+  tokens,
+  useTheme,
+} from "@/constants/theme";
+import type { ThemeColors } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import {
   getEffectiveStatus,
@@ -77,11 +79,15 @@ const STATUS_LABELS: Record<string, string> = {
   met: "MET",
 };
 
-function getStatusColor(status: string, accentColor: string): string {
+function getStatusColor(
+  status: string,
+  accentColor: string,
+  inkMuted: string,
+): string {
   if (status === "completed" || status === "met") return tokens.feedback.success;
   if (status === "overdue") return tokens.feedback.danger;
   if (status === "active") return accentColor;
-  return TextColors.tertiary;
+  return inkMuted;
 }
 
 // ─── Type chip ────────────────────────────────────────────────────────────────
@@ -132,6 +138,7 @@ function TaskHero({
   accentColor,
   recurrenceRule,
   recurrenceEndDate,
+  colors,
 }: {
   status: string;
   scheduledDate: string | null;
@@ -139,8 +146,9 @@ function TaskHero({
   accentColor: string;
   recurrenceRule?: string | null;
   recurrenceEndDate?: string | null;
+  colors: ThemeColors;
 }): React.ReactElement {
-  const statusColor = getStatusColor(status, accentColor);
+  const statusColor = getStatusColor(status, accentColor, colors.inkMuted);
   return (
     <View style={styles.heroBlock}>
       <View
@@ -259,10 +267,12 @@ function DeleteConfirmSheet({
   visible,
   onClose,
   onConfirm,
+  colors,
 }: {
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  colors: ThemeColors;
 }): React.ReactElement {
   return (
     <Modal
@@ -272,8 +282,11 @@ function DeleteConfirmSheet({
       onRequestClose={onClose}
     >
       <Pressable style={styles.sheetOverlay} onPress={onClose}>
-        <View style={styles.sheet}>
-          <ThemedText type="bodyBold" style={styles.sheetTitle}>
+        <View style={[styles.sheet, { backgroundColor: colors.surfaceSubtle }]}>
+          <ThemedText
+            type="bodyBold"
+            style={[styles.sheetTitle, { color: colors.inkMuted }]}
+          >
             Delete entry
           </ThemedText>
           <Pressable style={styles.sheetOption} onPress={onConfirm}>
@@ -281,7 +294,9 @@ function DeleteConfirmSheet({
               Delete
             </ThemedText>
           </Pressable>
-          <View style={styles.sheetDivider} />
+          <View
+            style={[styles.sheetDivider, { backgroundColor: colors.surfaceSubtle }]}
+          />
           <Pressable style={styles.sheetOption} onPress={onClose}>
             <ThemedText type="bodyBold" muted>
               Cancel
@@ -301,12 +316,14 @@ function DeleteScopeSheet({
   onDeleteThis,
   onDeleteFuture,
   onDeleteAll,
+  colors,
 }: {
   visible: boolean;
   onClose: () => void;
   onDeleteThis: () => void;
   onDeleteFuture: () => void;
   onDeleteAll: () => void;
+  colors: ThemeColors;
 }): React.ReactElement {
   return (
     <Modal
@@ -316,24 +333,33 @@ function DeleteScopeSheet({
       onRequestClose={onClose}
     >
       <Pressable style={styles.sheetOverlay} onPress={onClose}>
-        <View style={styles.sheet}>
-          <ThemedText type="bodyBold" style={styles.sheetTitle}>
+        <View style={[styles.sheet, { backgroundColor: colors.surfaceSubtle }]}>
+          <ThemedText
+            type="bodyBold"
+            style={[styles.sheetTitle, { color: colors.inkMuted }]}
+          >
             Delete recurring entry
           </ThemedText>
           <Pressable style={styles.sheetOption} onPress={onDeleteThis}>
             <ThemedText type="body">Delete this occurrence</ThemedText>
           </Pressable>
-          <View style={styles.sheetDivider} />
+          <View
+            style={[styles.sheetDivider, { backgroundColor: colors.surfaceSubtle }]}
+          />
           <Pressable style={styles.sheetOption} onPress={onDeleteFuture}>
             <ThemedText type="body">Delete this and all future</ThemedText>
           </Pressable>
-          <View style={styles.sheetDivider} />
+          <View
+            style={[styles.sheetDivider, { backgroundColor: colors.surfaceSubtle }]}
+          />
           <Pressable style={styles.sheetOption} onPress={onDeleteAll}>
             <ThemedText type="body" style={{ color: tokens.feedback.danger }}>
               Delete entire series
             </ThemedText>
           </Pressable>
-          <View style={styles.sheetDivider} />
+          <View
+            style={[styles.sheetDivider, { backgroundColor: colors.surfaceSubtle }]}
+          />
           <Pressable style={styles.sheetOption} onPress={onClose}>
             <ThemedText type="bodyBold" muted>
               Cancel
@@ -349,6 +375,7 @@ function DeleteScopeSheet({
 
 export default function DetailScreen(): React.ReactElement {
   const router = useRouter();
+  const { colors } = useTheme();
   const { id: rawId, entryType } = useLocalSearchParams<{
     id?: string;
     entryType?: string;
@@ -363,7 +390,7 @@ export default function DetailScreen(): React.ReactElement {
     ? (rawId ?? "").split("::")
     : [rawId, null];
 
-  const accentColor = EntryAccent[entryType as EntryType] ?? EntryAccent.todo;
+  const accentColor = entryColor((entryType as EntryType) ?? "todo");
   const isSomeday = entryType === "someday" || entryType === "idea";
 
   const {
@@ -408,7 +435,10 @@ export default function DetailScreen(): React.ReactElement {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+      <SafeAreaView
+        style={[styles.safeArea, { backgroundColor: colors.paper }]}
+        edges={["top", "bottom"]}
+      >
         <ListScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
           <ActivityIndicator color={accentColor} />
@@ -421,7 +451,10 @@ export default function DetailScreen(): React.ReactElement {
 
   if (!entry) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+      <SafeAreaView
+        style={[styles.safeArea, { backgroundColor: colors.paper }]}
+        edges={["top", "bottom"]}
+      >
         <ListScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
           <EmptyState
@@ -614,8 +647,11 @@ export default function DetailScreen(): React.ReactElement {
           ];
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <View style={styles.screen}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.paper }]}
+      edges={["top", "bottom"]}
+    >
+      <View style={[styles.screen, { backgroundColor: colors.paper }]}>
         {/* ── Header ───────────────────────────────────────────── */}
         <ListScreenHeader title="Detail" onBack={() => router.back()} />
 
@@ -646,6 +682,7 @@ export default function DetailScreen(): React.ReactElement {
               accentColor={accentColor}
               recurrenceRule={entry.recurrence_rule}
               recurrenceEndDate={entry.recurrence_end_date}
+              colors={colors}
             />
           ) : entry && (entryType === "deadline" || isSomeday) ? (
             <DetailSomedayHero inspiration={entry.inspiration ?? undefined} />
@@ -663,11 +700,19 @@ export default function DetailScreen(): React.ReactElement {
 
           {/* Notes */}
           {notes ? (
-            <View style={styles.notesBlock}>
+            <View
+              style={[
+                styles.notesBlock,
+                { backgroundColor: colors.surfaceSubtle },
+              ]}
+            >
               <ThemedText type="caption" muted style={styles.notesLabel}>
                 NOTES
               </ThemedText>
-              <ThemedText type="body" style={styles.notesText}>
+              <ThemedText
+                type="body"
+                style={[styles.notesText, { color: colors.inkMuted }]}
+              >
                 {notes}
               </ThemedText>
             </View>
@@ -677,7 +722,12 @@ export default function DetailScreen(): React.ReactElement {
         </ScrollView>
 
         {/* ── Action bar — pinned above safe area ─────────────── */}
-        <View style={styles.actionBarWrapper}>
+        <View
+          style={[
+            styles.actionBarWrapper,
+            { backgroundColor: colors.paper },
+          ]}
+        >
           <DetailActionBar actions={actions} />
         </View>
       </View>
@@ -687,6 +737,7 @@ export default function DetailScreen(): React.ReactElement {
         visible={deleteConfirmVisible}
         onClose={() => setDeleteConfirmVisible(false)}
         onConfirm={handleDeleteConfirmed}
+        colors={colors}
       />
 
       {/* ── Delete scope sheet (recurring only) ─────────────── */}
@@ -696,6 +747,7 @@ export default function DetailScreen(): React.ReactElement {
         onDeleteThis={handleDeleteThis}
         onDeleteFuture={handleDeleteFuture}
         onDeleteAll={handleDeleteAll}
+        colors={colors}
       />
     </SafeAreaView>
   );
@@ -706,11 +758,9 @@ export default function DetailScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   screen: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   centered: {
     flex: 1,
@@ -761,7 +811,6 @@ const styles = StyleSheet.create({
   },
   // ── Notes ───────────────────────────────────────────────────
   notesBlock: {
-    backgroundColor: Surface.containerLow,
     borderRadius: Radius.xl,
     padding: Spacing.lg,
     gap: Spacing.sm,
@@ -771,7 +820,6 @@ const styles = StyleSheet.create({
   },
   notesText: {
     lineHeight: 22,
-    color: TextColors.secondary,
   },
   contentSpacer: {
     height: Spacing.xl,
@@ -781,7 +829,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.lg,
     paddingTop: Spacing.md,
-    backgroundColor: Surface.base,
   },
   // ── Delete scope sheet ───────────────────────────────────────
   sheetOverlay: {
@@ -790,7 +837,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   sheet: {
-    backgroundColor: Surface.containerLow,
     borderTopLeftRadius: Radius.xl,
     borderTopRightRadius: Radius.xl,
     paddingTop: Spacing.lg,
@@ -799,13 +845,11 @@ const styles = StyleSheet.create({
   sheetTitle: {
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.md,
-    color: TextColors.secondary,
     fontSize: 13,
     letterSpacing: 0.4,
   },
   sheetDivider: {
     height: 1,
-    backgroundColor: Surface.outlineVariant,
     marginHorizontal: Spacing.lg,
   },
   sheetOption: {

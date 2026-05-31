@@ -6,11 +6,10 @@ import { BentoCardHeader } from "@/components/molecules/bento-card-header";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { WeekdayRow } from "@/components/molecules/weekday-row";
 import {
-  EntryAccent,
+  entryColor,
   Radius,
   Spacing,
-  Surface,
-  TextColors,
+  useTheme,
 } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
@@ -43,6 +42,7 @@ export function WeeklyOverviewCard({
   onAdd,
 }: WeeklyOverviewCardProps): React.ReactElement {
   const router = useRouter();
+  const { colors } = useTheme();
 
   return (
     <Pressable
@@ -50,7 +50,7 @@ export function WeeklyOverviewCard({
       accessibilityRole="button"
       accessibilityLabel="Open weekly todos list"
     >
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.surfaceSubtle }]}>
         <BentoCardHeader
           count={totalCount}
           accentType="todo"
@@ -60,7 +60,7 @@ export function WeeklyOverviewCard({
             <MaterialCommunityIcons
               name="chart-bar"
               size={24}
-              color={TextColors.secondary}
+              color={colors.inkMuted}
             />
           }
         />
@@ -70,7 +70,7 @@ export function WeeklyOverviewCard({
             description="Schedule todos to track your weekly momentum."
             ctaLabel="+ Add Todo"
             onCta={onAdd ?? (() => router.push("/list?entryType=todo"))}
-            accentColor={EntryAccent.todo}
+            accentColor={entryColor("todo")}
           />
         ) : (
           <View style={styles.rows}>
@@ -92,7 +92,6 @@ export function WeeklyOverviewCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Surface.containerLow,
     borderRadius: Radius.xl,
     padding: Spacing.lg,
     gap: Spacing.md,

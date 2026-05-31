@@ -2,7 +2,7 @@ import { View, StyleSheet } from 'react-native';
 
 import { CounterDisplay } from '@/components/atoms/counter-display';
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Spacing, TextColors } from '@/constants/theme';
+import { Spacing, useTheme } from '@/constants/theme';
 
 import type { EntryType } from '@/components/atoms/entry-dot';
 
@@ -26,11 +26,12 @@ export function BentoCardHeader({
   description,
   icon,
 }: BentoCardHeaderProps): React.ReactElement {
+  const { colors } = useTheme();
   return (
     <View style={styles.row}>
       <CounterDisplay value={count} accentType={accentType} />
       <View style={styles.meta}>
-        <ThemedText type="label" style={{ color: TextColors.secondary }}>
+        <ThemedText type="label" style={{ color: colors.inkMuted }}>
           {label}
         </ThemedText>
         <ThemedText type="caption" muted>

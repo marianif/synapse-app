@@ -4,6 +4,8 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { Radius, Spacing } from "@/constants/theme";
 
 interface EmptyStateProps {
+  /** Optional leading icon name. Accepted by callers; not rendered in this compact layout. */
+  icon?: string;
   title: string;
   description: string;
   ctaLabel?: string;

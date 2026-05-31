@@ -3,13 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { TodayEventRow } from "@/components/molecules/today-event-row";
-import {
-  Brand,
-  EntryAccent,
-  Radius,
-  Spacing,
-  Surface,
-  TextColors, tokens } from "@/constants/theme";
+import { Radius, Spacing, useTheme } from "@/constants/theme";
 
 interface TodayEvent {
   id: string;
@@ -37,17 +31,18 @@ export function TodaySection({
   isEmpty = false,
   onAdd,
 }: TodaySectionProps): React.ReactElement {
+  const { colors } = useTheme();
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <ThemedText type="label" style={{ color: Brand.primary }}>
+        <ThemedText type="label" style={{ color: colors.accent.clay }}>
           Today
         </ThemedText>
-        <ThemedText type="label" style={{ color: TextColors.tertiary }}>
+        <ThemedText type="label" style={{ color: colors.inkMuted }}>
           Current Status
         </ThemedText>
       </View>
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.surfaceSubtle }]}>
         {isEmpty ? (
           <EmptyState
             icon="calendar-clock"
@@ -55,7 +50,7 @@ export function TodaySection({
             description="Your day is clear!"
             ctaLabel="+ Add Event"
             onCta={onAdd ?? (() => {})}
-            accentColor={EntryAccent.event}
+            accentColor={colors.type.event}
           />
         ) : (
           events.map((event, index) => (
@@ -68,7 +63,14 @@ export function TodaySection({
                 statusLabel={event.statusLabel}
                 isActive={event.isActive}
               />
-              {index < events.length - 1 && <View style={styles.separator} />}
+              {index < events.length - 1 && (
+                <View
+                  style={[
+                    styles.separator,
+                    { backgroundColor: colors.surfaceSubtle },
+                  ]}
+                />
+              )}
             </View>
           ))
         )}
@@ -88,13 +90,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xs,
   },
   card: {
-    backgroundColor: Surface.containerLow,
     borderRadius: Radius.xl,
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.md,
   },
   separator: {
     height: 1,
-    backgroundColor: tokens.color.dark.surfaceSubtle,
   },
 });

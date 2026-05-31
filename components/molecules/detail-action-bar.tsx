@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Radius, Spacing, Surface, TextColors, tokens } from '@/constants/theme';
+import { Radius, Spacing, useTheme } from '@/constants/theme';
 
 export interface ActionItem {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -19,31 +19,30 @@ interface DetailActionBarProps {
   actions: [ActionItem, ActionItem, ActionItem];
 }
 
-const DANGER_COLOR = tokens.feedback.danger;
-
 /**
  * Full-width row of exactly three action buttons for the detail screen.
  * Primary action uses the accent color background.
  * Danger action uses red coloring.
- * Secondary actions use Surface.containerHigh background.
+ * Secondary actions use the elevated surface background.
  */
 export function DetailActionBar({ actions }: DetailActionBarProps): React.ReactElement {
+  const { colors } = useTheme();
   return (
     <View style={styles.bar}>
       {actions.map((action) => {
         const iconColor = action.isPrimary
-          ? tokens.color.dark.paper
+          ? colors.paper
           : action.isDanger
-            ? DANGER_COLOR
-            : TextColors.secondary;
+            ? colors.feedback.danger
+            : colors.inkMuted;
         const labelColor = action.isPrimary
-          ? tokens.color.dark.paper
+          ? colors.paper
           : action.isDanger
-            ? DANGER_COLOR
-            : TextColors.secondary;
+            ? colors.feedback.danger
+            : colors.inkMuted;
         const bgColor = action.isPrimary
-          ? (action.accentColor ?? TextColors.secondary)
-          : Surface.containerHigh;
+          ? (action.accentColor ?? colors.inkMuted)
+          : colors.surface;
 
         return (
           <Pressable

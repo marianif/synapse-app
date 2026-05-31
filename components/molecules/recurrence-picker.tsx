@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import DateInput from "@/components/atoms/DateInput";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Radius, Spacing, Surface, TextColors } from "@/constants/theme";
+import { Radius, Spacing, useTheme } from "@/constants/theme";
 import type { RecurrenceFrequency } from "@/lib/types";
 
 interface RecurrencePickerProps {
@@ -45,6 +45,8 @@ export function RecurrencePicker({
   onDaysChange,
   onEndDateChange,
 }: RecurrencePickerProps): React.ReactElement {
+  const { colors } = useTheme();
+
   const handleFrequencySelect = (freq: RecurrenceFrequency): void => {
     if (frequency === freq) {
       onFrequencyChange(null);
@@ -80,6 +82,7 @@ export function RecurrencePicker({
               onPress={() => handleFrequencySelect(option.value)}
               style={[
                 styles.option,
+                { backgroundColor: colors.surfaceSubtle },
                 isSelected && {
                   backgroundColor: accentColor + "20",
                   borderColor: accentColor,
@@ -91,12 +94,13 @@ export function RecurrencePicker({
                   option.icon as keyof typeof MaterialCommunityIcons.glyphMap
                 }
                 size={16}
-                color={isSelected ? accentColor : TextColors.tertiary}
+                color={isSelected ? accentColor : colors.inkMuted}
               />
               <ThemedText
                 type="caption"
                 style={[
                   styles.optionLabel,
+                  { color: colors.inkMuted },
                   isSelected && { color: accentColor },
                 ]}
               >
@@ -117,6 +121,7 @@ export function RecurrencePicker({
                 onPress={() => handleDayToggle(day.value)}
                 style={[
                   styles.weekdayChip,
+                  { backgroundColor: colors.surfaceSubtle },
                   isSelected && {
                     backgroundColor: accentColor + "20",
                     borderColor: accentColor,
@@ -127,6 +132,7 @@ export function RecurrencePicker({
                   type="caption"
                   style={[
                     styles.weekdayText,
+                    { color: colors.inkMuted },
                     isSelected && { color: accentColor },
                   ]}
                 >
@@ -143,7 +149,7 @@ export function RecurrencePicker({
           <DateInput
             value={endDate}
             onChange={onEndDateChange}
-            style={styles.dateInput}
+            style={[styles.dateInput, { backgroundColor: colors.surfaceSubtle }]}
           />
         </View>
       )}
@@ -168,7 +174,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: Spacing.xs,
-    backgroundColor: Surface.containerLow,
     borderRadius: Radius.md,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.sm,
@@ -176,7 +181,6 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   optionLabel: {
-    color: TextColors.tertiary,
     fontSize: 11,
   },
   weekdayRow: {
@@ -185,7 +189,6 @@ const styles = StyleSheet.create({
   },
   weekdayChip: {
     flex: 1,
-    backgroundColor: Surface.containerLow,
     borderRadius: Radius.sm,
     paddingVertical: Spacing.xs,
     alignItems: "center",
@@ -193,7 +196,6 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   weekdayText: {
-    color: TextColors.tertiary,
     fontWeight: "600",
     fontSize: 10,
   },
@@ -202,7 +204,6 @@ const styles = StyleSheet.create({
   },
   dateInput: {
     flex: 1,
-    backgroundColor: Surface.containerLow,
     paddingVertical: Spacing.sm,
   },
 });

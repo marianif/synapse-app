@@ -5,7 +5,7 @@ import { Pressable, View, StyleSheet } from 'react-native';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { BentoCardHeader } from '@/components/molecules/bento-card-header';
 import { WeekdayRow } from '@/components/molecules/weekday-row';
-import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { Radius, Spacing, entryColor, useTheme } from '@/constants/theme';
 
 import type { ItemStatus } from '@/components/molecules/list-item';
 
@@ -33,6 +33,7 @@ export function DeadlinesCard({
   onAdd,
 }: DeadlinesCardProps): React.ReactElement {
   const router = useRouter();
+  const { colors } = useTheme();
 
   return (
     <Pressable
@@ -40,7 +41,7 @@ export function DeadlinesCard({
       accessibilityRole="button"
       accessibilityLabel="Open deadlines list"
     >
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.surfaceSubtle }]}>
         <BentoCardHeader
           count={totalCount}
           accentType="deadline"
@@ -50,7 +51,7 @@ export function DeadlinesCard({
             <MaterialCommunityIcons
               name="bell-outline"
               size={24}
-              color={TextColors.secondary}
+              color={colors.inkMuted}
             />
           }
         />
@@ -61,7 +62,7 @@ export function DeadlinesCard({
             description="Add deadlines to track critical milestones."
             ctaLabel="+ Add Deadline"
             onCta={onAdd ?? (() => router.push('/list?entryType=deadline'))}
-            accentColor={EntryAccent.deadline}
+            accentColor={entryColor('deadline')}
           />
         ) : (
           <View style={styles.rows}>
@@ -83,7 +84,6 @@ export function DeadlinesCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Surface.containerLow,
     borderRadius: Radius.xl,
     padding: Spacing.xl,
     gap: Spacing.lg,

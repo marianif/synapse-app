@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { Radius, Spacing, useTheme } from '@/constants/theme';
 
 interface StreakBadgeProps {
   count: number;
@@ -17,15 +17,17 @@ interface StreakBadgeProps {
  */
 export function StreakBadge({
   count,
-  accentColor = TextColors.secondary,
+  accentColor,
 }: StreakBadgeProps): React.ReactElement {
+  const { colors } = useTheme();
+  const resolvedAccent = accentColor ?? colors.inkMuted;
   return (
-    <View style={styles.badge}>
-      <MaterialCommunityIcons name="lightning-bolt" size={20} color={accentColor} />
-      <ThemedText type="caption" style={styles.label}>
+    <View style={[styles.badge, { backgroundColor: colors.surface }]}>
+      <MaterialCommunityIcons name="lightning-bolt" size={20} color={resolvedAccent} />
+      <ThemedText type="caption" style={[styles.label, { color: colors.inkMuted }]}>
         STREAK
       </ThemedText>
-      <ThemedText type="headline" style={[styles.count, { color: accentColor }]}>
+      <ThemedText type="headline" style={[styles.count, { color: resolvedAccent }]}>
         {String(count).padStart(2, '0')}
       </ThemedText>
     </View>
@@ -34,7 +36,6 @@ export function StreakBadge({
 
 const styles = StyleSheet.create({
   badge: {
-    backgroundColor: Surface.containerHigh,
     borderRadius: Radius.lg,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
@@ -44,7 +45,6 @@ const styles = StyleSheet.create({
   },
   label: {
     letterSpacing: 0.8,
-    color: TextColors.tertiary,
   },
   count: {
     lineHeight: 28,

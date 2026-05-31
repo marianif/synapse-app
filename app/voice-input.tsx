@@ -20,16 +20,17 @@ import Animated, {
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import {
-  Brand,
   FontSize,
   LineHeight,
   Radius,
   Spacing,
-  Surface,
-  TextColors, tokens } from "@/constants/theme";
+  tokens,
+  useTheme,
+} from "@/constants/theme";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
 export default function VoiceInputScreen(): React.ReactElement {
+  const { colors } = useTheme();
   const { autoStart } = useLocalSearchParams<{ autoStart?: string }>();
   const { transcript, toggleRecording, isRecording, error, permissionsGranted } =
     useSpeechRecognizer({ autoStart: autoStart === "true" });
@@ -76,7 +77,10 @@ export default function VoiceInputScreen(): React.ReactElement {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.paper }]}
+      edges={["top", "bottom"]}
+    >
       <View style={styles.screen}>
         {/* Header - No borders, just spacing and surface shifts */}
         <View style={styles.header}>
@@ -90,12 +94,13 @@ export default function VoiceInputScreen(): React.ReactElement {
             onPress={handleDone}
             style={({ pressed }) => [
               styles.headerDoneButton,
+              { backgroundColor: colors.surface },
               pressed && styles.headerDoneButtonPressed,
             ]}
           >
             <ThemedText
               type="bodyBold"
-              style={[styles.headerDoneButtonText, { color: Brand.primary }]}
+              style={[styles.headerDoneButtonText, { color: colors.accent.clay }]}
             >
               Done
             </ThemedText>
@@ -106,7 +111,7 @@ export default function VoiceInputScreen(): React.ReactElement {
         <View style={styles.transcriptContainer}>
           {isPermissionDenied ? (
             <View style={styles.errorBlock}>
-              <Text style={styles.errorText}>
+              <Text style={[styles.errorText, { color: colors.inkMuted }]}>
                 Microphone access is off. Enable it in Settings to use voice
                 input.
               </Text>
@@ -114,23 +119,30 @@ export default function VoiceInputScreen(): React.ReactElement {
                 onPress={() => Linking.openSettings()}
                 style={({ pressed }) => [
                   styles.settingsButton,
+                  { backgroundColor: colors.surface },
                   pressed && styles.settingsButtonPressed,
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel="Open Settings"
               >
-                <Text style={styles.settingsButtonText}>Open Settings</Text>
+                <Text
+                  style={[styles.settingsButtonText, { color: colors.accent.clay }]}
+                >
+                  Open Settings
+                </Text>
               </Pressable>
             </View>
           ) : error ? (
-            <Text style={styles.errorText}>{error}</Text>
+            <Text style={[styles.errorText, { color: colors.inkMuted }]}>
+              {error}
+            </Text>
           ) : (
             <Text
               style={[
                 styles.transcript,
                 transcript
-                  ? styles.transcriptActive
-                  : styles.transcriptPlaceholder,
+                  ? { color: colors.ink }
+                  : [styles.transcriptPlaceholder, { color: colors.inkMuted }],
               ]}
             >
               {transcript || "Speak to begin..."}
@@ -151,7 +163,8 @@ export default function VoiceInputScreen(): React.ReactElement {
               disabled={isPermissionDenied}
               style={({ pressed }) => [
                 styles.recordButton,
-                isRecording && styles.recordButtonActive,
+                { backgroundColor: colors.surface },
+                isRecording && { backgroundColor: colors.surfaceSubtle },
                 isPermissionDenied && styles.recordButtonDisabled,
                 pressed && !isPermissionDenied && styles.recordButtonPressed,
               ]}
@@ -159,13 +172,14 @@ export default function VoiceInputScreen(): React.ReactElement {
               <View
                 style={[
                   styles.recordButtonInner,
+                  { backgroundColor: colors.accent.clay },
                   isRecording && styles.recordButtonInnerActive,
                 ]}
               />
             </Pressable>
           </View>
 
-          <ThemedText type="body" style={styles.hint}>
+          <ThemedText type="body" style={[styles.hint, { color: colors.inkMuted }]}>
             {isRecording ? "Listening..." : "Tap to start"}
           </ThemedText>
         </View>
@@ -177,7 +191,6 @@ export default function VoiceInputScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   screen: {
     flex: 1,
@@ -197,7 +210,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: Radius.full, // Pill shape per DESIGN.md
-    backgroundColor: Surface.containerHigh, // Surface shift instead of border
   },
   headerDoneButtonPressed: {
     opacity: 0.7,
@@ -219,11 +231,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: LineHeight.displayLg,
   },
-  transcriptActive: {
-    color: TextColors.primary,
-  },
   transcriptPlaceholder: {
-    color: TextColors.tertiary,
     opacity: 0.5,
   },
   controls: {
@@ -249,7 +257,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: Radius.full,
-    backgroundColor: Surface.containerHigh,
     alignItems: "center",
     justifyContent: "center",
     // No hard borders, use subtle shadow or glow for elevation
@@ -259,9 +266,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  recordButtonActive: {
-    backgroundColor: Surface.containerHighest,
-  },
   recordButtonPressed: {
     opacity: 0.8,
     transform: [{ scale: 0.96 }],
@@ -270,7 +274,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: Radius.full,
-    backgroundColor: Brand.primary,
   },
   recordButtonInnerActive: {
     backgroundColor: tokens.feedback.danger,
@@ -279,7 +282,6 @@ const styles = StyleSheet.create({
     height: 24,
   },
   hint: {
-    color: TextColors.tertiary,
     letterSpacing: 1,
     textTransform: "uppercase",
     fontSize: 10,
@@ -293,14 +295,12 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: FontSize.bodyMd,
     lineHeight: LineHeight.bodyMd,
-    color: TextColors.secondary,
     textAlign: "center",
   },
   settingsButton: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
     borderRadius: Radius.lg,
-    backgroundColor: Surface.containerHigh,
   },
   settingsButtonPressed: {
     opacity: 0.7,
@@ -308,7 +308,6 @@ const styles = StyleSheet.create({
   settingsButtonText: {
     fontSize: FontSize.bodyMd,
     fontWeight: "600",
-    color: Brand.primary,
     textAlign: "center",
   },
   recordButtonDisabled: {

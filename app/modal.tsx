@@ -16,11 +16,12 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import TimeInput from "@/components/atoms/TimeInput";
 import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
 import {
-  EntryAccent,
+  entryColor,
   Radius,
   Spacing,
-  Surface,
-  TextColors, tokens } from "@/constants/theme";
+  tokens,
+  useTheme,
+} from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import type { RecurrenceFrequency } from "@/lib/types";
 
@@ -54,6 +55,7 @@ export default function AddEntryModal(): React.ReactElement {
     recurrenceEndDate?: string;
   }>();
 
+  const { colors } = useTheme();
   const editing = isEditMode(searchParams);
 
   const [title, setTitle] = useState(searchParams.title ?? "");
@@ -87,14 +89,7 @@ export default function AddEntryModal(): React.ReactElement {
     }
   }, [editing, searchParams.recurrence]);
 
-  const accentColor =
-    type === "todo"
-      ? EntryAccent.todo
-      : type === "deadline"
-        ? EntryAccent.deadline
-        : type === "event"
-          ? EntryAccent.event
-          : EntryAccent.someday;
+  const accentColor = entryColor(type);
 
   async function handleSave(): Promise<void> {
     if (!title.trim() || isCreating) return;
@@ -146,14 +141,19 @@ export default function AddEntryModal(): React.ReactElement {
   const showDateTime = type !== "someday";
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.paper }]}
+      edges={["top", "bottom"]}
+    >
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.screen}>
           {/* Header */}
-          <View style={styles.header}>
+          <View
+            style={[styles.header, { backgroundColor: colors.surfaceSubtle }]}
+          >
             <Link href="/" dismissTo asChild>
               <Pressable style={styles.headerButton} hitSlop={12}>
                 <ThemedText type="body" muted>
@@ -169,6 +169,7 @@ export default function AddEntryModal(): React.ReactElement {
               disabled={!canSave}
               style={({ pressed }) => [
                 styles.headerSaveButton,
+                { backgroundColor: colors.surface },
                 !canSave && styles.headerSaveButtonDisabled,
                 pressed && styles.headerSaveButtonPressed,
               ]}
@@ -194,11 +195,15 @@ export default function AddEntryModal(): React.ReactElement {
                 TITLE
               </ThemedText>
               <TextInput
-                style={[styles.input, styles.titleInput]}
+                style={[
+                  styles.input,
+                  styles.titleInput,
+                  { backgroundColor: colors.surfaceSubtle, color: colors.ink },
+                ]}
                 value={title}
                 onChangeText={setTitle}
                 placeholder="What do you need to do?"
-                placeholderTextColor={TextColors.disabled}
+                placeholderTextColor={colors.inkMuted}
                 autoFocus
                 returnKeyType="next"
               />
@@ -212,14 +217,7 @@ export default function AddEntryModal(): React.ReactElement {
               <View style={styles.typeSelector}>
                 {TYPE_OPTIONS.map((option) => {
                   const isSelected = type === option.value;
-                  const optionAccent =
-                    option.value === "todo"
-                      ? EntryAccent.todo
-                      : option.value === "deadline"
-                        ? EntryAccent.deadline
-                        : option.value === "event"
-                          ? EntryAccent.event
-                          : EntryAccent.someday;
+                  const optionAccent = entryColor(option.value);
 
                   return (
                     <Pressable
@@ -227,6 +225,7 @@ export default function AddEntryModal(): React.ReactElement {
                       onPress={() => setType(option.value)}
                       style={[
                         styles.typeOption,
+                        { backgroundColor: colors.surfaceSubtle },
                         isSelected && {
                           backgroundColor: optionAccent + "20",
                           borderColor: optionAccent,
@@ -237,6 +236,7 @@ export default function AddEntryModal(): React.ReactElement {
                         type="bodyBold"
                         style={[
                           styles.typeOptionText,
+                          { color: colors.inkMuted },
                           isSelected && { color: optionAccent },
                         ]}
                       >
@@ -258,7 +258,10 @@ export default function AddEntryModal(): React.ReactElement {
                   <DateInput
                     value={date}
                     onChange={setDate}
-                    style={styles.input}
+                    style={[
+                      styles.input,
+                      { backgroundColor: colors.surfaceSubtle, color: colors.ink },
+                    ]}
                   />
                 </View>
                 <View style={[styles.field, styles.halfField]}>
@@ -268,7 +271,10 @@ export default function AddEntryModal(): React.ReactElement {
                   <TimeInput
                     value={time ?? dayjs().format("HH:mm")}
                     onChange={setTime}
-                    style={styles.input}
+                    style={[
+                      styles.input,
+                      { backgroundColor: colors.surfaceSubtle, color: colors.ink },
+                    ]}
                   />
                 </View>
               </View>
@@ -297,11 +303,15 @@ export default function AddEntryModal(): React.ReactElement {
                 NOTES
               </ThemedText>
               <TextInput
-                style={[styles.input, styles.notesInput]}
+                style={[
+                  styles.input,
+                  styles.notesInput,
+                  { backgroundColor: colors.surfaceSubtle, color: colors.ink },
+                ]}
                 value={notes}
                 onChangeText={setNotes}
                 placeholder="Add any additional notes..."
-                placeholderTextColor={TextColors.disabled}
+                placeholderTextColor={colors.inkMuted}
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
@@ -317,7 +327,6 @@ export default function AddEntryModal(): React.ReactElement {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   keyboardView: {
     flex: 1,
@@ -331,7 +340,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
-    backgroundColor: Surface.containerLow,
   },
   headerButton: {
     minWidth: 60,
@@ -341,7 +349,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: Radius.lg,
-    backgroundColor: Surface.containerHigh,
   },
   headerSaveButtonDisabled: {
     opacity: 0.5,
@@ -368,11 +375,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: Surface.containerLow,
     borderRadius: Radius.lg,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
-    color: TextColors.primary,
     fontSize: 16,
   },
   titleInput: {
@@ -388,16 +393,13 @@ const styles = StyleSheet.create({
   },
   typeOption: {
     flex: 1,
-    backgroundColor: Surface.containerLow,
     borderRadius: Radius.lg,
     paddingVertical: Spacing.md,
     alignItems: "center",
     borderWidth: 1.5,
     borderColor: "transparent",
   },
-  typeOptionText: {
-    color: TextColors.secondary,
-  },
+  typeOptionText: {},
   row: {
     flexDirection: "row",
     gap: Spacing.md,
@@ -410,7 +412,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.lg,
     paddingBottom: Spacing.xl,
     borderTopWidth: 1,
-    borderTopColor: Surface.outlineVariant,
   },
   saveButton: {
     borderRadius: Radius.full,
@@ -435,7 +436,6 @@ const styles = StyleSheet.create({
   },
   weekdayOption: {
     flex: 1,
-    backgroundColor: Surface.containerLow,
     borderRadius: Radius.md,
     paddingVertical: Spacing.sm,
     alignItems: "center",
@@ -443,7 +443,6 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   weekdayOptionText: {
-    color: TextColors.secondary,
     fontSize: 11,
     fontWeight: "600",
   },

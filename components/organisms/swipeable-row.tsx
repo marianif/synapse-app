@@ -3,7 +3,7 @@ import { Alert, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Swipeable, RectButton } from 'react-native-gesture-handler';
 
-import { Radius, Spacing, TextColors, tokens } from '@/constants/theme';
+import { Radius, Spacing, useTheme } from '@/constants/theme';
 
 interface SwipeableRowProps {
   children: React.ReactNode;
@@ -16,6 +16,7 @@ export function SwipeableRow({
   onDelete,
   accentColor,
 }: SwipeableRowProps): React.ReactElement {
+  const { colors } = useTheme();
   const swipeableRef = useRef<Swipeable>(null);
 
   const handleDelete = (): void => {
@@ -42,11 +43,14 @@ export function SwipeableRow({
   };
 
   const renderRightActions = (): React.ReactElement => (
-    <RectButton style={styles.deleteAction} onPress={handleDelete}>
+    <RectButton
+      style={[styles.deleteAction, { backgroundColor: colors.feedback.danger }]}
+      onPress={handleDelete}
+    >
       <MaterialCommunityIcons
         name="trash-can-outline"
         size={22}
-        color={TextColors.primary}
+        color={colors.ink}
       />
     </RectButton>
   );
@@ -65,7 +69,6 @@ export function SwipeableRow({
 
 const styles = StyleSheet.create({
   deleteAction: {
-    backgroundColor: tokens.feedback.danger,
     justifyContent: 'center',
     alignItems: 'center',
     width: 64,

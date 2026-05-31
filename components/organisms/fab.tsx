@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { Brand, EntryAccent, Radius, Shadow, Spacing, tokens } from "@/constants/theme";
+import { Radius, Spacing, tokens, useTheme } from "@/constants/theme";
 
 const WAVEFORM_BARS = 10;
 
@@ -30,6 +30,8 @@ export function Fab({
   onStop,
   onCancel,
 }: FabProps): React.ReactElement {
+  const { colors } = useTheme();
+
   if (isRecording) {
     return (
       <View style={styles.wrapper} pointerEvents="box-none">
@@ -49,17 +51,19 @@ export function Fab({
         onLongPress={onLongPress}
         style={({ pressed }) => [
           styles.button,
+          { backgroundColor: colors.accent.clay },
           pressed && styles.buttonPressed,
         ]}
       >
-        <View style={styles.glow} />
-        <MaterialCommunityIcons name="microphone" size={28} color={Brand.onPrimary} />
+        <View style={[styles.glow, { backgroundColor: colors.accent.clay }]} />
+        <MaterialCommunityIcons name="microphone" size={28} color={colors.paper} />
       </Pressable>
     </View>
   );
 }
 
 function WaveformBar({ index }: { index: number }): React.ReactElement {
+  const { colors } = useTheme();
   const height = useSharedValue(8);
 
   useEffect(() => {
@@ -84,7 +88,11 @@ function WaveformBar({ index }: { index: number }): React.ReactElement {
     height: height.value,
   }));
 
-  return <Animated.View style={[styles.waveformBar, animatedStyle]} />;
+  return (
+    <Animated.View
+      style={[styles.waveformBar, { backgroundColor: colors.type.bills }, animatedStyle]}
+    />
+  );
 }
 
 function RecordingFab({
@@ -96,6 +104,8 @@ function RecordingFab({
   onStop?: () => void;
   onCancel?: () => void;
 }): React.ReactElement {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.recordingContainer}>
       <View style={styles.waveformContainer}>
@@ -107,13 +117,14 @@ function RecordingFab({
         onPress={onStop}
         style={({ pressed }) => [
           styles.recordingButton,
+          { backgroundColor: colors.type.bills },
           pressed && styles.buttonPressed,
         ]}
         accessibilityLabel="Stop recording"
         accessibilityRole="button"
       >
-        <View style={styles.recordingGlow} />
-        <MaterialCommunityIcons name="stop" size={20} color={tokens.color.dark.ink} />
+        <View style={[styles.recordingGlow, { backgroundColor: colors.feedback.danger }]} />
+        <MaterialCommunityIcons name="stop" size={20} color={colors.ink} />
       </Pressable>
     </View>
   );
@@ -125,17 +136,15 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: Radius.full,
-    backgroundColor: tokens.accent.clay,
-    ...Shadow.fab,
+    ...tokens.elevation.capture,
   },
   button: {
     width: 56,
     height: 56,
     borderRadius: Radius.full,
-    backgroundColor: Brand.primary,
     alignItems: "center",
     justifyContent: "center",
-    ...Shadow.fab,
+    ...tokens.elevation.capture,
   },
   buttonPressed: {
     opacity: 0.85,
@@ -163,7 +172,6 @@ const styles = StyleSheet.create({
   },
   waveformBar: {
     width: 4,
-    backgroundColor: EntryAccent.deadline,
     borderRadius: 2,
   },
   recordingGlow: {
@@ -171,17 +179,15 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: Radius.full,
-    backgroundColor: tokens.feedback.danger,
-    ...Shadow.fab,
+    ...tokens.elevation.capture,
   },
   recordingButton: {
     width: 56,
     height: 56,
     borderRadius: Radius.full,
-    backgroundColor: EntryAccent.deadline,
     alignItems: "center",
     justifyContent: "center",
-    ...Shadow.fab,
+    ...tokens.elevation.capture,
   },
 
   cancelButton: {
@@ -195,7 +201,6 @@ const styles = StyleSheet.create({
   transcriptText: {
     flex: 1,
     fontSize: 14,
-    color: tokens.color.dark.ink,
     fontWeight: "400",
     marginRight: 8,
   },

@@ -49,6 +49,6 @@ Activating, editorial, warm. Bold the way an editorial page is bold: through con
 ## Accessibility
 
 - WCAG AA contrast in both light and dark schemes. Ink-on-tint and saturated kicker-on-tint pairs verified ≥ 4.5:1 (kickers use the darker `typeKicker` token set).
-- True light + dark mode parity is a first-class goal. (As of the color migration, components are re-skinned to the warm palette; per-component `useTheme()` light/dark wiring is the active follow-on.)
+- True light + dark mode parity is first-class and live: a persisted System / Light / Dark preference (set in the app menu) drives every surface through `useTheme()`.
 - Dynamic Type / Android font scale to 2x with no fixed-height tiles.
 - Touch targets: 44pt iOS / 48dp Android throughout, including the capture bar and tile items.

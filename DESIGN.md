@@ -125,14 +125,20 @@ Layered, warm-tinted: `elevation.tile` (warm soft shadow `rgba(80,50,30,0.10)`, 
 
 ---
 
-## Migration status (color migration complete)
+## Theming API
 
-The color migration re-skinned all 45 in-scope files to The Field via the `tokens`
-object. A `@deprecated` compat shim in `constants/theme.ts` still maps the old
-`Surface`/`TextColors`/`EntryAccent`/`Brand`/… exports to warm values; it survives
-because of dynamic indexed access (`EntryAccent[type]`, `Surface[key]`, `Colors[scheme]`).
+The whole app reads color through **`useTheme()`** (returns `{ scheme, colors }` for the
+active scheme) and the typed accessors **`entryColor(type)`** (shared entry-type code) and
+**`useSurfaceColor(layer)`**. Scheme-independent values (`tokens.space/radius/type`) are
+read directly from `tokens`. The old compat shim (`Surface`/`TextColors`/`EntryAccent`/… )
+has been **deleted** — there is one token API.
 
-**Active follow-on (not yet done):** wire `useTheme()` per component for true light/dark
-parity (currently re-skinned dark-first), introduce typed scheme-aware accessors and
-delete the shim, and the structural redesign — bento home, always-on capture bar
-(replacing the FAB), `EntryTile`, and loading Fraunces.
+**Light/dark switching is live and first-class.** A `ThemeProvider` (`contexts/theme-context.tsx`)
+holds a persisted **System / Light / Dark** preference (AsyncStorage), resolves "system"
+against the device, and feeds `useColorScheme()` — so every `useTheme()` consumer reacts.
+The switcher is the Appearance control in the app menu. Cold start is splash-gated on the
+preference load to avoid a flash. Entry-type codes are shared across schemes by design;
+the soft tile-tints differ per scheme.
+
+**Out of scope (future):** structural redesign from the brief — bento home, always-on
+capture bar (replacing the FAB), `EntryTile`, loading Fraunces via expo-font.

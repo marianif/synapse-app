@@ -1,6 +1,6 @@
 # Phase orphans rewrite report
 
-Mode: **dry-run**
+Mode: **commit**
 
 - filesChanged: 1
 - requiresAgent: 0

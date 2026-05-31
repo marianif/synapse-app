@@ -1,3 +1,4 @@
+// migrated to v2 tokens — phase orphans
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -14,8 +15,7 @@ import {
   Radius,
   Spacing,
   Surface,
-  TextColors,
-} from "@/constants/theme";
+  TextColors, tokens } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -190,7 +190,7 @@ function MenuRow({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: tokens.colors.unresolved.rgba0_0_0_0_5,
     zIndex: 100,
   },
   blurContainer: {

@@ -36,12 +36,21 @@ const SEEDS: Seed[] = [
   { title: "Car insurance renewal", type: "deadline", due_date: d(23) }, // distant
   { title: "Passport expires", type: "deadline", due_date: d(180) }, // distant
 
-  // ── Ideas — undated; staggered freshness so the Present fade is visible ─
+  // ── Ideas — undated; staggered freshness so the Present cloud reads as a
+  //    real field of thoughts (fresh → ghost). Quantity is the texture. ──────
   { title: "Newsletter about small tools", type: "idea", subtitle: "weekly, short", touchedDaysAgo: 0 },
-  { title: "Repaint the hallway a warm white", type: "idea", touchedDaysAgo: 6 },
-  { title: "Learn to make focaccia", type: "idea", touchedDaysAgo: 18 },
   { title: "An app that names your plants", type: "idea", touchedDaysAgo: 1 },
-  { title: "Voice memos that auto-sort", type: "idea", touchedDaysAgo: 25 },
+  { title: "Tiny zine on city benches", type: "idea", touchedDaysAgo: 2 },
+  { title: "Repaint the hallway a warm white", type: "idea", touchedDaysAgo: 4 },
+  { title: "A playlist that matches the weather", type: "idea", touchedDaysAgo: 5 },
+  { title: "Start a supper club", type: "idea", touchedDaysAgo: 7 },
+  { title: "Learn to make focaccia", type: "idea", touchedDaysAgo: 9 },
+  { title: "Sketch the view from the balcony", type: "idea", touchedDaysAgo: 11 },
+  { title: "Build a little weather lamp", type: "idea", touchedDaysAgo: 13 },
+  { title: "Write to my old teacher", type: "idea", touchedDaysAgo: 16 },
+  { title: "Voice memos that auto-sort", type: "idea", touchedDaysAgo: 19 },
+  { title: "A font made from my handwriting", type: "idea", touchedDaysAgo: 22 },
+  { title: "Map every good espresso in town", type: "idea", touchedDaysAgo: 27 },
 
   // ── To-dos — today → next week ─────────────────────────────────────────
   { title: "Reply to Marco", type: "todo", scheduled_date: d(0) }, // looming (today)

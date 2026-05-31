@@ -1,3 +1,4 @@
+// migrated to v2 tokens — phase 3
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect } from "react";
 import {
@@ -26,8 +27,7 @@ import {
   Radius,
   Spacing,
   Surface,
-  TextColors,
-} from "@/constants/theme";
+  TextColors, tokens } from "@/constants/theme";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
 export default function VoiceInputScreen(): React.ReactElement {
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     borderWidth: 4,
-    borderColor: "#FF6B6B",
+    borderColor: tokens.feedback.danger,
   },
   recordButton: {
     width: 80,
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     // No hard borders, use subtle shadow or glow for elevation
-    shadowColor: "#000",
+    shadowColor: tokens.colors.unresolved.hex000,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     backgroundColor: Brand.primary,
   },
   recordButtonInnerActive: {
-    backgroundColor: "#FF6B6B",
+    backgroundColor: tokens.feedback.danger,
     borderRadius: Radius.sm,
     width: 24,
     height: 24,

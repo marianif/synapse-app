@@ -1,3 +1,4 @@
+// migrated to v2 tokens — phase 3
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -23,8 +24,7 @@ import {
   Radius,
   Spacing,
   Surface,
-  TextColors,
-} from "@/constants/theme";
+  TextColors, tokens } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import {
   getEffectiveStatus,
@@ -79,8 +79,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 function getStatusColor(status: string, accentColor: string): string {
-  if (status === "completed" || status === "met") return "#52C87A";
-  if (status === "overdue") return "#FF4444";
+  if (status === "completed" || status === "met") return tokens.feedback.success;
+  if (status === "overdue") return tokens.feedback.danger;
   if (status === "active") return accentColor;
   return TextColors.tertiary;
 }
@@ -278,7 +278,7 @@ function DeleteConfirmSheet({
             Delete entry
           </ThemedText>
           <Pressable style={styles.sheetOption} onPress={onConfirm}>
-            <ThemedText type="body" style={{ color: "#FF6B6B" }}>
+            <ThemedText type="body" style={{ color: tokens.feedback.danger }}>
               Delete
             </ThemedText>
           </Pressable>
@@ -330,7 +330,7 @@ function DeleteScopeSheet({
           </Pressable>
           <View style={styles.sheetDivider} />
           <Pressable style={styles.sheetOption} onPress={onDeleteAll}>
-            <ThemedText type="body" style={{ color: "#FF6B6B" }}>
+            <ThemedText type="body" style={{ color: tokens.feedback.danger }}>
               Delete entire series
             </ThemedText>
           </Pressable>
@@ -787,7 +787,7 @@ const styles = StyleSheet.create({
   // ── Delete scope sheet ───────────────────────────────────────
   sheetOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: tokens.colors.unresolved.rgba0_0_0_0_6,
     justifyContent: "flex-end",
   },
   sheet: {

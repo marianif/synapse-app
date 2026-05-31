@@ -1,3 +1,4 @@
+// migrated to v2 tokens — phase 3
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -20,8 +21,7 @@ import {
   Radius,
   Spacing,
   Surface,
-  TextColors,
-} from "@/constants/theme";
+  TextColors, tokens } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import type { RecurrenceFrequency } from "@/lib/types";
 
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   saveButtonText: {
-    color: "#131316",
+    color: tokens.color.dark.paper,
     fontSize: 16,
     fontWeight: "600",
   },

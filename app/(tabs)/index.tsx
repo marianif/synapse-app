@@ -7,6 +7,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { FieldZone } from "@/components/organisms/field-zone";
+import { StakesRunway } from "@/components/organisms/stakes-runway";
 
 import { FieldBriefing } from "@/components/molecules/field-briefing";
 import { tokens, useTheme } from "@/constants/theme";
@@ -16,6 +17,7 @@ import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
+import type { RunwayItem } from "@/components/molecules/runway-gauge";
 import type { DbEntry, EntryType } from "@/lib/types";
 
 dayjs.extend(customParseFormat);
@@ -69,6 +71,47 @@ function toRowItem(e: DbEntry): FieldRowItem {
   };
 }
 
+// Stakes are a runway against a fixed horizon: how close to the edge each one is.
+const RUNWAY_HORIZON_DAYS = 14;
+
+/** Big mono readout for a gauge: "2d over", "now", "tomorrow", "5d". */
+function runwayReadout(days: number | null): string {
+  if (days === null) return "";
+  if (days < 0) return `${Math.abs(days)}d over`;
+  if (days === 0) return "now";
+  if (days === 1) return "tomorrow";
+  return `${days}d`;
+}
+
+function toRunwayItem(e: DbEntry): RunwayItem {
+  const days = daysUntil(e.due_date ?? e.scheduled_date ?? null);
+  const dated = days !== null;
+  // 0 at the far horizon, 1 at/over the edge. clamp to the track.
+  const fill =
+    days === null
+      ? 0
+      : Math.min(1, Math.max(0, 1 - days / RUNWAY_HORIZON_DAYS));
+  return {
+    id: e.id,
+    type: e.type as EntryType,
+    title: e.title,
+    readout: runwayReadout(days),
+    fill,
+    overdue: days !== null && days < 0,
+    dated,
+  };
+}
+
+/** Runway order: most burnt-down first (overdue → soonest), undated last. */
+function byRunway(a: DbEntry, b: DbEntry): number {
+  const da = daysUntil(a.due_date ?? a.scheduled_date ?? null);
+  const db = daysUntil(b.due_date ?? b.scheduled_date ?? null);
+  if (da === null && db === null) return 0;
+  if (da === null) return 1;
+  if (db === null) return -1;
+  return da - db;
+}
+
 /** Order within a zone: hottest first, then soonest date, undated last. */
 const HEAT_RANK: Record<Heat, number> = { hot: 0, warm: 1, cool: 2 };
 
@@ -96,7 +139,7 @@ export default function HomeScreen(): React.ReactElement {
 
   const { entries, recurrenceCompletions, fetchEntries } = useDatabase();
 
-  const { weekCounts, today: calendarToday } = useCalendarData(
+  const { today: calendarToday } = useCalendarData(
     entries,
     new Date(),
     recurrenceCompletions,
@@ -134,11 +177,6 @@ export default function HomeScreen(): React.ReactElement {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  const handleDayPress = useCallback((date: Date) => {
-    setSelectedDate(date);
-    setSheetVisible(true);
-  }, []);
-
   const handleCloseSheet = useCallback(() => {
     setSheetVisible(false);
     setTimeout(() => setSelectedDate(null), 200);
@@ -173,7 +211,7 @@ export default function HomeScreen(): React.ReactElement {
   // The field, split into the two zones the brief names: STAKES (consequence)
   // and PRESENT (must-not-fade). Each zone is sorted hottest-first, but heat is
   // aliveness not rank — a cool idea still glows beside a hot bill.
-  const { stakes, present } = useMemo(() => {
+  const { stakes, stakeGauges, present } = useMemo(() => {
     const open = entries.filter(
       (e) => e.status !== "completed" && e.status !== "met",
     );
@@ -182,7 +220,14 @@ export default function HomeScreen(): React.ReactElement {
         .filter((e) => types.includes(e.type as EntryType))
         .sort(byHeatThenDate)
         .map(toRowItem);
-    return { stakes: pick(STAKES_TYPES), present: pick(PRESENT_TYPES) };
+    const stakeEntries = open
+      .filter((e) => STAKES_TYPES.includes(e.type as EntryType))
+      .sort(byRunway);
+    return {
+      stakes: pick(STAKES_TYPES),
+      stakeGauges: stakeEntries.map(toRunwayItem),
+      present: pick(PRESENT_TYPES),
+    };
   }, [entries]);
 
   const entriesForSheet = useMemo(
@@ -200,10 +245,8 @@ export default function HomeScreen(): React.ReactElement {
       >
         <FieldBriefing now={today} stakes={stakes} present={present} />
 
-        <FieldZone
-          label="Stakes"
-          caption="Things with a consequence."
-          items={stakes}
+        <StakesRunway
+          items={stakeGauges}
           itemHref={(item) => ({
             pathname: "/detail",
             params: { id: item.id },

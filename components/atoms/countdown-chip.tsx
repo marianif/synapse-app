@@ -1,7 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { entryColor, FontSize, LetterSpacing, LineHeight, Radius, Spacing, useTheme } from '@/constants/theme';
+import { entryColor, useTheme, tokens } from '@/constants/theme';
 
 type CountdownState = 'pending' | 'overdue' | 'met';
 
@@ -58,21 +58,21 @@ export function CountdownChip({ daysRemaining, state }: CountdownChipProps): Rea
 
 const styles = StyleSheet.create({
   chip: {
-    borderRadius: Radius.xl,
-    paddingVertical: Spacing.xl,
-    paddingHorizontal: Spacing.xxl,
+    borderRadius: tokens.radius.lg,
+    paddingVertical: tokens.space.xl,
+    paddingHorizontal: tokens.space.xxl,
     alignItems: 'center',
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   number: {
-    fontSize: FontSize.displayLg,
-    lineHeight: LineHeight.displayLg,
-    letterSpacing: LetterSpacing.displayLg,
+    fontSize: tokens.type.display.size,
+    lineHeight: tokens.type.display.lineHeight,
+    letterSpacing: tokens.type.display.tracking,
     fontFamily: 'Inter_700Bold',
   },
   label: {
-    fontSize: FontSize.labelSm,
-    letterSpacing: LetterSpacing.labelSm,
+    fontSize: tokens.type.kicker.size,
+    letterSpacing: tokens.type.kicker.tracking,
     fontFamily: 'Inter_600SemiBold',
   },
 });

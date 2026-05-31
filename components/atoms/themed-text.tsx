@@ -1,12 +1,6 @@
 import { StyleSheet, Text } from "react-native";
 
-import {
-  FontFamily,
-  FontSize,
-  LetterSpacing,
-  LineHeight,
-  useTheme,
-} from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 import type { TextProps } from "react-native";
 
@@ -52,36 +46,36 @@ const styles = StyleSheet.create({
     // fontFamily intentionally omitted — see TODO above
   },
   display: {
-    fontSize: FontSize.displayLg,
-    lineHeight: LineHeight.displayLg,
-    letterSpacing: LetterSpacing.displayLg,
-    fontFamily: FontFamily.bold,
+    fontSize: tokens.type.display.size,
+    lineHeight: tokens.type.display.lineHeight,
+    letterSpacing: tokens.type.display.tracking,
+    fontFamily: tokens.type.fontInter.bold,
   },
   headline: {
-    fontSize: FontSize.headlineSm,
-    lineHeight: LineHeight.headlineSm,
-    fontFamily: FontFamily.semiBold,
+    fontSize: tokens.type.title.size,
+    lineHeight: tokens.type.title.lineHeight,
+    fontFamily: tokens.type.fontInter.semiBold,
   },
   body: {
-    fontSize: FontSize.bodyMd,
-    lineHeight: LineHeight.bodyMd,
-    fontFamily: FontFamily.regular,
+    fontSize: tokens.type.body.size,
+    lineHeight: tokens.type.body.lineHeight,
+    fontFamily: tokens.type.fontInter.regular,
   },
   bodyBold: {
-    fontSize: FontSize.bodyMd,
-    lineHeight: LineHeight.bodyMd,
-    fontFamily: FontFamily.semiBold,
+    fontSize: tokens.type.body.size,
+    lineHeight: tokens.type.body.lineHeight,
+    fontFamily: tokens.type.fontInter.semiBold,
   },
   label: {
-    fontSize: FontSize.labelSm,
-    lineHeight: LineHeight.labelSm,
-    letterSpacing: LetterSpacing.labelSm,
-    fontFamily: FontFamily.semiBold,
+    fontSize: tokens.type.kicker.size,
+    lineHeight: tokens.type.kicker.lineHeight,
+    letterSpacing: tokens.type.kicker.tracking,
+    fontFamily: tokens.type.fontInter.semiBold,
     textTransform: "uppercase",
   },
   caption: {
-    fontSize: FontSize.labelXs,
-    lineHeight: LineHeight.labelSm,
-    fontFamily: FontFamily.regular,
+    fontSize: tokens.type.kicker.size,
+    lineHeight: tokens.type.kicker.lineHeight,
+    fontFamily: tokens.type.fontInter.regular,
   },
 });

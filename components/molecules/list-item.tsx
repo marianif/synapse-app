@@ -5,7 +5,7 @@ import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { entryColor, Radius, Spacing, useTheme } from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
@@ -254,10 +254,10 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: Radius.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.md,
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.md,
+    gap: tokens.space.md,
   },
   rowPressed: {
     opacity: 0.8,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   titleText: {
     flex: 1,
@@ -314,12 +314,12 @@ const styles = StyleSheet.create({
   statusTextContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   timeChip: {
-    borderRadius: Radius.sm,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
+    borderRadius: tokens.radius.sm,
+    paddingVertical: tokens.space.xs,
+    paddingHorizontal: tokens.space.sm,
     flexShrink: 0,
   },
   timeChipText: {
@@ -328,11 +328,11 @@ const styles = StyleSheet.create({
   recurringBadge: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: Radius.full,
-    gap: Spacing.xs,
-    marginRight: Spacing.sm,
+    paddingVertical: tokens.space.xs,
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.pill,
+    gap: tokens.space.xs,
+    marginRight: tokens.space.sm,
   },
   recurringBadgeText: {
     fontFamily: "Inter_600SemiBold",

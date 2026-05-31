@@ -10,7 +10,7 @@ import { WrapupCard } from "@/components/molecules/wrapup-card";
 import { Fab } from "@/components/organisms/fab";
 import { ListProgress } from "@/components/organisms/list-progress";
 import { ListScreenHeader } from "@/components/organisms/list-screen-header";
-import { entryColor, Radius, Spacing, useTheme } from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { isSameDay, parseDate } from "@/lib/date-utils";
 import { isRecurringEntry } from "@/lib/recurrence";
@@ -365,24 +365,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.xl,
-    paddingBottom: Spacing.xl,
+    paddingHorizontal: tokens.space.lg,
+    gap: tokens.space.xl,
+    paddingBottom: tokens.space.xl,
   },
   emptyWrapper: {
     flex: 1,
     justifyContent: "center",
-    paddingTop: Spacing.xl * 2,
+    paddingTop: tokens.space.xl * 2,
   },
   section: {
-    gap: Spacing.lg,
-    marginBottom: Spacing.sm,
+    gap: tokens.space.lg,
+    marginBottom: tokens.space.sm,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: Spacing.xs,
+    paddingHorizontal: tokens.space.xs,
   },
   sectionLabel: {
     letterSpacing: 1,
@@ -390,16 +390,16 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   countBadge: {
-    borderRadius: Radius.full,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.md,
+    borderRadius: tokens.radius.pill,
+    paddingVertical: tokens.space.xs,
+    paddingHorizontal: tokens.space.md,
   },
   countBadgeText: {
     fontFamily: "Inter_600SemiBold",
     letterSpacing: 0.5,
   },
   itemList: {
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   fabSpacer: {
     height: 80,

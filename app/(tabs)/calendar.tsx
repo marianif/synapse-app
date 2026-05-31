@@ -6,7 +6,7 @@ import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { Fab } from "@/components/organisms/fab";
 import { MonthGrid } from "@/components/organisms/month-grid";
 import { UpcomingPreviewCard } from "@/components/organisms/upcoming-preview-card";
-import { Spacing, useTheme } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
 
@@ -142,9 +142,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.lg,
-    paddingTop: Spacing.md,
+    paddingHorizontal: tokens.space.lg,
+    gap: tokens.space.lg,
+    paddingTop: tokens.space.md,
   },
   bottomSpacer: {
     height: 80,

@@ -2,14 +2,7 @@ import { StyleSheet, View } from "react-native";
 
 import { StreakBadge } from "@/components/atoms/streak-badge";
 import { ThemedText } from "@/components/atoms/themed-text";
-import {
-  entryColor,
-  FontSize,
-  LetterSpacing,
-  LineHeight,
-  Spacing,
-  useTheme,
-} from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
@@ -70,10 +63,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: Spacing.sm,
+    paddingVertical: tokens.space.sm,
   },
   counterBlock: {
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   progressLabel: {
     letterSpacing: 0.8,
@@ -81,17 +74,17 @@ const styles = StyleSheet.create({
   counterRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   completedNum: {
-    fontSize: FontSize.displayLg,
-    lineHeight: LineHeight.displayLg,
-    letterSpacing: LetterSpacing.displayLg,
+    fontSize: tokens.type.display.size,
+    lineHeight: tokens.type.display.lineHeight,
+    letterSpacing: tokens.type.display.tracking,
     fontFamily: "Inter_700Bold",
   },
   totalNum: {
-    fontSize: FontSize.headlineSm,
-    lineHeight: LineHeight.headlineSm,
+    fontSize: tokens.type.title.size,
+    lineHeight: tokens.type.title.lineHeight,
     fontFamily: "Inter_400Regular",
     paddingBottom: 4,
   },

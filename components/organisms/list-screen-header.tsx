@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Spacing, useTheme } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 interface ListScreenHeaderProps {
   title: string;
@@ -63,9 +63,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    gap: Spacing.sm,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.md,
+    gap: tokens.space.sm,
   },
   iconButton: {
     width: 40,

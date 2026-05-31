@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Radius, Spacing, useTheme } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 interface StreakBadgeProps {
   count: number;
@@ -36,11 +36,11 @@ export function StreakBadge({
 
 const styles = StyleSheet.create({
   badge: {
-    borderRadius: Radius.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.lg,
     alignItems: 'center',
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
     minWidth: 80,
   },
   label: {

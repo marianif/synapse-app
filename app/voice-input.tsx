@@ -19,14 +19,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import {
-  FontSize,
-  LineHeight,
-  Radius,
-  Spacing,
-  tokens,
-  useTheme,
-} from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
 export default function VoiceInputScreen(): React.ReactElement {
@@ -199,17 +192,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.xl, // Increased padding to define section
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.xl, // Increased padding to define section
   },
   headerButton: {
     minWidth: 60,
   },
   headerDoneButton: {
     minWidth: 60,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.full, // Pill shape per DESIGN.md
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.sm,
+    borderRadius: tokens.radius.pill, // Pill shape per DESIGN.md
   },
   headerDoneButtonPressed: {
     opacity: 0.7,
@@ -223,21 +216,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: Spacing.xxl,
+    paddingHorizontal: tokens.space.xxl,
   },
   transcript: {
-    fontSize: FontSize.displayMd,
+    fontSize: tokens.type.title.size,
     fontWeight: "600",
     textAlign: "center",
-    lineHeight: LineHeight.displayLg,
+    lineHeight: tokens.type.display.lineHeight,
   },
   transcriptPlaceholder: {
     opacity: 0.5,
   },
   controls: {
     alignItems: "center",
-    paddingBottom: Spacing.xxxl * 2,
-    gap: Spacing.md,
+    paddingBottom: tokens.space.xxxl * 2,
+    gap: tokens.space.md,
   },
   recordButtonWrapper: {
     width: 120,
@@ -256,7 +249,7 @@ const styles = StyleSheet.create({
   recordButton: {
     width: 80,
     height: 80,
-    borderRadius: Radius.full,
+    borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
     // No hard borders, use subtle shadow or glow for elevation
@@ -273,11 +266,11 @@ const styles = StyleSheet.create({
   recordButtonInner: {
     width: 32,
     height: 32,
-    borderRadius: Radius.full,
+    borderRadius: tokens.radius.pill,
   },
   recordButtonInnerActive: {
     backgroundColor: tokens.feedback.danger,
-    borderRadius: Radius.sm,
+    borderRadius: tokens.radius.sm,
     width: 24,
     height: 24,
   },
@@ -289,24 +282,24 @@ const styles = StyleSheet.create({
   },
   errorBlock: {
     alignItems: "center",
-    gap: Spacing.md,
-    paddingHorizontal: Spacing.lg,
+    gap: tokens.space.md,
+    paddingHorizontal: tokens.space.lg,
   },
   errorText: {
-    fontSize: FontSize.bodyMd,
-    lineHeight: LineHeight.bodyMd,
+    fontSize: tokens.type.body.size,
+    lineHeight: tokens.type.body.lineHeight,
     textAlign: "center",
   },
   settingsButton: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.lg,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.sm,
+    borderRadius: tokens.radius.md,
   },
   settingsButtonPressed: {
     opacity: 0.7,
   },
   settingsButtonText: {
-    fontSize: FontSize.bodyMd,
+    fontSize: tokens.type.body.size,
     fontWeight: "600",
     textAlign: "center",
   },

@@ -3,7 +3,7 @@ import { router, usePathname } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Radius, tokens, useTheme } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 
 interface TabBarIconProps {
   focused: boolean;
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: Radius.md,
+    borderRadius: tokens.radius.sm,
   },
   tabButtonPressed: {
     opacity: 0.7,
@@ -119,14 +119,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 56,
     height: 56,
-    borderRadius: Radius.full,
+    borderRadius: tokens.radius.pill,
     opacity: 0.6,
     ...tokens.elevation.capture,
   },
   addButtonInner: {
     width: 48,
     height: 48,
-    borderRadius: Radius.full,
+    borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
     ...tokens.elevation.capture,

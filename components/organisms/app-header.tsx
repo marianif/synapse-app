@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Spacing, useTheme } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 import { AppMenu } from "./app-menu";
 
 interface AppHeaderProps {
@@ -67,11 +67,11 @@ const styles = StyleSheet.create({
     flexDirection: "row-reverse",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.md,
   },
   iconBtn: {
-    padding: Spacing.xs,
+    padding: tokens.space.xs,
   },
   wordmark: {
     flex: 1,

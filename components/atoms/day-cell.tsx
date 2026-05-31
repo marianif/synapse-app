@@ -1,7 +1,7 @@
 import { Pressable, View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Radius, Spacing, entryColor, useTheme } from '@/constants/theme';
+import { entryColor, useTheme, tokens } from '@/constants/theme';
 
 import type { CalendarEntry } from '@/hooks/use-calendar-data';
 
@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
     flex: 1,
     aspectRatio: 1,
     maxHeight: 52,
-    borderRadius: Radius.lg,
-    padding: Spacing.xs,
+    borderRadius: tokens.radius.md,
+    padding: tokens.space.xs,
     margin: 2,
     alignItems: 'center',
     justifyContent: 'center',

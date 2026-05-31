@@ -3,7 +3,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { ThemedText } from '@/components/atoms/themed-text';
 import { DayCell } from '@/components/atoms/day-cell';
 import { MonthNavigator } from '@/components/atoms/month-navigator';
-import { Radius, Spacing, useTheme } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 import type { CalendarEntry } from '@/hooks/use-calendar-data';
 
@@ -105,19 +105,19 @@ function isSameDay(a: Date, b: Date): boolean {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: Radius.xl,
-    padding: Spacing.md,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.md,
   },
   weekdayRow: {
     flexDirection: 'row',
     paddingHorizontal: 2,
-    marginBottom: Spacing.xs,
+    marginBottom: tokens.space.xs,
   },
   weekdayCell: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.xs,
+    paddingVertical: tokens.space.xs,
   },
   weekdayLabel: {
     fontSize: 11,

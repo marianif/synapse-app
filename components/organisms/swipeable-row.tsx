@@ -3,7 +3,7 @@ import { Alert, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Swipeable, RectButton } from 'react-native-gesture-handler';
 
-import { Radius, Spacing, useTheme } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 interface SwipeableRowProps {
   children: React.ReactNode;
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: 64,
-    borderRadius: Radius.lg,
-    marginLeft: Spacing.sm,
+    borderRadius: tokens.radius.md,
+    marginLeft: tokens.space.sm,
   },
 });

@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Radius, Spacing, useTheme } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 type Props = {
   children: React.ReactNode;
@@ -72,23 +72,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    padding: Spacing.xl,
+    padding: tokens.space.xl,
   },
   card: {
-    borderRadius: Radius.xl,
-    padding: Spacing.xxl,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.xxl,
     width: "100%",
-    gap: Spacing.lg,
+    gap: tokens.space.lg,
     alignItems: "flex-start",
   },
   title: {},
   body: {},
   button: {
     alignSelf: "flex-start",
-    borderRadius: Radius.full,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.xl,
-    marginTop: Spacing.sm,
+    borderRadius: tokens.radius.pill,
+    paddingVertical: tokens.space.sm,
+    paddingHorizontal: tokens.space.xl,
+    marginTop: tokens.space.sm,
   },
   buttonPressed: {
     transform: [{ scale: 0.98 }],

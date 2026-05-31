@@ -2,7 +2,7 @@ import { View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { entryColor, Radius, Spacing, useTheme } from '@/constants/theme';
+import { entryColor, useTheme, tokens } from '@/constants/theme';
 
 interface DetailSomedayHeroProps {
   inspiration?: string;
@@ -46,16 +46,16 @@ export function DetailSomedayHero({
 
 const styles = StyleSheet.create({
   hero: {
-    borderRadius: Radius.xl,
-    paddingVertical: Spacing.xxl,
-    paddingHorizontal: Spacing.xl,
+    borderRadius: tokens.radius.lg,
+    paddingVertical: tokens.space.xxl,
+    paddingHorizontal: tokens.space.xl,
     alignItems: 'center',
-    gap: Spacing.md,
+    gap: tokens.space.md,
   },
   iconRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   oneDayLabel: {
     letterSpacing: 1,
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     lineHeight: 24,
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: tokens.space.lg,
   },
   placeholder: {
     fontStyle: 'italic',
@@ -75,6 +75,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 1.5,
     borderRadius: 1,
-    marginTop: Spacing.xs,
+    marginTop: tokens.space.xs,
   },
 });

@@ -2,7 +2,7 @@ import { View, StyleSheet } from 'react-native';
 
 import { CounterDisplay } from '@/components/atoms/counter-display';
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Spacing, useTheme } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 import type { EntryType } from '@/components/atoms/entry-dot';
 
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
+    gap: tokens.space.md,
   },
   meta: {
     flex: 1,

@@ -2,7 +2,7 @@ import { StyleSheet, View } from "react-native";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Spacing, useTheme } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { ItemStatus } from "@/components/molecules/list-item";
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
     minHeight: 22,
   },
   day: {

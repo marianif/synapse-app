@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleProp, TextInput, TextStyle } from 'react-native';
 
-import { Radius, Spacing, useTheme } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 type DateInputProps = {
   value?: string;
@@ -44,9 +44,9 @@ export default function DateInput({ value, onChange, style }: DateInputProps): R
       style={[
         {
           backgroundColor: colors.surfaceSubtle,
-          borderRadius: Radius.lg,
-          paddingHorizontal: Spacing.lg,
-          paddingVertical: Spacing.md,
+          borderRadius: tokens.radius.md,
+          paddingHorizontal: tokens.space.lg,
+          paddingVertical: tokens.space.md,
           color: colors.ink,
           fontSize: 16,
         },

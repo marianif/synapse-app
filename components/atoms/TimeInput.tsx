@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleProp, TextInput, TextStyle } from 'react-native';
 
-import { Radius, Spacing, useTheme } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 type TimeInputProps = {
   value?: string;
@@ -62,9 +62,9 @@ export default function TimeInput({ value, onChange, style }: TimeInputProps): R
       style={[
         {
           backgroundColor: colors.surfaceSubtle,
-          borderRadius: Radius.lg,
-          paddingHorizontal: Spacing.lg,
-          paddingVertical: Spacing.md,
+          borderRadius: tokens.radius.md,
+          paddingHorizontal: tokens.space.lg,
+          paddingVertical: tokens.space.md,
           color: colors.ink,
           fontSize: 16,
         },

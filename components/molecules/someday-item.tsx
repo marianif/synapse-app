@@ -5,7 +5,7 @@ import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ThemedView } from "@/components/atoms/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { entryColor, Radius, Spacing, useTheme } from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 
 import type { DbEntry } from "@/lib/types";
 
@@ -101,10 +101,10 @@ export function SomedayItem({ ideas }: SomedayItemProps): React.ReactElement {
 
 const styles = StyleSheet.create({
   card: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderRadius: Radius.lg,
-    gap: Spacing.sm,
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.md,
+    borderRadius: tokens.radius.md,
+    gap: tokens.space.sm,
   },
   header: {
     flexDirection: "row",
@@ -114,15 +114,15 @@ const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   label: {
     letterSpacing: 0.5,
   },
   countBadge: {
-    borderRadius: Radius.sm,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
+    borderRadius: tokens.radius.sm,
+    paddingHorizontal: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
   },
   countText: {
     fontFamily: "Inter_600SemiBold",
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     gap: 0,
   },
   ideaRow: {
-    paddingVertical: Spacing.sm,
+    paddingVertical: tokens.space.sm,
   },
   ideaRowBorder: {
     borderBottomWidth: 1,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   ideaTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   ideaTitle: {
     flex: 1,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   moreRow: {
-    paddingVertical: Spacing.sm,
+    paddingVertical: tokens.space.sm,
     alignItems: "center",
   },
 });

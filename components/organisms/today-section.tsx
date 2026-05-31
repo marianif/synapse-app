@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { TodayEventRow } from "@/components/molecules/today-event-row";
-import { Radius, Spacing, useTheme } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 interface TodayEvent {
   id: string;
@@ -81,18 +81,18 @@ export function TodaySection({
 
 const styles = StyleSheet.create({
   section: {
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: Spacing.xs,
+    paddingHorizontal: tokens.space.xs,
   },
   card: {
-    borderRadius: Radius.xl,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
+    borderRadius: tokens.radius.lg,
+    paddingHorizontal: tokens.space.xl,
+    paddingVertical: tokens.space.md,
   },
   separator: {
     height: 1,

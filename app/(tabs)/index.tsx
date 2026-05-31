@@ -14,7 +14,7 @@ import { NextUpCard } from "@/components/organisms/next-up-card";
 import { WeeklyOverviewCard } from "@/components/organisms/weekly-overview-card";
 
 import { SomedayItem } from "@/components/molecules/someday-item";
-import { Spacing, useTheme } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import {
@@ -223,9 +223,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.lg,
-    paddingBottom: Spacing.xl,
+    paddingHorizontal: tokens.space.lg,
+    gap: tokens.space.lg,
+    paddingBottom: tokens.space.xl,
   },
   fabSpacer: {
     height: 80,

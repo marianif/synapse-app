@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { Radius, Spacing, tokens, useTheme } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 
 const WAVEFORM_BARS = 10;
 
@@ -135,13 +135,13 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 72,
     height: 72,
-    borderRadius: Radius.full,
+    borderRadius: tokens.radius.pill,
     ...tokens.elevation.capture,
   },
   button: {
     width: 56,
     height: 56,
-    borderRadius: Radius.full,
+    borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
     ...tokens.elevation.capture,
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     flexDirection: "row",
-    gap: Spacing.md,
+    gap: tokens.space.md,
   },
   waveformContainer: {
     flexDirection: "row",
@@ -178,13 +178,13 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 72,
     height: 72,
-    borderRadius: Radius.full,
+    borderRadius: tokens.radius.pill,
     ...tokens.elevation.capture,
   },
   recordingButton: {
     width: 56,
     height: 56,
-    borderRadius: Radius.full,
+    borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
     ...tokens.elevation.capture,

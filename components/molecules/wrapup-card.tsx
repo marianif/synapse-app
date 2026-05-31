@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Radius, Spacing, useTheme } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 interface WrapupCardProps {
   title?: string;
@@ -31,14 +31,14 @@ export function WrapupCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: Radius.xl,
-    padding: Spacing.xl,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.xl,
     flexDirection: "row",
     alignItems: "center",
   },
   textBlock: {
     flex: 1,
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   label: {
     letterSpacing: 0.5,

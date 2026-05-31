@@ -5,7 +5,7 @@ import { Pressable, View, StyleSheet } from 'react-native';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { BentoCardHeader } from '@/components/molecules/bento-card-header';
 import { WeekdayRow } from '@/components/molecules/weekday-row';
-import { Radius, Spacing, entryColor, useTheme } from '@/constants/theme';
+import { entryColor, useTheme, tokens } from '@/constants/theme';
 
 import type { ItemStatus } from '@/components/molecules/list-item';
 
@@ -84,11 +84,11 @@ export function DeadlinesCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: Radius.xl,
-    padding: Spacing.xl,
-    gap: Spacing.lg,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.xl,
+    gap: tokens.space.lg,
   },
   rows: {
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
 });

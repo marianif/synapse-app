@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import DateInput from "@/components/atoms/DateInput";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Radius, Spacing, useTheme } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 import type { RecurrenceFrequency } from "@/lib/types";
 
 interface RecurrencePickerProps {
@@ -159,24 +159,24 @@ export function RecurrencePicker({
 
 const styles = StyleSheet.create({
   container: {
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   label: {
     letterSpacing: 0.5,
   },
   row: {
     flexDirection: "row",
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   option: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: Spacing.xs,
-    borderRadius: Radius.md,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.sm,
+    gap: tokens.space.xs,
+    borderRadius: tokens.radius.sm,
+    paddingVertical: tokens.space.sm,
+    paddingHorizontal: tokens.space.sm,
     borderWidth: 1,
     borderColor: "transparent",
   },
@@ -185,12 +185,12 @@ const styles = StyleSheet.create({
   },
   weekdayRow: {
     flexDirection: "row",
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   weekdayChip: {
     flex: 1,
-    borderRadius: Radius.sm,
-    paddingVertical: Spacing.xs,
+    borderRadius: tokens.radius.sm,
+    paddingVertical: tokens.space.xs,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "transparent",
@@ -204,6 +204,6 @@ const styles = StyleSheet.create({
   },
   dateInput: {
     flex: 1,
-    paddingVertical: Spacing.sm,
+    paddingVertical: tokens.space.sm,
   },
 });

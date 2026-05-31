@@ -5,12 +5,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { BentoCardHeader } from "@/components/molecules/bento-card-header";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { WeekdayRow } from "@/components/molecules/weekday-row";
-import {
-  entryColor,
-  Radius,
-  Spacing,
-  useTheme,
-} from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { ItemStatus } from "@/components/molecules/list-item";
@@ -92,11 +87,11 @@ export function WeeklyOverviewCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: Radius.xl,
-    padding: Spacing.lg,
-    gap: Spacing.md,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.lg,
+    gap: tokens.space.md,
   },
   rows: {
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
 });

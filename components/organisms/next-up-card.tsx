@@ -5,13 +5,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { CounterDisplay } from "@/components/atoms/counter-display";
 import { ThemedText } from "@/components/atoms/themed-text";
-import {
-  entryColor,
-  FontSize,
-  Radius,
-  Spacing,
-  useTheme,
-} from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 import { DbEntry } from "@/lib/types";
 
 interface NextUpCardProps {
@@ -127,8 +121,8 @@ export function NextUpCard({ entries }: NextUpCardProps): React.ReactElement | n
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: Radius.xl,
-    padding: Spacing.xl,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.xl,
     overflow: "hidden",
   },
   content: {
@@ -139,7 +133,7 @@ const styles = StyleSheet.create({
   },
   left: {
     flex: 1,
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   label: {
     letterSpacing: 1,
@@ -151,7 +145,7 @@ const styles = StyleSheet.create({
   meta: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   dot: {
     width: 8,
@@ -162,7 +156,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   nowText: {
-    fontSize: FontSize.displayLg - 10,
+    fontSize: tokens.type.display.size - 10,
     fontWeight: "700",
   },
   unitLabel: {

@@ -18,13 +18,7 @@ import { DetailMetadataRow } from "@/components/molecules/detail-metadata-row";
 import { DetailSomedayHero } from "@/components/molecules/detail-someday-hero";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { ListScreenHeader } from "@/components/organisms/list-screen-header";
-import {
-  entryColor,
-  Radius,
-  Spacing,
-  tokens,
-  useTheme,
-} from "@/constants/theme";
+import { entryColor, tokens, useTheme } from "@/constants/theme";
 import type { ThemeColors } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import {
@@ -771,18 +765,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.lg,
-    gap: Spacing.lg,
+    paddingHorizontal: tokens.space.lg,
+    paddingBottom: tokens.space.lg,
+    gap: tokens.space.lg,
   },
   typeChip: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
-    borderRadius: Radius.full,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.xs,
+    borderRadius: tokens.radius.pill,
+    paddingVertical: tokens.space.xs,
+    paddingHorizontal: tokens.space.md,
+    gap: tokens.space.xs,
   },
   typeChipText: {
     fontFamily: "Inter_600SemiBold",
@@ -795,25 +789,25 @@ const styles = StyleSheet.create({
   },
   // ── Hero block ──────────────────────────────────────────────
   heroBlock: {
-    gap: Spacing.md,
+    gap: tokens.space.md,
   },
   statusChip: {
     alignSelf: "flex-start",
-    borderRadius: Radius.full,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.md,
+    borderRadius: tokens.radius.pill,
+    paddingVertical: tokens.space.xs,
+    paddingHorizontal: tokens.space.md,
   },
   statusLabel: {
     letterSpacing: 0.8,
   },
   metaList: {
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   // ── Notes ───────────────────────────────────────────────────
   notesBlock: {
-    borderRadius: Radius.xl,
-    padding: Spacing.lg,
-    gap: Spacing.sm,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.lg,
+    gap: tokens.space.sm,
   },
   notesLabel: {
     letterSpacing: 0.6,
@@ -822,13 +816,13 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   contentSpacer: {
-    height: Spacing.xl,
+    height: tokens.space.xl,
   },
   // ── Action bar ───────────────────────────────────────────────
   actionBarWrapper: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.lg,
-    paddingTop: Spacing.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingBottom: tokens.space.lg,
+    paddingTop: tokens.space.md,
   },
   // ── Delete scope sheet ───────────────────────────────────────
   sheetOverlay: {
@@ -837,23 +831,23 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   sheet: {
-    borderTopLeftRadius: Radius.xl,
-    borderTopRightRadius: Radius.xl,
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.xl,
+    borderTopLeftRadius: tokens.radius.lg,
+    borderTopRightRadius: tokens.radius.lg,
+    paddingTop: tokens.space.lg,
+    paddingBottom: tokens.space.xl,
   },
   sheetTitle: {
-    paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing.md,
+    paddingHorizontal: tokens.space.xl,
+    paddingBottom: tokens.space.md,
     fontSize: 13,
     letterSpacing: 0.4,
   },
   sheetDivider: {
     height: 1,
-    marginHorizontal: Spacing.lg,
+    marginHorizontal: tokens.space.lg,
   },
   sheetOption: {
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.xl,
+    paddingVertical: tokens.space.lg,
+    paddingHorizontal: tokens.space.xl,
   },
 });

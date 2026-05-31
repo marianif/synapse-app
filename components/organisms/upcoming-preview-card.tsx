@@ -6,13 +6,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import type { EntryType } from "@/components/atoms/entry-dot";
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import {
-  entryColor,
-  FontSize,
-  Radius,
-  Spacing,
-  useTheme,
-} from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 import type { UpcomingEntry } from "@/hooks/use-calendar-data";
 
 dayjs.extend(customParseFormat);
@@ -147,14 +141,14 @@ export function UpcomingPreviewCard({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: Radius.xl,
-    padding: Spacing.lg,
-    gap: Spacing.xl,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.lg,
+    gap: tokens.space.xl,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.md,
+    gap: tokens.space.md,
   },
   counter: {
     minWidth: 64,
@@ -165,7 +159,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   daysAwayNumber: {
-    fontSize: FontSize.displayLg,
+    fontSize: tokens.type.display.size,
     fontWeight: "700",
     lineHeight: 52,
     letterSpacing: -0.96,
@@ -178,19 +172,19 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   list: {
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   entryRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
-    paddingVertical: Spacing.xs,
+    gap: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
   },
   entryContent: {
     flex: 1,
     flexDirection: "row",
     alignItems: "baseline",
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   entryType: {
     fontSize: 10,
@@ -210,7 +204,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: Spacing.sm,
-    paddingVertical: Spacing.md,
+    gap: tokens.space.sm,
+    paddingVertical: tokens.space.md,
   },
 });

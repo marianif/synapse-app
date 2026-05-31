@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Radius, Spacing, entryColor, useTheme } from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 
 interface TodayEventRowProps {
   title: string;
@@ -76,14 +76,14 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.md,
-    paddingVertical: Spacing.sm,
+    gap: tokens.space.md,
+    paddingVertical: tokens.space.sm,
   },
   leftBorder: {
     width: 3,
     height: "100%",
     minHeight: 36,
-    borderRadius: Radius.sm,
+    borderRadius: tokens.radius.sm,
   },
   content: {
     flex: 1,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   timeRangeRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   clockDot: {
     width: 6,

@@ -8,14 +8,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import {
-  entryColor,
-  FontSize,
-  Radius,
-  Spacing,
-  tokens,
-  useTheme,
-} from "@/constants/theme";
+import { entryColor, tokens, useTheme } from "@/constants/theme";
 import { useThemeContext } from "@/contexts/theme-context";
 import type { ThemePreference } from "@/lib/settings";
 
@@ -248,91 +241,91 @@ const styles = StyleSheet.create({
   },
   menu: {
     flex: 1,
-    paddingTop: Spacing.xxxl + Spacing.lg,
-    paddingHorizontal: Spacing.lg,
+    paddingTop: tokens.space.xxxl + tokens.space.lg,
+    paddingHorizontal: tokens.space.lg,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: Spacing.xxl,
+    marginBottom: tokens.space.xxl,
   },
   headerActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.md,
+    gap: tokens.space.md,
   },
   logo: {
     fontSize: 24,
     fontWeight: "700",
   },
   section: {
-    marginBottom: Spacing.xl,
+    marginBottom: tokens.space.xl,
   },
   sectionLabel: {
-    fontSize: FontSize.labelSm,
+    fontSize: tokens.type.kicker.size,
     textTransform: "uppercase",
     letterSpacing: 0.55,
-    marginBottom: Spacing.md,
-    marginLeft: Spacing.xs,
+    marginBottom: tokens.space.md,
+    marginLeft: tokens.space.xs,
   },
   segmented: {
     flexDirection: "row",
-    borderRadius: Radius.md,
-    padding: Spacing.xs,
-    gap: Spacing.xs,
+    borderRadius: tokens.radius.sm,
+    padding: tokens.space.xs,
+    gap: tokens.space.xs,
   },
   segment: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
     minHeight: 44,
-    borderRadius: Radius.sm,
+    borderRadius: tokens.radius.sm,
   },
   segmentLabel: {
-    fontSize: FontSize.labelSm,
+    fontSize: tokens.type.kicker.size,
     fontWeight: "600",
   },
   quickActions: {
     flexDirection: "row",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   quickAction: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: Radius.lg,
-    gap: Spacing.xs,
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.md,
+    gap: tokens.space.xs,
   },
   quickActionLabel: {
-    fontSize: FontSize.labelSm,
+    fontSize: tokens.type.kicker.size,
     fontWeight: "500",
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: Radius.lg,
-    marginBottom: Spacing.xs,
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.space.xs,
   },
   menuLabel: {
-    fontSize: FontSize.bodyMd,
-    marginLeft: Spacing.md,
+    fontSize: tokens.type.body.size,
+    marginLeft: tokens.space.md,
   },
   footer: {
     position: "absolute",
-    bottom: Spacing.xxl,
-    left: Spacing.lg,
-    right: Spacing.lg,
+    bottom: tokens.space.xxl,
+    left: tokens.space.lg,
+    right: tokens.space.lg,
   },
   version: {
-    fontSize: FontSize.labelXs,
+    fontSize: tokens.type.kicker.size,
     textAlign: "center",
   },
 });

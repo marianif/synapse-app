@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { EntryRow } from "@/components/molecules/entry-row";
-import { Spacing, useTheme } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
@@ -69,16 +69,16 @@ export function AgendaSection({
 
 const styles = StyleSheet.create({
   section: {
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "baseline",
-    paddingHorizontal: Spacing.xs,
+    paddingHorizontal: tokens.space.xs,
   },
 
   list: {
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
 });

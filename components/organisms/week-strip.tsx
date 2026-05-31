@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Radius, Spacing, useTheme } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 import type { DayCount } from "@/hooks/use-calendar-data";
 
@@ -109,8 +109,8 @@ export function WeekStrip({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: Radius.xl,
-    padding: Spacing.md,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.md,
   },
   strip: {
     flexDirection: "row",
@@ -119,8 +119,8 @@ const styles = StyleSheet.create({
   dayItem: {
     flex: 1,
     alignItems: "center",
-    gap: Spacing.xs,
-    paddingVertical: Spacing.xs,
+    gap: tokens.space.xs,
+    paddingVertical: tokens.space.xs,
   },
   dayLabel: {
     fontSize: 10,

@@ -15,13 +15,7 @@ import DateInput from "@/components/atoms/DateInput";
 import { ThemedText } from "@/components/atoms/themed-text";
 import TimeInput from "@/components/atoms/TimeInput";
 import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
-import {
-  entryColor,
-  Radius,
-  Spacing,
-  tokens,
-  useTheme,
-} from "@/constants/theme";
+import { entryColor, tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import type { RecurrenceFrequency } from "@/lib/types";
 
@@ -338,17 +332,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.md,
   },
   headerButton: {
     minWidth: 60,
   },
   headerSaveButton: {
     minWidth: 50,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.lg,
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.sm,
+    borderRadius: tokens.radius.md,
   },
   headerSaveButtonDisabled: {
     opacity: 0.5,
@@ -365,19 +359,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: Spacing.lg,
-    gap: Spacing.lg,
+    padding: tokens.space.lg,
+    gap: tokens.space.lg,
   },
   field: {
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   label: {
     letterSpacing: 0.5,
   },
   input: {
-    borderRadius: Radius.lg,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.md,
     fontSize: 16,
   },
   titleInput: {
@@ -389,12 +383,12 @@ const styles = StyleSheet.create({
   },
   typeSelector: {
     flexDirection: "row",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   typeOption: {
     flex: 1,
-    borderRadius: Radius.lg,
-    paddingVertical: Spacing.md,
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.md,
     alignItems: "center",
     borderWidth: 1.5,
     borderColor: "transparent",
@@ -402,20 +396,20 @@ const styles = StyleSheet.create({
   typeOptionText: {},
   row: {
     flexDirection: "row",
-    gap: Spacing.md,
+    gap: tokens.space.md,
   },
   halfField: {
     flex: 1,
   },
   actionBar: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.lg,
-    paddingBottom: Spacing.xl,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.lg,
+    paddingBottom: tokens.space.xl,
     borderTopWidth: 1,
   },
   saveButton: {
-    borderRadius: Radius.full,
-    paddingVertical: Spacing.md,
+    borderRadius: tokens.radius.pill,
+    paddingVertical: tokens.space.md,
     alignItems: "center",
   },
   saveButtonDisabled: {
@@ -431,13 +425,13 @@ const styles = StyleSheet.create({
   },
   weekdayRow: {
     flexDirection: "row",
-    gap: Spacing.xs,
-    marginTop: Spacing.xs,
+    gap: tokens.space.xs,
+    marginTop: tokens.space.xs,
   },
   weekdayOption: {
     flex: 1,
-    borderRadius: Radius.md,
-    paddingVertical: Spacing.sm,
+    borderRadius: tokens.radius.sm,
+    paddingVertical: tokens.space.sm,
     alignItems: "center",
     borderWidth: 1.5,
     borderColor: "transparent",

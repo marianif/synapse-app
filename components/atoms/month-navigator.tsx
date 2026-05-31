@@ -2,7 +2,7 @@ import { Pressable, View, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Spacing, useTheme } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 interface MonthNavigatorProps {
   label: string;
@@ -78,8 +78,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.sm,
   },
   button: {
     width: 44,

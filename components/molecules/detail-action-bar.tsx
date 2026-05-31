@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Radius, Spacing, useTheme } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 export interface ActionItem {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -70,15 +70,15 @@ export function DetailActionBar({ actions }: DetailActionBarProps): React.ReactE
 const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   button: {
     flex: 1,
-    borderRadius: Radius.lg,
-    paddingVertical: Spacing.md,
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.md,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
     minHeight: 60,
   },
   pressed: {

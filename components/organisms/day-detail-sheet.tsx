@@ -3,7 +3,7 @@ import { Dimensions, Modal, Pressable, StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { EntryRow } from "@/components/molecules/entry-row";
-import { Radius, Spacing, tokens, useTheme } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 
 import type { CalendarEntry } from "@/hooks/use-calendar-data";
 
@@ -123,8 +123,8 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.color.scrim.strong,
   },
   sheet: {
-    borderTopLeftRadius: Radius.xl + 8,
-    borderTopRightRadius: Radius.xl + 8,
+    borderTopLeftRadius: tokens.radius.lg + 8,
+    borderTopRightRadius: tokens.radius.lg + 8,
     minHeight: SHEET_HEIGHT,
     paddingBottom: 40,
   },
@@ -133,12 +133,12 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     alignSelf: "center",
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.md,
+    marginTop: tokens.space.sm,
+    marginBottom: tokens.space.md,
   },
   header: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingBottom: tokens.space.md,
     borderBottomWidth: 1,
     gap: 2,
   },
@@ -147,18 +147,18 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingTop: tokens.space.md,
   },
   list: {
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   addButton: {
-    marginHorizontal: Spacing.lg,
-    marginTop: Spacing.md,
-    paddingVertical: Spacing.md,
+    marginHorizontal: tokens.space.lg,
+    marginTop: tokens.space.md,
+    paddingVertical: tokens.space.md,
     alignItems: "center",
-    borderRadius: Radius.md,
+    borderRadius: tokens.radius.sm,
   },
   addButtonText: {
     fontWeight: "600",

@@ -1,37 +1,53 @@
 # Phase 2 rewrite report
 
-Generated: 2026-05-31T12:17:17.445Z
 Mode: **dry-run**
 
-## Summary
+- filesChanged: 13
+- requiresAgent: 0
 
-- **filesPlanned**: 10
-- **editsPlanned**: 15
-- **filesWritten**: 10
-- **conflicts**: 0
-- **errors**: 0
-- **requiresAgent**: 10
+## Edits by file
 
-## Requires agent
+### components/atoms/countdown-chip.tsx
+- promote #52C87A -> tokens.feedback.success
+- promote #FF4444 -> tokens.feedback.danger
 
-Files the generated script refused to touch. Open them and apply judgement.
-- `components/atoms/countdown-chip.tsx` — add `import { tokens } from '@/constants/theme'` for promoted literal
-- `components/molecules/detail-action-bar.tsx` — add `import { tokens } from '@/constants/theme'` for promoted literal
-- `components/molecules/today-event-row.tsx` — add `import { tokens } from '@/constants/theme'` for promoted literal
-- `components/molecules/weekday-row.tsx` — add `import { tokens } from '@/constants/theme'` for promoted literal
-- `components/organisms/app-header.tsx` — add `import { tokens } from '@/constants/theme'` for promoted literal
-- `components/organisms/day-detail-sheet.tsx` — add `import { tokens } from '@/constants/theme'` for promoted literal
-- `components/organisms/fab.tsx` — add `import { tokens } from '@/constants/theme'` for promoted literal
-- `components/organisms/swipeable-row.tsx` — add `import { tokens } from '@/constants/theme'` for promoted literal
-- `components/organisms/today-section.tsx` — add `import { tokens } from '@/constants/theme'` for promoted literal
-- `components/organisms/week-strip.tsx` — add `import { tokens } from '@/constants/theme'` for promoted literal
+### components/atoms/day-cell.tsx
+- retarget EntryAccent.today -> tokens.accent.clay
 
-## Sample edits by kind
+### components/error-boundary.tsx
+- retarget Brand.primaryContainer -> tokens.accent.clayPressed
 
-### literal-promote
+### components/molecules/detail-action-bar.tsx
+- promote #131316 -> tokens.color.dark.paper
+- promote #FF4444 -> tokens.feedback.danger
 
-- `components/atoms/countdown-chip.tsx:25` — `'#52C87A'` → `tokens.feedback.success`
-- `components/atoms/countdown-chip.tsx:27` — `'#FF4444'` → `tokens.feedback.danger`
-- `components/molecules/detail-action-bar.tsx:35` — `'#131316'` → `tokens.color.dark.paper`
-- `components/molecules/detail-action-bar.tsx:40` — `'#131316'` → `tokens.color.dark.paper`
-- `components/molecules/detail-action-bar.tsx:22` — `'#FF4444'` → `tokens.feedback.danger`
+### components/molecules/today-event-row.tsx
+- promote(unresolved) rgba(192,132,252,0.3) -> tokens.colors.unresolved.rgba192_132_252_0_3
+
+### components/molecules/weekday-row.tsx
+- promote(unresolved) rgba(255,255,255,0.06) -> tokens.colors.unresolved.rgba255_255_255_0_06
+
+### components/organisms/app-header.tsx
+- promote(unresolved) rgba(255,255,255,0.08) -> tokens.colors.unresolved.rgba255_255_255_0_08
+
+### components/organisms/custom-tab-bar.tsx
+- retarget Brand.fabGlow -> tokens.accent.clay
+
+### components/organisms/day-detail-sheet.tsx
+- promote(unresolved) rgba(0, 0, 0, 0.6) -> tokens.colors.unresolved.rgba0_0_0_0_6
+- retarget Brand.fabGlow -> tokens.accent.clay
+
+### components/organisms/fab.tsx
+- promote #FAFAFA -> tokens.color.dark.ink
+- promote(unresolved) rgba(255, 107, 107, 0.2) -> tokens.colors.unresolved.rgba255_107_107_0_2
+- retarget Brand.fabGlow -> tokens.accent.clay
+
+### components/organisms/swipeable-row.tsx
+- promote #FF6B6B -> tokens.feedback.danger
+
+### components/organisms/today-section.tsx
+- promote(unresolved) rgba(255,255,255,0.04) -> tokens.colors.unresolved.rgba255_255_255_0_04
+
+### components/organisms/week-strip.tsx
+- promote(unresolved) rgba(144, 238, 144, 0.15) -> tokens.colors.unresolved.rgba144_238_144_0_15
+- retarget EntryAccent.today -> tokens.accent.clay

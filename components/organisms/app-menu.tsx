@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -16,7 +16,8 @@ import {
   tokens,
   useTheme,
 } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useThemeContext } from "@/contexts/theme-context";
+import type { ThemePreference } from "@/lib/settings";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const MENU_WIDTH = SCREEN_WIDTH * 0.75;
@@ -58,6 +59,13 @@ const quickActions: MenuItem[] = [
   },
 ];
 
+const THEME_OPTIONS: { value: ThemePreference; label: string; icon: string }[] =
+  [
+    { value: "system", label: "System", icon: "cellphone" },
+    { value: "light", label: "Light", icon: "weather-sunny" },
+    { value: "dark", label: "Dark", icon: "weather-night" },
+  ];
+
 const menuItems: MenuItem[] = [
   { label: "Today", icon: "clock-outline", route: "/" },
   { label: "Incoming", icon: "calendar-week", route: "/list" },
@@ -73,15 +81,8 @@ export function AppMenu({
 }: AppMenuProps): React.ReactElement | null {
   const router = useRouter();
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
-  const [isDark, setIsDark] = useState<"light" | "dark">(
-    colorScheme === "dark" ? "dark" : "light",
-  );
+  const { preference, setPreference } = useThemeContext();
   const translateX = useSharedValue(MENU_WIDTH);
-
-  const toggleTheme = () => {
-    setIsDark((prev) => (prev === "dark" ? "light" : "dark"));
-  };
 
   useEffect(() => {
     if (visible) {
@@ -114,22 +115,13 @@ export function AppMenu({
         <View style={[styles.menu, { backgroundColor: colors.surfaceSubtle }]}>
           <View style={styles.header}>
             <Text style={[styles.logo, { color: colors.ink }]}>Synapse</Text>
-            <View style={styles.headerActions}>
-              <Pressable onPress={toggleTheme} hitSlop={8}>
-                <MaterialCommunityIcons
-                  name={isDark ? "weather-sunny" : "weather-night"}
-                  size={22}
-                  color={colors.inkMuted}
-                />
-              </Pressable>
-              <Pressable onPress={onClose} hitSlop={8}>
-                <MaterialCommunityIcons
-                  name="close"
-                  size={24}
-                  color={colors.inkMuted}
-                />
-              </Pressable>
-            </View>
+            <Pressable onPress={onClose} hitSlop={8}>
+              <MaterialCommunityIcons
+                name="close"
+                size={24}
+                color={colors.inkMuted}
+              />
+            </Pressable>
           </View>
 
           <View style={styles.section}>
@@ -156,6 +148,49 @@ export function AppMenu({
                 onPress={() => handleItemPress(item)}
               />
             ))}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
+              Appearance
+            </Text>
+            <View
+              style={[
+                styles.segmented,
+                { backgroundColor: colors.surface },
+              ]}
+            >
+              {THEME_OPTIONS.map((opt) => {
+                const active = preference === opt.value;
+                return (
+                  <Pressable
+                    key={opt.value}
+                    onPress={() => setPreference(opt.value)}
+                    style={[
+                      styles.segment,
+                      active && { backgroundColor: colors.accent.clay },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    accessibilityLabel={`${opt.label} appearance`}
+                  >
+                    <MaterialCommunityIcons
+                      name={opt.icon as any}
+                      size={18}
+                      color={active ? colors.paper : colors.inkMuted}
+                    />
+                    <Text
+                      style={[
+                        styles.segmentLabel,
+                        { color: active ? colors.paper : colors.inkMuted },
+                      ]}
+                    >
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
           <View style={styles.footer}>
@@ -240,6 +275,25 @@ const styles = StyleSheet.create({
     letterSpacing: 0.55,
     marginBottom: Spacing.md,
     marginLeft: Spacing.xs,
+  },
+  segmented: {
+    flexDirection: "row",
+    borderRadius: Radius.md,
+    padding: Spacing.xs,
+    gap: Spacing.xs,
+  },
+  segment: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.xs,
+    minHeight: 44,
+    borderRadius: Radius.sm,
+  },
+  segmentLabel: {
+    fontSize: FontSize.labelSm,
+    fontWeight: "600",
   },
   quickActions: {
     flexDirection: "row",

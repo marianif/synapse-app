@@ -1,9 +1,10 @@
+// migrated to v2 tokens — phase 2
 import { Dimensions, Modal, Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { EntryRow } from "@/components/molecules/entry-row";
-import { Brand, Radius, Spacing, Surface, TextColors } from "@/constants/theme";
+import { Brand, Radius, Spacing, Surface, TextColors, tokens } from "@/constants/theme";
 
 import type { CalendarEntry } from "@/hooks/use-calendar-data";
 
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: tokens.colors.unresolved.rgba0_0_0_0_6,
   },
   sheet: {
     backgroundColor: Surface.containerLow,
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
     paddingVertical: Spacing.md,
     alignItems: "center",
-    backgroundColor: Brand.fabGlow,
+    backgroundColor: tokens.accent.clay,
     borderRadius: Radius.md,
   },
   addButtonText: {

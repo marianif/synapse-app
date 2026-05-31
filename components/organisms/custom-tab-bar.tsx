@@ -1,9 +1,10 @@
+// migrated to v2 tokens — phase 2
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Brand, Colors, Radius, Shadow, Surface } from "@/constants/theme";
+import { Brand, Colors, Radius, Shadow, Surface, tokens } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface TabBarIconProps {
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: Radius.full,
-    backgroundColor: Brand.fabGlow,
+    backgroundColor: tokens.accent.clay,
     opacity: 0.6,
     ...Shadow.fab,
   },

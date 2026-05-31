@@ -1,8 +1,9 @@
+// migrated to v2 tokens — phase 2
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { Radius, Spacing, Surface, TextColors, tokens } from '@/constants/theme';
 
 export interface ActionItem {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -19,7 +20,7 @@ interface DetailActionBarProps {
   actions: [ActionItem, ActionItem, ActionItem];
 }
 
-const DANGER_COLOR = '#FF4444';
+const DANGER_COLOR = tokens.feedback.danger;
 
 /**
  * Full-width row of exactly three action buttons for the detail screen.
@@ -32,12 +33,12 @@ export function DetailActionBar({ actions }: DetailActionBarProps): React.ReactE
     <View style={styles.bar}>
       {actions.map((action) => {
         const iconColor = action.isPrimary
-          ? '#131316'
+          ? tokens.color.dark.paper
           : action.isDanger
             ? DANGER_COLOR
             : TextColors.secondary;
         const labelColor = action.isPrimary
-          ? '#131316'
+          ? tokens.color.dark.paper
           : action.isDanger
             ? DANGER_COLOR
             : TextColors.secondary;

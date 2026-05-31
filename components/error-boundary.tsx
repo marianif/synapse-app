@@ -1,8 +1,9 @@
+// migrated to v2 tokens — phase 2
 import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Brand, Radius, Spacing, Surface, TextColors } from "@/constants/theme";
+import { Brand, Radius, Spacing, Surface, TextColors, tokens } from "@/constants/theme";
 
 type Props = {
   children: React.ReactNode;
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   buttonPressed: {
-    backgroundColor: Brand.primaryContainer,
+    backgroundColor: tokens.accent.clayPressed,
     transform: [{ scale: 0.98 }],
   },
   buttonLabel: {

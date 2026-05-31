@@ -1,8 +1,9 @@
+// migrated to v2 tokens — phase 2
 import { StyleSheet, View } from "react-native";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Spacing, TextColors } from "@/constants/theme";
+import { Spacing, TextColors, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { ItemStatus } from "@/components/molecules/list-item";
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
   emptyLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "rgba(255,255,255,0.06)",
+    backgroundColor: tokens.colors.unresolved.rgba255_255_255_0_06,
     borderRadius: 1,
   },
 });

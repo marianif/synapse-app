@@ -1,3 +1,4 @@
+// migrated to v2 tokens — phase 2
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -9,7 +10,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { Brand, EntryAccent, Radius, Shadow, Spacing } from "@/constants/theme";
+import { Brand, EntryAccent, Radius, Shadow, Spacing, tokens } from "@/constants/theme";
 
 const WAVEFORM_BARS = 10;
 
@@ -113,7 +114,7 @@ function RecordingFab({
         accessibilityRole="button"
       >
         <View style={styles.recordingGlow} />
-        <MaterialCommunityIcons name="stop" size={20} color="#FAFAFA" />
+        <MaterialCommunityIcons name="stop" size={20} color={tokens.color.dark.ink} />
       </Pressable>
     </View>
   );
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: Radius.full,
-    backgroundColor: Brand.fabGlow,
+    backgroundColor: tokens.accent.clay,
     ...Shadow.fab,
   },
   button: {
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: Radius.full,
-    backgroundColor: "rgba(255, 107, 107, 0.2)",
+    backgroundColor: tokens.colors.unresolved.rgba255_107_107_0_2,
     ...Shadow.fab,
   },
   recordingButton: {
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
   transcriptText: {
     flex: 1,
     fontSize: 14,
-    color: "#FAFAFA",
+    color: tokens.color.dark.ink,
     fontWeight: "400",
     marginRight: 8,
   },

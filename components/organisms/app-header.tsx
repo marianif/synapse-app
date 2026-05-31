@@ -1,9 +1,10 @@
+// migrated to v2 tokens — phase 2
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Spacing, TextColors } from "@/constants/theme";
+import { Spacing, TextColors, tokens } from "@/constants/theme";
 import { AppMenu } from "./app-menu";
 
 interface AppHeaderProps {
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: tokens.colors.unresolved.rgba255_255_255_0_08,
     alignItems: "center",
     justifyContent: "center",
   },

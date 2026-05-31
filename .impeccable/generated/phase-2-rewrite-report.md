@@ -1,6 +1,6 @@
 # Phase 2 rewrite report
 
-Mode: **dry-run**
+Mode: **commit**
 
 - filesChanged: 13
 - requiresAgent: 0

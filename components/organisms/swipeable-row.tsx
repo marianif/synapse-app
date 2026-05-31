@@ -1,9 +1,10 @@
+// migrated to v2 tokens — phase 2
 import { useRef } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Swipeable, RectButton } from 'react-native-gesture-handler';
 
-import { Radius, Spacing, TextColors } from '@/constants/theme';
+import { Radius, Spacing, TextColors, tokens } from '@/constants/theme';
 
 interface SwipeableRowProps {
   children: React.ReactNode;
@@ -65,7 +66,7 @@ export function SwipeableRow({
 
 const styles = StyleSheet.create({
   deleteAction: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: tokens.feedback.danger,
     justifyContent: 'center',
     alignItems: 'center',
     width: 64,

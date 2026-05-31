@@ -1,3 +1,4 @@
+// migrated to v2 tokens — phase 2
 import { StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -9,8 +10,7 @@ import {
   Radius,
   Spacing,
   Surface,
-  TextColors,
-} from "@/constants/theme";
+  TextColors, tokens } from "@/constants/theme";
 
 interface TodayEvent {
   id: string;
@@ -96,6 +96,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: "rgba(255,255,255,0.04)",
+    backgroundColor: tokens.colors.unresolved.rgba255_255_255_0_04,
   },
 });

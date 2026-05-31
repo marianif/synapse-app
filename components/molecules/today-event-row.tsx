@@ -1,7 +1,8 @@
+// migrated to v2 tokens — phase 2
 import { StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { EntryAccent, Radius, Spacing, TextColors } from "@/constants/theme";
+import { EntryAccent, Radius, Spacing, TextColors, tokens } from "@/constants/theme";
 
 interface TodayEventRowProps {
   title: string;
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     height: "100%",
     minHeight: 36,
     borderRadius: Radius.sm,
-    backgroundColor: "rgba(192,132,252,0.3)", // event color, dimmed
+    backgroundColor: tokens.colors.unresolved.rgba192_132_252_0_3, // event color, dimmed
   },
   leftBorderActive: {
     backgroundColor: EntryAccent.event,

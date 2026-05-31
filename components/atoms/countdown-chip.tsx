@@ -1,7 +1,8 @@
+// migrated to v2 tokens — phase 2
 import { View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { EntryAccent, FontSize, LetterSpacing, LineHeight, Radius, Spacing } from '@/constants/theme';
+import { EntryAccent, FontSize, LetterSpacing, LineHeight, Radius, Spacing, tokens } from '@/constants/theme';
 
 type CountdownState = 'pending' | 'overdue' | 'met';
 
@@ -22,9 +23,9 @@ export function CountdownChip({ daysRemaining, state }: CountdownChipProps): Rea
 
   const color =
     resolvedState === 'met'
-      ? '#52C87A'                // soft green — met/done
+      ? tokens.feedback.success                // soft green — met/done
       : resolvedState === 'overdue'
-        ? '#FF4444'              // bright red — past due
+        ? tokens.feedback.danger              // bright red — past due
         : EntryAccent.deadline;  // coral — still pending
 
   const bgColor = color + '18'; // 9% opacity tint

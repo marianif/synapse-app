@@ -1,14 +1,9 @@
+// migrated to v2 tokens — phase 2
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import {
-  EntryAccent,
-  Radius,
-  Spacing,
-  Surface,
-  TextColors,
-} from "@/constants/theme";
+import { Radius, Spacing, Surface, TextColors, tokens } from "@/constants/theme";
 
 import type { DayCount } from "@/hooks/use-calendar-data";
 
@@ -113,7 +108,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
   },
   dayItemToday: {
-    backgroundColor: EntryAccent.today + "33", // 20% opacity
+    backgroundColor: tokens.accent.clay + "33", // 20% opacity
     borderRadius: Radius.md,
   },
   dayLabel: {
@@ -121,7 +116,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   dayLabelToday: {
-    color: EntryAccent.today,
+    color: tokens.accent.clay,
   },
   indicator: {
     height: 16,
@@ -135,7 +130,7 @@ const styles = StyleSheet.create({
   dotsToday: {
     padding: 4,
     borderRadius: 6,
-    backgroundColor: "rgba(144, 238, 144, 0.15)",
+    backgroundColor: tokens.colors.unresolved.rgba144_238_144_0_15,
   },
   emptyDot: {
     width: 5,
@@ -144,7 +139,7 @@ const styles = StyleSheet.create({
     backgroundColor: TextColors.disabled,
   },
   emptyDotToday: {
-    backgroundColor: EntryAccent.today,
+    backgroundColor: tokens.accent.clay,
   },
   countLabel: {
     fontSize: 9,

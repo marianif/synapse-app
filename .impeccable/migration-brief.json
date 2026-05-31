@@ -1,0 +1,6512 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-05-31T11:35:00.000Z",
+  "scope": {
+    "scope": {
+      "kind": "app",
+      "name": "app",
+      "raw": "app"
+    },
+    "screens": [
+      {
+        "route": "/calendar",
+        "file": "app/(tabs)/calendar.tsx"
+      },
+      {
+        "route": "/",
+        "file": "app/(tabs)/index.tsx"
+      },
+      {
+        "route": "/detail",
+        "file": "app/detail.tsx"
+      },
+      {
+        "route": "/list",
+        "file": "app/list.tsx"
+      },
+      {
+        "route": "/modal",
+        "file": "app/modal.tsx"
+      },
+      {
+        "route": "/voice-input",
+        "file": "app/voice-input.tsx"
+      }
+    ],
+    "components": [
+      "components/atoms/countdown-chip.tsx",
+      "components/atoms/counter-display.tsx",
+      "components/atoms/DateInput.tsx",
+      "components/atoms/day-cell.tsx",
+      "components/atoms/entry-dot.tsx",
+      "components/atoms/month-navigator.tsx",
+      "components/atoms/streak-badge.tsx",
+      "components/atoms/themed-text.tsx",
+      "components/atoms/themed-view.tsx",
+      "components/atoms/TimeInput.tsx",
+      "components/error-boundary.tsx",
+      "components/molecules/bento-card-header.tsx",
+      "components/molecules/detail-action-bar.tsx",
+      "components/molecules/detail-metadata-row.tsx",
+      "components/molecules/detail-someday-hero.tsx",
+      "components/molecules/empty-state.tsx",
+      "components/molecules/entry-row.tsx",
+      "components/molecules/list-item.tsx",
+      "components/molecules/recurrence-picker.tsx",
+      "components/molecules/someday-item.tsx",
+      "components/molecules/today-event-row.tsx",
+      "components/molecules/weekday-row.tsx",
+      "components/molecules/wrapup-card.tsx",
+      "components/organisms/agenda-section.tsx",
+      "components/organisms/app-header.tsx",
+      "components/organisms/app-menu.tsx",
+      "components/organisms/custom-tab-bar.tsx",
+      "components/organisms/day-detail-sheet.tsx",
+      "components/organisms/deadlines-card.tsx",
+      "components/organisms/fab.tsx",
+      "components/organisms/list-progress.tsx",
+      "components/organisms/list-screen-header.tsx",
+      "components/organisms/month-grid.tsx",
+      "components/organisms/next-up-card.tsx",
+      "components/organisms/swipeable-row.tsx",
+      "components/organisms/today-section.tsx",
+      "components/organisms/upcoming-preview-card.tsx",
+      "components/organisms/week-strip.tsx",
+      "components/organisms/weekly-overview-card.tsx"
+    ],
+    "excluded": [],
+    "summary": {
+      "screenCount": 6,
+      "componentCount": 39,
+      "excludedCount": 0
+    },
+    "_rebuiltManually": {
+      "reason": "migration-scope.mjs parseJsonc bug: block-comment regex consumed the /* inside tsconfig path key \"@/*\", returning null aliasMap, so 0 components resolved. Rebuilt component list from grep of token/theme references under components/.",
+      "date": "2026-05-31"
+    }
+  },
+  "tokenGraph": {
+    "tokens": {
+      "styles.safeArea": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 5,
+        "consumersInScope": [
+          "app/detail.tsx",
+          "app/list.tsx",
+          "app/modal.tsx",
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [
+          "app/(tabs)/_layout.tsx"
+        ],
+        "outOfScopeTotal": 1,
+        "cluster": "cluster-1"
+      },
+      "styles.container": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 14,
+        "consumersInScope": [
+          "components/atoms/month-navigator.tsx",
+          "components/error-boundary.tsx",
+          "components/molecules/empty-state.tsx",
+          "components/molecules/recurrence-picker.tsx",
+          "components/organisms/custom-tab-bar.tsx",
+          "components/organisms/day-detail-sheet.tsx",
+          "components/organisms/list-progress.tsx",
+          "components/organisms/month-grid.tsx",
+          "components/organisms/upcoming-preview-card.tsx",
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [
+          "app/(tabs)/_layout.tsx",
+          "components/atoms/waveform-bar.tsx",
+          "speech-recognizer/example/App.tsx",
+          "speech-recognizer/speech-recognizer-example/App.tsx"
+        ],
+        "outOfScopeTotal": 4,
+        "cluster": "cluster-2"
+      },
+      "styles.screen": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 6,
+        "consumersInScope": [
+          "app/(tabs)/calendar.tsx",
+          "app/(tabs)/index.tsx",
+          "app/detail.tsx",
+          "app/list.tsx",
+          "app/modal.tsx",
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-3"
+      },
+      "styles.scroll": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 5,
+        "consumersInScope": [
+          "app/(tabs)/calendar.tsx",
+          "app/(tabs)/index.tsx",
+          "app/detail.tsx",
+          "app/list.tsx",
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-3"
+      },
+      "styles.content": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 12,
+        "consumersInScope": [
+          "app/(tabs)/calendar.tsx",
+          "app/(tabs)/index.tsx",
+          "app/detail.tsx",
+          "app/list.tsx",
+          "app/modal.tsx",
+          "components/atoms/day-cell.tsx",
+          "components/molecules/detail-metadata-row.tsx",
+          "components/molecules/entry-row.tsx",
+          "components/molecules/list-item.tsx",
+          "components/molecules/today-event-row.tsx",
+          "components/organisms/day-detail-sheet.tsx",
+          "components/organisms/next-up-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-4"
+      },
+      "styles.bottomSpacer": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/(tabs)/calendar.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-5"
+      },
+      "styles.fabSpacer": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "app/(tabs)/index.tsx",
+          "app/list.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-6"
+      },
+      "styles.typeChip": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.typeChipText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.heroBlock": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.statusChip": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.statusLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 3,
+        "consumersInScope": [
+          "app/detail.tsx",
+          "components/molecules/list-item.tsx",
+          "components/molecules/today-event-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-8"
+      },
+      "styles.metaList": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.sheetOverlay": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.sheet": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "app/detail.tsx",
+          "components/organisms/day-detail-sheet.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.sheetTitle": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.sheetOption": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.sheetDivider": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.centered": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.title": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 6,
+        "consumersInScope": [
+          "app/detail.tsx",
+          "components/error-boundary.tsx",
+          "components/molecules/empty-state.tsx",
+          "components/molecules/weekday-row.tsx",
+          "components/organisms/list-screen-header.tsx",
+          "components/organisms/next-up-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-9"
+      },
+      "styles.notesBlock": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.notesLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.notesText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.contentSpacer": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.actionBarWrapper": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/detail.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-7"
+      },
+      "styles.emptyWrapper": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/list.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.section": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 4,
+        "consumersInScope": [
+          "app/list.tsx",
+          "components/organisms/agenda-section.tsx",
+          "components/organisms/app-menu.tsx",
+          "components/organisms/today-section.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.sectionHeader": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/list.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.sectionLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "app/list.tsx",
+          "components/organisms/app-menu.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.countBadge": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "app/list.tsx",
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.countBadgeText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/list.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.itemList": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/list.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.keyboardView": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.header": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 10,
+        "consumersInScope": [
+          "app/modal.tsx",
+          "app/voice-input.tsx",
+          "components/molecules/someday-item.tsx",
+          "components/organisms/agenda-section.tsx",
+          "components/organisms/app-menu.tsx",
+          "components/organisms/day-detail-sheet.tsx",
+          "components/organisms/list-screen-header.tsx",
+          "components/organisms/today-section.tsx",
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [
+          "speech-recognizer/example/App.tsx"
+        ],
+        "outOfScopeTotal": 1,
+        "cluster": "cluster-12"
+      },
+      "styles.headerButton": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "app/modal.tsx",
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.headerSaveButton": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.headerSaveButtonDisabled": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.headerSaveButtonPressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.headerSaveButtonText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.field": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.label": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 10,
+        "consumersInScope": [
+          "app/modal.tsx",
+          "components/atoms/countdown-chip.tsx",
+          "components/atoms/month-navigator.tsx",
+          "components/atoms/streak-badge.tsx",
+          "components/molecules/detail-action-bar.tsx",
+          "components/molecules/detail-metadata-row.tsx",
+          "components/molecules/recurrence-picker.tsx",
+          "components/molecules/someday-item.tsx",
+          "components/molecules/wrapup-card.tsx",
+          "components/organisms/next-up-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-13"
+      },
+      "styles.input": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.titleInput": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.typeSelector": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.typeOption": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.typeOptionText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.row": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 8,
+        "consumersInScope": [
+          "app/modal.tsx",
+          "components/molecules/bento-card-header.tsx",
+          "components/molecules/detail-metadata-row.tsx",
+          "components/molecules/entry-row.tsx",
+          "components/molecules/list-item.tsx",
+          "components/molecules/recurrence-picker.tsx",
+          "components/molecules/today-event-row.tsx",
+          "components/molecules/weekday-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-14"
+      },
+      "styles.halfField": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.notesInput": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/modal.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.headerDoneButton": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.headerDoneButtonPressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.headerDoneButtonText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.transcriptContainer": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.errorBlock": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.errorText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.settingsButton": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.settingsButtonPressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.settingsButtonText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.transcript": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.transcriptActive": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.transcriptPlaceholder": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.controls": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.recordButtonWrapper": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.pulseRing": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.recordButton": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.recordButtonActive": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.recordButtonDisabled": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.recordButtonPressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.recordButtonInner": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.recordButtonInnerActive": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.hint": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "app/voice-input.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-11"
+      },
+      "styles.chip": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/countdown-chip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-15"
+      },
+      "styles.number": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/countdown-chip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-15"
+      },
+      "styles.counter": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/atoms/counter-display.tsx",
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-16"
+      },
+      "styles.cell": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/day-cell.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-17"
+      },
+      "styles.cellPressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/day-cell.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-17"
+      },
+      "styles.cellToday": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/day-cell.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-17"
+      },
+      "styles.cellOutside": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/day-cell.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-17"
+      },
+      "styles.dayNumber": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/day-cell.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-17"
+      },
+      "styles.dayNumberToday": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/day-cell.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-17"
+      },
+      "styles.dayNumberOutside": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/day-cell.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-17"
+      },
+      "styles.dots": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/atoms/day-cell.tsx",
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      },
+      "styles.dot": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 3,
+        "consumersInScope": [
+          "components/atoms/day-cell.tsx",
+          "components/atoms/entry-dot.tsx",
+          "components/organisms/next-up-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-19"
+      },
+      "styles.overflow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/day-cell.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-17"
+      },
+      "styles.button": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 4,
+        "consumersInScope": [
+          "components/atoms/month-navigator.tsx",
+          "components/error-boundary.tsx",
+          "components/molecules/detail-action-bar.tsx",
+          "components/organisms/fab.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-20"
+      },
+      "styles.buttonPressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 3,
+        "consumersInScope": [
+          "components/atoms/month-navigator.tsx",
+          "components/error-boundary.tsx",
+          "components/organisms/fab.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-20"
+      },
+      "styles.labelWrapper": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/month-navigator.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-21"
+      },
+      "styles.todayHint": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/month-navigator.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-21"
+      },
+      "styles.badge": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/streak-badge.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-22"
+      },
+      "styles.count": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/atoms/streak-badge.tsx",
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      },
+      "theme.ts": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/atoms/themed-text.tsx",
+          "components/atoms/themed-view.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-23"
+      },
+      "styles.base": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/atoms/themed-text.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-24"
+      },
+      "styles.bar": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 3,
+        "consumersInScope": [
+          "components/molecules/detail-action-bar.tsx",
+          "components/organisms/app-header.tsx"
+        ],
+        "consumersOutOfScope": [
+          "components/atoms/waveform-bar.tsx"
+        ],
+        "outOfScopeTotal": 1,
+        "cluster": "cluster-25"
+      },
+      "styles.card": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 7,
+        "consumersInScope": [
+          "components/error-boundary.tsx",
+          "components/molecules/someday-item.tsx",
+          "components/molecules/wrapup-card.tsx",
+          "components/organisms/deadlines-card.tsx",
+          "components/organisms/next-up-card.tsx",
+          "components/organisms/today-section.tsx",
+          "components/organisms/weekly-overview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-26"
+      },
+      "styles.body": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/error-boundary.tsx",
+          "components/molecules/wrapup-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-27"
+      },
+      "styles.buttonLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/error-boundary.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-28"
+      },
+      "styles.meta": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/molecules/bento-card-header.tsx",
+          "components/organisms/next-up-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-29"
+      },
+      "styles.iconSlot": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/molecules/bento-card-header.tsx",
+          "components/molecules/detail-metadata-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-30"
+      },
+      "styles.pressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/detail-action-bar.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-31"
+      },
+      "styles.hero": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/detail-someday-hero.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-32"
+      },
+      "styles.iconRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/detail-someday-hero.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-32"
+      },
+      "styles.oneDayLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/detail-someday-hero.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-32"
+      },
+      "styles.quote": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/detail-someday-hero.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-32"
+      },
+      "styles.placeholder": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/detail-someday-hero.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-32"
+      },
+      "styles.divider": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/detail-someday-hero.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-32"
+      },
+      "styles.text": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/empty-state.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-33"
+      },
+      "styles.description": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/empty-state.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-33"
+      },
+      "styles.cta": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/empty-state.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-33"
+      },
+      "styles.ctaText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/empty-state.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-33"
+      },
+      "styles.dotWrapper": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/entry-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-34"
+      },
+      "styles.time": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/entry-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-34"
+      },
+      "styles.rowPressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.sparkleSlot": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.titleRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.titleText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.somedaySubtitle": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.checkbox": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.checkboxCompleted": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.titleStrike": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.statusRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.recurringBadge": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.recurringBadgeText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.statusTextContainer": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.statusTime": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.timeChip": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.timeChipText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/list-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-35"
+      },
+      "styles.option": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/recurrence-picker.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.optionLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/recurrence-picker.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.weekdayRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/molecules/recurrence-picker.tsx",
+          "components/organisms/month-grid.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.weekdayChip": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/recurrence-picker.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.weekdayText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/recurrence-picker.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.endDateRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/recurrence-picker.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.dateInput": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/recurrence-picker.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.headerLeft": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.countText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.stack": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.ideaRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.ideaRowBorder": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.ideaContent": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.ideaTitleRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.ideaTitle": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.ideaSubtitle": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.ideaInspiration": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.moreRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/someday-item.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-10"
+      },
+      "styles.leftBorder": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/today-event-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-37"
+      },
+      "styles.leftBorderActive": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/today-event-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-37"
+      },
+      "styles.timeRangeRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/today-event-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-37"
+      },
+      "styles.clockDot": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/today-event-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-37"
+      },
+      "styles.statusBlock": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/today-event-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-37"
+      },
+      "styles.iconPlaceholder": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/today-event-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-37"
+      },
+      "styles.day": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/weekday-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-38"
+      },
+      "styles.emptyLine": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/weekday-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-38"
+      },
+      "styles.textBlock": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/molecules/wrapup-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-39"
+      },
+      "styles.list": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 3,
+        "consumersInScope": [
+          "components/organisms/agenda-section.tsx",
+          "components/organisms/day-detail-sheet.tsx",
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-40"
+      },
+      "styles.iconBtn": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-header.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-41"
+      },
+      "styles.wordmark": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-header.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-41"
+      },
+      "styles.avatar": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-header.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-41"
+      },
+      "styles.avatarFallback": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-header.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-41"
+      },
+      "styles.backdrop": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/organisms/app-menu.tsx",
+          "components/organisms/day-detail-sheet.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-42"
+      },
+      "styles.blurContainer": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-menu.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-43"
+      },
+      "styles.menu": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-menu.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-43"
+      },
+      "styles.logo": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-menu.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-43"
+      },
+      "styles.headerActions": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-menu.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-43"
+      },
+      "styles.footer": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-menu.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-43"
+      },
+      "styles.version": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-menu.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-43"
+      },
+      "styles.menuItem": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-menu.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-43"
+      },
+      "styles.menuItemPressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-menu.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-43"
+      },
+      "styles.menuLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/app-menu.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-43"
+      },
+      "styles.tabBar": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/custom-tab-bar.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "styles.tabButton": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/custom-tab-bar.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "styles.tabButtonPressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/custom-tab-bar.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "theme.tint": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/custom-tab-bar.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "theme.tabIconDefault": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/custom-tab-bar.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "styles.addButton": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/organisms/custom-tab-bar.tsx",
+          "components/organisms/day-detail-sheet.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "styles.addButtonPressed": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/custom-tab-bar.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "styles.addButtonGlow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/custom-tab-bar.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "styles.addButtonInner": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/custom-tab-bar.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "styles.handle": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/day-detail-sheet.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "styles.dateLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/day-detail-sheet.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "styles.addButtonText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/day-detail-sheet.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-44"
+      },
+      "styles.rows": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/organisms/deadlines-card.tsx",
+          "components/organisms/weekly-overview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-45"
+      },
+      "styles.wrapper": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/fab.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-46"
+      },
+      "styles.glow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 2,
+        "consumersInScope": [
+          "components/organisms/fab.tsx",
+          "components/organisms/next-up-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-47"
+      },
+      "styles.waveformBar": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/fab.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-46"
+      },
+      "styles.recordingContainer": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/fab.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-46"
+      },
+      "styles.waveformContainer": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/fab.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-46"
+      },
+      "styles.recordingButton": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/fab.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-46"
+      },
+      "styles.recordingGlow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/fab.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-46"
+      },
+      "styles.counterBlock": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/list-progress.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-48"
+      },
+      "styles.progressLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/list-progress.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-48"
+      },
+      "styles.counterRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/list-progress.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-48"
+      },
+      "styles.completedNum": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/list-progress.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-48"
+      },
+      "styles.totalNum": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/list-progress.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-48"
+      },
+      "styles.iconButton": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/list-screen-header.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-49"
+      },
+      "styles.weekdayCell": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/month-grid.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.weekdayLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/month-grid.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.gridWrapper": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/month-grid.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.weekRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/month-grid.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-36"
+      },
+      "styles.left": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/next-up-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-50"
+      },
+      "styles.right": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/next-up-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-50"
+      },
+      "styles.nowText": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/next-up-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-50"
+      },
+      "styles.unitLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/next-up-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-50"
+      },
+      "styles.deleteAction": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/swipeable-row.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-51"
+      },
+      "styles.separator": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/today-section.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-52"
+      },
+      "styles.daysAwayContainer": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-53"
+      },
+      "styles.daysAwayNumber": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-53"
+      },
+      "styles.headerMeta": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-53"
+      },
+      "styles.icon": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-53"
+      },
+      "styles.entryRow": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-53"
+      },
+      "styles.entryContent": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-53"
+      },
+      "styles.entryType": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-53"
+      },
+      "styles.entryTitle": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-53"
+      },
+      "styles.entryDate": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-53"
+      },
+      "styles.emptyState": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-53"
+      },
+      "styles.strip": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      },
+      "styles.dayItem": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      },
+      "styles.dayLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      },
+      "styles.dayLabelToday": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      },
+      "styles.indicator": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      },
+      "styles.dotsToday": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      },
+      "styles.emptyDot": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      },
+      "styles.emptyDotToday": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      },
+      "styles.countLabel": {
+        "definedIn": null,
+        "value": null,
+        "consumerCount": 1,
+        "consumersInScope": [
+          "components/organisms/week-strip.tsx"
+        ],
+        "consumersOutOfScope": [],
+        "outOfScopeTotal": 0,
+        "cluster": "cluster-18"
+      }
+    },
+    "clusters": [
+      {
+        "id": "cluster-1",
+        "tokens": [
+          "styles.safeArea"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 4+ files",
+        "topCoOccurringFiles": [
+          "app/detail.tsx",
+          "app/list.tsx",
+          "app/modal.tsx",
+          "app/voice-input.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-2",
+        "tokens": [
+          "styles.container"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 5+ files",
+        "topCoOccurringFiles": [
+          "components/atoms/month-navigator.tsx",
+          "components/error-boundary.tsx",
+          "components/molecules/empty-state.tsx",
+          "components/molecules/recurrence-picker.tsx",
+          "components/organisms/custom-tab-bar.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-3",
+        "tokens": [
+          "styles.screen",
+          "styles.scroll"
+        ],
+        "strength": 0.83,
+        "rationale": "Co-occur in 5+ files",
+        "topCoOccurringFiles": [
+          "app/(tabs)/calendar.tsx",
+          "app/(tabs)/index.tsx",
+          "app/detail.tsx",
+          "app/list.tsx",
+          "app/modal.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-4",
+        "tokens": [
+          "styles.content"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 5+ files",
+        "topCoOccurringFiles": [
+          "app/(tabs)/calendar.tsx",
+          "app/(tabs)/index.tsx",
+          "app/detail.tsx",
+          "app/list.tsx",
+          "app/modal.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-5",
+        "tokens": [
+          "styles.bottomSpacer"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "app/(tabs)/calendar.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-6",
+        "tokens": [
+          "styles.fabSpacer"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 2+ files",
+        "topCoOccurringFiles": [
+          "app/(tabs)/index.tsx",
+          "app/list.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-7",
+        "tokens": [
+          "styles.actionBarWrapper",
+          "styles.centered",
+          "styles.contentSpacer",
+          "styles.heroBlock",
+          "styles.metaList",
+          "styles.notesBlock",
+          "styles.notesLabel",
+          "styles.notesText",
+          "styles.sheet",
+          "styles.sheetDivider",
+          "styles.sheetOption",
+          "styles.sheetOverlay",
+          "styles.sheetTitle",
+          "styles.statusChip",
+          "styles.typeChip",
+          "styles.typeChipText"
+        ],
+        "strength": 0.96,
+        "rationale": "Co-occur in 2+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "app/detail.tsx",
+          "components/organisms/day-detail-sheet.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-8",
+        "tokens": [
+          "styles.statusLabel"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 3+ files",
+        "topCoOccurringFiles": [
+          "app/detail.tsx",
+          "components/molecules/list-item.tsx",
+          "components/molecules/today-event-row.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-9",
+        "tokens": [
+          "styles.title"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 5+ files",
+        "topCoOccurringFiles": [
+          "app/detail.tsx",
+          "components/error-boundary.tsx",
+          "components/molecules/empty-state.tsx",
+          "components/molecules/weekday-row.tsx",
+          "components/organisms/list-screen-header.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-10",
+        "tokens": [
+          "styles.countBadge",
+          "styles.countBadgeText",
+          "styles.countText",
+          "styles.emptyWrapper",
+          "styles.headerLeft",
+          "styles.ideaContent",
+          "styles.ideaInspiration",
+          "styles.ideaRow",
+          "styles.ideaRowBorder",
+          "styles.ideaSubtitle",
+          "styles.ideaTitle",
+          "styles.ideaTitleRow",
+          "styles.itemList",
+          "styles.moreRow",
+          "styles.section",
+          "styles.sectionHeader",
+          "styles.sectionLabel",
+          "styles.stack"
+        ],
+        "strength": 0.5,
+        "rationale": "Co-occur in 5+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/molecules/someday-item.tsx",
+          "app/list.tsx",
+          "components/organisms/app-menu.tsx",
+          "components/organisms/agenda-section.tsx",
+          "components/organisms/today-section.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-11",
+        "tokens": [
+          "styles.controls",
+          "styles.errorBlock",
+          "styles.errorText",
+          "styles.field",
+          "styles.halfField",
+          "styles.headerButton",
+          "styles.headerDoneButton",
+          "styles.headerDoneButtonPressed",
+          "styles.headerDoneButtonText",
+          "styles.headerSaveButton",
+          "styles.headerSaveButtonDisabled",
+          "styles.headerSaveButtonPressed",
+          "styles.headerSaveButtonText",
+          "styles.hint",
+          "styles.input",
+          "styles.keyboardView",
+          "styles.notesInput",
+          "styles.pulseRing",
+          "styles.recordButton",
+          "styles.recordButtonActive",
+          "styles.recordButtonDisabled",
+          "styles.recordButtonInner",
+          "styles.recordButtonInnerActive",
+          "styles.recordButtonPressed",
+          "styles.recordButtonWrapper",
+          "styles.settingsButton",
+          "styles.settingsButtonPressed",
+          "styles.settingsButtonText",
+          "styles.titleInput",
+          "styles.transcript",
+          "styles.transcriptActive",
+          "styles.transcriptContainer",
+          "styles.transcriptPlaceholder",
+          "styles.typeOption",
+          "styles.typeOptionText",
+          "styles.typeSelector"
+        ],
+        "strength": 0.53,
+        "rationale": "Co-occur in 2+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "app/voice-input.tsx",
+          "app/modal.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-12",
+        "tokens": [
+          "styles.header"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 5+ files",
+        "topCoOccurringFiles": [
+          "app/modal.tsx",
+          "app/voice-input.tsx",
+          "components/molecules/someday-item.tsx",
+          "components/organisms/agenda-section.tsx",
+          "components/organisms/app-menu.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-13",
+        "tokens": [
+          "styles.label"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 5+ files",
+        "topCoOccurringFiles": [
+          "app/modal.tsx",
+          "components/atoms/countdown-chip.tsx",
+          "components/atoms/month-navigator.tsx",
+          "components/atoms/streak-badge.tsx",
+          "components/molecules/detail-action-bar.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-14",
+        "tokens": [
+          "styles.row"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 5+ files",
+        "topCoOccurringFiles": [
+          "app/modal.tsx",
+          "components/molecules/bento-card-header.tsx",
+          "components/molecules/detail-metadata-row.tsx",
+          "components/molecules/entry-row.tsx",
+          "components/molecules/list-item.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-15",
+        "tokens": [
+          "styles.chip",
+          "styles.number"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/atoms/countdown-chip.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-16",
+        "tokens": [
+          "styles.counter"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 2+ files",
+        "topCoOccurringFiles": [
+          "components/atoms/counter-display.tsx",
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-17",
+        "tokens": [
+          "styles.cell",
+          "styles.cellOutside",
+          "styles.cellPressed",
+          "styles.cellToday",
+          "styles.dayNumber",
+          "styles.dayNumberOutside",
+          "styles.dayNumberToday",
+          "styles.overflow"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/atoms/day-cell.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-18",
+        "tokens": [
+          "styles.count",
+          "styles.countLabel",
+          "styles.dayItem",
+          "styles.dayLabel",
+          "styles.dayLabelToday",
+          "styles.dots",
+          "styles.dotsToday",
+          "styles.emptyDot",
+          "styles.emptyDotToday",
+          "styles.indicator",
+          "styles.strip"
+        ],
+        "strength": 0.84,
+        "rationale": "Co-occur in 3+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/organisms/week-strip.tsx",
+          "components/atoms/day-cell.tsx",
+          "components/atoms/streak-badge.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-19",
+        "tokens": [
+          "styles.dot"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 3+ files",
+        "topCoOccurringFiles": [
+          "components/atoms/day-cell.tsx",
+          "components/atoms/entry-dot.tsx",
+          "components/organisms/next-up-card.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-20",
+        "tokens": [
+          "styles.button",
+          "styles.buttonPressed"
+        ],
+        "strength": 0.9,
+        "rationale": "Co-occur in 4+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/atoms/month-navigator.tsx",
+          "components/error-boundary.tsx",
+          "components/organisms/fab.tsx",
+          "components/molecules/detail-action-bar.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-21",
+        "tokens": [
+          "styles.labelWrapper",
+          "styles.todayHint"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/atoms/month-navigator.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-22",
+        "tokens": [
+          "styles.badge"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/atoms/streak-badge.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-23",
+        "tokens": [
+          "theme.ts"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 2+ files",
+        "topCoOccurringFiles": [
+          "components/atoms/themed-text.tsx",
+          "components/atoms/themed-view.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-24",
+        "tokens": [
+          "styles.base"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/atoms/themed-text.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-25",
+        "tokens": [
+          "styles.bar"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 2+ files",
+        "topCoOccurringFiles": [
+          "components/molecules/detail-action-bar.tsx",
+          "components/organisms/app-header.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-26",
+        "tokens": [
+          "styles.card"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 5+ files",
+        "topCoOccurringFiles": [
+          "components/error-boundary.tsx",
+          "components/molecules/someday-item.tsx",
+          "components/molecules/wrapup-card.tsx",
+          "components/organisms/deadlines-card.tsx",
+          "components/organisms/next-up-card.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-27",
+        "tokens": [
+          "styles.body"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 2+ files",
+        "topCoOccurringFiles": [
+          "components/error-boundary.tsx",
+          "components/molecules/wrapup-card.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-28",
+        "tokens": [
+          "styles.buttonLabel"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/error-boundary.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-29",
+        "tokens": [
+          "styles.meta"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 2+ files",
+        "topCoOccurringFiles": [
+          "components/molecules/bento-card-header.tsx",
+          "components/organisms/next-up-card.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-30",
+        "tokens": [
+          "styles.iconSlot"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 2+ files",
+        "topCoOccurringFiles": [
+          "components/molecules/bento-card-header.tsx",
+          "components/molecules/detail-metadata-row.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-31",
+        "tokens": [
+          "styles.pressed"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/molecules/detail-action-bar.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-32",
+        "tokens": [
+          "styles.divider",
+          "styles.hero",
+          "styles.iconRow",
+          "styles.oneDayLabel",
+          "styles.placeholder",
+          "styles.quote"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/molecules/detail-someday-hero.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-33",
+        "tokens": [
+          "styles.cta",
+          "styles.ctaText",
+          "styles.description",
+          "styles.text"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/molecules/empty-state.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-34",
+        "tokens": [
+          "styles.dotWrapper",
+          "styles.time"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/molecules/entry-row.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-35",
+        "tokens": [
+          "styles.checkbox",
+          "styles.checkboxCompleted",
+          "styles.recurringBadge",
+          "styles.recurringBadgeText",
+          "styles.rowPressed",
+          "styles.somedaySubtitle",
+          "styles.sparkleSlot",
+          "styles.statusRow",
+          "styles.statusTextContainer",
+          "styles.statusTime",
+          "styles.timeChip",
+          "styles.timeChipText",
+          "styles.titleRow",
+          "styles.titleStrike",
+          "styles.titleText"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/molecules/list-item.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-36",
+        "tokens": [
+          "styles.dateInput",
+          "styles.endDateRow",
+          "styles.gridWrapper",
+          "styles.option",
+          "styles.optionLabel",
+          "styles.weekRow",
+          "styles.weekdayCell",
+          "styles.weekdayChip",
+          "styles.weekdayLabel",
+          "styles.weekdayRow",
+          "styles.weekdayText"
+        ],
+        "strength": 0.52,
+        "rationale": "Co-occur in 2+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/molecules/recurrence-picker.tsx",
+          "components/organisms/month-grid.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-37",
+        "tokens": [
+          "styles.clockDot",
+          "styles.iconPlaceholder",
+          "styles.leftBorder",
+          "styles.leftBorderActive",
+          "styles.statusBlock",
+          "styles.timeRangeRow"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/molecules/today-event-row.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-38",
+        "tokens": [
+          "styles.day",
+          "styles.emptyLine"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/molecules/weekday-row.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-39",
+        "tokens": [
+          "styles.textBlock"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/molecules/wrapup-card.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-40",
+        "tokens": [
+          "styles.list"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 3+ files",
+        "topCoOccurringFiles": [
+          "components/organisms/agenda-section.tsx",
+          "components/organisms/day-detail-sheet.tsx",
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-41",
+        "tokens": [
+          "styles.avatar",
+          "styles.avatarFallback",
+          "styles.iconBtn",
+          "styles.wordmark"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/organisms/app-header.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-42",
+        "tokens": [
+          "styles.backdrop"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 2+ files",
+        "topCoOccurringFiles": [
+          "components/organisms/app-menu.tsx",
+          "components/organisms/day-detail-sheet.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-43",
+        "tokens": [
+          "styles.blurContainer",
+          "styles.footer",
+          "styles.headerActions",
+          "styles.logo",
+          "styles.menu",
+          "styles.menuItem",
+          "styles.menuItemPressed",
+          "styles.menuLabel",
+          "styles.version"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/organisms/app-menu.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-44",
+        "tokens": [
+          "styles.addButton",
+          "styles.addButtonGlow",
+          "styles.addButtonInner",
+          "styles.addButtonPressed",
+          "styles.addButtonText",
+          "styles.dateLabel",
+          "styles.handle",
+          "styles.tabBar",
+          "styles.tabButton",
+          "styles.tabButtonPressed",
+          "theme.tabIconDefault",
+          "theme.tint"
+        ],
+        "strength": 0.58,
+        "rationale": "Co-occur in 2+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/organisms/custom-tab-bar.tsx",
+          "components/organisms/day-detail-sheet.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-45",
+        "tokens": [
+          "styles.rows"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 2+ files",
+        "topCoOccurringFiles": [
+          "components/organisms/deadlines-card.tsx",
+          "components/organisms/weekly-overview-card.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-46",
+        "tokens": [
+          "styles.recordingButton",
+          "styles.recordingContainer",
+          "styles.recordingGlow",
+          "styles.waveformBar",
+          "styles.waveformContainer",
+          "styles.wrapper"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/organisms/fab.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-47",
+        "tokens": [
+          "styles.glow"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 2+ files",
+        "topCoOccurringFiles": [
+          "components/organisms/fab.tsx",
+          "components/organisms/next-up-card.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-48",
+        "tokens": [
+          "styles.completedNum",
+          "styles.counterBlock",
+          "styles.counterRow",
+          "styles.progressLabel",
+          "styles.totalNum"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/organisms/list-progress.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-49",
+        "tokens": [
+          "styles.iconButton"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/organisms/list-screen-header.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-50",
+        "tokens": [
+          "styles.left",
+          "styles.nowText",
+          "styles.right",
+          "styles.unitLabel"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/organisms/next-up-card.tsx"
+        ],
+        "mustMigrateTogether": true
+      },
+      {
+        "id": "cluster-51",
+        "tokens": [
+          "styles.deleteAction"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/organisms/swipeable-row.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-52",
+        "tokens": [
+          "styles.separator"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files",
+        "topCoOccurringFiles": [
+          "components/organisms/today-section.tsx"
+        ],
+        "mustMigrateTogether": false
+      },
+      {
+        "id": "cluster-53",
+        "tokens": [
+          "styles.daysAwayContainer",
+          "styles.daysAwayNumber",
+          "styles.emptyState",
+          "styles.entryContent",
+          "styles.entryDate",
+          "styles.entryRow",
+          "styles.entryTitle",
+          "styles.entryType",
+          "styles.headerMeta",
+          "styles.icon"
+        ],
+        "strength": 1,
+        "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+        "topCoOccurringFiles": [
+          "components/organisms/upcoming-preview-card.tsx"
+        ],
+        "mustMigrateTogether": true
+      }
+    ],
+    "sparseMatrix": [
+      [
+        "styles.sheetOption",
+        "app/detail.tsx",
+        6
+      ],
+      [
+        "styles.field",
+        "app/modal.tsx",
+        5
+      ],
+      [
+        "styles.label",
+        "app/modal.tsx",
+        5
+      ],
+      [
+        "styles.sheetDivider",
+        "app/detail.tsx",
+        4
+      ],
+      [
+        "styles.input",
+        "app/modal.tsx",
+        4
+      ],
+      [
+        "styles.safeArea",
+        "app/detail.tsx",
+        3
+      ],
+      [
+        "styles.content",
+        "components/molecules/list-item.tsx",
+        2
+      ],
+      [
+        "styles.typeChipText",
+        "app/detail.tsx",
+        2
+      ],
+      [
+        "styles.heroBlock",
+        "app/detail.tsx",
+        2
+      ],
+      [
+        "styles.metaList",
+        "app/detail.tsx",
+        2
+      ],
+      [
+        "styles.sheetOverlay",
+        "app/detail.tsx",
+        2
+      ],
+      [
+        "styles.sheet",
+        "app/detail.tsx",
+        2
+      ],
+      [
+        "styles.sheetTitle",
+        "app/detail.tsx",
+        2
+      ],
+      [
+        "styles.centered",
+        "app/detail.tsx",
+        2
+      ],
+      [
+        "styles.section",
+        "components/organisms/app-menu.tsx",
+        2
+      ],
+      [
+        "styles.sectionLabel",
+        "components/organisms/app-menu.tsx",
+        2
+      ],
+      [
+        "styles.row",
+        "components/molecules/list-item.tsx",
+        2
+      ],
+      [
+        "styles.halfField",
+        "app/modal.tsx",
+        2
+      ],
+      [
+        "styles.errorText",
+        "app/voice-input.tsx",
+        2
+      ],
+      [
+        "styles.button",
+        "components/atoms/month-navigator.tsx",
+        2
+      ],
+      [
+        "styles.buttonPressed",
+        "components/atoms/month-navigator.tsx",
+        2
+      ],
+      [
+        "styles.buttonPressed",
+        "components/organisms/fab.tsx",
+        2
+      ],
+      [
+        "styles.rowPressed",
+        "components/molecules/list-item.tsx",
+        2
+      ],
+      [
+        "styles.titleRow",
+        "components/molecules/list-item.tsx",
+        2
+      ],
+      [
+        "styles.titleText",
+        "components/molecules/list-item.tsx",
+        2
+      ],
+      [
+        "styles.iconBtn",
+        "components/organisms/app-header.tsx",
+        2
+      ],
+      [
+        "styles.tabButton",
+        "components/organisms/custom-tab-bar.tsx",
+        2
+      ],
+      [
+        "styles.tabButtonPressed",
+        "components/organisms/custom-tab-bar.tsx",
+        2
+      ],
+      [
+        "theme.tint",
+        "components/organisms/custom-tab-bar.tsx",
+        2
+      ],
+      [
+        "theme.tabIconDefault",
+        "components/organisms/custom-tab-bar.tsx",
+        2
+      ],
+      [
+        "styles.wrapper",
+        "components/organisms/fab.tsx",
+        2
+      ],
+      [
+        "styles.iconButton",
+        "components/organisms/list-screen-header.tsx",
+        2
+      ],
+      [
+        "styles.daysAwayNumber",
+        "components/organisms/upcoming-preview-card.tsx",
+        2
+      ],
+      [
+        "styles.safeArea",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.safeArea",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.safeArea",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.container",
+        "components/atoms/month-navigator.tsx",
+        1
+      ],
+      [
+        "styles.container",
+        "components/error-boundary.tsx",
+        1
+      ],
+      [
+        "styles.container",
+        "components/molecules/empty-state.tsx",
+        1
+      ],
+      [
+        "styles.container",
+        "components/molecules/recurrence-picker.tsx",
+        1
+      ],
+      [
+        "styles.container",
+        "components/organisms/custom-tab-bar.tsx",
+        1
+      ],
+      [
+        "styles.container",
+        "components/organisms/day-detail-sheet.tsx",
+        1
+      ],
+      [
+        "styles.container",
+        "components/organisms/list-progress.tsx",
+        1
+      ],
+      [
+        "styles.container",
+        "components/organisms/month-grid.tsx",
+        1
+      ],
+      [
+        "styles.container",
+        "components/organisms/upcoming-preview-card.tsx",
+        1
+      ],
+      [
+        "styles.container",
+        "components/organisms/week-strip.tsx",
+        1
+      ],
+      [
+        "styles.screen",
+        "app/(tabs)/calendar.tsx",
+        1
+      ],
+      [
+        "styles.screen",
+        "app/(tabs)/index.tsx",
+        1
+      ],
+      [
+        "styles.screen",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.screen",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.screen",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.screen",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.scroll",
+        "app/(tabs)/calendar.tsx",
+        1
+      ],
+      [
+        "styles.scroll",
+        "app/(tabs)/index.tsx",
+        1
+      ],
+      [
+        "styles.scroll",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.scroll",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.scroll",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "app/(tabs)/calendar.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "app/(tabs)/index.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "components/molecules/detail-metadata-row.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "components/molecules/entry-row.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "components/molecules/today-event-row.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "components/organisms/day-detail-sheet.tsx",
+        1
+      ],
+      [
+        "styles.content",
+        "components/organisms/next-up-card.tsx",
+        1
+      ],
+      [
+        "styles.bottomSpacer",
+        "app/(tabs)/calendar.tsx",
+        1
+      ],
+      [
+        "styles.fabSpacer",
+        "app/(tabs)/index.tsx",
+        1
+      ],
+      [
+        "styles.fabSpacer",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.typeChip",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.statusChip",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.statusLabel",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.statusLabel",
+        "components/molecules/list-item.tsx",
+        1
+      ],
+      [
+        "styles.statusLabel",
+        "components/molecules/today-event-row.tsx",
+        1
+      ],
+      [
+        "styles.sheet",
+        "components/organisms/day-detail-sheet.tsx",
+        1
+      ],
+      [
+        "styles.title",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.title",
+        "components/error-boundary.tsx",
+        1
+      ],
+      [
+        "styles.title",
+        "components/molecules/empty-state.tsx",
+        1
+      ],
+      [
+        "styles.title",
+        "components/molecules/weekday-row.tsx",
+        1
+      ],
+      [
+        "styles.title",
+        "components/organisms/list-screen-header.tsx",
+        1
+      ],
+      [
+        "styles.title",
+        "components/organisms/next-up-card.tsx",
+        1
+      ],
+      [
+        "styles.notesBlock",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.notesLabel",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.notesText",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.contentSpacer",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.actionBarWrapper",
+        "app/detail.tsx",
+        1
+      ],
+      [
+        "styles.emptyWrapper",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.section",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.section",
+        "components/organisms/agenda-section.tsx",
+        1
+      ],
+      [
+        "styles.section",
+        "components/organisms/today-section.tsx",
+        1
+      ],
+      [
+        "styles.sectionHeader",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.sectionLabel",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.countBadge",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.countBadge",
+        "components/molecules/someday-item.tsx",
+        1
+      ],
+      [
+        "styles.countBadgeText",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.itemList",
+        "app/list.tsx",
+        1
+      ],
+      [
+        "styles.keyboardView",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.header",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.header",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.header",
+        "components/molecules/someday-item.tsx",
+        1
+      ],
+      [
+        "styles.header",
+        "components/organisms/agenda-section.tsx",
+        1
+      ],
+      [
+        "styles.header",
+        "components/organisms/app-menu.tsx",
+        1
+      ],
+      [
+        "styles.header",
+        "components/organisms/day-detail-sheet.tsx",
+        1
+      ],
+      [
+        "styles.header",
+        "components/organisms/list-screen-header.tsx",
+        1
+      ],
+      [
+        "styles.header",
+        "components/organisms/today-section.tsx",
+        1
+      ],
+      [
+        "styles.header",
+        "components/organisms/upcoming-preview-card.tsx",
+        1
+      ],
+      [
+        "styles.headerButton",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.headerButton",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.headerSaveButton",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.headerSaveButtonDisabled",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.headerSaveButtonPressed",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.headerSaveButtonText",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.label",
+        "components/atoms/countdown-chip.tsx",
+        1
+      ],
+      [
+        "styles.label",
+        "components/atoms/month-navigator.tsx",
+        1
+      ],
+      [
+        "styles.label",
+        "components/atoms/streak-badge.tsx",
+        1
+      ],
+      [
+        "styles.label",
+        "components/molecules/detail-action-bar.tsx",
+        1
+      ],
+      [
+        "styles.label",
+        "components/molecules/detail-metadata-row.tsx",
+        1
+      ],
+      [
+        "styles.label",
+        "components/molecules/recurrence-picker.tsx",
+        1
+      ],
+      [
+        "styles.label",
+        "components/molecules/someday-item.tsx",
+        1
+      ],
+      [
+        "styles.label",
+        "components/molecules/wrapup-card.tsx",
+        1
+      ],
+      [
+        "styles.label",
+        "components/organisms/next-up-card.tsx",
+        1
+      ],
+      [
+        "styles.titleInput",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.typeSelector",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.typeOption",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.typeOptionText",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.row",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.row",
+        "components/molecules/bento-card-header.tsx",
+        1
+      ],
+      [
+        "styles.row",
+        "components/molecules/detail-metadata-row.tsx",
+        1
+      ],
+      [
+        "styles.row",
+        "components/molecules/entry-row.tsx",
+        1
+      ],
+      [
+        "styles.row",
+        "components/molecules/recurrence-picker.tsx",
+        1
+      ],
+      [
+        "styles.row",
+        "components/molecules/today-event-row.tsx",
+        1
+      ],
+      [
+        "styles.row",
+        "components/molecules/weekday-row.tsx",
+        1
+      ],
+      [
+        "styles.notesInput",
+        "app/modal.tsx",
+        1
+      ],
+      [
+        "styles.headerDoneButton",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.headerDoneButtonPressed",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.headerDoneButtonText",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.transcriptContainer",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.errorBlock",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.settingsButton",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.settingsButtonPressed",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.settingsButtonText",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.transcript",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.transcriptActive",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.transcriptPlaceholder",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.controls",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.recordButtonWrapper",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.pulseRing",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.recordButton",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.recordButtonActive",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.recordButtonDisabled",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.recordButtonPressed",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.recordButtonInner",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.recordButtonInnerActive",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.hint",
+        "app/voice-input.tsx",
+        1
+      ],
+      [
+        "styles.chip",
+        "components/atoms/countdown-chip.tsx",
+        1
+      ],
+      [
+        "styles.number",
+        "components/atoms/countdown-chip.tsx",
+        1
+      ],
+      [
+        "styles.counter",
+        "components/atoms/counter-display.tsx",
+        1
+      ],
+      [
+        "styles.counter",
+        "components/organisms/upcoming-preview-card.tsx",
+        1
+      ],
+      [
+        "styles.cell",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.cellPressed",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.cellToday",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.cellOutside",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.dayNumber",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.dayNumberToday",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.dayNumberOutside",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.dots",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.dots",
+        "components/organisms/week-strip.tsx",
+        1
+      ],
+      [
+        "styles.dot",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.dot",
+        "components/atoms/entry-dot.tsx",
+        1
+      ],
+      [
+        "styles.dot",
+        "components/organisms/next-up-card.tsx",
+        1
+      ],
+      [
+        "styles.overflow",
+        "components/atoms/day-cell.tsx",
+        1
+      ],
+      [
+        "styles.button",
+        "components/error-boundary.tsx",
+        1
+      ],
+      [
+        "styles.button",
+        "components/molecules/detail-action-bar.tsx",
+        1
+      ],
+      [
+        "styles.button",
+        "components/organisms/fab.tsx",
+        1
+      ],
+      [
+        "styles.buttonPressed",
+        "components/error-boundary.tsx",
+        1
+      ],
+      [
+        "styles.labelWrapper",
+        "components/atoms/month-navigator.tsx",
+        1
+      ],
+      [
+        "styles.todayHint",
+        "components/atoms/month-navigator.tsx",
+        1
+      ],
+      [
+        "styles.badge",
+        "components/atoms/streak-badge.tsx",
+        1
+      ],
+      [
+        "styles.count",
+        "components/atoms/streak-badge.tsx",
+        1
+      ],
+      [
+        "styles.count",
+        "components/organisms/week-strip.tsx",
+        1
+      ],
+      [
+        "theme.ts",
+        "components/atoms/themed-text.tsx",
+        1
+      ],
+      [
+        "theme.ts",
+        "components/atoms/themed-view.tsx",
+        1
+      ],
+      [
+        "styles.base",
+        "components/atoms/themed-text.tsx",
+        1
+      ],
+      [
+        "styles.bar",
+        "components/molecules/detail-action-bar.tsx",
+        1
+      ],
+      [
+        "styles.bar",
+        "components/organisms/app-header.tsx",
+        1
+      ],
+      [
+        "styles.card",
+        "components/error-boundary.tsx",
+        1
+      ],
+      [
+        "styles.card",
+        "components/molecules/someday-item.tsx",
+        1
+      ],
+      [
+        "styles.card",
+        "components/molecules/wrapup-card.tsx",
+        1
+      ],
+      [
+        "styles.card",
+        "components/organisms/deadlines-card.tsx",
+        1
+      ],
+      [
+        "styles.card",
+        "components/organisms/next-up-card.tsx",
+        1
+      ],
+      [
+        "styles.card",
+        "components/organisms/today-section.tsx",
+        1
+      ],
+      [
+        "styles.card",
+        "components/organisms/weekly-overview-card.tsx",
+        1
+      ],
+      [
+        "styles.body",
+        "components/error-boundary.tsx",
+        1
+      ],
+      [
+        "styles.body",
+        "components/molecules/wrapup-card.tsx",
+        1
+      ],
+      [
+        "styles.buttonLabel",
+        "components/error-boundary.tsx",
+        1
+      ],
+      [
+        "styles.meta",
+        "components/molecules/bento-card-header.tsx",
+        1
+      ],
+      [
+        "styles.meta",
+        "components/organisms/next-up-card.tsx",
+        1
+      ],
+      [
+        "styles.iconSlot",
+        "components/molecules/bento-card-header.tsx",
+        1
+      ]
+    ],
+    "unreferencedInScope": [
+      "styles.view",
+      "styles.group",
+      "styles.groupHeader"
+    ],
+    "summary": {
+      "tokenCount": 223,
+      "clusterCount": 53,
+      "megacluster": false,
+      "chosenTau": 0.6
+    }
+  },
+  "dependencyOrder": {
+    "graph": {
+      "app/(tabs)/calendar.tsx": [],
+      "app/(tabs)/index.tsx": [],
+      "app/detail.tsx": [],
+      "app/list.tsx": [],
+      "app/modal.tsx": [],
+      "app/voice-input.tsx": [],
+      "components/atoms/countdown-chip.tsx": [],
+      "components/atoms/counter-display.tsx": [],
+      "components/atoms/DateInput.tsx": [],
+      "components/atoms/day-cell.tsx": [],
+      "components/atoms/entry-dot.tsx": [],
+      "components/atoms/month-navigator.tsx": [],
+      "components/atoms/streak-badge.tsx": [],
+      "components/atoms/themed-text.tsx": [],
+      "components/atoms/themed-view.tsx": [],
+      "components/atoms/TimeInput.tsx": [],
+      "components/error-boundary.tsx": [],
+      "components/molecules/bento-card-header.tsx": [],
+      "components/molecules/detail-action-bar.tsx": [],
+      "components/molecules/detail-metadata-row.tsx": [],
+      "components/molecules/detail-someday-hero.tsx": [],
+      "components/molecules/empty-state.tsx": [],
+      "components/molecules/entry-row.tsx": [],
+      "components/molecules/list-item.tsx": [],
+      "components/molecules/recurrence-picker.tsx": [],
+      "components/molecules/someday-item.tsx": [],
+      "components/molecules/today-event-row.tsx": [],
+      "components/molecules/weekday-row.tsx": [],
+      "components/molecules/wrapup-card.tsx": [],
+      "components/organisms/agenda-section.tsx": [],
+      "components/organisms/app-header.tsx": [
+        "components/organisms/app-menu.tsx"
+      ],
+      "components/organisms/app-menu.tsx": [],
+      "components/organisms/custom-tab-bar.tsx": [],
+      "components/organisms/day-detail-sheet.tsx": [],
+      "components/organisms/deadlines-card.tsx": [],
+      "components/organisms/fab.tsx": [],
+      "components/organisms/list-progress.tsx": [],
+      "components/organisms/list-screen-header.tsx": [],
+      "components/organisms/month-grid.tsx": [],
+      "components/organisms/next-up-card.tsx": [],
+      "components/organisms/swipeable-row.tsx": [],
+      "components/organisms/today-section.tsx": [],
+      "components/organisms/upcoming-preview-card.tsx": [],
+      "components/organisms/week-strip.tsx": [],
+      "components/organisms/weekly-overview-card.tsx": []
+    },
+    "cycles": [],
+    "phases": [
+      {
+        "phase": 1,
+        "kind": "navigator",
+        "files": [
+          "components/atoms/month-navigator.tsx"
+        ],
+        "rationale": "Top-level navigator \u2014 migrate last as it composes all screens",
+        "tokenClusters": [
+          "cluster-2",
+          "cluster-13",
+          "cluster-20",
+          "cluster-21"
+        ]
+      },
+      {
+        "phase": 2,
+        "kind": "component",
+        "files": [
+          "components/atoms/countdown-chip.tsx",
+          "components/atoms/counter-display.tsx",
+          "components/atoms/DateInput.tsx",
+          "components/atoms/day-cell.tsx",
+          "components/atoms/entry-dot.tsx",
+          "components/atoms/streak-badge.tsx",
+          "components/atoms/themed-text.tsx",
+          "components/atoms/themed-view.tsx",
+          "components/atoms/TimeInput.tsx",
+          "components/error-boundary.tsx",
+          "components/molecules/bento-card-header.tsx",
+          "components/molecules/detail-action-bar.tsx",
+          "components/molecules/detail-metadata-row.tsx",
+          "components/molecules/detail-someday-hero.tsx",
+          "components/molecules/empty-state.tsx",
+          "components/molecules/entry-row.tsx",
+          "components/molecules/list-item.tsx",
+          "components/molecules/recurrence-picker.tsx",
+          "components/molecules/someday-item.tsx",
+          "components/molecules/today-event-row.tsx",
+          "components/molecules/weekday-row.tsx",
+          "components/molecules/wrapup-card.tsx",
+          "components/organisms/agenda-section.tsx",
+          "components/organisms/app-header.tsx",
+          "components/organisms/custom-tab-bar.tsx",
+          "components/organisms/day-detail-sheet.tsx",
+          "components/organisms/deadlines-card.tsx",
+          "components/organisms/fab.tsx",
+          "components/organisms/list-progress.tsx",
+          "components/organisms/list-screen-header.tsx",
+          "components/organisms/month-grid.tsx",
+          "components/organisms/next-up-card.tsx",
+          "components/organisms/swipeable-row.tsx",
+          "components/organisms/today-section.tsx",
+          "components/organisms/upcoming-preview-card.tsx",
+          "components/organisms/week-strip.tsx",
+          "components/organisms/weekly-overview-card.tsx"
+        ],
+        "rationale": "Leaf or composite component \u2014 migrate before the screens that use it",
+        "tokenClusters": [
+          "cluster-15",
+          "cluster-16",
+          "cluster-4",
+          "cluster-17",
+          "cluster-18",
+          "cluster-19",
+          "cluster-22",
+          "cluster-23",
+          "cluster-24",
+          "cluster-9",
+          "cluster-26",
+          "cluster-27",
+          "cluster-28",
+          "cluster-14",
+          "cluster-29",
+          "cluster-30",
+          "cluster-25",
+          "cluster-31",
+          "cluster-32",
+          "cluster-33",
+          "cluster-34",
+          "cluster-8",
+          "cluster-35",
+          "cluster-36",
+          "cluster-10",
+          "cluster-12",
+          "cluster-37",
+          "cluster-38",
+          "cluster-39",
+          "cluster-40",
+          "cluster-41",
+          "cluster-44",
+          "cluster-7",
+          "cluster-42",
+          "cluster-45",
+          "cluster-46",
+          "cluster-47",
+          "cluster-48",
+          "cluster-49",
+          "cluster-50",
+          "cluster-51",
+          "cluster-52",
+          "cluster-53"
+        ]
+      },
+      {
+        "phase": 3,
+        "kind": "screen",
+        "files": [
+          "app/(tabs)/calendar.tsx",
+          "app/(tabs)/index.tsx",
+          "app/detail.tsx",
+          "app/list.tsx",
+          "app/modal.tsx",
+          "app/voice-input.tsx"
+        ],
+        "rationale": "Screen with unknown hop distance",
+        "tokenClusters": [
+          "cluster-3",
+          "cluster-5",
+          "cluster-6",
+          "cluster-1",
+          "cluster-11"
+        ]
+      }
+    ],
+    "summary": {
+      "fileCount": 45,
+      "cycleCount": 0,
+      "blockingCycles": 0,
+      "phaseCount": 3
+    }
+  },
+  "violations": {
+    "violations": [
+      {
+        "file": "app/(tabs)/calendar.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 150,
+        "col": 5,
+        "context": "height: 80,"
+      },
+      {
+        "file": "app/(tabs)/index.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 231,
+        "col": 5,
+        "context": "height: 80,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "inline-color",
+        "value": "#52C87A",
+        "nearestToken": null,
+        "line": 82,
+        "col": 59,
+        "context": "if (status === \"completed\" || status === \"met\") return \"#52C87A\";"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "inline-color",
+        "value": "#FF4444",
+        "nearestToken": null,
+        "line": 83,
+        "col": 37,
+        "context": "if (status === \"overdue\") return \"#FF4444\";"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "inline-color",
+        "value": "#FF6B6B",
+        "nearestToken": null,
+        "line": 281,
+        "col": 54,
+        "context": "<ThemedText type=\"body\" style={{ color: \"#FF6B6B\" }}>"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "inline-color",
+        "value": "#FF6B6B",
+        "nearestToken": null,
+        "line": 333,
+        "col": 54,
+        "context": "<ThemedText type=\"body\" style={{ color: \"#FF6B6B\" }}>"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "inline-color",
+        "value": "rgba(0,0,0,0.6)",
+        "nearestToken": null,
+        "line": 790,
+        "col": 23,
+        "context": "backgroundColor: \"rgba(0,0,0,0.6)\","
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.6",
+        "nearestToken": "type.xs",
+        "line": 740,
+        "col": 5,
+        "context": "letterSpacing: 0.6,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 28",
+        "nearestToken": "type.4xl",
+        "line": 743,
+        "col": 5,
+        "context": "fontSize: 28,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 34",
+        "nearestToken": "type.5xl",
+        "line": 744,
+        "col": 5,
+        "context": "lineHeight: 34,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.8",
+        "nearestToken": "type.xs",
+        "line": 758,
+        "col": 5,
+        "context": "letterSpacing: 0.8,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.6",
+        "nearestToken": "type.xs",
+        "line": 771,
+        "col": 5,
+        "context": "letterSpacing: 0.6,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 22",
+        "nearestToken": "type.2xl",
+        "line": 774,
+        "col": 5,
+        "context": "lineHeight: 22,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 13",
+        "nearestToken": "type.sm",
+        "line": 804,
+        "col": 5,
+        "context": "fontSize: 13,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.4",
+        "nearestToken": "type.xs",
+        "line": 805,
+        "col": 5,
+        "context": "letterSpacing: 0.4,"
+      },
+      {
+        "file": "app/list.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 407,
+        "col": 5,
+        "context": "height: 80,"
+      },
+      {
+        "file": "app/list.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 391,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "app/list.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 401,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "inline-color",
+        "value": "#131316",
+        "nearestToken": null,
+        "line": 428,
+        "col": 13,
+        "context": "color: \"#131316\","
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 60",
+        "nearestToken": "spacing.5xl",
+        "line": 338,
+        "col": 5,
+        "context": "minWidth: 60,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 50",
+        "nearestToken": "spacing.5xl",
+        "line": 341,
+        "col": 5,
+        "context": "minWidth: 50,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 14",
+        "nearestToken": "type.md",
+        "line": 354,
+        "col": 5,
+        "context": "fontSize: 14,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 369,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 16",
+        "nearestToken": "type.lg",
+        "line": 377,
+        "col": 5,
+        "context": "fontSize: 16,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 18",
+        "nearestToken": "type.xl",
+        "line": 380,
+        "col": 5,
+        "context": "fontSize: 18,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 16",
+        "nearestToken": "type.lg",
+        "line": 429,
+        "col": 5,
+        "context": "fontSize: 16,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 11",
+        "nearestToken": "type.xs",
+        "line": 448,
+        "col": 5,
+        "context": "fontSize: 11,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "inline-color",
+        "value": "#FF6B6B",
+        "nearestToken": null,
+        "line": 247,
+        "col": 19,
+        "context": "borderColor: \"#FF6B6B\","
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "inline-color",
+        "value": "#000",
+        "nearestToken": null,
+        "line": 257,
+        "col": 19,
+        "context": "shadowColor: \"#000\","
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "inline-color",
+        "value": "#FF6B6B",
+        "nearestToken": null,
+        "line": 277,
+        "col": 23,
+        "context": "backgroundColor: \"#FF6B6B\","
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 60",
+        "nearestToken": "spacing.5xl",
+        "line": 194,
+        "col": 5,
+        "context": "minWidth: 60,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 60",
+        "nearestToken": "spacing.5xl",
+        "line": 197,
+        "col": 5,
+        "context": "minWidth: 60,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 120",
+        "nearestToken": "spacing.5xl",
+        "line": 236,
+        "col": 5,
+        "context": "width: 120,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 120",
+        "nearestToken": "spacing.5xl",
+        "line": 237,
+        "col": 5,
+        "context": "height: 120,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 250,
+        "col": 5,
+        "context": "width: 80,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 251,
+        "col": 5,
+        "context": "height: 80,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 4",
+        "nearestToken": "spacing.xs",
+        "line": 258,
+        "col": 31,
+        "context": "shadowOffset: { width: 0, height: 4 },"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 32",
+        "nearestToken": "spacing.3xl",
+        "line": 271,
+        "col": 5,
+        "context": "width: 32,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 32",
+        "nearestToken": "spacing.3xl",
+        "line": 272,
+        "col": 5,
+        "context": "height: 32,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 24",
+        "nearestToken": "spacing.2xl",
+        "line": 279,
+        "col": 5,
+        "context": "width: 24,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 24",
+        "nearestToken": "spacing.2xl",
+        "line": 280,
+        "col": 5,
+        "context": "height: 24,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 50",
+        "nearestToken": "radii.2xl",
+        "line": 245,
+        "col": 5,
+        "context": "borderRadius: 50,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 14",
+        "nearestToken": "type.md",
+        "line": 207,
+        "col": 5,
+        "context": "fontSize: 14,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 286,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/atoms/countdown-chip.tsx",
+        "kind": "inline-color",
+        "value": "#52C87A",
+        "nearestToken": null,
+        "line": 25,
+        "col": 10,
+        "context": "? '#52C87A'                // soft green \u2014 met/done"
+      },
+      {
+        "file": "components/atoms/countdown-chip.tsx",
+        "kind": "inline-color",
+        "value": "#FF4444",
+        "nearestToken": null,
+        "line": 27,
+        "col": 12,
+        "context": "? '#FF4444'              // bright red \u2014 past due"
+      },
+      {
+        "file": "components/atoms/DateInput.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 16",
+        "nearestToken": "type.lg",
+        "line": 50,
+        "col": 11,
+        "context": "fontSize: 16,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-spacing",
+        "value": "maxHeight: 52",
+        "nearestToken": "spacing.5xl",
+        "line": 83,
+        "col": 5,
+        "context": "maxHeight: 52,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 4",
+        "nearestToken": "spacing.xs",
+        "line": 129,
+        "col": 5,
+        "context": "width: 4,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 4",
+        "nearestToken": "spacing.xs",
+        "line": 130,
+        "col": 5,
+        "context": "height: 4,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 14",
+        "nearestToken": "type.md",
+        "line": 110,
+        "col": 5,
+        "context": "fontSize: 14,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 18",
+        "nearestToken": "type.xl",
+        "line": 113,
+        "col": 5,
+        "context": "lineHeight: 18,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 8",
+        "nearestToken": "type.xs",
+        "line": 135,
+        "col": 5,
+        "context": "fontSize: 8,"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "inline-color",
+        "value": "rgba(255,255,255,0.05)",
+        "nearestToken": null,
+        "line": 85,
+        "col": 23,
+        "context": "backgroundColor: 'rgba(255,255,255,0.05)',"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 78,
+        "col": 5,
+        "context": "width: 44,"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 79,
+        "col": 5,
+        "context": "height: 44,"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 22",
+        "nearestToken": "radii.2xl",
+        "line": 80,
+        "col": 5,
+        "context": "borderRadius: 22,"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 20",
+        "nearestToken": "type.2xl",
+        "line": 92,
+        "col": 5,
+        "context": "fontSize: 20,"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 96,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/atoms/streak-badge.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 43,
+        "col": 5,
+        "context": "minWidth: 80,"
+      },
+      {
+        "file": "components/atoms/streak-badge.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.8",
+        "nearestToken": "type.xs",
+        "line": 46,
+        "col": 5,
+        "context": "letterSpacing: 0.8,"
+      },
+      {
+        "file": "components/atoms/streak-badge.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 28",
+        "nearestToken": "type.4xl",
+        "line": 50,
+        "col": 5,
+        "context": "lineHeight: 28,"
+      },
+      {
+        "file": "components/atoms/TimeInput.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 16",
+        "nearestToken": "type.lg",
+        "line": 68,
+        "col": 11,
+        "context": "fontSize: 16,"
+      },
+      {
+        "file": "components/error-boundary.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.4",
+        "nearestToken": "type.xs",
+        "line": 97,
+        "col": 5,
+        "context": "letterSpacing: 0.4,"
+      },
+      {
+        "file": "components/molecules/detail-action-bar.tsx",
+        "kind": "inline-color",
+        "value": "#FF4444",
+        "nearestToken": null,
+        "line": 22,
+        "col": 23,
+        "context": "const DANGER_COLOR = '#FF4444';"
+      },
+      {
+        "file": "components/molecules/detail-action-bar.tsx",
+        "kind": "inline-color",
+        "value": "#131316",
+        "nearestToken": null,
+        "line": 35,
+        "col": 14,
+        "context": "? '#131316'"
+      },
+      {
+        "file": "components/molecules/detail-action-bar.tsx",
+        "kind": "inline-color",
+        "value": "#131316",
+        "nearestToken": null,
+        "line": 40,
+        "col": 14,
+        "context": "? '#131316'"
+      },
+      {
+        "file": "components/molecules/detail-action-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 60",
+        "nearestToken": "spacing.5xl",
+        "line": 83,
+        "col": 5,
+        "context": "minHeight: 60,"
+      },
+      {
+        "file": "components/molecules/detail-action-bar.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.3",
+        "nearestToken": "type.xs",
+        "line": 89,
+        "col": 5,
+        "context": "letterSpacing: 0.3,"
+      },
+      {
+        "file": "components/molecules/detail-metadata-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 52,
+        "col": 5,
+        "context": "width: 36,"
+      },
+      {
+        "file": "components/molecules/detail-metadata-row.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 53,
+        "col": 5,
+        "context": "height: 36,"
+      },
+      {
+        "file": "components/molecules/detail-metadata-row.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 65,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/molecules/detail-someday-hero.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 76,
+        "col": 5,
+        "context": "width: 40,"
+      },
+      {
+        "file": "components/molecules/detail-someday-hero.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 1.5",
+        "nearestToken": "spacing.xxs",
+        "line": 77,
+        "col": 5,
+        "context": "height: 1.5,"
+      },
+      {
+        "file": "components/molecules/detail-someday-hero.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 24",
+        "nearestToken": "type.3xl",
+        "line": 67,
+        "col": 5,
+        "context": "lineHeight: 24,"
+      },
+      {
+        "file": "components/molecules/empty-state.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 16",
+        "nearestToken": "type.lg",
+        "line": 70,
+        "col": 5,
+        "context": "lineHeight: 16,"
+      },
+      {
+        "file": "components/molecules/empty-state.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 11",
+        "nearestToken": "type.xs",
+        "line": 71,
+        "col": 5,
+        "context": "fontSize: 11,"
+      },
+      {
+        "file": "components/molecules/empty-state.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.4",
+        "nearestToken": "type.xs",
+        "line": 80,
+        "col": 5,
+        "context": "letterSpacing: 0.4,"
+      },
+      {
+        "file": "components/molecules/entry-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 12",
+        "nearestToken": "spacing.md",
+        "line": 54,
+        "col": 5,
+        "context": "width: 12,"
+      },
+      {
+        "file": "components/molecules/entry-row.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 52",
+        "nearestToken": "spacing.5xl",
+        "line": 63,
+        "col": 5,
+        "context": "minWidth: 52,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 255,
+        "col": 5,
+        "context": "width: 36,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 256,
+        "col": 5,
+        "context": "height: 36,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingLeft: 16",
+        "nearestToken": "spacing.lg",
+        "line": 262,
+        "col": 5,
+        "context": "paddingLeft: 16, // aligns under dot"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 266,
+        "col": 5,
+        "context": "width: 36,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 267,
+        "col": 5,
+        "context": "height: 36,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 18",
+        "nearestToken": "radii.xl",
+        "line": 268,
+        "col": 5,
+        "context": "borderRadius: 18,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 14",
+        "nearestToken": "type.md",
+        "line": 294,
+        "col": 5,
+        "context": "fontSize: 14,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.4",
+        "nearestToken": "type.xs",
+        "line": 304,
+        "col": 5,
+        "context": "letterSpacing: 0.4,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.2",
+        "nearestToken": "type.xs",
+        "line": 323,
+        "col": 5,
+        "context": "letterSpacing: 0.2,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.3",
+        "nearestToken": "type.xs",
+        "line": 336,
+        "col": 5,
+        "context": "letterSpacing: 0.3,"
+      },
+      {
+        "file": "components/molecules/recurrence-picker.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 159,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/molecules/recurrence-picker.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 11",
+        "nearestToken": "type.xs",
+        "line": 180,
+        "col": 5,
+        "context": "fontSize: 11,"
+      },
+      {
+        "file": "components/molecules/recurrence-picker.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 198,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/molecules/someday-item.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingLeft: 14",
+        "nearestToken": "spacing.md",
+        "line": 153,
+        "col": 5,
+        "context": "paddingLeft: 14,"
+      },
+      {
+        "file": "components/molecules/someday-item.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingLeft: 14",
+        "nearestToken": "spacing.md",
+        "line": 156,
+        "col": 5,
+        "context": "paddingLeft: 14,"
+      },
+      {
+        "file": "components/molecules/someday-item.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 118,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "inline-color",
+        "value": "rgba(192,132,252,0.3)",
+        "nearestToken": null,
+        "line": 77,
+        "col": 23,
+        "context": "backgroundColor: \"rgba(192,132,252,0.3)\", // event color, dimmed"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 3",
+        "nearestToken": "spacing.xxs",
+        "line": 73,
+        "col": 5,
+        "context": "width: 3,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 75,
+        "col": 5,
+        "context": "minHeight: 36,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "gap: 3",
+        "nearestToken": "spacing.xxs",
+        "line": 84,
+        "col": 5,
+        "context": "gap: 3,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 6",
+        "nearestToken": "spacing.xs",
+        "line": 92,
+        "col": 5,
+        "context": "width: 6,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 6",
+        "nearestToken": "spacing.xs",
+        "line": 93,
+        "col": 5,
+        "context": "height: 6,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 20",
+        "nearestToken": "spacing.xl",
+        "line": 106,
+        "col": 5,
+        "context": "width: 20,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 20",
+        "nearestToken": "spacing.xl",
+        "line": 107,
+        "col": 5,
+        "context": "height: 20,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 103,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/molecules/weekday-row.tsx",
+        "kind": "inline-color",
+        "value": "rgba(255,255,255,0.06)",
+        "nearestToken": null,
+        "line": 80,
+        "col": 23,
+        "context": "backgroundColor: \"rgba(255,255,255,0.06)\","
+      },
+      {
+        "file": "components/molecules/weekday-row.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 22",
+        "nearestToken": "spacing.xl",
+        "line": 68,
+        "col": 5,
+        "context": "minHeight: 22,"
+      },
+      {
+        "file": "components/molecules/weekday-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 71,
+        "col": 5,
+        "context": "width: 40,"
+      },
+      {
+        "file": "components/molecules/wrapup-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 45,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/molecules/wrapup-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 20",
+        "nearestToken": "type.2xl",
+        "line": 48,
+        "col": 5,
+        "context": "lineHeight: 20,"
+      },
+      {
+        "file": "components/molecules/wrapup-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 15",
+        "nearestToken": "type.md",
+        "line": 49,
+        "col": 5,
+        "context": "fontSize: 15,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "inline-color",
+        "value": "rgba(255,255,255,0.08)",
+        "nearestToken": null,
+        "line": 85,
+        "col": 23,
+        "context": "backgroundColor: \"rgba(255,255,255,0.08)\","
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 34",
+        "nearestToken": "spacing.3xl",
+        "line": 77,
+        "col": 5,
+        "context": "width: 34,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 34",
+        "nearestToken": "spacing.3xl",
+        "line": 78,
+        "col": 5,
+        "context": "height: 34,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 34",
+        "nearestToken": "spacing.3xl",
+        "line": 82,
+        "col": 5,
+        "context": "width: 34,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 34",
+        "nearestToken": "spacing.3xl",
+        "line": 83,
+        "col": 5,
+        "context": "height: 34,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 17",
+        "nearestToken": "radii.xl",
+        "line": 79,
+        "col": 5,
+        "context": "borderRadius: 17,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 17",
+        "nearestToken": "radii.xl",
+        "line": 84,
+        "col": 5,
+        "context": "borderRadius: 17,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 18",
+        "nearestToken": "type.xl",
+        "line": 73,
+        "col": 5,
+        "context": "fontSize: 18,"
+      },
+      {
+        "file": "components/organisms/app-menu.tsx",
+        "kind": "inline-color",
+        "value": "rgba(0,0,0,0.5)",
+        "nearestToken": null,
+        "line": 193,
+        "col": 23,
+        "context": "backgroundColor: \"rgba(0,0,0,0.5)\","
+      },
+      {
+        "file": "components/organisms/app-menu.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 24",
+        "nearestToken": "type.3xl",
+        "line": 222,
+        "col": 5,
+        "context": "fontSize: 24,"
+      },
+      {
+        "file": "components/organisms/app-menu.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.55",
+        "nearestToken": "type.xs",
+        "line": 233,
+        "col": 5,
+        "context": "letterSpacing: 0.55,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingBottom: 20",
+        "nearestToken": "spacing.xl",
+        "line": 90,
+        "col": 5,
+        "context": "paddingBottom: 20,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingTop: 8",
+        "nearestToken": "spacing.sm",
+        "line": 91,
+        "col": 5,
+        "context": "paddingTop: 8,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingHorizontal: 60",
+        "nearestToken": "spacing.5xl",
+        "line": 98,
+        "col": 5,
+        "context": "paddingHorizontal: 60,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 101,
+        "col": 5,
+        "context": "width: 44,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 102,
+        "col": 5,
+        "context": "height: 44,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 52",
+        "nearestToken": "spacing.5xl",
+        "line": 111,
+        "col": 5,
+        "context": "width: 52,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 52",
+        "nearestToken": "spacing.5xl",
+        "line": 112,
+        "col": 5,
+        "context": "height: 52,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 123,
+        "col": 5,
+        "context": "width: 56,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 124,
+        "col": 5,
+        "context": "height: 56,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 48",
+        "nearestToken": "spacing.5xl",
+        "line": 131,
+        "col": 5,
+        "context": "width: 48,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 48",
+        "nearestToken": "spacing.5xl",
+        "line": 132,
+        "col": 5,
+        "context": "height: 48,"
+      },
+      {
+        "file": "components/organisms/day-detail-sheet.tsx",
+        "kind": "inline-color",
+        "value": "rgba(0, 0, 0, 0.6)",
+        "nearestToken": null,
+        "line": 122,
+        "col": 23,
+        "context": "backgroundColor: \"rgba(0, 0, 0, 0.6)\","
+      },
+      {
+        "file": "components/organisms/day-detail-sheet.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingBottom: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 129,
+        "col": 5,
+        "context": "paddingBottom: 40,"
+      },
+      {
+        "file": "components/organisms/day-detail-sheet.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 132,
+        "col": 5,
+        "context": "width: 40,"
+      },
+      {
+        "file": "components/organisms/day-detail-sheet.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 4",
+        "nearestToken": "spacing.xs",
+        "line": 133,
+        "col": 5,
+        "context": "height: 4,"
+      },
+      {
+        "file": "components/organisms/day-detail-sheet.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 20",
+        "nearestToken": "type.2xl",
+        "line": 148,
+        "col": 5,
+        "context": "fontSize: 20,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "inline-color",
+        "value": "#FAFAFA",
+        "nearestToken": null,
+        "line": 116,
+        "col": 62,
+        "context": "<MaterialCommunityIcons name=\"stop\" size={20} color=\"#FAFAFA\" />"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "inline-color",
+        "value": "#FAFAFA",
+        "nearestToken": null,
+        "line": 198,
+        "col": 13,
+        "context": "color: \"#FAFAFA\","
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "inline-color",
+        "value": "rgba(255, 107, 107, 0.2)",
+        "nearestToken": null,
+        "line": 174,
+        "col": 23,
+        "context": "backgroundColor: \"rgba(255, 107, 107, 0.2)\","
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 72",
+        "nearestToken": "spacing.5xl",
+        "line": 125,
+        "col": 5,
+        "context": "width: 72,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 72",
+        "nearestToken": "spacing.5xl",
+        "line": 126,
+        "col": 5,
+        "context": "height: 72,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 132,
+        "col": 5,
+        "context": "width: 56,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 133,
+        "col": 5,
+        "context": "height: 56,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 161,
+        "col": 5,
+        "context": "height: 40,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "gap: 4",
+        "nearestToken": "spacing.xs",
+        "line": 162,
+        "col": 5,
+        "context": "gap: 4,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 4",
+        "nearestToken": "spacing.xs",
+        "line": 165,
+        "col": 5,
+        "context": "width: 4,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 72",
+        "nearestToken": "spacing.5xl",
+        "line": 171,
+        "col": 5,
+        "context": "width: 72,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 72",
+        "nearestToken": "spacing.5xl",
+        "line": 172,
+        "col": 5,
+        "context": "height: 72,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 178,
+        "col": 5,
+        "context": "width: 56,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 179,
+        "col": 5,
+        "context": "height: 56,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 188,
+        "col": 5,
+        "context": "width: 44,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 189,
+        "col": 5,
+        "context": "height: 44,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "marginLeft: 4",
+        "nearestToken": "spacing.xs",
+        "line": 193,
+        "col": 5,
+        "context": "marginLeft: 4,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "marginRight: 8",
+        "nearestToken": "spacing.sm",
+        "line": 200,
+        "col": 5,
+        "context": "marginRight: 8,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 9999",
+        "nearestToken": "radii.full",
+        "line": 192,
+        "col": 5,
+        "context": "borderRadius: 9999,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 14",
+        "nearestToken": "type.md",
+        "line": 197,
+        "col": 5,
+        "context": "fontSize: 14,"
+      },
+      {
+        "file": "components/organisms/list-progress.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingBottom: 4",
+        "nearestToken": "spacing.xs",
+        "line": 91,
+        "col": 5,
+        "context": "paddingBottom: 4,"
+      },
+      {
+        "file": "components/organisms/list-progress.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.8",
+        "nearestToken": "type.xs",
+        "line": 72,
+        "col": 5,
+        "context": "letterSpacing: 0.8,"
+      },
+      {
+        "file": "components/organisms/list-screen-header.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 69,
+        "col": 5,
+        "context": "width: 40,"
+      },
+      {
+        "file": "components/organisms/list-screen-header.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 70,
+        "col": 5,
+        "context": "height: 40,"
+      },
+      {
+        "file": "components/organisms/month-grid.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 11",
+        "nearestToken": "type.xs",
+        "line": 123,
+        "col": 5,
+        "context": "fontSize: 11,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 8",
+        "nearestToken": "spacing.sm",
+        "line": 159,
+        "col": 5,
+        "context": "width: 8,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 8",
+        "nearestToken": "spacing.sm",
+        "line": 160,
+        "col": 5,
+        "context": "height: 8,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 120",
+        "nearestToken": "spacing.5xl",
+        "line": 179,
+        "col": 5,
+        "context": "width: 120,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 120",
+        "nearestToken": "spacing.5xl",
+        "line": 180,
+        "col": 5,
+        "context": "height: 120,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 60",
+        "nearestToken": "radii.2xl",
+        "line": 181,
+        "col": 5,
+        "context": "borderRadius: 60,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 22",
+        "nearestToken": "type.2xl",
+        "line": 150,
+        "col": 5,
+        "context": "fontSize: 22,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 171,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 172,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/organisms/swipeable-row.tsx",
+        "kind": "inline-color",
+        "value": "#FF6B6B",
+        "nearestToken": null,
+        "line": 68,
+        "col": 23,
+        "context": "backgroundColor: '#FF6B6B',"
+      },
+      {
+        "file": "components/organisms/swipeable-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 64",
+        "nearestToken": "spacing.5xl",
+        "line": 71,
+        "col": 5,
+        "context": "width: 64,"
+      },
+      {
+        "file": "components/organisms/today-section.tsx",
+        "kind": "inline-color",
+        "value": "rgba(255,255,255,0.04)",
+        "nearestToken": null,
+        "line": 99,
+        "col": 23,
+        "context": "backgroundColor: \"rgba(255,255,255,0.04)\","
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 64",
+        "nearestToken": "spacing.5xl",
+        "line": 158,
+        "col": 5,
+        "context": "minWidth: 64,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 70",
+        "nearestToken": "spacing.5xl",
+        "line": 205,
+        "col": 5,
+        "context": "minWidth: 70,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 52",
+        "nearestToken": "type.5xl",
+        "line": 168,
+        "col": 5,
+        "context": "lineHeight: 52,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 195,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 197,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 13",
+        "nearestToken": "type.sm",
+        "line": 201,
+        "col": 5,
+        "context": "fontSize: 13,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 204,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "inline-color",
+        "value": "rgba(144, 238, 144, 0.15)",
+        "nearestToken": null,
+        "line": 138,
+        "col": 23,
+        "context": "backgroundColor: \"rgba(144, 238, 144, 0.15)\","
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 16",
+        "nearestToken": "spacing.lg",
+        "line": 127,
+        "col": 5,
+        "context": "height: 16,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-spacing",
+        "value": "padding: 4",
+        "nearestToken": "spacing.xs",
+        "line": 136,
+        "col": 5,
+        "context": "padding: 4,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 5",
+        "nearestToken": "spacing.xs",
+        "line": 141,
+        "col": 5,
+        "context": "width: 5,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 5",
+        "nearestToken": "spacing.xs",
+        "line": 142,
+        "col": 5,
+        "context": "height: 5,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 2.5",
+        "nearestToken": "radii.xs",
+        "line": 143,
+        "col": 5,
+        "context": "borderRadius: 2.5,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 121,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 9",
+        "nearestToken": "type.xs",
+        "line": 150,
+        "col": 5,
+        "context": "fontSize: 9,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 8",
+        "nearestToken": "type.xs",
+        "line": 153,
+        "col": 5,
+        "context": "fontSize: 8,"
+      }
+    ],
+    "byFile": {
+      "app/(tabs)/calendar.tsx": 1,
+      "app/(tabs)/index.tsx": 1,
+      "app/detail.tsx": 13,
+      "app/list.tsx": 3,
+      "app/modal.tsx": 9,
+      "app/voice-input.tsx": 17,
+      "components/atoms/countdown-chip.tsx": 2,
+      "components/atoms/DateInput.tsx": 1,
+      "components/atoms/day-cell.tsx": 6,
+      "components/atoms/month-navigator.tsx": 6,
+      "components/atoms/streak-badge.tsx": 3,
+      "components/atoms/TimeInput.tsx": 1,
+      "components/error-boundary.tsx": 1,
+      "components/molecules/detail-action-bar.tsx": 5,
+      "components/molecules/detail-metadata-row.tsx": 3,
+      "components/molecules/detail-someday-hero.tsx": 3,
+      "components/molecules/empty-state.tsx": 3,
+      "components/molecules/entry-row.tsx": 2,
+      "components/molecules/list-item.tsx": 10,
+      "components/molecules/recurrence-picker.tsx": 3,
+      "components/molecules/someday-item.tsx": 3,
+      "components/molecules/today-event-row.tsx": 9,
+      "components/molecules/weekday-row.tsx": 3,
+      "components/molecules/wrapup-card.tsx": 3,
+      "components/organisms/app-header.tsx": 8,
+      "components/organisms/app-menu.tsx": 3,
+      "components/organisms/custom-tab-bar.tsx": 11,
+      "components/organisms/day-detail-sheet.tsx": 5,
+      "components/organisms/fab.tsx": 20,
+      "components/organisms/list-progress.tsx": 2,
+      "components/organisms/list-screen-header.tsx": 2,
+      "components/organisms/month-grid.tsx": 1,
+      "components/organisms/next-up-card.tsx": 8,
+      "components/organisms/swipeable-row.tsx": 2,
+      "components/organisms/today-section.tsx": 1,
+      "components/organisms/upcoming-preview-card.tsx": 7,
+      "components/organisms/week-strip.tsx": 9
+    },
+    "byKind": {
+      "magic-spacing": 92,
+      "inline-color": 26,
+      "magic-fontsize": 64,
+      "magic-radius": 8
+    },
+    "totalCount": 190,
+    "verdict": "severe",
+    "recommendation": "190 hardcoded values found across multiple files. Resolve violations before migration \u2014 the new token system cannot reach these values and the migration will produce inconsistent results.",
+    "summary": {
+      "fileCount": 45,
+      "violationCount": 190,
+      "verdict": "severe"
+    }
+  },
+  "summary": {
+    "screensInScope": 6,
+    "componentsInScope": 39,
+    "tokenCount": 223,
+    "clusterCount": 53,
+    "violationCount": 190,
+    "cycleCount": 0,
+    "blockingCycles": 0,
+    "phaseCount": 3,
+    "estimatedComplexity": "high",
+    "readinessVerdict": "violations-first",
+    "blockers": [
+      {
+        "kind": "violations-first",
+        "message": "190 hardcoded values will not respond to the new token system. Fix them first."
+      }
+    ]
+  },
+  "_rebuiltManually": {
+    "reason": "migration-scope.mjs parseJsonc bug: block-comment regex consumed the /* inside tsconfig path key \"@/*\", returning null aliasMap, so 0 components resolved. Rebuilt component list from grep of token/theme references under components/.",
+    "date": "2026-05-31"
+  }
+}

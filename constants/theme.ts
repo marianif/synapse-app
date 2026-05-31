@@ -1,78 +1,110 @@
-// Synapse Design System — "The Kinetic Equilibrium"
-// All design tokens derived from DESIGN.md
+// Synapse Design System — "The Field"
+// migrated to v2 tokens — phase 1
+//
+// A bento board of your whole brain: warm oat-cream / soot-brown paper, soft pastel
+// type-tints with saturated kicker codes, Fraunces serif + Inter, large soft radii.
+// Source of truth: .impeccable/brand-brief.json (direction "The Field").
+//
+// Dual-resident during migration: the new `tokens` object + `useTheme()` are the
+// target API; the old named exports (Surface, TextColors, EntryAccent, Brand,
+// FontSize, ...) remain below as a COMPAT SHIM re-pointed at the new warm values so
+// screens/components keep compiling until the cleanup commit deletes them.
 
-// ─── Surface Hierarchy ────────────────────────────────────────────────────────
-// Depth is expressed through tonal layering, never with 1px borders.
-export const Surface = {
-  base: "#131316", // The infinite void — root background
-  containerLow: "#1B1B1E", // Large layout blocks
-  container: "#1F1F22", // Interactive Bento cards
-  containerHigh: "#2A2A2D", // Elevated sections
-  containerHighest: "#353438", // Pop-overs and active states
-  containerLowest: "#0E0E11", // Recessed elements inside elevated sections
-  bright: "#39393C", // Hover state background
-  outlineVariant: "rgba(255,255,255,0.15)", // Ghost border fallback (15% opacity)
+import { Platform } from "react-native";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+
+// ─── New token system: The Field ──────────────────────────────────────────────
+
+const color = {
+  light: {
+    paper: "#F4EFE6", // root background — warm oat-cream, never #FFF
+    surface: "#FBF7F0", // tile body
+    surfaceSubtle: "#EFE8DB", // recessed / gutter — tonal seating, no borders
+    ink: "#2A2622", // primary text — warm near-black brown, never #000
+    inkMuted: "#6B6358", // secondary / metadata
+  },
+  dark: {
+    paper: "#16140F", // root background — warm soot-brown, never #000
+    surface: "#211E18", // tile body
+    surfaceSubtle: "#1C1A14", // recessed / gutter
+    ink: "#F0EAE0", // primary text — warm cream, never #FFF
+    inkMuted: "#A39B8C", // secondary / metadata
+  },
+  // Entry-type codes — saturated kicker + edge-bar colors, shared across schemes.
+  type: {
+    bills: "#D98C6A", // peach-terracotta
+    ideas: "#5B86A8", // powder-blue
+    todo: "#6E9466", // sage
+    event: "#8A6FA6", // lavender
+    someday: "#C09A4B", // butter-ochre
+  },
+  // Soft tile-body tints per type — light + dark-adapted so pastels survive both.
+  typeTint: {
+    light: {
+      bills: "#F7E3D6",
+      ideas: "#DDE7F0",
+      todo: "#DCE7D6",
+      event: "#E6DCEC",
+      someday: "#F2E6C9",
+    },
+    dark: {
+      bills: "#3A2A22",
+      ideas: "#22303A",
+      todo: "#26331F",
+      event: "#2E2638",
+      someday: "#352B14",
+    },
+  },
+  // Off-palette legacy colors created during migration. Resolved at cleanup —
+  // see .impeccable/substitution-table.json unresolvedPromotions. Names are
+  // deterministic (rgba<r>_<g>_<b>_<alpha-as-typed>) so re-runs are idempotent.
+  // Most are dividers/scrims the No-Border rule wants converted to tonal surfaces.
+  unresolved: {
+    hex000: "#000",
+    rgba0_0_0_0_6: "rgba(0,0,0,0.6)", // modal/sheet scrim
+    rgba0_0_0_0_5: "rgba(0,0,0,0.5)", // menu scrim
+    rgba144_238_144_0_15: "rgba(144,238,144,0.15)", // legacy success scrim
+    rgba192_132_252_0_3: "rgba(192,132,252,0.3)", // legacy event scrim
+    rgba255_107_107_0_2: "rgba(255,107,107,0.2)", // legacy danger scrim
+    rgba255_255_255_0_04: "rgba(255,255,255,0.04)", // tonal divider
+    rgba255_255_255_0_05: "rgba(255,255,255,0.05)", // tonal divider
+    rgba255_255_255_0_06: "rgba(255,255,255,0.06)", // tonal divider
+    rgba255_255_255_0_08: "rgba(255,255,255,0.08)", // tonal divider
+  },
 } as const;
 
-// ─── Text Colors ──────────────────────────────────────────────────────────────
-export const TextColors = {
-  primary: "#FAFAFA", // Never pure white — reduces eye strain
-  secondary: "#A1A1AA", // Body text — low cognitive load
-  tertiary: "#71717A", // Metadata, muted labels
-  disabled: "#3F3F46", // Disabled state
+const accent = {
+  clay: "#D86B3C", // primary action — capture bar, active states
+  clayPressed: "#BE5730", // pressed feedback
 } as const;
 
-// ─── Entry Type Accent Colors ─────────────────────────────────────────────────
-// Color = Categorization, NOT urgency. Sparks of light in a dark room.
-export const EntryAccent = {
-  todo: "#6EA8FF", // Blue — todos
-  deadline: "#FF6B6B", // Coral/Red — deadlines
-  event: "#C084FC", // Purple — events (time-blocked)
-  someday: "#40fbcfff", //
-  today: "#e5ee90ff", // Pastel Green — today
-  idea: "#FBB040",
+const feedback = {
+  success: "#6E9466", // calm sage, not celebratory
+  warning: "#C09A4B", // butter-ochre, warm not alarming
+  danger: "#C8553D", // deep terracotta-red, warm even when signalling
 } as const;
 
-// ─── Primary Brand Colors ─────────────────────────────────────────────────────
-export const Brand = {
-  primary: "#ADC6FF", // Primary action color
-  primaryContainer: "#4D8EFF", // Gradient endpoint for CTAs
-  fabGlow: "rgba(173,198,255,0.20)", // FAB permanent glow (20% opacity)
-  onPrimary: "#131316", // Ink color for elements placed on Brand.primary surfaces
+const type = {
+  fontFraunces: {
+    regular: "Fraunces_400Regular",
+    medium: "Fraunces_500Medium",
+    semiBold: "Fraunces_600SemiBold",
+  },
+  fontInter: {
+    regular: "Inter_400Regular",
+    medium: "Inter_500Medium",
+    semiBold: "Inter_600SemiBold",
+    bold: "Inter_700Bold",
+  },
+  // serif + sans + size carries the hierarchy; color stays calm.
+  display: { size: 30, lineHeight: 36, weight: "600" as const, tracking: -0.3 }, // Fraunces — home greeting
+  title: { size: 22, lineHeight: 28, weight: "600" as const, tracking: -0.2 }, // Fraunces — tile/section
+  item: { size: 17, lineHeight: 23, weight: "500" as const, tracking: 0 }, // Inter — entry titles
+  body: { size: 14, lineHeight: 20, weight: "400" as const, tracking: 0 }, // Inter — detail
+  kicker: { size: 11, lineHeight: 14, weight: "600" as const, tracking: 0.6 }, // Inter all-caps — the only all-caps
 } as const;
 
-// ─── Typography Scale ─────────────────────────────────────────────────────────
-// Inter exclusively, treated with editorial reverence.
-export const FontFamily = {
-  regular: "Inter_400Regular",
-  medium: "Inter_500Medium",
-  semiBold: "Inter_600SemiBold",
-  bold: "Inter_700Bold",
-} as const;
-
-export const FontSize = {
-  displayLg: 48, // Hero counters — the heartbeat of the UI
-  displayMd: 32, // Hero counters — the heartbeat of the UI
-  headlineSm: 24, // Bento card titles
-  bodyMd: 14, // Todo descriptions (0.875rem)
-  labelSm: 11, // Metadata / categories (0.6875rem)
-  labelXs: 10, // Extra-small labels
-} as const;
-
-export const LetterSpacing = {
-  displayLg: -0.96, // -2% of 48pt
-  labelSm: 0.55, // 5% of 11pt — "technical precision"
-} as const;
-
-export const LineHeight = {
-  displayLg: 52,
-  headlineSm: 30,
-  bodyMd: 20,
-  labelSm: 14,
-} as const;
-
-// ─── Spacing Scale ────────────────────────────────────────────────────────────
-export const Spacing = {
+const space = {
   xs: 4,
   sm: 8,
   md: 12,
@@ -80,60 +112,216 @@ export const Spacing = {
   xl: 20,
   xxl: 24,
   xxxl: 32,
-  section: 40,
 } as const;
 
-// ─── Border Radius ────────────────────────────────────────────────────────────
+const radius = {
+  sm: 10, // large soft — tiles feel pickable
+  md: 14,
+  lg: 18,
+  pill: 999,
+} as const;
+
+const motion = {
+  duration: { fast: 160, base: 240, slow: 360 },
+  // Reanimated: withSpring(v, { damping: 16, stiffness: 180 }) — ProMotion-alive.
+  // Easing.bezier(0.22, 1, 0.36, 1) for timing. transform + opacity only.
+  spring: { damping: 16, stiffness: 180 },
+  bezier: [0.22, 1, 0.36, 1] as const,
+} as const;
+
+const elevation = {
+  flat: Platform.select({
+    ios: {},
+    android: { elevation: 0 },
+    default: {},
+  }),
+  // gentle warm-tinted lift per bento tile — no pure-black shadow, no borders.
+  tile: Platform.select({
+    ios: {
+      shadowColor: "#503219",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.1,
+      shadowRadius: 20,
+    },
+    android: { elevation: 2 },
+    default: {},
+  }),
+  // pinned always-on capture bar
+  capture: Platform.select({
+    ios: {
+      shadowColor: "#503219",
+      shadowOffset: { width: 0, height: -2 },
+      shadowOpacity: 0.16,
+      shadowRadius: 16,
+    },
+    android: { elevation: 8 },
+    default: {},
+  }),
+} as const;
+
+export const tokens = {
+  color,
+  colors: color, // alias so `tokens.colors.unresolved.*` (table convention) resolves too
+  accent,
+  feedback,
+  type,
+  space,
+  radius,
+  motion,
+  elevation,
+} as const;
+
+// ─── useTheme() — single source for the active scheme's resolved colors ─────────
+// Components should read color via this hook (light/dark parity); type/space/radius
+// are scheme-independent and read from `tokens.*` directly.
+
+export type Scheme = "light" | "dark";
+
+export type ThemeColors = {
+  paper: string;
+  surface: string;
+  surfaceSubtle: string;
+  ink: string;
+  inkMuted: string;
+  type: typeof color.type;
+  typeTint: (typeof color.typeTint)["light"] | (typeof color.typeTint)["dark"];
+  accent: typeof accent;
+  feedback: typeof feedback;
+};
+
+function resolveColors(scheme: Scheme): ThemeColors {
+  const c = color[scheme];
+  return {
+    paper: c.paper,
+    surface: c.surface,
+    surfaceSubtle: c.surfaceSubtle,
+    ink: c.ink,
+    inkMuted: c.inkMuted,
+    type: color.type,
+    typeTint: color.typeTint[scheme],
+    accent,
+    feedback,
+  };
+}
+
+export function useTheme(): { scheme: Scheme; colors: ThemeColors } {
+  const scheme: Scheme = useColorScheme() === "light" ? "light" : "dark";
+  return { scheme, colors: resolveColors(scheme) };
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// COMPAT SHIM — old "Kinetic Equilibrium" exports re-pointed at The Field values.
+// Kept so existing screens/components compile during migration. Deleted at cleanup.
+// Dark values land first (re-skin); light/dark parity per component is a follow-on.
+// migrated to v2 tokens — phase 1
+// ════════════════════════════════════════════════════════════════════════════
+
+export const Surface = {
+  base: color.dark.paper,
+  containerLow: color.dark.surfaceSubtle,
+  container: color.dark.surface,
+  containerHigh: color.dark.surface,
+  containerHighest: color.dark.surfaceSubtle,
+  containerLowest: color.dark.paper,
+  bright: color.dark.surfaceSubtle,
+  outlineVariant: color.dark.surfaceSubtle, // no borders — tonal
+} as const;
+
+export const TextColors = {
+  primary: color.dark.ink,
+  secondary: color.dark.inkMuted,
+  tertiary: color.dark.inkMuted,
+  disabled: color.dark.inkMuted,
+} as const;
+
+export const EntryAccent = {
+  todo: color.type.todo,
+  deadline: color.type.bills,
+  event: color.type.event,
+  someday: color.type.someday,
+  today: color.type.someday, // RETIRED concept — usages removed in phase 2/3
+  idea: color.type.ideas,
+} as const;
+
+export const Brand = {
+  primary: accent.clay,
+  primaryContainer: accent.clayPressed, // gradient RETIRED — usages deleted
+  fabGlow: accent.clay, // FAB RETIRED — usages deleted
+  onPrimary: color.light.paper,
+} as const;
+
+export const FontFamily = {
+  regular: type.fontInter.regular,
+  medium: type.fontInter.medium,
+  semiBold: type.fontInter.semiBold,
+  bold: type.fontInter.bold,
+} as const;
+
+export const FontSize = {
+  displayLg: type.display.size,
+  displayMd: type.title.size,
+  headlineSm: type.title.size,
+  bodyMd: type.body.size,
+  labelSm: type.kicker.size,
+  labelXs: type.kicker.size,
+} as const;
+
+export const LetterSpacing = {
+  displayLg: type.display.tracking,
+  labelSm: type.kicker.tracking,
+} as const;
+
+export const LineHeight = {
+  displayLg: type.display.lineHeight,
+  headlineSm: type.title.lineHeight,
+  bodyMd: type.body.lineHeight,
+  labelSm: type.kicker.lineHeight,
+} as const;
+
+export const Spacing = {
+  xs: space.xs,
+  sm: space.sm,
+  md: space.md,
+  lg: space.lg,
+  xl: space.xl,
+  xxl: space.xxl,
+  xxxl: space.xxxl,
+  section: space.xxxl, // 40 → 32 rhythm cap
+} as const;
+
 export const Radius = {
-  sm: 4, // Hover state for todos rows
-  md: 6, // Checkboxes (0.35rem)
-  lg: 16, // Internal cards
-  xl: 24, // Outer Bento containers
-  full: 9999, // Pill shapes (FAB)
+  sm: radius.sm,
+  md: radius.sm,
+  lg: radius.md,
+  xl: radius.lg,
+  full: radius.pill,
 } as const;
 
-// ─── Elevation / Shadow ───────────────────────────────────────────────────────
-// Never use pure black shadows — always tinted.
 export const Shadow = {
-  card: {
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.4,
-    shadowRadius: 40,
-    elevation: 8,
-  },
-  fab: {
-    shadowColor: Brand.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 12,
-  },
+  card: elevation.tile,
+  fab: elevation.capture,
 } as const;
 
-// ─── Colors (light/dark) for React Navigation compatibility ───────────────────
-// Only dark scheme is actively used (dark-first design).
 export const Colors = {
   dark: {
-    text: TextColors.primary,
-    background: Surface.base,
-    tint: Brand.primary,
-    tabIconDefault: TextColors.tertiary,
-    tabIconSelected: Brand.primary,
-    surface: Surface.container,
-    surfaceLow: Surface.containerLow,
-    border: Surface.outlineVariant,
+    text: color.dark.ink,
+    background: color.dark.paper,
+    tint: accent.clay,
+    tabIconDefault: color.dark.inkMuted,
+    tabIconSelected: accent.clay,
+    surface: color.dark.surface,
+    surfaceLow: color.dark.surfaceSubtle,
+    border: color.dark.surfaceSubtle,
   },
   light: {
-    // Kept for React Navigation compatibility — app is dark-first
-    text: "#0F172A",
-    background: "#F8F8FB",
-    tint: "#4D8EFF",
-    tabIconDefault: "#9CA3AF",
-    tabIconSelected: "#4D8EFF",
-    surface: "#FFFFFF",
-    surfaceLow: "#F3F3F6",
-    border: "rgba(0,0,0,0.08)",
+    text: color.light.ink,
+    background: color.light.paper,
+    tint: accent.clay,
+    tabIconDefault: color.light.inkMuted,
+    tabIconSelected: accent.clay,
+    surface: color.light.surface,
+    surfaceLow: color.light.surfaceSubtle,
+    border: color.light.surfaceSubtle,
   },
 } as const;
 

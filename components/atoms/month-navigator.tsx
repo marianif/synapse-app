@@ -1,8 +1,9 @@
 import { Pressable, View, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+// migrated to v2 tokens — phase 1
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Spacing, TextColors } from '@/constants/theme';
+import { Spacing, TextColors, tokens } from '@/constants/theme';
 
 interface MonthNavigatorProps {
   label: string;
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonPressed: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: tokens.colors.unresolved.rgba255_255_255_0_05,
   },
   labelWrapper: {
     alignItems: 'center',

@@ -1,4 +1,3 @@
-// migrated to v2 tokens — phase 2
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { EntryDot } from "@/components/atoms/entry-dot";

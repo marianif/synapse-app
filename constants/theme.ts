@@ -202,10 +202,16 @@ export function useTheme(): { scheme: Scheme; colors: ThemeColors } {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// COMPAT SHIM — old "Kinetic Equilibrium" exports re-pointed at The Field values.
-// Kept so existing screens/components compile during migration. Deleted at cleanup.
-// Dark values land first (re-skin); light/dark parity per component is a follow-on.
-// migrated to v2 tokens — phase 1
+// @deprecated COMPAT SHIM — old "Kinetic Equilibrium" exports re-pointed at The
+// Field values. The color migration is complete; these remain because some
+// call-sites use DYNAMIC indexed access that can't be statically renamed:
+//   • EntryAccent[entry.type]   (7 files — needs a typed entryColor() accessor)
+//   • Surface[surfaceKey]       (themed-view.tsx)
+//   • Colors[scheme]            (themed-text.tsx, custom-tab-bar.tsx)
+// REMOVE in the useTheme() light/dark parity follow-on: introduce scheme-aware
+// indexable accessors on `tokens`, refactor those call-sites, rename the static
+// dotted-access (Surface.base → tokens.color.dark.paper, …), then delete this block.
+// Do NOT add new usages of these exports — read from `tokens` / `useTheme()`.
 // ════════════════════════════════════════════════════════════════════════════
 
 export const Surface = {

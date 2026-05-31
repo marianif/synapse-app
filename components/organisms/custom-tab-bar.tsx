@@ -1,4 +1,3 @@
-// migrated to v2 tokens — phase 2
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";

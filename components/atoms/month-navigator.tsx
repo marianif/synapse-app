@@ -1,7 +1,6 @@
 import { Pressable, View, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-// migrated to v2 tokens — phase 1
 import { ThemedText } from '@/components/atoms/themed-text';
 import { Spacing, TextColors, tokens } from '@/constants/theme';
 

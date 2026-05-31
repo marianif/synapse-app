@@ -1,4 +1,3 @@
-// migrated to v2 tokens — phase 2
 import { useRef } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';

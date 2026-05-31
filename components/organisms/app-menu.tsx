@@ -1,4 +1,3 @@
-// migrated to v2 tokens — phase orphans
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";

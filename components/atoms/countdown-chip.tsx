@@ -1,4 +1,3 @@
-// migrated to v2 tokens — phase 2
 import { View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';

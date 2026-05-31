@@ -1,4 +1,3 @@
-// migrated to v2 tokens — phase 3
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {

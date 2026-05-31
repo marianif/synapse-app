@@ -1,4 +1,3 @@
-// migrated to v2 tokens — phase 3
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect } from "react";
 import {

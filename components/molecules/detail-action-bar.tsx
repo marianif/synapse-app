@@ -1,4 +1,3 @@
-// migrated to v2 tokens — phase 2
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pressable, View, StyleSheet } from 'react-native';
 

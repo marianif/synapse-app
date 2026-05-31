@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     height: "100%",
     minHeight: 36,
     borderRadius: Radius.sm,
-    backgroundColor: tokens.colors.unresolved.rgba192_132_252_0_3, // event color, dimmed
+    backgroundColor: tokens.color.type.event, // event color, dimmed
   },
   leftBorderActive: {
     backgroundColor: EntryAccent.event,

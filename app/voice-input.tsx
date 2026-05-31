@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     // No hard borders, use subtle shadow or glow for elevation
-    shadowColor: tokens.colors.unresolved.hex000,
+    shadowColor: tokens.color.scrim.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,

@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: tokens.colors.unresolved.rgba0_0_0_0_6,
+    backgroundColor: tokens.color.scrim.strong,
   },
   sheet: {
     backgroundColor: Surface.containerLow,

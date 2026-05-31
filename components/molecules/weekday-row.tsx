@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   emptyLine: {
     flex: 1,
     height: 1,
-    backgroundColor: tokens.colors.unresolved.rgba255_255_255_0_06,
+    backgroundColor: tokens.color.dark.surfaceSubtle,
     borderRadius: 1,
   },
 });

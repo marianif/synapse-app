@@ -787,7 +787,7 @@ const styles = StyleSheet.create({
   // ── Delete scope sheet ───────────────────────────────────────
   sheetOverlay: {
     flex: 1,
-    backgroundColor: tokens.colors.unresolved.rgba0_0_0_0_6,
+    backgroundColor: tokens.color.scrim.strong,
     justifyContent: "flex-end",
   },
   sheet: {

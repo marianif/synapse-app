@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: Radius.full,
-    backgroundColor: tokens.colors.unresolved.rgba255_107_107_0_2,
+    backgroundColor: tokens.feedback.danger,
     ...Shadow.fab,
   },
   recordingButton: {

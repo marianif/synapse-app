@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonPressed: {
-    backgroundColor: tokens.colors.unresolved.rgba255_255_255_0_05,
+    backgroundColor: tokens.color.dark.surfaceSubtle,
   },
   labelWrapper: {
     alignItems: 'center',

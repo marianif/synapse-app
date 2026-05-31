@@ -55,21 +55,13 @@ const color = {
       someday: "#352B14",
     },
   },
-  // Off-palette legacy colors created during migration. Resolved at cleanup —
-  // see .impeccable/substitution-table.json unresolvedPromotions. Names are
-  // deterministic (rgba<r>_<g>_<b>_<alpha-as-typed>) so re-runs are idempotent.
-  // Most are dividers/scrims the No-Border rule wants converted to tonal surfaces.
-  unresolved: {
-    hex000: "#000",
-    rgba0_0_0_0_6: "rgba(0,0,0,0.6)", // modal/sheet scrim
-    rgba0_0_0_0_5: "rgba(0,0,0,0.5)", // menu scrim
-    rgba144_238_144_0_15: "rgba(144,238,144,0.15)", // legacy success scrim
-    rgba192_132_252_0_3: "rgba(192,132,252,0.3)", // legacy event scrim
-    rgba255_107_107_0_2: "rgba(255,107,107,0.2)", // legacy danger scrim
-    rgba255_255_255_0_04: "rgba(255,255,255,0.04)", // tonal divider
-    rgba255_255_255_0_05: "rgba(255,255,255,0.05)", // tonal divider
-    rgba255_255_255_0_06: "rgba(255,255,255,0.06)", // tonal divider
-    rgba255_255_255_0_08: "rgba(255,255,255,0.08)", // tonal divider
+  // Accepted exceptions: overlay scrims + shadow tint. These are legitimately
+  // non-palette (a modal backdrop and a drop-shadow color are not brand hues),
+  // kept in a clearly-named namespace per the migration cleanup contract.
+  scrim: {
+    medium: "rgba(0,0,0,0.5)", // menu / popover backdrop
+    strong: "rgba(0,0,0,0.6)", // modal / bottom-sheet backdrop
+    shadow: "#000", // why: shadowColor base for recording glow
   },
 } as const;
 

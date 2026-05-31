@@ -190,7 +190,7 @@ function MenuRow({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: tokens.colors.unresolved.rgba0_0_0_0_5,
+    backgroundColor: tokens.color.scrim.medium,
     zIndex: 100,
   },
   blurContainer: {

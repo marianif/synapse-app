@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   dotsToday: {
     padding: 4,
     borderRadius: 6,
-    backgroundColor: tokens.colors.unresolved.rgba144_238_144_0_15,
+    backgroundColor: tokens.accent.clay,
   },
   emptyDot: {
     width: 5,

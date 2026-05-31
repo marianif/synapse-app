@@ -96,6 +96,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: tokens.colors.unresolved.rgba255_255_255_0_04,
+    backgroundColor: tokens.color.dark.surfaceSubtle,
   },
 });

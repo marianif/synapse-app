@@ -1,0 +1,792 @@
+{
+  "colors": {
+    "rawCount": 29,
+    "clusters": [
+      {
+        "id": "color-cluster-2",
+        "leader": "#ffffff",
+        "memberCount": 5,
+        "totalUsage": 28,
+        "members": [
+          {
+            "hex": "#ffffff",
+            "usageCount": 16,
+            "deltaE": 0
+          },
+          {
+            "hex": "#fafafa",
+            "usageCount": 6,
+            "deltaE": 1
+          },
+          {
+            "hex": "#f8f8fb",
+            "usageCount": 2,
+            "deltaE": 2.1
+          },
+          {
+            "hex": "#f3f3f6",
+            "usageCount": 2,
+            "deltaE": 2.9
+          },
+          {
+            "hex": "#eeeeee",
+            "usageCount": 2,
+            "deltaE": 3.5
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "color-cluster-1",
+        "leader": "#ff6b6b",
+        "memberCount": 1,
+        "totalUsage": 18,
+        "members": [
+          {
+            "hex": "#ff6b6b",
+            "usageCount": 18,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-3",
+        "leader": "#000000",
+        "memberCount": 2,
+        "totalUsage": 14,
+        "members": [
+          {
+            "hex": "#000000",
+            "usageCount": 12,
+            "deltaE": 0
+          },
+          {
+            "hex": "#0e0e11",
+            "usageCount": 2,
+            "deltaE": 2.9
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "color-cluster-4",
+        "leader": "#131316",
+        "memberCount": 2,
+        "totalUsage": 12,
+        "members": [
+          {
+            "hex": "#131316",
+            "usageCount": 10,
+            "deltaE": 0
+          },
+          {
+            "hex": "#1b1b1e",
+            "usageCount": 2,
+            "deltaE": 2.4
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "color-cluster-5",
+        "leader": "#ff4444",
+        "memberCount": 1,
+        "totalUsage": 6,
+        "members": [
+          {
+            "hex": "#ff4444",
+            "usageCount": 6,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-6",
+        "leader": "#4d8eff",
+        "memberCount": 1,
+        "totalUsage": 6,
+        "members": [
+          {
+            "hex": "#4d8eff",
+            "usageCount": 6,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-7",
+        "leader": "#52c87a",
+        "memberCount": 1,
+        "totalUsage": 4,
+        "members": [
+          {
+            "hex": "#52c87a",
+            "usageCount": 4,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-8",
+        "leader": "#c084fc",
+        "memberCount": 1,
+        "totalUsage": 4,
+        "members": [
+          {
+            "hex": "#c084fc",
+            "usageCount": 4,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-9",
+        "leader": "#adc6ff",
+        "memberCount": 1,
+        "totalUsage": 4,
+        "members": [
+          {
+            "hex": "#adc6ff",
+            "usageCount": 4,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-11",
+        "leader": "#1f1f22",
+        "memberCount": 2,
+        "totalUsage": 4,
+        "members": [
+          {
+            "hex": "#1f1f22",
+            "usageCount": 2,
+            "deltaE": 0
+          },
+          {
+            "hex": "#2a2a2d",
+            "usageCount": 2,
+            "deltaE": 3.5
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "color-cluster-12",
+        "leader": "#353438",
+        "memberCount": 2,
+        "totalUsage": 4,
+        "members": [
+          {
+            "hex": "#353438",
+            "usageCount": 2,
+            "deltaE": 0
+          },
+          {
+            "hex": "#39393c",
+            "usageCount": 2,
+            "deltaE": 1.8
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "color-cluster-13",
+        "leader": "#a1a1aa",
+        "memberCount": 2,
+        "totalUsage": 4,
+        "members": [
+          {
+            "hex": "#a1a1aa",
+            "usageCount": 2,
+            "deltaE": 0
+          },
+          {
+            "hex": "#9ca3af",
+            "usageCount": 2,
+            "deltaE": 3.4
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "color-cluster-10",
+        "leader": "#90ee90",
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "hex": "#90ee90",
+            "usageCount": 2,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-14",
+        "leader": "#71717a",
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "hex": "#71717a",
+            "usageCount": 2,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-15",
+        "leader": "#3f3f46",
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "hex": "#3f3f46",
+            "usageCount": 2,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-16",
+        "leader": "#6ea8ff",
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "hex": "#6ea8ff",
+            "usageCount": 2,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-17",
+        "leader": "#40fbcf",
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "hex": "#40fbcf",
+            "usageCount": 2,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-18",
+        "leader": "#e5ee90",
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "hex": "#e5ee90",
+            "usageCount": 2,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-19",
+        "leader": "#fbb040",
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "hex": "#fbb040",
+            "usageCount": 2,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "color-cluster-20",
+        "leader": "#0f172a",
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "hex": "#0f172a",
+            "usageCount": 2,
+            "deltaE": 0
+          }
+        ],
+        "perceptuallyDuplicate": false
+      }
+    ],
+    "perceptuallyDuplicateClusters": 6,
+    "perceptualThresholdDeltaE": 3.5
+  },
+  "fontSizes": {
+    "rawCount": 14,
+    "clusters": [
+      {
+        "id": "cluster-1",
+        "leader": 8,
+        "memberCount": 2,
+        "totalUsage": 6,
+        "members": [
+          {
+            "value": 8,
+            "usageCount": 4
+          },
+          {
+            "value": 9,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "cluster-2",
+        "leader": 10,
+        "memberCount": 2,
+        "totalUsage": 24,
+        "members": [
+          {
+            "value": 10,
+            "usageCount": 16
+          },
+          {
+            "value": 11,
+            "usageCount": 8
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "cluster-3",
+        "leader": 13,
+        "memberCount": 2,
+        "totalUsage": 14,
+        "members": [
+          {
+            "value": 13,
+            "usageCount": 4
+          },
+          {
+            "value": 14,
+            "usageCount": 10
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "cluster-4",
+        "leader": 15,
+        "memberCount": 2,
+        "totalUsage": 10,
+        "members": [
+          {
+            "value": 15,
+            "usageCount": 2
+          },
+          {
+            "value": 16,
+            "usageCount": 8
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "cluster-5",
+        "leader": 18,
+        "memberCount": 1,
+        "totalUsage": 4,
+        "members": [
+          {
+            "value": 18,
+            "usageCount": 4
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-6",
+        "leader": 20,
+        "memberCount": 1,
+        "totalUsage": 6,
+        "members": [
+          {
+            "value": 20,
+            "usageCount": 6
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-7",
+        "leader": 22,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 22,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-8",
+        "leader": 24,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 24,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-9",
+        "leader": 28,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 28,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-10",
+        "leader": 30,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 30,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      }
+    ],
+    "perceptuallyDuplicateClusters": 4
+  },
+  "spacings": {
+    "rawCount": 11,
+    "clusters": [
+      {
+        "id": "cluster-1",
+        "leader": 0,
+        "memberCount": 3,
+        "totalUsage": 38,
+        "members": [
+          {
+            "value": 0,
+            "usageCount": 2
+          },
+          {
+            "value": 1,
+            "usageCount": 4
+          },
+          {
+            "value": 2,
+            "usageCount": 32
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "cluster-2",
+        "leader": 3,
+        "memberCount": 2,
+        "totalUsage": 12,
+        "members": [
+          {
+            "value": 3,
+            "usageCount": 2
+          },
+          {
+            "value": 4,
+            "usageCount": 10
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "cluster-3",
+        "leader": 8,
+        "memberCount": 1,
+        "totalUsage": 4,
+        "members": [
+          {
+            "value": 8,
+            "usageCount": 4
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-4",
+        "leader": 14,
+        "memberCount": 2,
+        "totalUsage": 6,
+        "members": [
+          {
+            "value": 14,
+            "usageCount": 4
+          },
+          {
+            "value": 16,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "cluster-5",
+        "leader": 20,
+        "memberCount": 1,
+        "totalUsage": 10,
+        "members": [
+          {
+            "value": 20,
+            "usageCount": 10
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-6",
+        "leader": 40,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 40,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-7",
+        "leader": 60,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 60,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      }
+    ],
+    "perceptuallyDuplicateClusters": 3,
+    "rhythm": {
+      "base": 4,
+      "fit": 0.43,
+      "candidates": [
+        {
+          "base": 4,
+          "fit": 0.43
+        },
+        {
+          "base": 5,
+          "fit": 0.22
+        },
+        {
+          "base": 10,
+          "fit": 0.22
+        },
+        {
+          "base": 8,
+          "fit": 0.14
+        }
+      ]
+    }
+  },
+  "radii": {
+    "rawCount": 13,
+    "clusters": [
+      {
+        "id": "cluster-1",
+        "leader": 1,
+        "memberCount": 4,
+        "totalUsage": 16,
+        "members": [
+          {
+            "value": 1,
+            "usageCount": 4
+          },
+          {
+            "value": 2,
+            "usageCount": 8
+          },
+          {
+            "value": 2.5,
+            "usageCount": 2
+          },
+          {
+            "value": 3,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "cluster-2",
+        "leader": 4,
+        "memberCount": 2,
+        "totalUsage": 4,
+        "members": [
+          {
+            "value": 4,
+            "usageCount": 2
+          },
+          {
+            "value": 6,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "cluster-3",
+        "leader": 10,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 10,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-4",
+        "leader": 17,
+        "memberCount": 2,
+        "totalUsage": 6,
+        "members": [
+          {
+            "value": 17,
+            "usageCount": 4
+          },
+          {
+            "value": 18,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": true
+      },
+      {
+        "id": "cluster-5",
+        "leader": 22,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 22,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-6",
+        "leader": 50,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 50,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-7",
+        "leader": 60,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 60,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      },
+      {
+        "id": "cluster-8",
+        "leader": 9999,
+        "memberCount": 1,
+        "totalUsage": 2,
+        "members": [
+          {
+            "value": 9999,
+            "usageCount": 2
+          }
+        ],
+        "perceptuallyDuplicate": false
+      }
+    ],
+    "language": {
+      "dominant": "sharp",
+      "distribution": {
+        "sharp": 0.5,
+        "soft": 0.11,
+        "large": 0.33,
+        "pill": 0.06
+      }
+    }
+  },
+  "fontFamilies": [
+    {
+      "family": "Inter_600SemiBold",
+      "usageCount": 18
+    },
+    {
+      "family": "Inter_700Bold",
+      "usageCount": 6
+    },
+    {
+      "family": "Inter_500Medium",
+      "usageCount": 2
+    },
+    {
+      "family": "Inter_400Regular",
+      "usageCount": 2
+    }
+  ],
+  "summary": {
+    "filesScanned": 176,
+    "rawColors": 29,
+    "perceivedColors": 20,
+    "rawFontSizes": 14,
+    "perceivedFontSizes": 10,
+    "rawSpacings": 11,
+    "perceivedSpacings": 7,
+    "rawRadii": 13,
+    "perceivedRadii": 8,
+    "fontFamilyCount": 4,
+    "dominantRhythm": 4,
+    "rhythmFit": 0.43,
+    "dominantRadiusLanguage": "sharp"
+  }
+}

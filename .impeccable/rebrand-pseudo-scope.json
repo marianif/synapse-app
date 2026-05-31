@@ -1,0 +1,541 @@
+{
+  "scope": {
+    "raw": "app (rebrand pseudo-scope)",
+    "kind": "app"
+  },
+  "screens": [
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/.opencode/skills/agent-creator/client.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/.opencode/skills/agent-creator/first-call.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/.opencode/skills/agent-creator/load-env.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/(tabs)/_layout.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/(tabs)/calendar.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/(tabs)/index.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/_layout.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/detail.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/list.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/modal.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/app/voice-input.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/DateInput.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/TimeInput.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/countdown-chip.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/counter-display.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/day-cell.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/entry-dot.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/month-navigator.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/streak-badge.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/themed-text.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/themed-view.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/atoms/waveform-bar.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/error-boundary.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/haptic-tab.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/bento-card-header.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-action-bar.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-metadata-row.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/detail-someday-hero.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/empty-state.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/entry-row.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/list-item.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/recurrence-picker.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/someday-item.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/today-event-row.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/weekday-row.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/molecules/wrapup-card.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/agenda-section.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-header.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/app-menu.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/custom-tab-bar.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/day-detail-sheet.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/deadlines-card.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/fab.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/list-progress.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/list-screen-header.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/month-grid.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/next-up-card.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/swipeable-row.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/today-section.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/upcoming-preview-card.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/week-strip.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/organisms/weekly-overview-card.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/components/ui/icon-symbol.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/constants/theme.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/contexts/database-context.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/eslint.config.js"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/hooks/use-calendar-data.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/hooks/use-color-scheme.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/hooks/use-database/use-database.helpers.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/hooks/use-database/use-database.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/hooks/use-speech-recognizer.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/lib/database.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/lib/date-utils.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/lib/notifications.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/lib/recurrence.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/lib/schema.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/lib/types.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/modules/speech-recognizer/index.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/modules/speech-recognizer/plugin/withSpeechRecognizerPermissions.js"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/modules/speech-recognizer/src/SpeechRecognizerModule.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/modules/speech-recognizer/src/SpeechRecognizerModule.web.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/modules/watch-connectivity/index.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/scripts/reset-project.js"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/.eslintrc.js"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/App.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/babel.config.js"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/metro.config.js"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/example/webpack.config.js"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/speech-recognizer-example/App.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/speech-recognizer-example/index.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/src/SpeechRecognizer.types.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/src/SpeechRecognizerModule.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/src/SpeechRecognizerModule.web.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/src/SpeechRecognizerView.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/src/SpeechRecognizerView.web.tsx"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/speech-recognizer/src/index.ts"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/targets/watch/expo-target.config.js"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/targets/watch-widget/expo-target.config.js"
+    },
+    {
+      "file": ".claude/worktrees/nifty-agnesi-17f8ab/targets/widget/expo-target.config.js"
+    },
+    {
+      "file": "app/(tabs)/_layout.tsx"
+    },
+    {
+      "file": "app/(tabs)/calendar.tsx"
+    },
+    {
+      "file": "app/(tabs)/index.tsx"
+    },
+    {
+      "file": "app/_layout.tsx"
+    },
+    {
+      "file": "app/detail.tsx"
+    },
+    {
+      "file": "app/list.tsx"
+    },
+    {
+      "file": "app/modal.tsx"
+    },
+    {
+      "file": "app/voice-input.tsx"
+    },
+    {
+      "file": "components/atoms/DateInput.tsx"
+    },
+    {
+      "file": "components/atoms/TimeInput.tsx"
+    },
+    {
+      "file": "components/atoms/countdown-chip.tsx"
+    },
+    {
+      "file": "components/atoms/counter-display.tsx"
+    },
+    {
+      "file": "components/atoms/day-cell.tsx"
+    },
+    {
+      "file": "components/atoms/entry-dot.tsx"
+    },
+    {
+      "file": "components/atoms/month-navigator.tsx"
+    },
+    {
+      "file": "components/atoms/streak-badge.tsx"
+    },
+    {
+      "file": "components/atoms/themed-text.tsx"
+    },
+    {
+      "file": "components/atoms/themed-view.tsx"
+    },
+    {
+      "file": "components/atoms/waveform-bar.tsx"
+    },
+    {
+      "file": "components/error-boundary.tsx"
+    },
+    {
+      "file": "components/haptic-tab.tsx"
+    },
+    {
+      "file": "components/molecules/bento-card-header.tsx"
+    },
+    {
+      "file": "components/molecules/detail-action-bar.tsx"
+    },
+    {
+      "file": "components/molecules/detail-metadata-row.tsx"
+    },
+    {
+      "file": "components/molecules/detail-someday-hero.tsx"
+    },
+    {
+      "file": "components/molecules/empty-state.tsx"
+    },
+    {
+      "file": "components/molecules/entry-row.tsx"
+    },
+    {
+      "file": "components/molecules/list-item.tsx"
+    },
+    {
+      "file": "components/molecules/recurrence-picker.tsx"
+    },
+    {
+      "file": "components/molecules/someday-item.tsx"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx"
+    },
+    {
+      "file": "components/molecules/weekday-row.tsx"
+    },
+    {
+      "file": "components/molecules/wrapup-card.tsx"
+    },
+    {
+      "file": "components/organisms/agenda-section.tsx"
+    },
+    {
+      "file": "components/organisms/app-header.tsx"
+    },
+    {
+      "file": "components/organisms/app-menu.tsx"
+    },
+    {
+      "file": "components/organisms/custom-tab-bar.tsx"
+    },
+    {
+      "file": "components/organisms/day-detail-sheet.tsx"
+    },
+    {
+      "file": "components/organisms/deadlines-card.tsx"
+    },
+    {
+      "file": "components/organisms/fab.tsx"
+    },
+    {
+      "file": "components/organisms/list-progress.tsx"
+    },
+    {
+      "file": "components/organisms/list-screen-header.tsx"
+    },
+    {
+      "file": "components/organisms/month-grid.tsx"
+    },
+    {
+      "file": "components/organisms/next-up-card.tsx"
+    },
+    {
+      "file": "components/organisms/swipeable-row.tsx"
+    },
+    {
+      "file": "components/organisms/today-section.tsx"
+    },
+    {
+      "file": "components/organisms/upcoming-preview-card.tsx"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx"
+    },
+    {
+      "file": "components/organisms/weekly-overview-card.tsx"
+    },
+    {
+      "file": "components/ui/icon-symbol.tsx"
+    },
+    {
+      "file": "constants/theme.ts"
+    },
+    {
+      "file": "contexts/database-context.tsx"
+    },
+    {
+      "file": "eslint.config.js"
+    },
+    {
+      "file": "expo-env.d.ts"
+    },
+    {
+      "file": "hooks/use-calendar-data.ts"
+    },
+    {
+      "file": "hooks/use-color-scheme.ts"
+    },
+    {
+      "file": "hooks/use-database/use-database.helpers.ts"
+    },
+    {
+      "file": "hooks/use-database/use-database.ts"
+    },
+    {
+      "file": "hooks/use-speech-recognizer.ts"
+    },
+    {
+      "file": "lib/database.ts"
+    },
+    {
+      "file": "lib/date-utils.ts"
+    },
+    {
+      "file": "lib/notifications.ts"
+    },
+    {
+      "file": "lib/recurrence.ts"
+    },
+    {
+      "file": "lib/schema.ts"
+    },
+    {
+      "file": "lib/types.ts"
+    },
+    {
+      "file": "modules/speech-recognizer/index.ts"
+    },
+    {
+      "file": "modules/speech-recognizer/plugin/withSpeechRecognizerPermissions.js"
+    },
+    {
+      "file": "modules/speech-recognizer/src/SpeechRecognizerModule.ts"
+    },
+    {
+      "file": "modules/speech-recognizer/src/SpeechRecognizerModule.web.ts"
+    },
+    {
+      "file": "modules/watch-connectivity/index.ts"
+    },
+    {
+      "file": "scripts/reset-project.js"
+    },
+    {
+      "file": "speech-recognizer/.eslintrc.js"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx"
+    },
+    {
+      "file": "speech-recognizer/example/babel.config.js"
+    },
+    {
+      "file": "speech-recognizer/example/metro.config.js"
+    },
+    {
+      "file": "speech-recognizer/example/webpack.config.js"
+    },
+    {
+      "file": "speech-recognizer/speech-recognizer-example/App.tsx"
+    },
+    {
+      "file": "speech-recognizer/speech-recognizer-example/index.ts"
+    },
+    {
+      "file": "speech-recognizer/src/SpeechRecognizer.types.ts"
+    },
+    {
+      "file": "speech-recognizer/src/SpeechRecognizerModule.ts"
+    },
+    {
+      "file": "speech-recognizer/src/SpeechRecognizerModule.web.ts"
+    },
+    {
+      "file": "speech-recognizer/src/SpeechRecognizerView.tsx"
+    },
+    {
+      "file": "speech-recognizer/src/SpeechRecognizerView.web.tsx"
+    },
+    {
+      "file": "speech-recognizer/src/index.ts"
+    },
+    {
+      "file": "targets/watch/expo-target.config.js"
+    },
+    {
+      "file": "targets/watch-widget/expo-target.config.js"
+    },
+    {
+      "file": "targets/widget/expo-target.config.js"
+    }
+  ],
+  "components": [],
+  "summary": {
+    "screenCount": 176,
+    "componentCount": 0
+  }
+}

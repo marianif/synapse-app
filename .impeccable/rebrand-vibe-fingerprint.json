@@ -1,0 +1,131 @@
+{
+  "paragraph": "Your app currently reads as warm and expressive, in a balanced density. The dominant hue family is red (avg 332°, saturation 0.41). The corner language is \"sharp\" and the spacing rhythm is 4pt-based (43% fit). You have 20 perceptually-distinct colors and 6 cluster(s) where multiple colors collapse to the same visual answer. 4 font famil(y/ies) are in use, which dilutes the typographic signal. The era reads as \"mixed\" and the relationship to platform conventions is \"distinct\". The copy voice reads as \"direct\" (54 UI strings sampled).",
+  "axes": {
+    "temperature": {
+      "value": "warm",
+      "reason": "dominant hue family is red (avg hue 332°)"
+    },
+    "density": {
+      "value": "balanced",
+      "reason": "spacing distribution is mixed"
+    },
+    "voice": {
+      "value": "direct",
+      "reason": "terse, action-led copy — 31% of strings start with a verb, avg 3.3 words",
+      "sampleCount": 54,
+      "signals": {
+        "avgWords": 3.3,
+        "exclaimRatio": 0.02,
+        "emojiRatio": 0,
+        "casualRatio": 0,
+        "formalRatio": 0,
+        "warmRatio": 0,
+        "imperativeRatio": 0.31
+      },
+      "samples": [
+        "Delete entry",
+        "Delete recurring entry",
+        "Delete this occurrence",
+        "Delete this and all future",
+        "Delete entire series",
+        "Due Date",
+        "Due Time",
+        "Entry not found",
+        "today && entryDate",
+        "What do you need to do?",
+        "Add any additional notes...",
+        "Voice Input"
+      ]
+    },
+    "posture": {
+      "value": "expressive",
+      "reason": "saturation 0.41, dominant radius \"sharp\", 20 colors — palette is assertive"
+    },
+    "era": {
+      "value": "mixed",
+      "reason": "no consistent era signal"
+    },
+    "convention": {
+      "value": "distinct",
+      "reason": "4 custom font famil(y/ies) — overrides platform defaults"
+    }
+  },
+  "evidence": {
+    "palette": {
+      "avgHue": 332,
+      "avgSaturation": 0.41,
+      "avgLightness": 0.57,
+      "dominantHueFamily": "red",
+      "hueDistribution": {
+        "red": 24,
+        "blue": 14,
+        "green": 6,
+        "violet": 4,
+        "cyan": 2,
+        "yellow": 2,
+        "orange": 2
+      }
+    },
+    "radiusLanguage": {
+      "dominant": "sharp",
+      "distribution": {
+        "sharp": 0.5,
+        "soft": 0.11,
+        "large": 0.33,
+        "pill": 0.06
+      }
+    },
+    "spacingRhythm": {
+      "base": 4,
+      "fit": 0.43,
+      "candidates": [
+        {
+          "base": 4,
+          "fit": 0.43
+        },
+        {
+          "base": 5,
+          "fit": 0.22
+        },
+        {
+          "base": 10,
+          "fit": 0.22
+        },
+        {
+          "base": 8,
+          "fit": 0.14
+        }
+      ]
+    },
+    "perceivedColors": 20,
+    "perceptuallyDuplicateClusters": 6,
+    "fontFamilies": [
+      {
+        "family": "Inter_600SemiBold",
+        "usageCount": 18
+      },
+      {
+        "family": "Inter_700Bold",
+        "usageCount": 6
+      },
+      {
+        "family": "Inter_500Medium",
+        "usageCount": 2
+      },
+      {
+        "family": "Inter_400Regular",
+        "usageCount": 2
+      }
+    ]
+  },
+  "summary": {
+    "dominantHueFamily": "red",
+    "avgSaturation": 0.41,
+    "temperature": "warm",
+    "density": "balanced",
+    "voice": "direct",
+    "posture": "expressive",
+    "era": "mixed",
+    "convention": "distinct"
+  }
+}

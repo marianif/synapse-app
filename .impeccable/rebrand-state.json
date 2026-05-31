@@ -1,0 +1,33 @@
+{
+  "phase": "complete",
+  "chosenDirection": "The Field",
+  "briefWritten": ".impeccable/brand-brief.json",
+  "mode": "direction",
+  "surface": "mobile",
+  "interrogation": {
+    "moment": "A person like me. Wants to quickly shoot thoughts, ideas, todos and have them visible and clear. Few things done well. Wants to feel in charge of the day - not losing bills to pay, tracking new ideas. Modern yet warm.",
+    "appsThatFeelRight": "Linear's modern restraint resonated, but wants something different/bolder. Tiimo (editorial serif, soft personality) was the only to-do reference that landed. Rejected pastel-illustration journaling apps as 'sucks'.",
+    "almostGetsIt": "Current Synapse 'Kinetic Equilibrium' system - feels too corporate. New Yorker: loves the pastel category-card palette that works in both light and dark.",
+    "first3Seconds": "Activating. Must see entire notes/ideas/todos at a glance on home (user is ADHD - out of sight = out of mind). Items must be actionable, not just count-labels.",
+    "offLimits": "Corporate. Gamified/habit-tracker. Pastel-illustration mush. Pure white/pure black.",
+    "toolCompanionStage": "tool (capture-first, gets thoughts down fast) with warm human voice",
+    "references": [
+      {"type": "app", "ref": "The New Yorker (Discover sections grid)", "lesson": "Desaturated pastel category cards (powder blue, peach, sage, blush, lavender, butter) + ink-line icons + serif labels. Pastels survive both light and dark mode."},
+      {"type": "app", "ref": "The New Yorker (issue TOC)", "lesson": "Tiny all-caps kicker + big serif headline + italic serif deck. Editorial reverence for content."},
+      {"type": "app", "ref": "Tolan", "lesson": "Huge stacked serif title on warm cream, bold through scale and emptiness."},
+      {"type": "app", "ref": "Tiimo", "lesson": "Editorial serif date header, soft warm personality, not corporate."},
+      {"type": "app", "ref": "Zalando", "lesson": "Drenched terracotta color-block header - warmth by zone, not tint."}
+    ]
+  },
+  "hardRequirements": [
+    "True light + dark mode parity (light is first-class, not an afterthought)",
+    "No pure white / no pure black - warm off-whites and warm-tinted darks",
+    "Warm human headline summary at top of home",
+    "Everything at a glance on home - actionable items visible, color-coded by type, not dead count tiles",
+    "Pastel category color system per entry type",
+    "Editorial serif + ink-line icon language",
+    "Capture-first, few things done well"
+  ],
+  "forensics": ".impeccable/forensics.json",
+  "currentSystemRejectedBecause": "too corporate; documented blue-lavender calm but code is actually warm/red and incoherent (20 perceived colors, 418 hardcoded values)"
+}

@@ -92,9 +92,25 @@ const color = {
   },
 } as const;
 
+// Primary action color — capture bar, Add key, active states. Deliberately a
+// scheme-aware NEUTRAL, not a hue: a cool off-white slab in dark, a cool slate
+// slab in light. Why neutral: the old electric-cyan accent was identical to the
+// `type.todo` code (#22D3EE), so the action color collided with a content
+// category. A neutral can never be confused with a saturated type signal.
+// `onClay` is the ink/icon color that sits ON the accent slab (flips per scheme
+// for AA: dark text on the off-white slab, light text on the slate slab).
+// Keys stay `clay*` so existing call-sites (`colors.accent.clay`) are untouched.
 const accent = {
-  clay: "#22D3EE", // primary action — capture bar, active states (electric signal)
-  clayPressed: "#0EA5C4", // pressed feedback
+  light: {
+    clay: "#3A4250", // cool slate slab
+    clayPressed: "#2B313C", // deeper slate — pressed
+    onClay: "#EEF1F5", // light ink on the slate slab (8.9:1)
+  },
+  dark: {
+    clay: "#E9EDF3", // cool off-white slab
+    clayPressed: "#CDD5E0", // dimmer off-white — pressed
+    onClay: "#171A20", // dark ink on the off-white slab (14.8:1)
+  },
 } as const;
 
 const feedback = {
@@ -217,7 +233,7 @@ export type ThemeColors = {
     | (typeof color.typeKicker)["dark"];
   typeTint: (typeof color.typeTint)["light"] | (typeof color.typeTint)["dark"];
   glow: typeof color.glow;
-  accent: typeof accent;
+  accent: (typeof accent)["light"] | (typeof accent)["dark"];
   feedback: typeof feedback;
 };
 
@@ -233,7 +249,7 @@ function resolveColors(scheme: Scheme): ThemeColors {
     typeKicker: color.typeKicker[scheme],
     typeTint: color.typeTint[scheme],
     glow: color.glow,
-    accent,
+    accent: accent[scheme],
     feedback,
   };
 }

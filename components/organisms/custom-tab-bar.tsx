@@ -1,13 +1,9 @@
 import { router, usePathname } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import type { IconSymbolName } from "@/components/ui/icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
-
-// The electric clay create-key needs the cool near-black ink the code is tuned
-// to sit on (9.6:1), never paper-on-cyan (1.6:1, fails AA in light).
-const ON_CLAY = tokens.color.dark.paper;
 
 function TabIcon({ name, color }: { name: IconSymbolName; color: string }) {
   return <IconSymbol name={name} size={24} color={color} />;
@@ -40,8 +36,8 @@ export function CustomTabBar(): React.ReactElement {
 
         {/* The create-key — richer entries (bills, deadlines, events, dates)
             live here; the home capture bar stays the quick idea line. The one
-            full-clay control in the chrome, so "make something" reads at a
-            glance. */}
+            neutral-accent control in the chrome, so "make something" reads at a
+            glance without clashing with any saturated type code. */}
         <Pressable
           onPress={() => router.push("/modal")}
           accessibilityRole="button"
@@ -53,7 +49,7 @@ export function CustomTabBar(): React.ReactElement {
             pressed && styles.addButtonPressed,
           ]}
         >
-          <IconSymbol name="plus" size={28} color={ON_CLAY} />
+          <IconSymbol name="plus" size={28} color={colors.accent.onClay} />
         </Pressable>
 
         <Pressable
@@ -102,7 +98,7 @@ const styles = StyleSheet.create({
     height: 52,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.pill,
   },
   addButtonPressed: {
     opacity: 0.8,

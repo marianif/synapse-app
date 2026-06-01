@@ -102,7 +102,7 @@ export function DayDetailSheet({
               style={[styles.addButton, { backgroundColor: colors.accent.clay }]}
               accessibilityRole="button"
             >
-              <ThemedText type="body" style={[styles.addButtonText, { color: colors.accent.clay }]}>
+              <ThemedText type="body" style={[styles.addButtonText, { color: colors.accent.onClay }]}>
                 + Add to this day
               </ThemedText>
             </Pressable>

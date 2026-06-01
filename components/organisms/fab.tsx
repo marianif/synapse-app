@@ -56,7 +56,7 @@ export function Fab({
         ]}
       >
         <View style={[styles.glow, { backgroundColor: colors.accent.clay }]} />
-        <MaterialCommunityIcons name="microphone" size={28} color={colors.paper} />
+        <MaterialCommunityIcons name="microphone" size={28} color={colors.accent.onClay} />
       </Pressable>
     </View>
   );

@@ -170,12 +170,12 @@ export function AppMenu({
                     <MaterialCommunityIcons
                       name={opt.icon as any}
                       size={18}
-                      color={active ? colors.paper : colors.inkMuted}
+                      color={active ? colors.accent.onClay : colors.inkMuted}
                     />
                     <Text
                       style={[
                         styles.segmentLabel,
-                        { color: active ? colors.paper : colors.inkMuted },
+                        { color: active ? colors.accent.onClay : colors.inkMuted },
                       ]}
                     >
                       {opt.label}

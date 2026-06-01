@@ -34,7 +34,7 @@ function ErrorFallback({ onReset }: { onReset: () => void }): React.ReactElement
           accessibilityRole="button"
           accessibilityLabel="Try again"
         >
-          <ThemedText type="label" style={[styles.buttonLabel, { color: colors.paper }]}>
+          <ThemedText type="label" style={[styles.buttonLabel, { color: colors.accent.onClay }]}>
             Try again
           </ThemedText>
         </Pressable>

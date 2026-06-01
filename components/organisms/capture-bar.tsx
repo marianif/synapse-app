@@ -16,12 +16,11 @@ import { tokens, useTheme } from "@/constants/theme";
 
 const WAVEFORM_BARS = 9;
 
-// The electric capture code reads as a bright slab when recording; its text and
-// glyphs must be the cool near-black the code is tuned to sit on (≥9.6:1 both
-// schemes), never paper-on-cyan (1.6:1, fails AA in light). This is the same
-// bright-code-on-cool-dark rule the kicker audit uses — reusing an existing
-// token value, not a new one.
-const ON_CLAY = tokens.color.dark.paper;
+// The capture bar wears the ideas/amber code (it captures ideas). Amber is a
+// bright code, so its text + glyphs must be a FIXED cool-near-black in BOTH
+// schemes (10.4:1) — never a scheme-flipping ink, which would fail AA on amber
+// in light (1.5:1). Reuses the dark-paper token value, not a new one.
+const ON_AMBER = tokens.color.dark.paper;
 
 interface CaptureBarProps {
   /** Save a typed idea inline (the bar is the quick idea line). */
@@ -37,15 +36,15 @@ interface CaptureBarProps {
 /**
  * The board's command line — the quick IDEA capture instrument. Field Lab is an
  * instrument panel (mono readouts, sharp corners, saturated edge-bars carrying
- * structure), and this is the one always-on input on it. Idle it's a live text
- * line you FILL: a clay edge-bar (the capture channel), a blinking mono caret,
- * an inline TextInput, and a first-class mic. Typing + ↵ (or the send key) saves
- * the note straight as an idea into the Present cloud — no navigation. The mic
- * arms voice (also an idea). Richer entries (bills, deadlines, events, dates)
- * live in the Add tab, not here. Recording it goes full electric-clay — the one
- * moment the accent goes full-bleed — with a live waveform, the streaming
- * transcript, and inline discard / keep. The color shift IS the "listening"
- * signal.
+ * structure), and this is the one always-on input on it. It wears the ideas/
+ * amber code because it captures ideas. Idle it's a live text line you FILL: an
+ * amber edge-bar (the capture channel), a blinking mono caret, an inline
+ * TextInput, and a first-class mic. Typing + ↵ (or the send key) saves the note
+ * straight as an idea into the Present cloud — no navigation. The mic arms voice
+ * (also an idea). Richer entries (bills, deadlines, events, dates) live in the
+ * Add tab, not here. Recording it goes full amber — the one moment the code goes
+ * full-bleed — with a live waveform, the streaming transcript, and inline
+ * discard / keep. The color shift IS the "listening" signal.
  */
 export function CaptureBar({
   onSubmitIdea,
@@ -65,10 +64,10 @@ export function CaptureBar({
     setDraft("");
   };
 
-  // Bright clay clears AA on the dark surface (8.6:1) but fails on the light one
-  // (1.7:1). The clay identity rides the always-on edge-bar (a solid bar, not a
-  // contrast-bound glyph); the caret + mic glyph fall back to inkMuted in light
-  // so the affordances stay legible. Edge-bar stays clay in both schemes.
+  // Bright amber clears AA on the dark surface (8.98:1) but fails on the light
+  // one (1.6:1). The amber identity rides the always-on edge-bar (a solid bar,
+  // not a contrast-bound glyph); the caret + mic glyph fall back to inkMuted in
+  // light so the affordances stay legible. Edge-bar stays amber in both schemes.
   const signal = scheme === "dark" ? colors.type.ideas : colors.inkMuted;
 
   if (isRecording) {
@@ -88,7 +87,7 @@ export function CaptureBar({
           accessibilityLabel="Discard recording"
           style={styles.iconBtn}
         >
-          <MaterialCommunityIcons name="close" size={22} color={ON_CLAY} />
+          <MaterialCommunityIcons name="close" size={22} color={ON_AMBER} />
         </Pressable>
 
         <View style={styles.center}>
@@ -96,12 +95,12 @@ export function CaptureBar({
             <ThemedText
               type="item"
               numberOfLines={1}
-              style={[styles.transcript, { color: ON_CLAY }]}
+              style={[styles.transcript, { color: ON_AMBER }]}
             >
               {transcript}
             </ThemedText>
           ) : (
-            <Waveform tint={ON_CLAY} />
+            <Waveform tint={ON_AMBER} />
           )}
         </View>
 
@@ -112,7 +111,7 @@ export function CaptureBar({
           accessibilityLabel="Save capture"
           style={styles.iconBtn}
         >
-          <MaterialCommunityIcons name="check" size={24} color={ON_CLAY} />
+          <MaterialCommunityIcons name="check" size={24} color={ON_AMBER} />
         </Pressable>
       </View>
     );
@@ -162,7 +161,7 @@ export function CaptureBar({
             pressed && styles.pressed,
           ]}
         >
-          <MaterialCommunityIcons name="arrow-up" size={22} color={ON_CLAY} />
+          <MaterialCommunityIcons name="arrow-up" size={22} color={ON_AMBER} />
         </Pressable>
       ) : (
         <Pressable
@@ -181,8 +180,8 @@ export function CaptureBar({
 
 /**
  * The command-line caret — a blinking mono prompt that says "fill this line."
- * Color is the scheme-resolved signal (clay in dark, inkMuted in light); the
- * clay identity is carried by the always-visible edge-bar, not this glyph.
+ * Color is the scheme-resolved signal (amber in dark, inkMuted in light); the
+ * amber identity is carried by the always-visible edge-bar, not this glyph.
  */
 function Caret({ color }: { color: string }): React.ReactElement {
   const reduced = useReducedMotion();

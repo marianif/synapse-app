@@ -35,23 +35,6 @@
 - [ ] Add loading state and error feedback in UI
 - [ ] Create streaming response handler for real-time feedback
 
----
-
-## Settings & Configuration
-
-### BYOK (Bring Your Own Key) Support
-
-- [ ] Add API key input field in Settings screen
-- [ ] Secure storage for API key (expo-secure-store)
-- [ ] Toggle to enable/disable AI features
-- [ ] Usage tracking (optional: display quota usage)
-- [ ] Validate API key on save
-
-### Settings Enhancements
-
-- [ ] Theme selection (Dark Sanctuary / Light / System)
-- [ ] Haptic feedback toggle
-- [ ] Data export (JSON/CSV)
 
 ---
 
@@ -91,21 +74,43 @@ unmistakably ours, not template-grade.
 
 ### Present readability
 
-- [ ] PRESENT items text color isn't readable enough — audit chip/tile title
+- [x] PRESENT items text color isn't readable enough — audit chip/tile title
       contrast against the type-tints, esp. faded (ghosted) cloud chips where
       opacity drops to ~0.47
-- [ ] Fix: likely raise the freshness opacity floor for the TEXT specifically
+- [x] Fix: likely raise the freshness opacity floor for the TEXT specifically
       (keep the chip background fading, keep the label legible), or bump the
       ghost floor. Verify WCAG AA on the dimmest visible chip in both schemes
+      → Decoupled in `present-constellation.tsx`: freshness now fades a separate
+      absolute background layer (`bgOpacity` 0.28→1.0) + the type-dot, while the
+      label holds a legible floor (`labelOpacity` 0.74→1.0). Dimmest visible chip
+      measures 6.6:1 (light) / 8.3:1 (dark) — well past AA. Cloud chips only carry
+      idea/someday types, so the audited tints are ideas + someday.
 
 ### Capture bar — rethink from scratch
 
-- [ ] The "Capture a thought" bar must be redesigned from scratch (currently a
+- [x] The "Capture a thought" bar must be redesigned from scratch (currently a
       cyan pill, the brief's FAB replacement) — it's the primary capture surface
       and the most-touched element; it should feel like the instrument's
       command line, not a generic pill button
-- [ ] Reconsider idle vs. recording states, the waveform, and how voice vs. typed
+      → Rebuilt as the board's COMMAND LINE: sharp `radius.md` corner + a 4px
+      clay edge-bar (the board's structural signature), a blinking mono `›`
+      caret, and a left-aligned mono placeholder. Dropped the full-clay idle
+      slab — clay now goes full-bleed ONLY when recording, so the color shift is
+      itself the "listening" signal.
+- [x] Reconsider idle vs. recording states, the waveform, and how voice vs. typed
       capture is offered
+      → Settled the bar's ROLE: it is the quick IDEA line, both routes inline.
+      Idle is a live `TextInput` — type a note + ↵ (or the clay send-key that
+      appears once there's text) saves it straight as an `idea` into the Present
+      cloud, no navigation. The mic (shown when empty) arms voice; the spoken
+      transcript also lands as an idea on stop. Richer entries (bills, deadlines,
+      events, dates, recurrence) moved OUT of the bar to a center Add key in the
+      tab bar (opens the existing add-modal). Keyboard handled via
+      `KeyboardAvoidingView` on the dock. Fixed a pre-existing AA failure:
+      recording text was paper-on-cyan (1.6:1) — now cool-near-black on cyan
+      (9.6:1). Idle glyphs fall back to inkMuted in light (clay fails AA on the
+      light surface); clay identity rides the edge-bar. Same on-clay ink on the
+      tab-bar Add key.
 
 ### Weekly view placement
 

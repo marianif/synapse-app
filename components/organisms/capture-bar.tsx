@@ -1,10 +1,11 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useEffect } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withDelay,
   withRepeat,
   withSequence,
   withTiming,
@@ -15,11 +16,18 @@ import { tokens, useTheme } from "@/constants/theme";
 
 const WAVEFORM_BARS = 9;
 
+// The electric capture code reads as a bright slab when recording; its text and
+// glyphs must be the cool near-black the code is tuned to sit on (≥9.6:1 both
+// schemes), never paper-on-cyan (1.6:1, fails AA in light). This is the same
+// bright-code-on-cool-dark rule the kicker audit uses — reusing an existing
+// token value, not a new one.
+const ON_CLAY = tokens.color.dark.paper;
+
 interface CaptureBarProps {
-  /** Open the capture flow (voice/modal). */
-  onPress?: () => void;
-  /** Long-press to arm voice capture directly. */
-  onLongPress?: () => void;
+  /** Save a typed idea inline (the bar is the quick idea line). */
+  onSubmitIdea?: (text: string) => void;
+  /** Tap the mic to arm voice capture (visible, first-class route). */
+  onVoice?: () => void;
   isRecording?: boolean;
   transcript?: string;
   onStop?: () => void;
@@ -27,27 +35,49 @@ interface CaptureBarProps {
 }
 
 /**
- * The Field's always-on capture bar. Pinned to the bottom of every screen so a
- * thought is one thumb-tap from being caught — the brief's replacement for the
- * banned FAB. Idle it invites; recording it shows a live waveform and the
- * streaming transcript, with stop / discard inline.
+ * The board's command line — the quick IDEA capture instrument. Field Lab is an
+ * instrument panel (mono readouts, sharp corners, saturated edge-bars carrying
+ * structure), and this is the one always-on input on it. Idle it's a live text
+ * line you FILL: a clay edge-bar (the capture channel), a blinking mono caret,
+ * an inline TextInput, and a first-class mic. Typing + ↵ (or the send key) saves
+ * the note straight as an idea into the Present cloud — no navigation. The mic
+ * arms voice (also an idea). Richer entries (bills, deadlines, events, dates)
+ * live in the Add tab, not here. Recording it goes full electric-clay — the one
+ * moment the accent goes full-bleed — with a live waveform, the streaming
+ * transcript, and inline discard / keep. The color shift IS the "listening"
+ * signal.
  */
 export function CaptureBar({
-  onPress,
-  onLongPress,
+  onSubmitIdea,
+  onVoice,
   isRecording = false,
   transcript = "",
   onStop,
   onCancel,
 }: CaptureBarProps): React.ReactElement {
-  const { colors } = useTheme();
+  const { scheme, colors } = useTheme();
+  const [draft, setDraft] = useState("");
+  const hasText = draft.trim().length > 0;
+
+  const submit = (): void => {
+    if (!hasText) return;
+    onSubmitIdea?.(draft.trim());
+    setDraft("");
+  };
+
+  // Bright clay clears AA on the dark surface (8.6:1) but fails on the light one
+  // (1.7:1). The clay identity rides the always-on edge-bar (a solid bar, not a
+  // contrast-bound glyph); the caret + mic glyph fall back to inkMuted in light
+  // so the affordances stay legible. Edge-bar stays clay in both schemes.
+  const signal = scheme === "dark" ? colors.type.ideas : colors.inkMuted;
 
   if (isRecording) {
     return (
       <View
         style={[
           styles.bar,
-          { backgroundColor: colors.accent.clay },
+          styles.recording,
+          { backgroundColor: colors.type.ideas },
           tokens.elevation.capture,
         ]}
       >
@@ -58,7 +88,7 @@ export function CaptureBar({
           accessibilityLabel="Discard recording"
           style={styles.iconBtn}
         >
-          <MaterialCommunityIcons name="close" size={22} color={colors.paper} />
+          <MaterialCommunityIcons name="close" size={22} color={ON_CLAY} />
         </Pressable>
 
         <View style={styles.center}>
@@ -66,12 +96,12 @@ export function CaptureBar({
             <ThemedText
               type="item"
               numberOfLines={1}
-              style={[styles.transcript, { color: colors.paper }]}
+              style={[styles.transcript, { color: ON_CLAY }]}
             >
               {transcript}
             </ThemedText>
           ) : (
-            <Waveform tint={colors.paper} />
+            <Waveform tint={ON_CLAY} />
           )}
         </View>
 
@@ -82,35 +112,103 @@ export function CaptureBar({
           accessibilityLabel="Save capture"
           style={styles.iconBtn}
         >
-          <MaterialCommunityIcons name="check" size={24} color={colors.paper} />
+          <MaterialCommunityIcons name="check" size={24} color={ON_CLAY} />
         </Pressable>
       </View>
     );
   }
 
   return (
-    <Pressable
-      onPress={onPress}
-      onLongPress={onLongPress}
-      accessibilityRole="button"
-      accessibilityLabel="Capture a thought"
-      style={({ pressed }) => [
+    <View
+      style={[
         styles.bar,
-        { backgroundColor: colors.accent.clay },
+        styles.idle,
+        { backgroundColor: colors.surface },
         tokens.elevation.capture,
-        pressed && { backgroundColor: colors.accent.clayPressed },
       ]}
     >
-      <MaterialCommunityIcons name="plus" size={24} color={colors.paper} />
-      <ThemedText type="item" style={[styles.prompt, { color: colors.paper }]}>
-        Capture a thought
-      </ThemedText>
-      <MaterialCommunityIcons
-        name="microphone"
-        size={22}
-        color={colors.paper}
-      />
-    </Pressable>
+      <View style={[styles.edge, { backgroundColor: colors.type.ideas }]} />
+
+      {/* The line you FILL: a blinking caret + inline TextInput. ↵ saves the
+          idea; the caret hides once typing starts (the cursor takes over). */}
+      <View style={styles.prompt}>
+        {!hasText ? <Caret color={signal} /> : null}
+        <TextInput
+          value={draft}
+          onChangeText={setDraft}
+          onSubmitEditing={submit}
+          placeholder="Quick capture an idea"
+          placeholderTextColor={colors.inkMuted}
+          selectionColor={colors.type.ideas}
+          returnKeyType="done"
+          submitBehavior="submit"
+          accessibilityLabel="Capture a thought"
+          accessibilityHint="Type a note and submit to save it as an idea."
+          style={[styles.input, { color: colors.ink }]}
+        />
+      </View>
+
+      {/* With text: a send key saves the idea. Empty: the mic arms voice —
+          both routes land an idea, neither leaves the board. */}
+      {hasText ? (
+        <Pressable
+          onPress={submit}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Save idea"
+          style={({ pressed }) => [
+            styles.sendBtn,
+            { backgroundColor: colors.type.ideas },
+            pressed && styles.pressed,
+          ]}
+        >
+          <MaterialCommunityIcons name="arrow-up" size={22} color={ON_CLAY} />
+        </Pressable>
+      ) : (
+        <Pressable
+          onPress={onVoice}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Capture by voice"
+          style={({ pressed }) => [styles.micBtn, pressed && styles.pressed]}
+        >
+          <MaterialCommunityIcons name="microphone" size={22} color={signal} />
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+/**
+ * The command-line caret — a blinking mono prompt that says "fill this line."
+ * Color is the scheme-resolved signal (clay in dark, inkMuted in light); the
+ * clay identity is carried by the always-visible edge-bar, not this glyph.
+ */
+function Caret({ color }: { color: string }): React.ReactElement {
+  const reduced = useReducedMotion();
+  const blink = useSharedValue(1);
+
+  useEffect(() => {
+    if (reduced) {
+      blink.value = 1;
+      return;
+    }
+    blink.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 540 }),
+        withDelay(120, withTiming(0.15, { duration: 220 })),
+      ),
+      -1,
+      true,
+    );
+  }, [blink, reduced]);
+
+  const style = useAnimatedStyle(() => ({ opacity: blink.value }));
+
+  return (
+    <Animated.Text style={[styles.caret, { color }, style]}>
+      {"›"}
+    </Animated.Text>
   );
 }
 
@@ -167,13 +265,65 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: "row",
     alignItems: "center",
-    gap: tokens.space.md,
     minHeight: 56,
+    borderRadius: tokens.radius.md,
+    overflow: "hidden",
+  },
+  // Idle: a command line — left edge-bar, prompt, mic. Sharp instrument corner.
+  idle: {
+    paddingLeft: tokens.space.lg,
+    paddingRight: tokens.space.xs,
+  },
+  // Recording: the one full-clay moment — symmetric, controls inline.
+  recording: {
+    gap: tokens.space.md,
     paddingHorizontal: tokens.space.lg,
-    borderRadius: tokens.radius.pill,
+  },
+  edge: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
   },
   prompt: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+    minHeight: 56,
+  },
+  caret: {
+    fontSize: tokens.type.item.size,
+    lineHeight: tokens.type.item.size,
+    fontFamily: tokens.type.fontMono.bold,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 0,
+    fontSize: tokens.type.item.size,
+    lineHeight: tokens.type.item.size,
+    fontFamily: tokens.type.fontInter.medium,
+  },
+  micBtn: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  // Send key: the one moment clay appears in the idle bar — a charged enter key.
+  // hitSlop carries it to the 44pt target; the visual key stays a tight 36pt
+  // square so it reads as a key inside the line, not a second slab.
+  sendBtn: {
+    width: 36,
+    height: 36,
+    marginHorizontal: tokens.space.xs,
+    borderRadius: tokens.radius.sm,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pressed: {
+    opacity: 0.6,
   },
   center: {
     flex: 1,

@@ -2,7 +2,13 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
@@ -138,7 +144,8 @@ export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
 
-  const { entries, recurrenceCompletions, fetchEntries } = useDatabase();
+  const { entries, recurrenceCompletions, fetchEntries, createEntry } =
+    useDatabase();
 
   const { today: calendarToday } = useCalendarData(
     entries,
@@ -149,6 +156,20 @@ export default function HomeScreen(): React.ReactElement {
   const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
   const [isRecording, setIsRecording] = useState(false);
 
+  // The capture bar is the quick IDEA line: typed or spoken, a note lands
+  // straight in the Present cloud as an idea. Richer entries go through the
+  // Add tab.
+  const captureIdea = useCallback(
+    (text: string) => {
+      const title = text.trim();
+      if (!title) return;
+      createEntry({ title, type: "idea" }).catch((err) =>
+        console.error("Failed to capture idea:", err),
+      );
+    },
+    [createEntry],
+  );
+
   const handleStartRecording = useCallback(async () => {
     setIsRecording(true);
     await startRecording();
@@ -157,10 +178,8 @@ export default function HomeScreen(): React.ReactElement {
   const handleStopRecording = useCallback(async () => {
     await stopRecording();
     setIsRecording(false);
-    if (transcript.trim()) {
-      router.push({ pathname: "/modal", params: { title: transcript.trim() } });
-    }
-  }, [stopRecording, transcript, router]);
+    captureIdea(transcript);
+  }, [stopRecording, transcript, captureIdea]);
 
   const handleCancelRecording = useCallback(async () => {
     await stopRecording();
@@ -200,14 +219,6 @@ export default function HomeScreen(): React.ReactElement {
     },
     [router],
   );
-
-  const handleCapturePress = useCallback(() => {
-    if (isRecording) {
-      handleStopRecording();
-    } else {
-      router.push("/voice-input");
-    }
-  }, [isRecording, handleStopRecording, router]);
 
   // The field, split into the two zones the brief names: STAKES (consequence)
   // and PRESENT (must-not-fade). Each zone is sorted hottest-first, but heat is
@@ -275,16 +286,20 @@ export default function HomeScreen(): React.ReactElement {
         <View style={styles.captureSpacer} />
       </ScrollView>
 
-      <View style={styles.captureDock} pointerEvents="box-none">
+      <KeyboardAvoidingView
+        style={styles.captureDock}
+        pointerEvents="box-none"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <CaptureBar
-          onPress={handleCapturePress}
-          onLongPress={handleStartRecording}
+          onSubmitIdea={captureIdea}
+          onVoice={handleStartRecording}
           isRecording={isRecording}
           transcript={transcript}
           onStop={handleStopRecording}
           onCancel={handleCancelRecording}
         />
-      </View>
+      </KeyboardAvoidingView>
 
       <DayDetailSheet
         visible={sheetVisible}

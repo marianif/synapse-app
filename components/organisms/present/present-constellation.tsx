@@ -31,8 +31,13 @@ export function PresentConstellation({
       {items.map((item) => {
         const code = entryColor(item.type);
         const tint = entryTint(item.type, scheme);
-        // brightness rides freshness; fresh chips sit proud, ghosts recede
-        const opacity = 0.4 + item.freshness * 0.6;
+        // Freshness decays the CHIP BODY, not the label. The tint and type-dot
+        // recede as an item ages (the ghosting signal) via a separate background
+        // layer, while the title text holds a legible floor so even the oldest
+        // visible chip clears WCAG AA in both schemes.
+        const bgOpacity = 0.28 + item.freshness * 0.72;
+        const dotOpacity = 0.45 + item.freshness * 0.55;
+        const labelOpacity = 0.74 + item.freshness * 0.26;
         const big = item.bucket === "fresh";
         return (
           <Pressable
@@ -43,16 +48,23 @@ export function PresentConstellation({
             style={({ pressed }) => [
               styles.chip,
               big && styles.chipBig,
-              { backgroundColor: tint, opacity },
               pressed && styles.pressed,
             ]}
             hitSlop={4}
           >
-            <View style={[styles.dot, { backgroundColor: code }]} />
+            <View
+              style={[
+                styles.fill,
+                { backgroundColor: tint, opacity: bgOpacity },
+              ]}
+            />
+            <View
+              style={[styles.dot, { backgroundColor: code, opacity: dotOpacity }]}
+            />
             <ThemedText
               type={big ? "item" : "body"}
               numberOfLines={1}
-              style={[styles.label, { color: colors.ink }]}
+              style={[styles.label, { color: colors.ink, opacity: labelOpacity }]}
             >
               {item.title}
             </ThemedText>
@@ -78,7 +90,15 @@ const styles = StyleSheet.create({
     paddingLeft: tokens.space.sm,
     paddingRight: tokens.space.md,
     borderRadius: tokens.radius.pill,
+    overflow: "hidden",
     maxWidth: "100%",
+  },
+  fill: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   chipBig: {
     paddingVertical: tokens.space.xs,

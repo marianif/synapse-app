@@ -24,7 +24,7 @@ import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 import { toPresentItems } from "@/lib/present";
 
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
-import type { RunwayItem } from "@/components/molecules/runway-gauge";
+import type { RunwayItem } from "@/components/organisms/stakes-runway";
 import type { DbEntry, EntryType } from "@/lib/types";
 
 dayjs.extend(customParseFormat);

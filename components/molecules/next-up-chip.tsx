@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
+import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
 
 import type { FieldRowItem } from "@/components/molecules/field-row";
@@ -9,20 +10,26 @@ import type { FieldRowItem } from "@/components/molecules/field-row";
 interface NextUpChipProps {
   /** The single thing most worth a glance right now. */
   item: FieldRowItem;
+  /** Delete the featured entry. When set, the chip swipes to reveal delete. */
+  onDelete?: (id: string) => void;
 }
 
 /**
  * The "next" chip — the one thing the briefing points the eye at. A tappable
  * pill carrying the type-color edge-bar, the title, an optional mono when-label,
  * and a type-colored arrow. Distinct from FieldRow (the glowing board row): this
- * is a compact summary chip that opens the entry's detail.
+ * is a compact summary chip that opens the entry's detail. With an onDelete
+ * handler it swipes left to reveal a delete action (shared SwipeableRow).
  */
-export function NextUpChip({ item }: NextUpChipProps): React.ReactElement {
+export function NextUpChip({
+  item,
+  onDelete,
+}: NextUpChipProps): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
   const code = entryColor(item.type);
 
-  return (
+  const chip = (
     <Pressable
       onPress={() => router.push({ pathname: "/detail", params: { id: item.id } })}
       accessibilityRole="button"
@@ -54,6 +61,14 @@ export function NextUpChip({ item }: NextUpChipProps): React.ReactElement {
         →
       </ThemedText>
     </Pressable>
+  );
+
+  if (!onDelete) return chip;
+
+  return (
+    <SwipeableRow accentColor={code} onDelete={() => onDelete(item.id)}>
+      {chip}
+    </SwipeableRow>
   );
 }
 

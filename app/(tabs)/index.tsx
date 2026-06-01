@@ -144,7 +144,7 @@ export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
 
-  const { entries, recurrenceCompletions, fetchEntries, createEntry } =
+  const { entries, recurrenceCompletions, fetchEntries, createEntry, deleteEntry } =
     useDatabase();
 
   const { today: calendarToday } = useCalendarData(
@@ -259,7 +259,16 @@ export default function HomeScreen(): React.ReactElement {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <FieldBriefing now={today} stakes={stakes} present={present} />
+        <FieldBriefing
+          now={today}
+          stakes={stakes}
+          present={present}
+          onDeleteNext={(id) =>
+            deleteEntry(id).catch((err) =>
+              console.error("Failed to delete entry:", err),
+            )
+          }
+        />
 
         <StakesRunway
           items={stakeGauges}

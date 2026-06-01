@@ -14,6 +14,8 @@ interface FieldBriefingProps {
   stakes: FieldRowItem[];
   /** PRESENT rows (ideas + events + someday), pre-sorted hottest-first. */
   present: FieldRowItem[];
+  /** Delete the featured "next" entry (lets the chip swipe to delete). */
+  onDeleteNext?: (id: string) => void;
 }
 
 function greetingFor(hour: number): string {
@@ -43,6 +45,7 @@ export function FieldBriefing({
   now,
   stakes,
   present,
+  onDeleteNext,
 }: FieldBriefingProps): React.ReactElement {
   const { colors } = useTheme();
 
@@ -59,7 +62,7 @@ export function FieldBriefing({
 
       <FieldSummary stakes={stakes} present={present} />
 
-      {next ? <NextUpChip item={next} /> : null}
+      {next ? <NextUpChip item={next} onDelete={onDeleteNext} /> : null}
 
       {total > 0 ? (
         <ThemedText

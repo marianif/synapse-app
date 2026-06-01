@@ -156,11 +156,19 @@ re-cutting the two heaviest content surfaces (Stakes, Detail).
 
 ### Stakes — redesign
 
-- [ ] The Stakes zone (currently the time-to-edge runway of fuel gauges) needs a
+- [x] The Stakes zone (currently the time-to-edge runway of fuel gauges) needs a
       rethink — decide whether the runway metaphor earns its complexity or a
       simpler, denser readout serves the "what's on the line" job better.
-- [ ] Hold the Field Lab vocabulary (mono readouts, edge-bars, electric type
+- [x] Hold the Field Lab vocabulary (mono readouts, edge-bars, electric type
       codes, sharp corners); brand tokens read-only. WCAG AA in both schemes.
+      → Rebuilt as a uniform BURNDOWN LIST sorted hottest-first: each row is a
+      mono countdown + title + OVER chip / type-dot + a thin burndown bar. Heat
+      is color-only (bar/dot/chip go danger-red when overdue) so urgency reads
+      first without unequal rows. Capped at 5 with a "See all +N →" CTA (and a
+      tappable header) into `/list`. Countdown stays `ink` (AA); danger rides
+      solid fills, no new token values. Dropped the per-item fuel-gauge molecule.
+      OPEN: "See all" → `/list?entryType=deadline` shows deadlines only; stakes
+      also include todos — resolves when the Incoming screen lands.
 
 ### Detail screen — redesign
 

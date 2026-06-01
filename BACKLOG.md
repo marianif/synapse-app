@@ -35,7 +35,6 @@
 - [ ] Add loading state and error feedback in UI
 - [ ] Create streaming response handler for real-time feedback
 
-
 ---
 
 ## UI/UX Improvements
@@ -112,21 +111,82 @@ unmistakably ours, not template-grade.
       light surface); clay identity rides the edge-bar. Same on-clay ink on the
       tab-bar Add key.
 
-### Weekly view placement
-
-- [ ] Move the weekly view into the TAB BAR (a destination), not the side menu —
-      it's a primary view, not a buried setting
-- [ ] (Context: the WeekStrip was already removed from the home scroll; this is
-      about where weekly lives in navigation. The DayDetailSheet on home is
-      currently orphaned — decide whether to remove it or re-home it here)
-
 ### Greeting — make it cooler / more human
 
-- [ ] The briefing greeting ("Good evening.") feels seen-a-thousand-times.
+- [x] The briefing greeting ("Good evening.") feels seen-a-thousand-times.
       Redesign it to feel more human, engaging, and distinctly Field Lab —
       companion voice (between Coach and Ops), not a stock time-of-day label
-- [ ] Explore: varied/observational lines, time + field-state aware, maybe a
+- [x] Explore: varied/observational lines, time + field-state aware, maybe a
       typographic treatment that isn't just a bold Inter display line
+      → Landed the "conversational count sentence": keep the greeting opener,
+      then one flowing line that inlines the real per-type counts, each colored
+      by its AA-safe type shade (`entryKicker`). Stakes "need you this week",
+      present things "are still here". Plurals + subject-verb agreement handled.
+
+---
+
+## Home — Field Lab Polish, pass 2
+
+Structural/navigation pass. The board and capture surfaces are in; this pass is
+about where things LIVE (sidebar vs. settings, weekly→incoming as a tab) and
+re-cutting the two heaviest content surfaces (Stakes, Detail).
+
+### Appearance — dark-default, drop "system"
+
+- [ ] Default scheme must be **dark** (the Field Lab instrument-panel look reads
+      dark-first). New installs land in dark, not "system".
+- [ ] User can only toggle **Light ⇄ Dark**; remove the "System" option entirely
+      from the appearance control. `ThemePreference` drops `"system"` (becomes
+      `"light" | "dark"`), default `"dark"`; migrate any persisted `"system"`
+      value to the resolved scheme (or just to dark) on read.
+- [ ] Touches `lib/*theme*` preference storage, `contexts/theme-context.tsx`
+      (default + no system resolution), and the appearance switcher (currently a
+      3-segment control in `app-menu.tsx` → becomes a 2-state toggle).
+
+### Weekly → "Incoming" screen (tab destination)
+
+- [ ] The planned weekly view becomes an **Incoming** screen: still scoped to
+      THIS WEEK, but shows everything with a date this week — **deadlines, todos,
+      AND events** together (not just one type), time-ordered.
+- [ ] Make it a real tab-bar destination (the long-planned "weekly in tab bar"
+      item — now resolved as Incoming). Decide the tab layout: Home · Add ·
+      Incoming · Calendar, or fold Calendar in. Resolve the orphaned
+      `DayDetailSheet` and the old `weekly-overview-card` / `week-strip` here.
+- [ ] Empty state when nothing's dated this week (observational, on-brand).
+
+### Stakes — redesign
+
+- [ ] The Stakes zone (currently the time-to-edge runway of fuel gauges) needs a
+      rethink — decide whether the runway metaphor earns its complexity or a
+      simpler, denser readout serves the "what's on the line" job better.
+- [ ] Hold the Field Lab vocabulary (mono readouts, edge-bars, electric type
+      codes, sharp corners); brand tokens read-only. WCAG AA in both schemes.
+
+### Detail screen — redesign
+
+- [ ] `app/detail.tsx` needs a from-scratch redesign to match the Field Lab
+      language (it predates the rebrand). Per-type treatment (deadline vs. todo
+      vs. idea/someday vs. event), the metadata rows, and the action bar.
+- [ ] Reuse the established atoms/molecules (edge-bars, mono metadata,
+      `entryColor`/`entryKicker`); no new token values.
+
+### Home header — suppress top-left icon, move settings out
+
+- [ ] Decide the fate of the home header's top-left icon (currently a `menu`
+      button opening `AppMenu`, the de-facto sidebar). Likely **suppress it** and
+      relocate everything it holds (appearance, etc.) into a dedicated Settings
+      screen.
+- [ ] If the menu/sidebar goes away, re-home its contents (appearance toggle, any
+      actions) and remove `AppMenu` or repurpose it as the Settings screen body.
+
+### Settings screen — conceptualize
+
+- [ ] Define a proper **Settings screen** (destination, not a popover). First
+      cut of sections: Appearance (Light/Dark toggle), Notifications, BYOK / API
+      key (ties to the AI Integration track), About. Where it's reached from:
+      a Settings entry in the tab bar or an avatar/profile tap in the header.
+- [ ] This absorbs the old `app-menu` appearance control and becomes the home for
+      future config (the "Settings Enhancements" priority item).
 
 ---
 
@@ -156,6 +216,11 @@ unmistakably ours, not template-grade.
 5. **Settings Enhancements** — Configuration
 
 **Home — Field Lab Polish** (parallel design track, not blocking MVP launch):
-greeting redesign + capture-bar rethink first (highest-touch, most "seen
-before"), then Present readability (a11y), then section-title sketches, then
-weekly-in-tabbar.
+pass 1 done — greeting redesign, capture-bar rethink, Present readability. The
+accent token was also de-conflicted (was identical to `type.todo` cyan → now a
+scheme-aware neutral; capture bar wears the ideas/amber code).
+
+**Home — Field Lab Polish, pass 2** order: appearance dark-default + drop system
+(small, unblocks the look) → settings screen + suppress header menu (where config
+lives) → Incoming tab (weekly resolved) → Stakes redesign → Detail redesign
+(largest). Section-title sketches remain the lowest-priority polish.

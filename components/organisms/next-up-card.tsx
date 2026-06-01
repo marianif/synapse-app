@@ -5,11 +5,14 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { CounterDisplay } from "@/components/atoms/counter-display";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { entryColor, useTheme, tokens } from "@/constants/theme";
 import { DbEntry } from "@/lib/types";
 
 interface NextUpCardProps {
   entries: DbEntry[];
+  /** Delete the featured entry (swipe-left reveals a delete action). */
+  onDelete?: (id: string) => void;
 }
 
 /**
@@ -17,7 +20,10 @@ interface NextUpCardProps {
  * Identifies the closest upcoming event or deadline for today.
  * Shows time remaining in large hero typography.
  */
-export function NextUpCard({ entries }: NextUpCardProps): React.ReactElement | null {
+export function NextUpCard({
+  entries,
+  onDelete,
+}: NextUpCardProps): React.ReactElement | null {
   const router = useRouter();
   const { colors } = useTheme();
 
@@ -81,7 +87,7 @@ export function NextUpCard({ entries }: NextUpCardProps): React.ReactElement | n
 
   const accentColor = entryColor(entry.type);
 
-  return (
+  const card = (
     <Pressable
       onPress={() => router.push(`/detail?id=${entry.id}`)}
       style={[styles.card, { backgroundColor: colors.surface }]}
@@ -101,7 +107,7 @@ export function NextUpCard({ entries }: NextUpCardProps): React.ReactElement | n
             </ThemedText>
           </View>
         </View>
-        
+
         <View style={styles.right}>
           <CounterDisplay value={parseInt(timeLabel) || 0} accentType={entry.type as any} />
           {isNaN(parseInt(timeLabel)) && (
@@ -112,10 +118,20 @@ export function NextUpCard({ entries }: NextUpCardProps): React.ReactElement | n
           </ThemedText>
         </View>
       </View>
-      
+
       {/* Background Glow */}
       <View style={[styles.glow, { backgroundColor: accentColor }]} />
     </Pressable>
+  );
+
+  // Swipe-left reveals a delete action (reuses the shared SwipeableRow with its
+  // confirm alert). Without an onDelete handler the card is just tappable.
+  if (!onDelete) return card;
+
+  return (
+    <SwipeableRow accentColor={accentColor} onDelete={() => onDelete(entry.id)}>
+      {card}
+    </SwipeableRow>
   );
 }
 

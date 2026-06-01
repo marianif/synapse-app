@@ -5,6 +5,11 @@ import { Swipeable, RectButton } from 'react-native-gesture-handler';
 
 import { useTheme, tokens } from '@/constants/theme';
 
+// The delete action sits on the bright danger code; its icon must be a fixed
+// cool-near-black in both schemes (4.75:1). colors.ink fails AA in dark (3.1:1,
+// near-white on mid-red). Reuses the dark-paper token value.
+const ON_DANGER = tokens.color.dark.paper;
+
 interface SwipeableRowProps {
   children: React.ReactNode;
   onDelete: () => void;
@@ -50,7 +55,7 @@ export function SwipeableRow({
       <MaterialCommunityIcons
         name="trash-can-outline"
         size={22}
-        color={colors.ink}
+        color={ON_DANGER}
       />
     </RectButton>
   );

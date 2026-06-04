@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
-import { ALL_STATEMENTS, CREATE_ENTRIES_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, SCHEMA_VERSION } from './schema';
+import { ALL_STATEMENTS, CREATE_DIARY_TABLE, CREATE_ENTRIES_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, SCHEMA_VERSION } from './schema';
+import type { DbDiaryEntry, DiaryMood } from './types';
 
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 let isInitialized = false;
@@ -233,10 +234,58 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       await db.execAsync('DROP TABLE entries_old');
       await db.runAsync(
         "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        '6',
+      );
+    });
+  }
+
+  if (currentVersion < 7) {
+    // Migration 7: add the standalone diary_entries table. Independent of the
+    // action-item `entries` table, so no CHECK-constraint rebuild is needed —
+    // just create it for installs that predate it.
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(CREATE_DIARY_TABLE);
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
         String(SCHEMA_VERSION),
       );
     });
   }
+}
+
+// ─── Diary helpers ──────────────────────────────────────────────────────────────
+
+/** Insert a diary entry, returning the persisted row. */
+export async function insertDiaryEntry(
+  body: string,
+  mood: DiaryMood | null,
+): Promise<DbDiaryEntry> {
+  const db = getDb();
+  const id = generateId();
+  const now = Math.floor(Date.now() / 1000);
+  await db.runAsync(
+    'INSERT INTO diary_entries (id, body, mood, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+    id,
+    body,
+    mood,
+    now,
+    now,
+  );
+  return { id, body, mood, created_at: now, updated_at: now };
+}
+
+/** All diary entries, newest first. */
+export async function getDiaryEntries(): Promise<DbDiaryEntry[]> {
+  const db = getDb();
+  return db.getAllAsync<DbDiaryEntry>(
+    'SELECT * FROM diary_entries ORDER BY created_at DESC',
+  );
+}
+
+/** Delete a diary entry by id. */
+export async function deleteDiaryEntry(id: string): Promise<void> {
+  const db = getDb();
+  await db.runAsync('DELETE FROM diary_entries WHERE id = ?', id);
 }
 
 /**

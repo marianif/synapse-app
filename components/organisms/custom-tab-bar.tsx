@@ -14,7 +14,12 @@ export function CustomTabBar(): React.ReactElement {
   const pathname = usePathname();
 
   const isHome = pathname === "/" || pathname === "/(tabs)";
-  const isCalendar = pathname === "/(tabs)/calendar";
+  const isIncoming = pathname === "/list";
+  const isDiary = pathname === "/(tabs)/diary" || pathname === "/diary";
+  const isCalendar = pathname === "/(tabs)/calendar" || pathname === "/calendar";
+
+  const active = (on: boolean): string =>
+    on ? colors.accent.clay : colors.inkMuted;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surfaceSubtle }]}>
@@ -22,16 +27,25 @@ export function CustomTabBar(): React.ReactElement {
         <Pressable
           onPress={() => router.push("/")}
           accessibilityRole="button"
-          accessibilityLabel="Home"
+          accessibilityLabel="Field"
           style={({ pressed }) => [
             styles.tabButton,
             pressed && styles.tabButtonPressed,
           ]}
         >
-          <TabIcon
-            name="view-grid"
-            color={isHome ? colors.accent.clay : colors.inkMuted}
-          />
+          <TabIcon name="view-grid" color={active(isHome)} />
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push("/list")}
+          accessibilityRole="button"
+          accessibilityLabel="Incoming"
+          style={({ pressed }) => [
+            styles.tabButton,
+            pressed && styles.tabButtonPressed,
+          ]}
+        >
+          <TabIcon name="tray-arrow-down" color={active(isIncoming)} />
         </Pressable>
 
         {/* The create-key — richer entries (bills, deadlines, events, dates)
@@ -53,6 +67,18 @@ export function CustomTabBar(): React.ReactElement {
         </Pressable>
 
         <Pressable
+          onPress={() => router.push("/(tabs)/diary")}
+          accessibilityRole="button"
+          accessibilityLabel="Diary"
+          style={({ pressed }) => [
+            styles.tabButton,
+            pressed && styles.tabButtonPressed,
+          ]}
+        >
+          <TabIcon name="notebook-outline" color={active(isDiary)} />
+        </Pressable>
+
+        <Pressable
           onPress={() => router.push("/(tabs)/calendar")}
           accessibilityRole="button"
           accessibilityLabel="Calendar"
@@ -61,10 +87,7 @@ export function CustomTabBar(): React.ReactElement {
             pressed && styles.tabButtonPressed,
           ]}
         >
-          <TabIcon
-            name="calendar"
-            color={isCalendar ? colors.accent.clay : colors.inkMuted}
-          />
+          <TabIcon name="calendar" color={active(isCalendar)} />
         </Pressable>
       </View>
     </View>
@@ -81,7 +104,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    paddingHorizontal: 48,
+    paddingHorizontal: tokens.space.lg,
   },
   tabButton: {
     width: 44,

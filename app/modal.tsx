@@ -1,6 +1,7 @@
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,10 +12,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import DateInput from "@/components/atoms/DateInput";
 import { ThemedText } from "@/components/atoms/themed-text";
-import TimeInput from "@/components/atoms/TimeInput";
 import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
+import { WhenPicker } from "@/components/molecules/when-picker";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import type { RecurrenceFrequency } from "@/lib/types";
@@ -22,13 +22,14 @@ import type { RecurrenceFrequency } from "@/lib/types";
 import type { EntryType } from "@/components/atoms/entry-dot";
 import dayjs from "dayjs";
 
-type FormType = "todo" | "deadline" | "event" | "someday";
+type FormType = "todo" | "deadline" | "event" | "someday" | "idea";
 
 const TYPE_OPTIONS: { value: FormType; label: string }[] = [
   { value: "todo", label: "Todo" },
   { value: "deadline", label: "Deadline" },
   { value: "event", label: "Event" },
   { value: "someday", label: "Someday" },
+  { value: "idea", label: "Idea" },
 ];
 
 const isEditMode = (
@@ -57,9 +58,8 @@ export default function AddEntryModal(): React.ReactElement {
   const [date, setDate] = useState(
     searchParams.date ?? dayjs().format("DD/MM/YYYY"),
   );
-  const [time, setTime] = useState(
-    searchParams.time ?? dayjs().format("HH:mm"),
-  );
+  // Empty time = "All day". WhenPicker offers explicit presets so blank stays blank.
+  const [time, setTime] = useState(searchParams.time ?? "");
   const [notes, setNotes] = useState(searchParams.notes ?? "");
   const [recurrenceFreq, setRecurrenceFreq] =
     useState<RecurrenceFrequency | null>(null);
@@ -125,14 +125,42 @@ export default function AddEntryModal(): React.ReactElement {
           recurrenceEndDate: recurrenceEndDate.trim() || undefined,
         });
       }
+      router.back();
     } catch (error) {
       console.error("Failed to save entry:", error);
+      Alert.alert(
+        "Couldn't save",
+        "Something went wrong. Your entry wasn't saved — try again.",
+        [{ text: "OK" }],
+      );
     }
-    router.back();
+  }
+
+  function handleCancel(): void {
+    if (title.trim().length > 0) {
+      Alert.alert(
+        "Discard entry?",
+        "You've started typing. Leave and lose what you wrote?",
+        [
+          { text: "Keep editing", style: "cancel" },
+          {
+            text: "Discard",
+            style: "destructive",
+            onPress: () => router.back(),
+          },
+        ],
+      );
+    } else {
+      router.back();
+    }
   }
 
   const canSave = title.trim().length > 0 && !isCreating;
-  const showDateTime = type !== "someday";
+  const showDateTime = type !== "someday" && type !== "idea";
+
+  // Accent slab colors for the save button — mirrors the capture bar CTA pattern.
+  const saveBackground = canSave ? accentColor : colors.surfaceSubtle;
+  const saveTextColor = canSave ? colors.paper : colors.inkMuted;
 
   return (
     <SafeAreaView
@@ -144,35 +172,39 @@ export default function AddEntryModal(): React.ReactElement {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.screen}>
-          {/* Header */}
-          <View
-            style={[styles.header, { backgroundColor: colors.surfaceSubtle }]}
-          >
-            <Link href="/" dismissTo asChild>
-              <Pressable style={styles.headerButton} hitSlop={12}>
-                <ThemedText type="body" muted>
-                  Cancel
-                </ThemedText>
-              </Pressable>
-            </Link>
-            <ThemedText type="headline">
-              {editing ? "Edit Entry" : "Add Entry"}
+          {/* Header — flush with paper, no shelf tone. Cancel left, Save right as CTA. */}
+          <View style={styles.header}>
+            <Pressable
+              onPress={handleCancel}
+              style={styles.headerButton}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel"
+            >
+              <ThemedText type="body" muted>
+                Cancel
+              </ThemedText>
+            </Pressable>
+            <ThemedText type="body" style={{ color: colors.inkMuted }}>
+              {editing ? "Edit Entry" : "New Entry"}
             </ThemedText>
             <Pressable
               onPress={handleSave}
               disabled={!canSave}
               style={({ pressed }) => [
-                styles.headerSaveButton,
-                { backgroundColor: colors.surface },
-                !canSave && styles.headerSaveButtonDisabled,
-                pressed && styles.headerSaveButtonPressed,
+                styles.saveButton,
+                { backgroundColor: saveBackground },
+                pressed && styles.saveButtonPressed,
               ]}
+              accessibilityRole="button"
+              accessibilityLabel={isCreating ? "Saving" : "Save entry"}
+              accessibilityState={{ disabled: !canSave }}
             >
               <ThemedText
                 type="bodyBold"
-                style={[styles.headerSaveButtonText, { color: accentColor }]}
+                style={[styles.saveButtonText, { color: saveTextColor }]}
               >
-                {isCreating ? "Saving..." : "Save"}
+                {isCreating ? "Saving…" : "Save"}
               </ThemedText>
             </Pressable>
           </View>
@@ -185,14 +217,14 @@ export default function AddEntryModal(): React.ReactElement {
           >
             {/* Title Input */}
             <View style={styles.field}>
-              <ThemedText type="caption" muted style={styles.label}>
+              <ThemedText type="label" muted style={styles.label}>
                 TITLE
               </ThemedText>
               <TextInput
                 style={[
                   styles.input,
                   styles.titleInput,
-                  { backgroundColor: colors.surfaceSubtle, color: colors.ink },
+                  { backgroundColor: colors.surface, color: colors.ink },
                 ]}
                 value={title}
                 onChangeText={setTitle}
@@ -200,12 +232,13 @@ export default function AddEntryModal(): React.ReactElement {
                 placeholderTextColor={colors.inkMuted}
                 autoFocus
                 returnKeyType="next"
+                accessibilityLabel="Entry title"
               />
             </View>
 
-            {/* Type Selector */}
+            {/* Type Selector — 5 equal columns, always inline, top edge-bar */}
             <View style={styles.field}>
-              <ThemedText type="caption" muted style={styles.label}>
+              <ThemedText type="label" muted style={styles.label}>
                 TYPE
               </ThemedText>
               <View style={styles.typeSelector}>
@@ -217,21 +250,34 @@ export default function AddEntryModal(): React.ReactElement {
                     <Pressable
                       key={option.value}
                       onPress={() => setType(option.value)}
-                      style={[
+                      accessibilityRole="radio"
+                      accessibilityLabel={option.label}
+                      accessibilityState={{ selected: isSelected }}
+                      style={({ pressed }) => [
                         styles.typeOption,
-                        { backgroundColor: colors.surfaceSubtle },
-                        isSelected && {
-                          backgroundColor: optionAccent + "20",
-                          borderColor: optionAccent,
-                        },
+                        { backgroundColor: colors.surface },
+                        isSelected && { backgroundColor: optionAccent + "22" },
+                        pressed && !isSelected && { opacity: 0.7 },
                       ]}
                     >
+                      <View
+                        style={[
+                          styles.typeEdgeBar,
+                          {
+                            backgroundColor: isSelected
+                              ? optionAccent
+                              : "transparent",
+                          },
+                        ]}
+                      />
                       <ThemedText
-                        type="bodyBold"
+                        type="caption"
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
                         style={[
                           styles.typeOptionText,
-                          { color: colors.inkMuted },
-                          isSelected && { color: optionAccent },
+                          { color: isSelected ? optionAccent : colors.inkMuted },
+                          isSelected && { fontWeight: "600" },
                         ]}
                       >
                         {option.label}
@@ -242,36 +288,16 @@ export default function AddEntryModal(): React.ReactElement {
               </View>
             </View>
 
-            {/* Date/Time Fields (hidden for Someday) */}
+            {/* When — relative-first date + time (hidden for Someday + Idea) */}
             {showDateTime && (
-              <View style={styles.row}>
-                <View style={[styles.field, styles.halfField]}>
-                  <ThemedText type="caption" muted style={styles.label}>
-                    {type === "deadline" ? "DUE DATE" : "DATE"}
-                  </ThemedText>
-                  <DateInput
-                    value={date}
-                    onChange={setDate}
-                    style={[
-                      styles.input,
-                      { backgroundColor: colors.surfaceSubtle, color: colors.ink },
-                    ]}
-                  />
-                </View>
-                <View style={[styles.field, styles.halfField]}>
-                  <ThemedText type="caption" muted style={styles.label}>
-                    TIME
-                  </ThemedText>
-                  <TimeInput
-                    value={time ?? dayjs().format("HH:mm")}
-                    onChange={setTime}
-                    style={[
-                      styles.input,
-                      { backgroundColor: colors.surfaceSubtle, color: colors.ink },
-                    ]}
-                  />
-                </View>
-              </View>
+              <WhenPicker
+                date={date}
+                time={time}
+                onDateChange={setDate}
+                onTimeChange={setTime}
+                accentColor={accentColor}
+                dateLabel={type === "deadline" ? "DUE DATE" : "DATE"}
+              />
             )}
 
             {/* Recurrence (only for Todo) */}
@@ -293,22 +319,23 @@ export default function AddEntryModal(): React.ReactElement {
 
             {/* Notes */}
             <View style={styles.field}>
-              <ThemedText type="caption" muted style={styles.label}>
+              <ThemedText type="label" muted style={styles.label}>
                 NOTES
               </ThemedText>
               <TextInput
                 style={[
                   styles.input,
                   styles.notesInput,
-                  { backgroundColor: colors.surfaceSubtle, color: colors.ink },
+                  { backgroundColor: colors.surface, color: colors.ink },
                 ]}
                 value={notes}
                 onChangeText={setNotes}
-                placeholder="Add any additional notes..."
+                placeholder="Add any additional notes…"
                 placeholderTextColor={colors.inkMuted}
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
+                accessibilityLabel="Entry notes"
               />
             </View>
           </ScrollView>
@@ -328,6 +355,9 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  // Header: flush with paper — no shelf. Title centered in mono body scale.
+  // Cancel is muted body; Save is a filled pill that takes the entry-type accent
+  // once the title has content, so it lights up as the form becomes saveable.
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -338,22 +368,19 @@ const styles = StyleSheet.create({
   headerButton: {
     minWidth: 60,
   },
-  headerSaveButton: {
-    minWidth: 50,
+  saveButton: {
+    minWidth: 60,
     paddingHorizontal: tokens.space.md,
     paddingVertical: tokens.space.sm,
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.pill,
+    alignItems: "center",
   },
-  headerSaveButtonDisabled: {
-    opacity: 0.5,
+  saveButtonPressed: {
+    opacity: 0.75,
   },
-  headerSaveButtonPressed: {
-    opacity: 0.7,
-  },
-  headerSaveButtonText: {
-    fontSize: 14,
+  saveButtonText: {
+    fontSize: tokens.type.body.size,
     fontWeight: "600",
-    textAlign: "center",
   },
   scroll: {
     flex: 1,
@@ -366,78 +393,44 @@ const styles = StyleSheet.create({
     gap: tokens.space.xs,
   },
   label: {
-    letterSpacing: 0.5,
+    letterSpacing: tokens.type.kicker.tracking,
   },
   input: {
     borderRadius: tokens.radius.md,
     paddingHorizontal: tokens.space.lg,
     paddingVertical: tokens.space.md,
-    fontSize: 16,
+    fontSize: tokens.type.item.size,
   },
   titleInput: {
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: tokens.type.title.size,
+    fontWeight: "700",
   },
   notesInput: {
     minHeight: 100,
+    fontSize: tokens.type.body.size,
   },
+  // Type selector: 5 equal columns that always fit inline on any width. The
+  // edge-bar sits on TOP (not left) so narrow columns never crush the label.
   typeSelector: {
     flexDirection: "row",
-    gap: tokens.space.sm,
+    gap: tokens.space.xs,
   },
   typeOption: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: tokens.radius.md,
-    paddingVertical: tokens.space.md,
-    alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: "transparent",
-  },
-  typeOptionText: {},
-  row: {
-    flexDirection: "row",
-    gap: tokens.space.md,
-  },
-  halfField: {
-    flex: 1,
-  },
-  actionBar: {
-    paddingHorizontal: tokens.space.lg,
-    paddingVertical: tokens.space.lg,
-    paddingBottom: tokens.space.xl,
-    borderTopWidth: 1,
-  },
-  saveButton: {
-    borderRadius: tokens.radius.pill,
-    paddingVertical: tokens.space.md,
-    alignItems: "center",
-  },
-  saveButtonDisabled: {
-    opacity: 0.5,
-  },
-  saveButtonPressed: {
-    opacity: 0.8,
-  },
-  saveButtonText: {
-    color: tokens.color.dark.paper,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  weekdayRow: {
-    flexDirection: "row",
-    gap: tokens.space.xs,
-    marginTop: tokens.space.xs,
-  },
-  weekdayOption: {
-    flex: 1,
-    borderRadius: tokens.radius.sm,
     paddingVertical: tokens.space.sm,
-    alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: "transparent",
+    paddingHorizontal: tokens.space.xs,
+    minHeight: 48,
+    gap: tokens.space.xs,
   },
-  weekdayOptionText: {
-    fontSize: 11,
-    fontWeight: "600",
+  typeEdgeBar: {
+    width: 16,
+    height: 3,
+    borderRadius: tokens.radius.pill,
+  },
+  typeOptionText: {
+    textAlign: "center",
   },
 });

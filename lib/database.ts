@@ -185,6 +185,54 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       await db.execAsync('DROP TABLE entries_old');
       await db.runAsync(
         "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        '5',
+      );
+    });
+  }
+
+  if (currentVersion < 6) {
+    // Migration 6: Re-introduce 'idea' into the type CHECK constraint.
+    // Migration 5 had stripped it out (remapping idea → someday); this restores
+    // the ability to store ideas going forward. SQLite cannot ALTER a CHECK
+    // constraint, so we use the rename+copy+drop pattern, copying all rows
+    // through unchanged.
+    // NOTE: ideas previously remapped to 'someday' by migration 5 are
+    // indistinguishable from genuine somedays and are NOT restored.
+    await db.withTransactionAsync(async () => {
+      await db.execAsync('ALTER TABLE entries RENAME TO entries_old');
+      await db.execAsync(`
+        CREATE TABLE entries (
+          id TEXT PRIMARY KEY NOT NULL,
+          title TEXT NOT NULL,
+          type TEXT NOT NULL CHECK(type IN ('todo', 'deadline', 'event', 'someday', 'idea')),
+          subtitle TEXT,
+          inspiration TEXT,
+          scheduled_date TEXT,
+          scheduled_time TEXT,
+          due_date TEXT,
+          due_time TEXT,
+          notes TEXT,
+          status TEXT DEFAULT 'scheduled' CHECK(status IN ('scheduled', 'active', 'completed', 'pending', 'met', 'overdue')),
+          recurrence_rule TEXT,
+          recurrence_end_date TEXT,
+          created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+          updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+        )
+      `);
+      await db.execAsync(`
+        INSERT INTO entries
+          (id, title, type, subtitle, inspiration, scheduled_date, scheduled_time,
+           due_date, due_time, notes, status, recurrence_rule, recurrence_end_date,
+           created_at, updated_at)
+        SELECT
+          id, title, type, subtitle, inspiration, scheduled_date, scheduled_time,
+          due_date, due_time, notes, status, recurrence_rule, recurrence_end_date,
+          created_at, updated_at
+        FROM entries_old
+      `);
+      await db.execAsync('DROP TABLE entries_old');
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
         String(SCHEMA_VERSION),
       );
     });

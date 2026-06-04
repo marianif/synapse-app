@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { entryColor, entryTint, tokens, useTheme } from "@/constants/theme";
@@ -16,9 +16,12 @@ interface PresentVariantProps {
  * Constellation — a flowing field of chips, not rows. Freshness sets each chip's
  * brightness and how loud its type-edge reads: a just-caught idea glows, an old
  * one fades to a faint ghost but never disappears (neglect doesn't delete). The
- * wrap makes quantity visible texture — a head with three things looks calm, one
- * with twenty looks full. There is no order to read; you graze.
+ * chips graze across up to three rows that scroll sideways — a head with three
+ * things looks calm, one with twenty trails off the edge. There is no order to
+ * read; you graze.
  */
+const ROWS = 3;
+
 export function PresentConstellation({
   items,
   itemHref,
@@ -26,59 +29,76 @@ export function PresentConstellation({
   const router = useRouter();
   const { scheme, colors } = useTheme();
 
+  // Row-major fill across 3 rows of roughly equal length. Each row is a
+  // contiguous run, so a row scrolls as one grazeable strip on its own.
+  const perRow = Math.ceil(items.length / ROWS);
+  const rows: PresentItem[][] = Array.from({ length: ROWS }, (_, r) =>
+    items.slice(r * perRow, (r + 1) * perRow),
+  ).filter((row) => row.length > 0);
+
+  const renderChip = (item: PresentItem): React.ReactElement => {
+    const code = entryColor(item.type);
+    const tint = entryTint(item.type, scheme);
+    // Freshness decays the CHIP BODY, not the label. The tint and type-dot
+    // recede as an item ages (the ghosting signal) via a separate background
+    // layer, while the title text holds a legible floor so even the oldest
+    // visible chip clears WCAG AA in both schemes.
+    const bgOpacity = 0.28 + item.freshness * 0.72;
+    const dotOpacity = 0.45 + item.freshness * 0.55;
+    const labelOpacity = 0.74 + item.freshness * 0.26;
+    const big = item.bucket === "fresh";
+    return (
+      <Pressable
+        key={item.id}
+        onPress={() => router.push(itemHref(item))}
+        accessibilityRole="button"
+        accessibilityLabel={item.title}
+        style={({ pressed }) => [
+          styles.chip,
+          big && styles.chipBig,
+          pressed && styles.pressed,
+        ]}
+        hitSlop={4}
+      >
+        <View
+          style={[styles.fill, { backgroundColor: tint, opacity: bgOpacity }]}
+        />
+        <View
+          style={[styles.dot, { backgroundColor: code, opacity: dotOpacity }]}
+        />
+        <ThemedText
+          type={big ? "item" : "body"}
+          numberOfLines={1}
+          style={[styles.label, { color: colors.ink, opacity: labelOpacity }]}
+        >
+          {item.title}
+        </ThemedText>
+      </Pressable>
+    );
+  };
+
   return (
-    <View style={styles.cloud}>
-      {items.map((item) => {
-        const code = entryColor(item.type);
-        const tint = entryTint(item.type, scheme);
-        // Freshness decays the CHIP BODY, not the label. The tint and type-dot
-        // recede as an item ages (the ghosting signal) via a separate background
-        // layer, while the title text holds a legible floor so even the oldest
-        // visible chip clears WCAG AA in both schemes.
-        const bgOpacity = 0.28 + item.freshness * 0.72;
-        const dotOpacity = 0.45 + item.freshness * 0.55;
-        const labelOpacity = 0.74 + item.freshness * 0.26;
-        const big = item.bucket === "fresh";
-        return (
-          <Pressable
-            key={item.id}
-            onPress={() => router.push(itemHref(item))}
-            accessibilityRole="button"
-            accessibilityLabel={item.title}
-            style={({ pressed }) => [
-              styles.chip,
-              big && styles.chipBig,
-              pressed && styles.pressed,
-            ]}
-            hitSlop={4}
-          >
-            <View
-              style={[
-                styles.fill,
-                { backgroundColor: tint, opacity: bgOpacity },
-              ]}
-            />
-            <View
-              style={[styles.dot, { backgroundColor: code, opacity: dotOpacity }]}
-            />
-            <ThemedText
-              type={big ? "item" : "body"}
-              numberOfLines={1}
-              style={[styles.label, { color: colors.ink, opacity: labelOpacity }]}
-            >
-              {item.title}
-            </ThemedText>
-          </Pressable>
-        );
-      })}
+    <View style={styles.grid}>
+      {rows.map((row, rowIndex) => (
+        <ScrollView
+          key={rowIndex}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.row}
+        >
+          {row.map(renderChip)}
+        </ScrollView>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  cloud: {
+  grid: {
+    gap: tokens.space.sm,
+  },
+  row: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: tokens.space.sm,
     paddingHorizontal: tokens.space.md,
   },
@@ -91,7 +111,7 @@ const styles = StyleSheet.create({
     paddingRight: tokens.space.md,
     borderRadius: tokens.radius.pill,
     overflow: "hidden",
-    maxWidth: "100%",
+    maxWidth: 240,
   },
   fill: {
     position: "absolute",

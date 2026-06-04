@@ -11,15 +11,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CountdownChip } from "@/components/atoms/countdown-chip";
-import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { DetailActionBar } from "@/components/molecules/detail-action-bar";
-import { DetailMetadataRow } from "@/components/molecules/detail-metadata-row";
-import { DetailSomedayHero } from "@/components/molecules/detail-someday-hero";
+import { DetailReadout } from "@/components/molecules/detail-readout";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { ListScreenHeader } from "@/components/organisms/list-screen-header";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
 import type { ThemeColors } from "@/constants/theme";
+import { entryColor, tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import {
   getEffectiveStatus,
@@ -30,22 +28,23 @@ import type { DbRecurrenceCompletion } from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { ActionItem } from "@/components/molecules/detail-action-bar";
+import type { ReadoutLine } from "@/components/molecules/detail-readout";
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
 const MONTH_ABBRS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
 ];
 
 function parseDaysRemaining(dueDateStr: string | null): number {
@@ -60,6 +59,18 @@ function parseDaysRemaining(dueDateStr: string | null): number {
   today.setHours(0, 0, 0, 0);
   const due = new Date(yyyy, mm - 1, dd);
   return Math.max(0, Math.ceil((due.getTime() - today.getTime()) / 86_400_000));
+}
+
+/** "12/06/2026" → "12 JUN 2026" for the mono readout. Falls back to the raw
+ *  string (uppercased) when it isn't a parseable DD/MM/YYYY value. */
+function readoutDate(dateStr: string): string {
+  const parts = dateStr.split("/");
+  if (parts.length < 3) return dateStr.toUpperCase();
+  const dd = parseInt(parts[0], 10);
+  const mm = parseInt(parts[1], 10);
+  const yyyy = parts[2];
+  if (isNaN(dd) || isNaN(mm) || mm < 1 || mm > 12) return dateStr.toUpperCase();
+  return `${dd} ${MONTH_ABBRS[mm - 1]} ${yyyy}`;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -78,178 +89,57 @@ function getStatusColor(
   accentColor: string,
   inkMuted: string,
 ): string {
-  if (status === "completed" || status === "met") return tokens.feedback.success;
+  if (status === "completed" || status === "met")
+    return tokens.feedback.success;
   if (status === "overdue") return tokens.feedback.danger;
   if (status === "active") return accentColor;
   return inkMuted;
 }
 
-// ─── Type chip ────────────────────────────────────────────────────────────────
+const TYPE_LABELS: Record<EntryType, string> = {
+  todo: "TODO",
+  deadline: "DEADLINE",
+  event: "EVENT",
+  someday: "ONE DAY",
+  idea: "IDEA",
+};
 
-function TypeChip({
+// ─── Signal rail ────────────────────────────────────────────────────────────
+//
+// The item that was tapped on the home Field is edge-barred in its entryColor;
+// the rail is that same Field Lab signature grown to screen scale, so the user
+// never loses the thread "this is the [cyan todo] I tapped". It carries the
+// type kicker on its shoulder (mono — the only all-caps) and the title at
+// display scale. Everything to the right of the rail belongs to this one item.
+
+function SignalRail({
   entryType,
   accentColor,
   isRecurring,
+  title,
+  children,
 }: {
   entryType: EntryType;
   accentColor: string;
-  isRecurring?: boolean;
+  isRecurring: boolean;
+  title: string;
+  children: React.ReactNode;
 }): React.ReactElement {
-  const labels: Record<EntryType, string> = {
-    todo: "TODO",
-    deadline: "DEADLINE",
-    event: "EVENT",
-    someday: "ONE DAY",
-    idea: "IDEA",
-  };
   return (
-    <View style={[styles.typeChip, { backgroundColor: accentColor + "20" }]}>
-      <EntryDot type={entryType} size={6} />
-      <ThemedText
-        type="caption"
-        style={[styles.typeChipText, { color: accentColor }]}
-      >
-        {labels[entryType]}
-      </ThemedText>
-      {isRecurring && (
-        <ThemedText
-          type="caption"
-          style={[styles.typeChipText, { color: accentColor }]}
-        >
-          ↻
-        </ThemedText>
-      )}
-    </View>
-  );
-}
-
-// ─── Section: TODOS hero ───────────────────────────────────────────────────────
-
-function TaskHero({
-  status,
-  scheduledDate,
-  scheduledTime,
-  accentColor,
-  recurrenceRule,
-  recurrenceEndDate,
-  colors,
-}: {
-  status: string;
-  scheduledDate: string | null;
-  scheduledTime: string | null;
-  accentColor: string;
-  recurrenceRule?: string | null;
-  recurrenceEndDate?: string | null;
-  colors: ThemeColors;
-}): React.ReactElement {
-  const statusColor = getStatusColor(status, accentColor, colors.inkMuted);
-  return (
-    <View style={styles.heroBlock}>
-      <View
-        style={[styles.statusChip, { backgroundColor: statusColor + "18" }]}
-      >
+    <View style={styles.railRow}>
+      <View style={[styles.rail, { backgroundColor: accentColor }]} />
+      <View style={styles.railBody}>
         <ThemedText
           type="label"
-          style={[styles.statusLabel, { color: statusColor }]}
+          style={[styles.kicker, { color: accentColor }]}
         >
-          {STATUS_LABELS[status] ?? status.toUpperCase()}
+          {TYPE_LABELS[entryType]}
+          {isRecurring ? "  ↻" : ""}
         </ThemedText>
-      </View>
-      <View style={styles.metaList}>
-        {scheduledDate ? (
-          <DetailMetadataRow
-            icon="calendar-outline"
-            label="Date"
-            value={scheduledDate}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {scheduledTime ? (
-          <DetailMetadataRow
-            icon="clock-outline"
-            label="Time"
-            value={scheduledTime}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {recurrenceRule ? (
-          <DetailMetadataRow
-            icon="repeat"
-            label="Repeat"
-            value={humanizeRule(recurrenceRule)}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {recurrenceEndDate ? (
-          <DetailMetadataRow
-            icon="calendar-end"
-            label="Ends"
-            value={recurrenceEndDate}
-            accentColor={accentColor}
-          />
-        ) : null}
-      </View>
-    </View>
-  );
-}
-
-// ─── Section: Deadline hero ───────────────────────────────────────────────────
-
-function DeadlineHero({
-  status,
-  dueDate,
-  dueTime,
-  accentColor,
-  recurrenceRule,
-  recurrenceEndDate,
-}: {
-  status: string;
-  dueDate: string | null;
-  dueTime: string | null;
-  accentColor: string;
-  recurrenceRule?: string | null;
-  recurrenceEndDate?: string | null;
-}): React.ReactElement {
-  const daysRemaining = parseDaysRemaining(dueDate);
-  return (
-    <View style={styles.heroBlock}>
-      <CountdownChip
-        daysRemaining={daysRemaining}
-        state={status as "pending" | "overdue" | "met"}
-      />
-      <View style={styles.metaList}>
-        {dueDate ? (
-          <DetailMetadataRow
-            icon="calendar-alert"
-            label="Due Date"
-            value={dueDate}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {dueTime ? (
-          <DetailMetadataRow
-            icon="clock-outline"
-            label="Due Time"
-            value={dueTime}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {recurrenceRule ? (
-          <DetailMetadataRow
-            icon="repeat"
-            label="Repeat"
-            value={humanizeRule(recurrenceRule)}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {recurrenceEndDate ? (
-          <DetailMetadataRow
-            icon="calendar-end"
-            label="Ends"
-            value={recurrenceEndDate}
-            accentColor={accentColor}
-          />
-        ) : null}
+        <ThemedText type="display" style={styles.title}>
+          {title}
+        </ThemedText>
+        {children}
       </View>
     </View>
   );
@@ -276,12 +166,12 @@ function DeleteConfirmSheet({
       onRequestClose={onClose}
     >
       <Pressable style={styles.sheetOverlay} onPress={onClose}>
-        <View style={[styles.sheet, { backgroundColor: colors.surfaceSubtle }]}>
+        <View style={[styles.sheet, { backgroundColor: colors.surface }]}>
           <ThemedText
-            type="bodyBold"
+            type="label"
             style={[styles.sheetTitle, { color: colors.inkMuted }]}
           >
-            Delete entry
+            DELETE ENTRY
           </ThemedText>
           <Pressable style={styles.sheetOption} onPress={onConfirm}>
             <ThemedText type="body" style={{ color: tokens.feedback.danger }}>
@@ -289,7 +179,10 @@ function DeleteConfirmSheet({
             </ThemedText>
           </Pressable>
           <View
-            style={[styles.sheetDivider, { backgroundColor: colors.surfaceSubtle }]}
+            style={[
+              styles.sheetDivider,
+              { backgroundColor: colors.surfaceSubtle },
+            ]}
           />
           <Pressable style={styles.sheetOption} onPress={onClose}>
             <ThemedText type="bodyBold" muted>
@@ -327,24 +220,30 @@ function DeleteScopeSheet({
       onRequestClose={onClose}
     >
       <Pressable style={styles.sheetOverlay} onPress={onClose}>
-        <View style={[styles.sheet, { backgroundColor: colors.surfaceSubtle }]}>
+        <View style={[styles.sheet, { backgroundColor: colors.surface }]}>
           <ThemedText
-            type="bodyBold"
+            type="label"
             style={[styles.sheetTitle, { color: colors.inkMuted }]}
           >
-            Delete recurring entry
+            DELETE RECURRING ENTRY
           </ThemedText>
           <Pressable style={styles.sheetOption} onPress={onDeleteThis}>
             <ThemedText type="body">Delete this occurrence</ThemedText>
           </Pressable>
           <View
-            style={[styles.sheetDivider, { backgroundColor: colors.surfaceSubtle }]}
+            style={[
+              styles.sheetDivider,
+              { backgroundColor: colors.surfaceSubtle },
+            ]}
           />
           <Pressable style={styles.sheetOption} onPress={onDeleteFuture}>
             <ThemedText type="body">Delete this and all future</ThemedText>
           </Pressable>
           <View
-            style={[styles.sheetDivider, { backgroundColor: colors.surfaceSubtle }]}
+            style={[
+              styles.sheetDivider,
+              { backgroundColor: colors.surfaceSubtle },
+            ]}
           />
           <Pressable style={styles.sheetOption} onPress={onDeleteAll}>
             <ThemedText type="body" style={{ color: tokens.feedback.danger }}>
@@ -352,7 +251,10 @@ function DeleteScopeSheet({
             </ThemedText>
           </Pressable>
           <View
-            style={[styles.sheetDivider, { backgroundColor: colors.surfaceSubtle }]}
+            style={[
+              styles.sheetDivider,
+              { backgroundColor: colors.surfaceSubtle },
+            ]}
           />
           <Pressable style={styles.sheetOption} onPress={onClose}>
             <ThemedText type="bodyBold" muted>
@@ -384,7 +286,8 @@ export default function DetailScreen(): React.ReactElement {
     ? (rawId ?? "").split("::")
     : [rawId, null];
 
-  const accentColor = entryColor((entryType as EntryType) ?? "todo");
+  const resolvedType = (entryType as EntryType) ?? "todo";
+  const accentColor = entryColor(resolvedType);
   const isSomeday = entryType === "someday" || entryType === "idea";
 
   const {
@@ -465,6 +368,24 @@ export default function DetailScreen(): React.ReactElement {
 
   // ── Action bar ───────────────────────────────────────────────────────────────
 
+  function buildEditParams(): string {
+    if (!entry) return "";
+    const params = new URLSearchParams();
+    params.set("entryId", entry.id);
+    params.set("type", entry.type);
+    params.set("title", entry.title);
+    if (entry.scheduled_date) params.set("date", entry.scheduled_date);
+    if (entry.scheduled_time) params.set("time", entry.scheduled_time);
+    if (entry.due_date) params.set("date", entry.due_date);
+    if (entry.due_time) params.set("time", entry.due_time);
+    if (entry.notes) params.set("notes", entry.notes);
+    if (entry.recurrence_rule)
+      params.set("recurrence", JSON.stringify(entry.recurrence_rule));
+    if (entry.recurrence_end_date)
+      params.set("recurrenceEndDate", entry.recurrence_end_date);
+    return params.toString();
+  }
+
   async function handleComplete(): Promise<void> {
     if (!entry) return;
     if (isRecurringInstance && instanceDate) {
@@ -539,6 +460,11 @@ export default function DetailScreen(): React.ReactElement {
   const isCompleted = effectiveStatus === "completed";
   const isMet = effectiveStatus === "met";
 
+  const handleEdit = (): void => {
+    const qs = buildEditParams();
+    if (qs) router.push(`/modal?${qs}`);
+  };
+
   const actions: [ActionItem, ActionItem, ActionItem] =
     entryType === "todo" || entryType === "event"
       ? [
@@ -552,25 +478,7 @@ export default function DetailScreen(): React.ReactElement {
           {
             icon: "pencil-outline",
             label: "Edit",
-            onPress: () => {
-              if (!entry) return;
-              const params = new URLSearchParams();
-              params.set("entryId", entry.id);
-              params.set("type", entry.type);
-              params.set("title", entry.title);
-              if (entry.scheduled_date)
-                params.set("date", entry.scheduled_date);
-              if (entry.scheduled_time)
-                params.set("time", entry.scheduled_time);
-              if (entry.due_date) params.set("date", entry.due_date);
-              if (entry.due_time) params.set("time", entry.due_time);
-              if (entry.notes) params.set("notes", entry.notes);
-              if (entry.recurrence_rule)
-                params.set("recurrence", JSON.stringify(entry.recurrence_rule));
-              if (entry.recurrence_end_date)
-                params.set("recurrenceEndDate", entry.recurrence_end_date);
-              router.push(`/modal?${params.toString()}`);
-            },
+            onPress: handleEdit,
             accentColor,
           },
           {
@@ -592,28 +500,7 @@ export default function DetailScreen(): React.ReactElement {
             {
               icon: "pencil-outline",
               label: "Edit",
-              onPress: () => {
-                if (!entry) return;
-                const params = new URLSearchParams();
-                params.set("entryId", entry.id);
-                params.set("type", entry.type);
-                params.set("title", entry.title);
-                if (entry.scheduled_date)
-                  params.set("date", entry.scheduled_date);
-                if (entry.scheduled_time)
-                  params.set("time", entry.scheduled_time);
-                if (entry.due_date) params.set("date", entry.due_date);
-                if (entry.due_time) params.set("time", entry.due_time);
-                if (entry.notes) params.set("notes", entry.notes);
-                if (entry.recurrence_rule)
-                  params.set(
-                    "recurrence",
-                    JSON.stringify(entry.recurrence_rule),
-                  );
-                if (entry.recurrence_end_date)
-                  params.set("recurrenceEndDate", entry.recurrence_end_date);
-                router.push(`/modal?${params.toString()}`);
-              },
+              onPress: handleEdit,
               accentColor,
             },
             {
@@ -631,14 +518,65 @@ export default function DetailScreen(): React.ReactElement {
               isPrimary: true,
               accentColor,
             },
-            { icon: "pencil-outline", label: "Edit", onPress: () => {} },
+            {
+              icon: "pencil-outline",
+              label: "Edit",
+              onPress: handleEdit,
+              accentColor,
+            },
             {
               icon: "trash-can-outline",
               label: "Delete",
-              onPress: () => router.back(),
+              onPress: handleDelete,
               isDanger: true,
             },
           ];
+
+  // ── Readout lines (mono telemetry) ───────────────────────────────────────────
+
+  const statusColor = getStatusColor(
+    effectiveStatus,
+    accentColor,
+    colors.inkMuted,
+  );
+
+  const readoutLines: ReadoutLine[] = [];
+
+  const isDeadline = entryType === "deadline";
+  const isTask = entryType === "todo" || entryType === "event";
+
+  if (isTask) {
+    readoutLines.push({
+      key: "STATUS",
+      value: STATUS_LABELS[effectiveStatus] ?? effectiveStatus.toUpperCase(),
+      dotColor: statusColor,
+    });
+    if (entry.scheduled_date)
+      readoutLines.push({
+        key: "DATE",
+        value: readoutDate(entry.scheduled_date),
+      });
+    if (entry.scheduled_time)
+      readoutLines.push({ key: "TIME", value: entry.scheduled_time });
+  } else if (isDeadline) {
+    if (entry.due_date)
+      readoutLines.push({ key: "DUE", value: readoutDate(entry.due_date) });
+    if (entry.due_time)
+      readoutLines.push({ key: "TIME", value: entry.due_time });
+  }
+
+  if (entry.recurrence_rule)
+    readoutLines.push({
+      key: "REPEAT",
+      value: humanizeRule(entry.recurrence_rule).toUpperCase(),
+    });
+  if (entry.recurrence_end_date)
+    readoutLines.push({
+      key: "ENDS",
+      value: readoutDate(entry.recurrence_end_date),
+    });
+  if (entry.subtitle)
+    readoutLines.push({ key: "PROJECT", value: entry.subtitle.toUpperCase() });
 
   return (
     <SafeAreaView
@@ -655,42 +593,37 @@ export default function DetailScreen(): React.ReactElement {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {/* Type chip */}
-          <TypeChip
-            entryType={entryType as EntryType}
+          {/* Signal rail: type-color edge-bar + kicker + title + readout */}
+          <SignalRail
+            entryType={resolvedType}
             accentColor={accentColor}
-            isRecurring={entry ? isRecurringEntry(entry) : false}
-          />
+            isRecurring={isRecurringEntry(entry)}
+            title={title}
+          >
+            {/* Deadlines lead with the countdown, then the readout below it. */}
+            {isDeadline ? (
+              <View style={styles.countdownSlot}>
+                <CountdownChip
+                  daysRemaining={parseDaysRemaining(entry.due_date)}
+                  state={effectiveStatus as "pending" | "overdue" | "met"}
+                />
+              </View>
+            ) : null}
 
-          {/* Title */}
-          <ThemedText type="headline" style={styles.title}>
-            {title}
-          </ThemedText>
+            {readoutLines.length > 0 ? (
+              <DetailReadout lines={readoutLines} />
+            ) : null}
 
-          {/* Type-specific hero block */}
-          {entry && (entryType === "todo" || entryType === "event") ? (
-            <TaskHero
-              status={effectiveStatus}
-              scheduledDate={entry.scheduled_date}
-              scheduledTime={entry.scheduled_time}
-              accentColor={accentColor}
-              recurrenceRule={entry.recurrence_rule}
-              recurrenceEndDate={entry.recurrence_end_date}
-              colors={colors}
-            />
-          ) : entry && (entryType === "deadline" || isSomeday) ? (
-            <DetailSomedayHero inspiration={entry.inspiration ?? undefined} />
-          ) : null}
-
-          {/* Project / subtitle (ideas only) */}
-          {entry?.subtitle ? (
-            <DetailMetadataRow
-              icon="folder-outline"
-              label="Project"
-              value={entry.subtitle}
-              accentColor={accentColor}
-            />
-          ) : null}
+            {/* Someday / idea inspiration — the one place a softer voice fits. */}
+            {isSomeday && entry.inspiration ? (
+              <ThemedText
+                type="body"
+                style={[styles.inspiration, { color: colors.inkMuted }]}
+              >
+                {entry.inspiration}
+              </ThemedText>
+            ) : null}
+          </SignalRail>
 
           {/* Notes */}
           {notes ? (
@@ -700,12 +633,12 @@ export default function DetailScreen(): React.ReactElement {
                 { backgroundColor: colors.surfaceSubtle },
               ]}
             >
-              <ThemedText type="caption" muted style={styles.notesLabel}>
+              <ThemedText type="label" muted style={styles.notesLabel}>
                 NOTES
               </ThemedText>
               <ThemedText
                 type="body"
-                style={[styles.notesText, { color: colors.inkMuted }]}
+                style={[styles.notesText, { color: colors.ink }]}
               >
                 {notes}
               </ThemedText>
@@ -717,10 +650,7 @@ export default function DetailScreen(): React.ReactElement {
 
         {/* ── Action bar — pinned above safe area ─────────────── */}
         <View
-          style={[
-            styles.actionBarWrapper,
-            { backgroundColor: colors.paper },
-          ]}
+          style={[styles.actionBarWrapper, { backgroundColor: colors.paper }]}
         >
           <DetailActionBar actions={actions} />
         </View>
@@ -769,43 +699,36 @@ const styles = StyleSheet.create({
     paddingBottom: tokens.space.lg,
     gap: tokens.space.lg,
   },
-  typeChip: {
+  // ── Signal rail ─────────────────────────────────────────────
+  railRow: {
     flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
+    gap: tokens.space.lg,
+  },
+  rail: {
+    width: 4,
     borderRadius: tokens.radius.pill,
-    paddingVertical: tokens.space.xs,
-    paddingHorizontal: tokens.space.md,
-    gap: tokens.space.xs,
+    // The rail spans the full height of the body it sits beside.
+    alignSelf: "stretch",
   },
-  typeChipText: {
-    fontFamily: "Inter_600SemiBold",
-    letterSpacing: 0.6,
-  },
-  title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontFamily: "Inter_700Bold",
-  },
-  // ── Hero block ──────────────────────────────────────────────
-  heroBlock: {
+  railBody: {
+    flex: 1,
     gap: tokens.space.md,
   },
-  statusChip: {
+  kicker: {
+    // mono all-caps kicker — the only all-caps element (Field Lab signal voice).
+  },
+  title: {
+    // display scale from ThemedText; this is the one zoomed-in item.
+  },
+  countdownSlot: {
     alignSelf: "flex-start",
-    borderRadius: tokens.radius.pill,
-    paddingVertical: tokens.space.xs,
-    paddingHorizontal: tokens.space.md,
   },
-  statusLabel: {
-    letterSpacing: 0.8,
-  },
-  metaList: {
-    gap: tokens.space.sm,
+  inspiration: {
+    lineHeight: 22,
   },
   // ── Notes ───────────────────────────────────────────────────
   notesBlock: {
-    borderRadius: tokens.radius.lg,
+    borderRadius: tokens.radius.md,
     padding: tokens.space.lg,
     gap: tokens.space.sm,
   },
@@ -824,7 +747,7 @@ const styles = StyleSheet.create({
     paddingBottom: tokens.space.lg,
     paddingTop: tokens.space.md,
   },
-  // ── Delete scope sheet ───────────────────────────────────────
+  // ── Delete sheets ────────────────────────────────────────────
   sheetOverlay: {
     flex: 1,
     backgroundColor: tokens.color.scrim.strong,
@@ -839,8 +762,7 @@ const styles = StyleSheet.create({
   sheetTitle: {
     paddingHorizontal: tokens.space.xl,
     paddingBottom: tokens.space.md,
-    fontSize: 13,
-    letterSpacing: 0.4,
+    letterSpacing: 0.6,
   },
   sheetDivider: {
     height: 1,

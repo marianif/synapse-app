@@ -12,7 +12,11 @@ interface UseDiaryResult {
   entries: DbDiaryEntry[];
   isLoading: boolean;
   refresh: () => Promise<void>;
-  addEntry: (body: string, mood: DiaryMood | null) => Promise<void>;
+  addEntry: (
+    body: string,
+    mood: DiaryMood | null,
+    linkedEntryId?: string | null,
+  ) => Promise<void>;
   removeEntry: (id: string) => Promise<void>;
 }
 
@@ -37,11 +41,15 @@ export function useDiary(): UseDiaryResult {
   }, []);
 
   const addEntry = useCallback(
-    async (body: string, mood: DiaryMood | null): Promise<void> => {
+    async (
+      body: string,
+      mood: DiaryMood | null,
+      linkedEntryId: string | null = null,
+    ): Promise<void> => {
       const trimmed = body.trim();
       if (!trimmed) return;
       try {
-        const created = await insertDiaryEntry(trimmed, mood);
+        const created = await insertDiaryEntry(trimmed, mood, linkedEntryId);
         // optimistic prepend — newest first, matching the query order
         setEntries((prev) => [created, ...prev]);
       } catch (error) {

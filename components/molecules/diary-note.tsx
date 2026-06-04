@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { StyleSheet, View } from "react-native";
 
 import { MoodGlyph } from "@/components/atoms/mood-glyph";
+import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { tokens, useTheme } from "@/constants/theme";
@@ -11,16 +12,22 @@ import type { DbDiaryEntry } from "@/lib/types";
 
 interface DiaryNoteProps {
   entry: DbDiaryEntry;
+  /**
+   * Title of the idea this note is filed under, if linked. Resolved by the feed
+   * (the note row only stores the id). Undefined → render as autonomous.
+   */
+  linkedTitle?: string;
   onDelete: () => void;
 }
 
 /**
- * A single kept diary line — timestamp, optional mood tag, and the handwritten
- * body — wrapped in a swipe-to-delete row. Self-contained so any feed can render
- * one without knowing the mood→color mapping.
+ * A single kept diary line — timestamp, optional mood tag, an optional "on <idea>"
+ * link chip, and the handwritten body — wrapped in a swipe-to-delete row.
+ * Self-contained so any feed can render one without knowing the mood→color map.
  */
 export function DiaryNote({
   entry,
+  linkedTitle,
   onDelete,
 }: DiaryNoteProps): React.ReactElement {
   const { colors } = useTheme();
@@ -42,6 +49,25 @@ export function DiaryNote({
             </View>
           ) : null}
         </View>
+
+        {linkedTitle ? (
+          <View
+            style={[
+              styles.linkTag,
+              { backgroundColor: colors.type.ideas + "1F" },
+            ]}
+          >
+            <SketchIcon type="idea" size={13} />
+            <ThemedText
+              type="micro"
+              numberOfLines={1}
+              style={[styles.linkLabel, { color: colors.inkMuted }]}
+            >
+              ON · {linkedTitle.toUpperCase()}
+            </ThemedText>
+          </View>
+        ) : null}
+
         <ThemedText style={[styles.noteBody, { color: colors.ink }]}>
           {entry.body}
         </ThemedText>
@@ -68,6 +94,19 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     paddingHorizontal: tokens.space.sm,
     borderRadius: tokens.radius.pill,
+  },
+  linkTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    maxWidth: "100%",
+    gap: tokens.space.xs,
+    paddingVertical: 3,
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.sm,
+  },
+  linkLabel: {
+    flexShrink: 1,
   },
   noteBody: {
     fontFamily: tokens.type.fontHand.regular,

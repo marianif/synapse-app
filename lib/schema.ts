@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -27,6 +27,10 @@ export const CREATE_DIARY_TABLE = `
     id TEXT PRIMARY KEY NOT NULL,
     body TEXT NOT NULL,
     mood TEXT CHECK(mood IN ('calm', 'low', 'charged', 'tired', 'bright')),
+    -- Optional link to an action-board entry (an 'idea'). When set, this note is
+    -- a reflection ON that idea; when null, it's an autonomous diary note. ON
+    -- DELETE SET NULL so deleting the idea keeps the thought, just unlinks it.
+    linked_entry_id TEXT REFERENCES entries(id) ON DELETE SET NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
   );

@@ -15,11 +15,17 @@ import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { PresentZone } from "@/components/organisms/present/present-zone";
 import { StakesRunway } from "@/components/organisms/stakes-runway";
 
+import {
+  CaptureResolver,
+  type CaptureResolution,
+  type LinkableIdea,
+} from "@/components/molecules/capture-resolver";
 import { FieldBriefing } from "@/components/molecules/field-briefing";
 import { tokens, useTheme } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
+import { useDiary } from "@/hooks/use-diary";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 import { splitCapture } from "@/lib/capture";
 import { toPresentItems } from "@/lib/present";
@@ -153,6 +159,8 @@ export default function HomeScreen(): React.ReactElement {
     deleteEntry,
   } = useDatabase();
 
+  const { addEntry: addDiaryEntry } = useDiary();
+
   const { today: calendarToday } = useCalendarData(
     entries,
     new Date(),
@@ -162,21 +170,67 @@ export default function HomeScreen(): React.ReactElement {
   const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
   const [isRecording, setIsRecording] = useState(false);
 
-  // The capture bar is the quick IDEA line: typed or spoken, a note lands
-  // straight in the Present cloud as an idea. Richer entries go through the
-  // Add tab. Long captures split into a glanceable title (first sentence/line,
-  // capped) + the full thought in notes — so the cloud stays scannable and
-  // nothing typed is lost.
-  const captureIdea = useCallback(
+  // The capture bar captures a THOUGHT, not (yet) an idea. A captured thought is
+  // held here as "pending" while the CaptureResolver lets the user file it as an
+  // idea (the default), an autonomous diary note, or a note ON a recent idea.
+  // Doing nothing auto-files an idea — old muscle memory (↵ then ignore) holds.
+  const [pendingThought, setPendingThought] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
+
+  // Recent ideas offered under "Note on…". Capped + newest-first; reading from
+  // the in-memory entries (single source of truth) keeps this in sync for free.
+  const recentIdeas: LinkableIdea[] = useMemo(
+    () =>
+      entries
+        .filter((e) => e.type === "idea")
+        .slice(0, 8)
+        .map((e) => ({ id: e.id, title: e.title })),
+    [entries],
+  );
+
+  // A thought arrives from the bar (typed or spoken): stash it and surface the
+  // resolver. Replacing a still-pending thought just swaps it (the resolver
+  // re-arms its countdown on text change), so nothing is silently dropped.
+  const handleCapture = useCallback((text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setPicking(false);
+    setPendingThought(trimmed);
+  }, []);
+
+  const fileAsIdea = useCallback(
     (text: string) => {
-      const trimmed = text.trim();
-      if (!trimmed) return;
-      const { title, notes } = splitCapture(trimmed);
+      const { title, notes } = splitCapture(text);
       createEntry({ title, type: "idea", notes }).catch((err) =>
         console.error("Failed to capture idea:", err),
       );
     },
     [createEntry],
+  );
+
+  const resolveCapture = useCallback(
+    (resolution: CaptureResolution) => {
+      const text = pendingThought;
+      setPendingThought(null);
+      setPicking(false);
+      if (!text) return;
+      switch (resolution.kind) {
+        case "idea":
+          fileAsIdea(text);
+          break;
+        case "note":
+          addDiaryEntry(text, null).catch((err) =>
+            console.error("Failed to file diary note:", err),
+          );
+          break;
+        case "note-on":
+          addDiaryEntry(text, null, resolution.entryId).catch((err) =>
+            console.error("Failed to file linked diary note:", err),
+          );
+          break;
+      }
+    },
+    [pendingThought, fileAsIdea, addDiaryEntry],
   );
 
   const handleStartRecording = useCallback(async () => {
@@ -187,8 +241,8 @@ export default function HomeScreen(): React.ReactElement {
   const handleStopRecording = useCallback(async () => {
     await stopRecording();
     setIsRecording(false);
-    captureIdea(transcript);
-  }, [stopRecording, transcript, captureIdea]);
+    handleCapture(transcript);
+  }, [stopRecording, transcript, handleCapture]);
 
   const handleCancelRecording = useCallback(async () => {
     await stopRecording();
@@ -334,8 +388,17 @@ export default function HomeScreen(): React.ReactElement {
         pointerEvents="box-none"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
+        {pendingThought !== null ? (
+          <CaptureResolver
+            text={pendingThought}
+            ideas={recentIdeas}
+            picking={picking}
+            onTogglePicking={() => setPicking((p) => !p)}
+            onResolve={resolveCapture}
+          />
+        ) : null}
         <CaptureBar
-          onSubmitIdea={captureIdea}
+          onSubmit={handleCapture}
           onVoice={handleStartRecording}
           isRecording={isRecording}
           transcript={transcript}

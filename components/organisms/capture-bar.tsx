@@ -24,8 +24,9 @@ const WAVEFORM_BARS = 9;
 const ON_AMBER = tokens.color.dark.paper;
 
 interface CaptureBarProps {
-  /** Save a typed idea inline (the bar is the quick idea line). */
-  onSubmitIdea?: (text: string) => void;
+  /** Save a typed thought inline. The destination (idea / diary note / note on
+   *  an idea) is chosen after sending, via the capture resolver. */
+  onSubmit?: (text: string) => void;
   /** Tap the mic to arm voice capture (visible, first-class route). */
   onVoice?: () => void;
   isRecording?: boolean;
@@ -48,7 +49,7 @@ interface CaptureBarProps {
  * discard / keep. The color shift IS the "listening" signal.
  */
 export function CaptureBar({
-  onSubmitIdea,
+  onSubmit,
   onVoice,
   isRecording = false,
   transcript = "",
@@ -61,7 +62,7 @@ export function CaptureBar({
 
   const submit = (): void => {
     if (!hasText) return;
-    onSubmitIdea?.(draft.trim());
+    onSubmit?.(draft.trim());
     setDraft("");
   };
 
@@ -137,13 +138,13 @@ export function CaptureBar({
           value={draft}
           onChangeText={setDraft}
           onSubmitEditing={submit}
-          placeholder="Quick capture an idea"
+          placeholder="Quick capture a thought"
           placeholderTextColor={colors.inkMuted}
           selectionColor={colors.type.ideas}
           returnKeyType="done"
           submitBehavior="submit"
           accessibilityLabel="Capture a thought"
-          accessibilityHint="Type a note and submit to save it as an idea."
+          accessibilityHint="Type a thought and submit; then choose to file it as an idea or a diary note."
           style={[styles.input, { color: colors.ink }]}
         />
       </View>
@@ -155,7 +156,7 @@ export function CaptureBar({
           onPress={submit}
           hitSlop={12}
           accessibilityRole="button"
-          accessibilityLabel="Save idea"
+          accessibilityLabel="Save thought"
           style={({ pressed }) => [
             styles.sendBtn,
             { backgroundColor: colors.type.ideas },

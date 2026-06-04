@@ -247,6 +247,23 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       await db.execAsync(CREATE_DIARY_TABLE);
       await db.runAsync(
         "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        "7",
+      );
+    });
+  }
+
+  if (currentVersion < 8) {
+    // Migration 8: a diary note can link to an action-board 'idea'. Add the
+    // nullable column to pre-8 installs (fresh installs get the full column,
+    // incl. its REFERENCES clause, from CREATE_DIARY_TABLE). SQLite ADD COLUMN
+    // can't carry a FK clause, so the ON DELETE SET NULL behaviour is enforced
+    // in app code (unlinkDiaryNotesForEntry) when an entry is deleted.
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(
+        "ALTER TABLE diary_entries ADD COLUMN linked_entry_id TEXT",
+      );
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
         String(SCHEMA_VERSION),
       );
     });
@@ -255,23 +272,36 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
 
 // ─── Diary helpers ──────────────────────────────────────────────────────────────
 
-/** Insert a diary entry, returning the persisted row. */
+/**
+ * Insert a diary entry, returning the persisted row. `linkedEntryId` ties the
+ * note to an action-board entry (an 'idea') — a reflection ON that idea; null
+ * for an autonomous note.
+ */
 export async function insertDiaryEntry(
   body: string,
   mood: DiaryMood | null,
+  linkedEntryId: string | null = null,
 ): Promise<DbDiaryEntry> {
   const db = getDb();
   const id = generateId();
   const now = Math.floor(Date.now() / 1000);
   await db.runAsync(
-    'INSERT INTO diary_entries (id, body, mood, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
     id,
     body,
     mood,
+    linkedEntryId,
     now,
     now,
   );
-  return { id, body, mood, created_at: now, updated_at: now };
+  return {
+    id,
+    body,
+    mood,
+    linked_entry_id: linkedEntryId,
+    created_at: now,
+    updated_at: now,
+  };
 }
 
 /** All diary entries, newest first. */
@@ -286,6 +316,20 @@ export async function getDiaryEntries(): Promise<DbDiaryEntry[]> {
 export async function deleteDiaryEntry(id: string): Promise<void> {
   const db = getDb();
   await db.runAsync('DELETE FROM diary_entries WHERE id = ?', id);
+}
+
+/**
+ * Unlink any diary notes that point at the given entry — the app-side stand-in
+ * for `ON DELETE SET NULL` (the FK clause can't be added by ADD COLUMN, so we
+ * enforce it here). Call before deleting an entry so linked reflections survive
+ * as autonomous notes instead of dangling.
+ */
+export async function unlinkDiaryNotesForEntry(entryId: string): Promise<void> {
+  const db = getDb();
+  await db.runAsync(
+    'UPDATE diary_entries SET linked_entry_id = NULL WHERE linked_entry_id = ?',
+    entryId,
+  );
 }
 
 /**

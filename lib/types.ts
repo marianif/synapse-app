@@ -33,6 +33,11 @@ export interface DbDiaryEntry {
   id: string;
   body: string;
   mood: DiaryMood | null;
+  /**
+   * Optional link to an action-board `entries` row (an 'idea'). Set → this note
+   * is a reflection ON that idea; null → an autonomous diary note.
+   */
+  linked_entry_id: string | null;
   created_at: number;
   updated_at: number;
 }

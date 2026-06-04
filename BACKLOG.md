@@ -233,6 +233,28 @@ re-cutting the two heaviest content surfaces (Stakes, Detail).
 - Collaboration features (share lists)
 - Smart reminders based on location/context
 
+### Diary — full organize model (evolutive)
+
+Today (shipped): the home bar captures a **thought**, then a post-send resolver
+files it as an **idea**, an **autonomous diary note**, or a **note ON a recent
+idea** (`diary_entries.linked_entry_id` → an `entries` idea row; app-side ON
+DELETE SET NULL). The diary feed shows an "ON · <idea>" chip on linked notes.
+
+Evolve toward the richer "thoughts organized by project" model the user wants:
+
+- **Free-standing threads** — a note can belong to a named thread (e.g.
+  "Rebrand", "Health") that is NOT an action-board entry. Optional tag, never
+  required; untagged notes stay in the plain chronological feed. Add a "by
+  thread" lens on the diary screen alongside the chronological one.
+- **Link to ANY entry type**, not just ideas — pin a reflection to a specific
+  todo / deadline / event / "project", so the thought hangs off the action it
+  relates to.
+- **Reverse surface** — show a linked idea's reflections on its detail screen
+  ("3 notes on this idea"), so the connection reads from both sides.
+- Keep the calm: structure is always opt-in. A note with no thread / no link is
+  a first-class, valid diary note. Don't let the diary become a second to-do
+  list with feelings.
+
 ---
 
 ## Priority Order

@@ -10,6 +10,8 @@ import type { DbDiaryEntry } from "@/lib/types";
 interface DiaryFeedProps {
   /** Newest-first entries. The feed groups them by calendar day. */
   entries: DbDiaryEntry[];
+  /** id → idea title, for notes filed ON an idea. Missing → render autonomous. */
+  linkedTitles?: Record<string, string>;
   onDelete: (id: string) => void;
 }
 
@@ -41,6 +43,7 @@ function groupByDay(
  */
 export function DiaryFeed({
   entries,
+  linkedTitles,
   onDelete,
 }: DiaryFeedProps): React.ReactElement {
   const { colors } = useTheme();
@@ -74,7 +77,16 @@ export function DiaryFeed({
           </View>
 
           {group.items.map((e) => (
-            <DiaryNote key={e.id} entry={e} onDelete={() => onDelete(e.id)} />
+            <DiaryNote
+              key={e.id}
+              entry={e}
+              linkedTitle={
+                e.linked_entry_id
+                  ? linkedTitles?.[e.linked_entry_id]
+                  : undefined
+              }
+              onDelete={() => onDelete(e.id)}
+            />
           ))}
         </View>
       ))}

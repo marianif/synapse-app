@@ -154,8 +154,12 @@ public class SpeechRecognizerModule: Module {
   private func stopRecognitionInternal() {
     audioEngine?.inputNode.removeTap(onBus: 0)
     audioEngine?.stop()
+    // endAudio() lets the recognizer flush buffered audio into a final result
+    // (delivering the dictated text), whereas cancel() would discard it. Use
+    // finish() to wind the task down gracefully; only fall back to cancel() if
+    // there's nothing to finalize.
     recognitionRequest?.endAudio()
-    recognitionTask?.cancel()
+    recognitionTask?.finish()
     audioEngine = nil
     recognitionRequest = nil
     recognitionTask = nil

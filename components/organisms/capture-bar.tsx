@@ -2,15 +2,16 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
-  withDelay,
   withRepeat,
   withSequence,
   withTiming,
 } from "react-native-reanimated";
 
+import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useTheme } from "@/constants/theme";
 
@@ -38,7 +39,7 @@ interface CaptureBarProps {
  * instrument panel (mono readouts, sharp corners, saturated edge-bars carrying
  * structure), and this is the one always-on input on it. It wears the ideas/
  * amber code because it captures ideas. Idle it's a live text line you FILL: an
- * amber edge-bar (the capture channel), a blinking mono caret, an inline
+ * amber edge-bar (the capture channel), a softly breathing idea-mark, an inline
  * TextInput, and a first-class mic. Typing + ↵ (or the send key) saves the note
  * straight as an idea into the Present cloud — no navigation. The mic arms voice
  * (also an idea). Richer entries (bills, deadlines, events, dates) live in the
@@ -128,10 +129,10 @@ export function CaptureBar({
     >
       <View style={[styles.edge, { backgroundColor: colors.type.ideas }]} />
 
-      {/* The line you FILL: a blinking caret + inline TextInput. ↵ saves the
-          idea; the caret hides once typing starts (the cursor takes over). */}
+      {/* The line you FILL: a pulsing idea-mark + inline TextInput. ↵ saves the
+          idea; the mark hides once typing starts (the cursor takes over). */}
       <View style={styles.prompt}>
-        {!hasText ? <Caret color={signal} /> : null}
+        {!hasText ? <IdeaPulse /> : null}
         <TextInput
           value={draft}
           onChangeText={setDraft}
@@ -179,35 +180,39 @@ export function CaptureBar({
 }
 
 /**
- * The command-line caret — a blinking mono prompt that says "fill this line."
- * Color is the scheme-resolved signal (amber in dark, inkMuted in light); the
- * amber identity is carried by the always-visible edge-bar, not this glyph.
+ * The capture prompt — a sketched idea-mark (lightbulb) marking "fill this line."
+ * Replaces the old blinking caret. It breathes rather than blinks: one long, slow
+ * sine-eased opacity swell between 0.6 and 1, no snap or hold, so it reads as a
+ * calm presence, not a compulsive pulse. Carries its native amber (the idea code);
+ * the breath fades opacity, never the hue.
  */
-function Caret({ color }: { color: string }): React.ReactElement {
+function IdeaPulse(): React.ReactElement {
   const reduced = useReducedMotion();
-  const blink = useSharedValue(1);
+  const breath = useSharedValue(1);
 
   useEffect(() => {
     if (reduced) {
-      blink.value = 1;
+      breath.value = 1;
       return;
     }
-    blink.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 540 }),
-        withDelay(120, withTiming(0.15, { duration: 220 })),
-      ),
+    // One slow, symmetric swell — withRepeat reverses it, so a single eased
+    // timing gives a smooth in-out with no perceptible edges.
+    breath.value = withRepeat(
+      withTiming(0.6, {
+        duration: 2200,
+        easing: Easing.inOut(Easing.sin),
+      }),
       -1,
       true,
     );
-  }, [blink, reduced]);
+  }, [breath, reduced]);
 
-  const style = useAnimatedStyle(() => ({ opacity: blink.value }));
+  const style = useAnimatedStyle(() => ({ opacity: breath.value }));
 
   return (
-    <Animated.Text style={[styles.caret, { color }, style]}>
-      {"›"}
-    </Animated.Text>
+    <Animated.View style={style}>
+      <SketchIcon type="idea" size={22} />
+    </Animated.View>
   );
 }
 
@@ -291,11 +296,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: tokens.space.sm,
     minHeight: 56,
-  },
-  caret: {
-    fontSize: tokens.type.item.size,
-    lineHeight: tokens.type.item.size,
-    fontFamily: tokens.type.fontMono.bold,
   },
   input: {
     flex: 1,

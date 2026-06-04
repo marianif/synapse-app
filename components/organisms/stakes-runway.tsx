@@ -133,7 +133,10 @@ export function StakesRunway({
               onPress={() => router.push(zoneHref)}
               accessibilityRole="button"
               accessibilityLabel={`See all ${items.length} stakes`}
-              style={({ pressed }) => [styles.seeAll, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.seeAll,
+                pressed && styles.pressed,
+              ]}
               hitSlop={6}
             >
               <ThemedText
@@ -161,7 +164,10 @@ export function StakesRunway({
                   Recently cleared
                 </ThemedText>
                 <View
-                  style={[styles.rule, { backgroundColor: colors.surfaceSubtle }]}
+                  style={[
+                    styles.rule,
+                    { backgroundColor: colors.surfaceSubtle },
+                  ]}
                 />
                 {onClearDone ? (
                   <Pressable

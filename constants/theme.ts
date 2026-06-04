@@ -133,6 +133,14 @@ const type = {
     semiBold: "Inter_600SemiBold",
     bold: "Inter_700Bold",
   },
+  // handwritten layer — agenda margin-notes. Caveat reads like a thing you
+  // scrawled to remember it; runs ~30% larger than Inter at the same size, so
+  // bump the size at call-sites to keep optical weight in line.
+  fontHand: {
+    regular: "Caveat_500Medium",
+    medium: "Caveat_600SemiBold",
+    bold: "Caveat_700Bold",
+  },
   // mono signal layer — counts, status line, time, kickers. Instrument-panel feel.
   fontMono: {
     regular: "JetBrainsMono_400Regular",

@@ -84,12 +84,12 @@ unmistakably ours, not template-grade.
 
 ### Section-title sketches
 
-- [ ] Commission/draw custom SVG sketches to bring life to the home section
+- [x] Commission/draw custom SVG sketches to bring life to the home section
       titles (`STAKES`, `PRESENT`, the `Coming up` subhead) — hand-drawn marks
       that sit beside or behind the mono kickers, not generic icons
-- [ ] Keep them theme-reactive (light/dark) and reduced-motion-safe; tint from
+- [x] Keep them theme-reactive (light/dark) and reduced-motion-safe; tint from
       `entryColor` / `inkMuted`, no new token VALUES
-- [ ] Decide: static SVG marks vs. lightly animated (draw-on entrance)
+- [x] Decide: static SVG marks vs. lightly animated (draw-on entrance)
 
 ### Present readability
 
@@ -192,10 +192,10 @@ re-cutting the two heaviest content surfaces (Stakes, Detail).
 
 ### Detail screen — redesign
 
-- [ ] `app/detail.tsx` needs a from-scratch redesign to match the Field Lab
+- [x] `app/detail.tsx` needs a from-scratch redesign to match the Field Lab
       language (it predates the rebrand). Per-type treatment (deadline vs. todo
       vs. idea/someday vs. event), the metadata rows, and the action bar.
-- [ ] Reuse the established atoms/molecules (edge-bars, mono metadata,
+- [x] Reuse the established atoms/molecules (edge-bars, mono metadata,
       `entryColor`/`entryKicker`); no new token values.
 
 ### Home header — suppress top-left icon, move settings out

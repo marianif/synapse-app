@@ -55,6 +55,9 @@ export function ListItem({
 }: ListItemProps): React.ReactElement {
   const { colors } = useTheme();
   const isSomeday = entryType === "someday";
+  // The row's own type drives the edge-bar, so a mixed "Incoming" list stays
+  // color-coded per row instead of collapsing to one screen accent.
+  const edgeColor = entryColor(entryType);
 
   const renderContent = (): React.ReactElement => {
     if (isSomeday) {
@@ -63,7 +66,7 @@ export function ListItem({
           onPress={onPress}
           style={({ pressed }) => [
             styles.row,
-            { backgroundColor: colors.surfaceSubtle },
+            { backgroundColor: colors.surfaceSubtle, borderLeftColor: edgeColor },
             pressed && styles.rowPressed,
           ]}
           accessibilityRole="button"
@@ -128,7 +131,11 @@ export function ListItem({
         onPress={onPress}
         style={({ pressed }) => [
           styles.row,
-          { backgroundColor: colors.surfaceSubtle },
+          {
+            backgroundColor: colors.surfaceSubtle,
+            borderLeftColor: isCompleted ? colors.inkMuted : edgeColor,
+          },
+          isCompleted && styles.rowCompleted,
           pressed && styles.rowPressed,
         ]}
         accessibilityRole="button"
@@ -255,9 +262,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: tokens.radius.md,
+    // saturated edge-bar = structure + per-row type code (no 1px borders).
+    borderLeftWidth: 3,
     paddingVertical: tokens.space.md,
-    paddingHorizontal: tokens.space.md,
+    paddingLeft: tokens.space.md - 3, // keep content flush despite the bar
+    paddingRight: tokens.space.md,
     gap: tokens.space.md,
+  },
+  rowCompleted: {
+    opacity: 0.6,
   },
   rowPressed: {
     opacity: 0.8,

@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Linking,
   Pressable,
@@ -18,17 +18,40 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
+import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { tokens, useTheme } from "@/constants/theme";
+import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { useDatabase } from "@/hooks/use-database/use-database";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
+import { splitCapture } from "@/lib/capture";
+
+import type { EntryType } from "@/lib/types";
+
+const TYPE_OPTIONS: { value: EntryType; label: string }[] = [
+  { value: "idea", label: "Idea" },
+  { value: "todo", label: "Todo" },
+  { value: "deadline", label: "Deadline" },
+  { value: "event", label: "Event" },
+  { value: "someday", label: "Someday" },
+];
 
 export default function VoiceInputScreen(): React.ReactElement {
   const { colors } = useTheme();
+  const { createEntry } = useDatabase();
+  // Landing here is an intent to capture by voice, so recording auto-starts
+  // unless the caller explicitly opts out with `?autoStart=false`.
   const { autoStart } = useLocalSearchParams<{ autoStart?: string }>();
   const { transcript, toggleRecording, isRecording, error, permissionsGranted } =
-    useSpeechRecognizer({ autoStart: autoStart === "true" });
+    useSpeechRecognizer({ autoStart: autoStart !== "false" });
+
+  // Spoken captures default to an idea (the quick-capture type); once the user
+  // has stopped recording they can retype it into any entry type before saving.
+  const [type, setType] = useState<EntryType>("idea");
 
   const isPermissionDenied = permissionsGranted === false;
+  // The type toggle only makes sense once there's a transcript to file and
+  // we're no longer actively listening.
+  const showTypeToggle = !isRecording && transcript.trim().length > 0;
 
   const pulse = useSharedValue(1);
 
@@ -58,15 +81,19 @@ export default function VoiceInputScreen(): React.ReactElement {
     router.back();
   };
 
-  const handleDone = (): void => {
-    if (transcript.trim()) {
-      router.replace({
-        pathname: "/modal",
-        params: { title: transcript.trim() },
-      });
-    } else {
+  const handleDone = async (): Promise<void> => {
+    const trimmed = transcript.trim();
+    if (!trimmed) {
       router.back();
+      return;
     }
+    const { title, notes } = splitCapture(trimmed);
+    try {
+      await createEntry({ title, type, notes });
+    } catch (e) {
+      console.error("[VoiceInput] Failed to save entry:", e);
+    }
+    router.back();
   };
 
   return (
@@ -142,6 +169,49 @@ export default function VoiceInputScreen(): React.ReactElement {
             </Text>
           )}
         </View>
+
+        {/* Type toggle — appears once a transcript is captured so the user can
+            file the spoken note as any entry type before saving. */}
+        {showTypeToggle && (
+          <View style={styles.typeToggle}>
+            {TYPE_OPTIONS.map((option) => {
+              const isSelected = type === option.value;
+              const optionAccent = entryColor(option.value);
+              return (
+                <Pressable
+                  key={option.value}
+                  onPress={() => setType(option.value)}
+                  accessibilityRole="radio"
+                  accessibilityLabel={option.label}
+                  accessibilityState={{ selected: isSelected }}
+                  style={({ pressed }) => [
+                    styles.typeOption,
+                    { backgroundColor: colors.surface },
+                    isSelected && { backgroundColor: optionAccent + "22" },
+                    pressed && !isSelected && { opacity: 0.7 },
+                  ]}
+                >
+                  <SketchIcon
+                    type={option.value}
+                    size={20}
+                    color={isSelected ? optionAccent : colors.inkMuted}
+                  />
+                  <ThemedText
+                    type="caption"
+                    numberOfLines={1}
+                    style={[
+                      styles.typeOptionText,
+                      { color: isSelected ? optionAccent : colors.inkMuted },
+                      isSelected && { fontWeight: "600" },
+                    ]}
+                  >
+                    {option.label}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
 
         {/* Recording Controls */}
         <View style={styles.controls}>
@@ -226,6 +296,25 @@ const styles = StyleSheet.create({
   },
   transcriptPlaceholder: {
     opacity: 0.5,
+  },
+  typeToggle: {
+    flexDirection: "row",
+    gap: tokens.space.xs,
+    paddingHorizontal: tokens.space.lg,
+    paddingBottom: tokens.space.xl,
+  },
+  typeOption: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.xs,
+    minHeight: 64,
+    gap: tokens.space.xs,
+  },
+  typeOptionText: {
+    textAlign: "center",
   },
   controls: {
     alignItems: "center",

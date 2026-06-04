@@ -4,6 +4,11 @@ import {
   ThemeProvider as NavThemeProvider,
 } from "@react-navigation/native";
 import {
+  Caveat_500Medium,
+  Caveat_600SemiBold,
+  Caveat_700Bold,
+} from "@expo-google-fonts/caveat";
+import {
   JetBrainsMono_400Regular,
   JetBrainsMono_500Medium,
   JetBrainsMono_700Bold,
@@ -58,6 +63,9 @@ function ThemedNavigationShell(): React.ReactElement | null {
     JetBrainsMono_400Regular,
     JetBrainsMono_500Medium,
     JetBrainsMono_700Bold,
+    Caveat_500Medium,
+    Caveat_600SemiBold,
+    Caveat_700Bold,
   });
 
   // Configure foreground notification display and request permissions once.

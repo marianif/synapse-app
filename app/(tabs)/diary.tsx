@@ -10,6 +10,7 @@ import {
 
 import { DiaryComposer } from "@/components/molecules/diary-composer";
 import { DiaryFeed } from "@/components/organisms/diary-feed";
+import { type LinkableIdea } from "@/components/organisms/link-sheet";
 import { tokens } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
@@ -17,7 +18,8 @@ import { useDiary } from "@/hooks/use-diary";
 export default function DiaryScreen(): React.ReactElement {
   const { entries, addEntry, removeEntry, refresh } = useDiary();
   // Action-board entries — read only to resolve linked-idea titles for the
-  // "ON · <idea>" chip. Diary writes never touch this store.
+  // feed chip, and to offer ideas in the composer's link sheet. Diary writes
+  // never touch this store.
   const { entries: boardEntries } = useDatabase();
 
   const linkedTitles = useMemo(() => {
@@ -25,6 +27,20 @@ export default function DiaryScreen(): React.ReactElement {
     for (const e of boardEntries) map[e.id] = e.title;
     return map;
   }, [boardEntries]);
+
+  const ideas: LinkableIdea[] = useMemo(
+    () =>
+      boardEntries
+        .filter((e) => e.type === "idea")
+        .map((e) => ({ id: e.id, title: e.title })),
+    [boardEntries],
+  );
+
+  const handleSave = useCallback(
+    (body: string, linkedEntryId: string | null) =>
+      addEntry(body, null, linkedEntryId),
+    [addEntry],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -43,7 +59,7 @@ export default function DiaryScreen(): React.ReactElement {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <DiaryComposer onSave={addEntry} />
+        <DiaryComposer ideas={ideas} onSave={handleSave} />
         <DiaryFeed
           entries={entries}
           linkedTitles={linkedTitles}

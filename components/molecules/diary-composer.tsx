@@ -2,35 +2,36 @@ import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
-import { MoodGlyph } from "@/components/atoms/mood-glyph";
+import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { MoodSheet } from "@/components/organisms/mood-sheet";
+import { LinkSheet, type LinkableIdea } from "@/components/organisms/link-sheet";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
-import { MOOD_OPTIONS, moodCode } from "@/lib/diary-moods";
-
-import type { DiaryMood } from "@/lib/types";
 
 interface DiaryComposerProps {
-  /** Persist a kept entry. The composer clears its draft + mood on resolve. */
-  onSave: (body: string, mood: DiaryMood | null) => Promise<void> | void;
+  /** Ideas this note can be related to (newest-first). */
+  ideas: LinkableIdea[];
+  /** Persist a kept entry. The composer clears its draft + link on resolve. */
+  onSave: (body: string, linkedEntryId: string | null) => Promise<void> | void;
 }
 
 /**
- * The always-present "what happened today" line. Owns its own draft, mood, and
- * voice-capture state so the diary screen only has to wire persistence — drop it
- * anywhere a quick reflective note is wanted. Caveat body so it reads like a
- * thing you scrawled, not a form field.
+ * The always-present "what happened today" line. Owns its own draft, idea-link,
+ * and voice-capture state so the diary screen only has to wire persistence —
+ * drop it anywhere a quick reflective note is wanted. Caveat body so it reads
+ * like a thing you scrawled, not a form field. A note is either related to an
+ * idea (the diary's organizing gesture) or free.
  */
 export function DiaryComposer({
+  ideas,
   onSave,
 }: DiaryComposerProps): React.ReactElement {
   const { colors } = useTheme();
 
   const [draft, setDraft] = useState("");
-  const [mood, setMood] = useState<DiaryMood | null>(null);
-  const [moodSheetOpen, setMoodSheetOpen] = useState(false);
+  const [linkedId, setLinkedId] = useState<string | null>(null);
+  const [linkSheetOpen, setLinkSheetOpen] = useState(false);
 
   // Voice capture appends into the draft. We snapshot whatever was already typed
   // when a dictation session starts, then keep the draft = base + live transcript
@@ -54,13 +55,16 @@ export function DiaryComposer({
   }, [isRecording, transcript, draft]);
 
   const canSave = draft.trim().length > 0;
-  const activeMoodColor = moodCode(mood);
+  const linkedIdea = linkedId
+    ? ideas.find((i) => i.id === linkedId) ?? null
+    : null;
 
   const handleSave = async (): Promise<void> => {
     if (!canSave) return;
-    await onSave(draft, mood);
+    // If the linked idea vanished (deleted while composing), file it as free.
+    await onSave(draft, linkedIdea ? linkedIdea.id : null);
     setDraft("");
-    setMood(null);
+    setLinkedId(null);
   };
 
   return (
@@ -86,31 +90,36 @@ export function DiaryComposer({
           />
 
           <View style={styles.toolRow}>
-            {/* Mood trigger — opens the bottom sheet. Shows the picked mood's
-                glyph + tint when set, a neutral "add mood" face otherwise. */}
+            {/* Link trigger — opens the link sheet. Shows the related idea's
+                title + amber tint when linked, a neutral "relate" prompt when
+                free. This is the diary's organizing gesture (it replaced mood). */}
             <Pressable
-              onPress={() => setMoodSheetOpen(true)}
+              onPress={() => setLinkSheetOpen(true)}
               hitSlop={6}
               style={[
                 styles.toolButton,
                 { backgroundColor: colors.surfaceSubtle },
-                mood && activeMoodColor
-                  ? { backgroundColor: activeMoodColor + "24" }
-                  : null,
+                linkedIdea ? { backgroundColor: colors.type.ideas + "24" } : null,
               ]}
               accessibilityRole="button"
-              accessibilityLabel={mood ? `Mood: ${mood}` : "Add a mood"}
+              accessibilityLabel={
+                linkedIdea ? `Related to idea: ${linkedIdea.title}` : "Relate to an idea"
+              }
             >
-              <MoodGlyph
-                mood={mood ?? "calm"}
-                color={mood && activeMoodColor ? activeMoodColor : colors.inkMuted}
-                size={22}
+              <SketchIcon
+                type="idea"
+                size={18}
+                color={linkedIdea ? colors.type.ideas : colors.inkMuted}
               />
               <ThemedText
                 type="micro"
-                style={{ color: mood && activeMoodColor ? colors.ink : colors.inkMuted }}
+                numberOfLines={1}
+                style={[
+                  styles.linkLabel,
+                  { color: linkedIdea ? colors.ink : colors.inkMuted },
+                ]}
               >
-                {mood ? mood.toUpperCase() : "MOOD"}
+                {linkedIdea ? linkedIdea.title.toUpperCase() : "RELATE"}
               </ThemedText>
             </Pressable>
 
@@ -154,12 +163,12 @@ export function DiaryComposer({
         </View>
       </View>
 
-      <MoodSheet
-        visible={moodSheetOpen}
-        selected={mood}
-        options={MOOD_OPTIONS}
-        onSelect={setMood}
-        onClose={() => setMoodSheetOpen(false)}
+      <LinkSheet
+        visible={linkSheetOpen}
+        selected={linkedId}
+        ideas={ideas}
+        onSelect={setLinkedId}
+        onClose={() => setLinkSheetOpen(false)}
       />
     </>
   );
@@ -196,8 +205,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: tokens.space.xs,
     minHeight: 40,
+    maxWidth: 200,
     paddingHorizontal: tokens.space.md,
     borderRadius: tokens.radius.pill,
+  },
+  linkLabel: {
+    flexShrink: 1,
   },
   micButton: {
     width: 40,

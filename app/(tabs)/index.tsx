@@ -395,6 +395,10 @@ export default function HomeScreen(): React.ReactElement {
             picking={picking}
             onTogglePicking={() => setPicking((p) => !p)}
             onResolve={resolveCapture}
+            onDismiss={() => {
+              setPendingThought(null);
+              setPicking(false);
+            }}
           />
         ) : null}
         <CaptureBar

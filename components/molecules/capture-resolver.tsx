@@ -1,24 +1,19 @@
-import { useEffect } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
-  Easing,
   FadeIn,
   FadeOut,
-  useAnimatedStyle,
   useReducedMotion,
-  useSharedValue,
-  withTiming,
 } from "react-native-reanimated";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { LinkableIdea } from "@/components/organisms/link-sheet";
 import { tokens, useTheme } from "@/constants/theme";
 
-/** A recent idea the captured thought can be filed under. */
-export interface LinkableIdea {
-  id: string;
-  title: string;
-}
+// A recent idea the captured thought can be filed under — same shape the link
+// sheet uses, re-exported so call-sites can import it from either place.
+export type { LinkableIdea };
 
 export type CaptureResolution =
   | { kind: "idea" }
@@ -35,19 +30,17 @@ interface CaptureResolverProps {
   onTogglePicking: () => void;
   /** Commit a destination. */
   onResolve: (resolution: CaptureResolution) => void;
-  /** Seconds until the row auto-commits to `idea` (the safe default). */
-  timeoutMs?: number;
+  /** Discard the pending thought without filing it. */
+  onDismiss: () => void;
 }
-
-const DEFAULT_TIMEOUT = 6000;
 
 /**
  * The post-capture destination chooser. The capture bar files nothing on its
  * own anymore — it hands the thought here, and this slim row lets the writer
- * file it as an idea (the action-board default), an autonomous diary note, or a
- * note ON a recent idea. Doing nothing commits an idea after `timeoutMs`, so the
- * frictionless path and old muscle memory survive: ↵ then ignore = idea, as
- * before. It wears the amber capture identity on its left edge.
+ * file it as an idea, an autonomous diary note, or a note ON a recent idea. It
+ * stays until the writer picks (no auto-commit) — the thought is held safely in
+ * the meantime, and a new capture replaces it. It wears the amber capture
+ * identity on its left edge.
  */
 export function CaptureResolver({
   text,
@@ -55,29 +48,10 @@ export function CaptureResolver({
   picking,
   onTogglePicking,
   onResolve,
-  timeoutMs = DEFAULT_TIMEOUT,
+  onDismiss,
 }: CaptureResolverProps): React.ReactElement {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
-  const progress = useSharedValue(1);
-
-  // Auto-commit to `idea` when the window lapses — nothing is ever lost, and the
-  // default matches the old behaviour. The countdown rail visualises the window.
-  useEffect(() => {
-    const timer = setTimeout(() => onResolve({ kind: "idea" }), timeoutMs);
-    if (!reduced) {
-      progress.value = withTiming(0, {
-        duration: timeoutMs,
-        easing: Easing.linear,
-      });
-    }
-    return () => clearTimeout(timer);
-    // Re-arm if the captured text changes (a new thought replaced this one).
-  }, [text, timeoutMs, reduced, progress, onResolve]);
-
-  const railStyle = useAnimatedStyle(() => ({
-    transform: [{ scaleX: progress.value }],
-  }));
 
   return (
     <Animated.View
@@ -90,7 +64,7 @@ export function CaptureResolver({
       <View style={styles.body}>
         <View style={styles.headRow}>
           <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-            KEPT · FILE AS
+            FILE AS
           </ThemedText>
           <ThemedText
             type="body"
@@ -99,6 +73,15 @@ export function CaptureResolver({
           >
             {text}
           </ThemedText>
+          <Pressable
+            onPress={onDismiss}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Discard this thought"
+            style={styles.dismiss}
+          >
+            <IconSymbol name="close" size={16} color={colors.inkMuted} />
+          </Pressable>
         </View>
 
         {picking ? (
@@ -182,15 +165,6 @@ export function CaptureResolver({
           </View>
         )}
       </View>
-
-      {/* Countdown rail — the window before this commits to IDEA on its own. */}
-      <Animated.View
-        style={[
-          styles.rail,
-          { backgroundColor: colors.type.ideas },
-          railStyle,
-        ]}
-      />
     </Animated.View>
   );
 }
@@ -219,6 +193,12 @@ const styles = StyleSheet.create({
   echo: {
     flex: 1,
   },
+  dismiss: {
+    width: 24,
+    height: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -244,14 +224,5 @@ const styles = StyleSheet.create({
     fontFamily: tokens.type.fontHand.medium,
     fontSize: 18,
     lineHeight: 22,
-  },
-  rail: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 2,
-    // scaleX animates from the left edge
-    transformOrigin: "left",
   },
 });

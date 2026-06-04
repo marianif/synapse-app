@@ -236,9 +236,14 @@ re-cutting the two heaviest content surfaces (Stakes, Detail).
 ### Diary — full organize model (evolutive)
 
 Today (shipped): the home bar captures a **thought**, then a post-send resolver
-files it as an **idea**, an **autonomous diary note**, or a **note ON a recent
-idea** (`diary_entries.linked_entry_id` → an `entries` idea row; app-side ON
-DELETE SET NULL). The diary feed shows an "ON · <idea>" chip on linked notes.
+(no timeout — stays until picked, with a discard ✕) files it as an **idea**, an
+**autonomous diary note**, or a **note ON a recent idea**
+(`diary_entries.linked_entry_id` → an `entries` idea row; app-side ON DELETE SET
+NULL). Mood was dropped as a concept; its composer/feed slots were repurposed for
+the idea-link. The diary composer relates a note to an idea via a LinkSheet, and
+every feed item shows its relatedness — an "ON · <idea>" chip, or a "FREE" chip
+when unlinked. (Mood components — `mood-glyph`, `mood-sheet`, `diary-moods` — are
+kept on disk, unused, in case mood returns as an optional layer.)
 
 Evolve toward the richer "thoughts organized by project" model the user wants:
 

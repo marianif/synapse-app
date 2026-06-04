@@ -9,6 +9,10 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
+// Ink/icon color that sits ON the amber send key — a fixed cool-near-black that
+// clears AA on amber in BOTH schemes (matches the home capture bar's ON_AMBER).
+const ON_AMBER = tokens.color.dark.paper;
+
 interface DiaryComposerProps {
   /** Ideas this note can be related to (newest-first). */
   ideas: LinkableIdea[];
@@ -59,12 +63,28 @@ export function DiaryComposer({
     ? ideas.find((i) => i.id === linkedId) ?? null
     : null;
 
+  const commit = async (entryId: string | null): Promise<void> => {
+    await onSave(draft, entryId);
+    setDraft("");
+    setLinkedId(null);
+  };
+
   const handleSave = async (): Promise<void> => {
     if (!canSave) return;
     // If the linked idea vanished (deleted while composing), file it as free.
-    await onSave(draft, linkedIdea ? linkedIdea.id : null);
-    setDraft("");
-    setLinkedId(null);
+    await commit(linkedIdea ? linkedIdea.id : null);
+  };
+
+  // Relating a note IS a commit: picking an idea publishes immediately when
+  // there's something written — one decisive action, no redundant KEEP. With an
+  // empty draft we can't save, so picking only stages the link until the writer
+  // types and hits send.
+  const handleLink = (entryId: string | null): void => {
+    if (entryId !== null && canSave) {
+      void commit(entryId);
+      return;
+    }
+    setLinkedId(entryId);
   };
 
   return (
@@ -143,21 +163,31 @@ export function DiaryComposer({
               />
             </Pressable>
 
+            {/* Send key — the manual commit. A round affordance matching the mic:
+                recessed + muted when idle, charged amber (with the dark arrow)
+                once there's text, echoing the home capture bar's send key. The
+                tool row stays calm until the note is ready to keep. */}
             <Pressable
               onPress={handleSave}
               disabled={!canSave}
-              hitSlop={8}
+              hitSlop={10}
               style={[
-                styles.saveKey,
-                { backgroundColor: colors.accent.clay },
-                !canSave && styles.saveKeyDisabled,
+                styles.sendKey,
+                {
+                  backgroundColor: canSave
+                    ? colors.type.ideas
+                    : colors.surfaceSubtle,
+                },
               ]}
               accessibilityRole="button"
-              accessibilityLabel="Save entry"
+              accessibilityState={{ disabled: !canSave }}
+              accessibilityLabel="Keep this note"
             >
-              <ThemedText type="label" style={{ color: colors.accent.onClay }}>
-                KEEP
-              </ThemedText>
+              <IconSymbol
+                name="send"
+                size={20}
+                color={canSave ? ON_AMBER : colors.inkMuted}
+              />
             </Pressable>
           </View>
         </View>
@@ -167,7 +197,7 @@ export function DiaryComposer({
         visible={linkSheetOpen}
         selected={linkedId}
         ideas={ideas}
-        onSelect={setLinkedId}
+        onSelect={handleLink}
         onClose={() => setLinkSheetOpen(false)}
       />
     </>
@@ -219,16 +249,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: tokens.radius.pill,
   },
-  saveKey: {
+  sendKey: {
     marginLeft: "auto",
-    minHeight: 44,
-    minWidth: 64,
-    paddingHorizontal: tokens.space.lg,
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: tokens.radius.sm,
-  },
-  saveKeyDisabled: {
-    opacity: 0.4,
+    borderRadius: tokens.radius.pill,
   },
 });

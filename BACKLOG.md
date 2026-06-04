@@ -242,8 +242,12 @@ Today (shipped): the home bar captures a **thought**, then a post-send resolver
 NULL). Mood was dropped as a concept; its composer/feed slots were repurposed for
 the idea-link. The diary composer relates a note to an idea via a LinkSheet, and
 every feed item shows its relatedness — an "ON · <idea>" chip, or a "FREE" chip
-when unlinked. (Mood components — `mood-glyph`, `mood-sheet`, `diary-moods` — are
-kept on disk, unused, in case mood returns as an optional layer.)
+when unlinked. Relating IS a commit: picking an idea with text written publishes
+immediately (no redundant KEEP); with an empty draft it just stages the link.
+The manual commit is a round send key (recessed→amber charge, matching the mic +
+the home capture bar) — the old slab KEEP button is gone. (Mood components —
+`mood-glyph`, `mood-sheet`, `diary-moods` — are kept on disk, unused, in case
+mood returns as an optional layer.)
 
 Evolve toward the richer "thoughts organized by project" model the user wants:
 

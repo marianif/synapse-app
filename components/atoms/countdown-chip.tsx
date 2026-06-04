@@ -12,9 +12,12 @@ interface CountdownChipProps {
 }
 
 /**
- * Deadline urgency hero chip.
+ * Deadline urgency chip — the loudest line of the deadline's telemetry, NOT a
+ * hero. The screen's hero is the title above it; this is one fact (days left),
+ * so it reads as a compact inline chip that hugs its text, not a centered slab.
  * Displays "DUE IN N DAYS", "DUE TODAY", "OVERDUE", or "MET".
- * Color shifts from coral (pending) → red (overdue) → muted (met).
+ * Color shifts from coral (pending) → red (overdue) → muted (met) — urgency is
+ * carried by hue, not by size.
  */
 export function CountdownChip({ daysRemaining, state }: CountdownChipProps): React.ReactElement {
   const { colors } = useTheme();
@@ -57,18 +60,24 @@ export function CountdownChip({ daysRemaining, state }: CountdownChipProps): Rea
 }
 
 const styles = StyleSheet.create({
+  // Inline chip that hugs its text — number + label on one row. Sharp corner
+  // (Field Lab signal voice), not the soft card radius that read as standalone.
   chip: {
-    borderRadius: tokens.radius.lg,
-    paddingVertical: tokens.space.xl,
-    paddingHorizontal: tokens.space.xxl,
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: tokens.space.xs,
+    alignSelf: 'flex-start',
+    borderRadius: tokens.radius.sm,
+    paddingVertical: tokens.space.xs,
+    paddingHorizontal: tokens.space.sm,
+    gap: tokens.space.sm,
   },
+  // One step below the hero title (title scale, not display) — telemetry, not
+  // a second hero. Tabular so the digit aligns with the mono readout beneath.
   number: {
-    fontSize: tokens.type.display.size,
-    lineHeight: tokens.type.display.lineHeight,
-    letterSpacing: tokens.type.display.tracking,
+    fontSize: tokens.type.title.size,
+    lineHeight: tokens.type.title.lineHeight,
     fontFamily: 'Inter_700Bold',
+    fontVariant: ['tabular-nums'],
   },
   label: {
     fontSize: tokens.type.kicker.size,

@@ -53,16 +53,18 @@ export function DetailReadout({ lines }: DetailReadoutProps): React.ReactElement
 }
 
 const styles = StyleSheet.create({
+  // Glance telemetry, not a reading surface — dense rows so a deadline's
+  // STATUS / DUE / TIME / REPEAT reads as a compact strip, not a tall slab.
   block: {
     borderRadius: tokens.radius.md,
-    paddingVertical: tokens.space.sm,
-    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.xs,
+    paddingHorizontal: tokens.space.md,
   },
   line: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
     gap: tokens.space.lg,
   },
   key: {

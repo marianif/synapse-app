@@ -31,6 +31,41 @@ dayjs.extend(customParseFormat);
 
 const TODAY_START = () => dayjs().startOf("day");
 
+/** Title stays glanceable up to here; longer captures spill into notes. */
+const CAPTURE_TITLE_MAX = 80;
+
+/**
+ * Split a free-form capture into a scannable title + overflow notes. The title
+ * is the first line or sentence (whichever comes first), trimmed to
+ * CAPTURE_TITLE_MAX at a word boundary; everything that didn't fit becomes
+ * notes. Short captures return `notes: undefined` (the whole thing is the
+ * title). Nothing typed is ever dropped.
+ */
+function splitCapture(text: string): { title: string; notes?: string } {
+  // First natural break: a newline or sentence terminator (. ! ?).
+  const breakMatch = text.match(/[\n.!?]/);
+  const firstClause = breakMatch
+    ? text.slice(0, breakMatch.index! + 1).trim()
+    : text;
+
+  if (firstClause.length > CAPTURE_TITLE_MAX) {
+    // Cut at the last word boundary before the cap so we don't split a word,
+    // and keep the FULL original text in notes (nothing typed is dropped).
+    const slice = firstClause.slice(0, CAPTURE_TITLE_MAX);
+    const lastSpace = slice.lastIndexOf(" ");
+    const title =
+      (lastSpace > 0 ? slice.slice(0, lastSpace) : slice).trim() + "…";
+    return { title, notes: text };
+  }
+
+  // First clause fits: it's the title; anything after it becomes notes.
+  const remainder = text.slice(firstClause.length).trim();
+  return {
+    title: firstClause,
+    notes: remainder.length > 0 ? remainder : undefined,
+  };
+}
+
 /** Days from today until an entry's date; null if undated. Negative = overdue. */
 function daysUntil(dateStr: string | null): number | null {
   if (!dateStr) return null;
@@ -78,10 +113,7 @@ function toRowItem(e: DbEntry): FieldRowItem {
   };
 }
 
-// Stakes are a runway against a fixed horizon: how close to the edge each one is.
-const RUNWAY_HORIZON_DAYS = 14;
-
-/** Big mono readout for a gauge: "2d over", "now", "tomorrow", "5d". */
+/** Trailing mono when-label for a stake: "2d over", "now", "tomorrow", "5d". */
 function runwayReadout(days: number | null): string {
   if (days === null) return "";
   if (days < 0) return `${Math.abs(days)}d over`;
@@ -90,23 +122,26 @@ function runwayReadout(days: number | null): string {
   return `${days}d`;
 }
 
-function toRunwayItem(e: DbEntry): RunwayItem {
+function toRunwayItem(e: DbEntry, done = false): RunwayItem {
   const days = daysUntil(e.due_date ?? e.scheduled_date ?? null);
   const dated = days !== null;
-  // 0 at the far horizon, 1 at/over the edge. clamp to the track.
-  const fill =
-    days === null
-      ? 0
-      : Math.min(1, Math.max(0, 1 - days / RUNWAY_HORIZON_DAYS));
   return {
     id: e.id,
     type: e.type as EntryType,
     title: e.title,
     readout: runwayReadout(days),
-    fill,
-    overdue: days !== null && days < 0,
+    overdue: !done && days !== null && days < 0,
     dated,
+    done,
   };
+}
+
+/** A stake stays in the "recently cleared" run this many days after being done. */
+const DONE_WINDOW_DAYS = 7;
+
+/** Most-recently-cleared first, so the freshest win sits at the top of the run. */
+function byRecentlyDone(a: DbEntry, b: DbEntry): number {
+  return b.updated_at - a.updated_at;
 }
 
 /** Runway order: most burnt-down first (overdue → soonest), undated last. */
@@ -158,12 +193,15 @@ export default function HomeScreen(): React.ReactElement {
 
   // The capture bar is the quick IDEA line: typed or spoken, a note lands
   // straight in the Present cloud as an idea. Richer entries go through the
-  // Add tab.
+  // Add tab. Long captures split into a glanceable title (first sentence/line,
+  // capped) + the full thought in notes — so the cloud stays scannable and
+  // nothing typed is lost.
   const captureIdea = useCallback(
     (text: string) => {
-      const title = text.trim();
-      if (!title) return;
-      createEntry({ title, type: "idea" }).catch((err) =>
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      const { title, notes } = splitCapture(trimmed);
+      createEntry({ title, type: "idea", notes }).catch((err) =>
         console.error("Failed to capture idea:", err),
       );
     },
@@ -223,28 +261,51 @@ export default function HomeScreen(): React.ReactElement {
   // The field, split into the two zones the brief names: STAKES (consequence)
   // and PRESENT (must-not-fade). Each zone is sorted hottest-first, but heat is
   // aliveness not rank — a cool idea still glows beside a hot bill.
-  const { stakes, stakeGauges, present, presentItems } = useMemo(() => {
-    const open = entries.filter(
-      (e) => e.status !== "completed" && e.status !== "met",
+  const { stakes, stakeGauges, doneStakes, present, presentItems } =
+    useMemo(() => {
+      const isDone = (e: DbEntry): boolean =>
+        e.status === "completed" || e.status === "met";
+      const open = entries.filter((e) => !isDone(e));
+      const pick = (types: EntryType[]): FieldRowItem[] =>
+        open
+          .filter((e) => types.includes(e.type as EntryType))
+          .sort(byHeatThenDate)
+          .map(toRowItem);
+      const stakeEntries = open
+        .filter((e) => STAKES_TYPES.includes(e.type as EntryType))
+        .sort(byRunway);
+      // Stakes cleared recently — the activating "crossed off" run. Keyed off
+      // updated_at (WHEN it was marked done), not the due date: a deadline a year
+      // out, finished early, still earns a spot. updated_at is stored in SECONDS
+      // (see database-context updateEntryStatus), so the window is in seconds too.
+      const doneSince = today.getTime() / 1000 - DONE_WINDOW_DAYS * 86_400;
+      const doneStakeEntries = entries
+        .filter(
+          (e) =>
+            isDone(e) &&
+            STAKES_TYPES.includes(e.type as EntryType) &&
+            e.updated_at >= doneSince,
+        )
+        .sort(byRecentlyDone);
+      const presentEntries = open.filter((e) =>
+        PRESENT_TYPES.includes(e.type as EntryType),
+      );
+      return {
+        stakes: pick(STAKES_TYPES),
+        stakeGauges: stakeEntries.map((e) => toRunwayItem(e)),
+        doneStakes: doneStakeEntries.map((e) => toRunwayItem(e, true)),
+        present: pick(PRESENT_TYPES),
+        presentItems: toPresentItems(presentEntries, today.getTime()),
+      };
+    }, [entries, today]);
+
+  // Wipe the whole recently-cleared run. These are completed entries; clearing
+  // deletes them for good (the organism gates this behind a confirm).
+  const handleClearDoneStakes = useCallback(() => {
+    Promise.all(doneStakes.map((s) => deleteEntry(s.id))).catch((err) =>
+      console.error("Failed to clear done stakes:", err),
     );
-    const pick = (types: EntryType[]): FieldRowItem[] =>
-      open
-        .filter((e) => types.includes(e.type as EntryType))
-        .sort(byHeatThenDate)
-        .map(toRowItem);
-    const stakeEntries = open
-      .filter((e) => STAKES_TYPES.includes(e.type as EntryType))
-      .sort(byRunway);
-    const presentEntries = open.filter((e) =>
-      PRESENT_TYPES.includes(e.type as EntryType),
-    );
-    return {
-      stakes: pick(STAKES_TYPES),
-      stakeGauges: stakeEntries.map(toRunwayItem),
-      present: pick(PRESENT_TYPES),
-      presentItems: toPresentItems(presentEntries, today.getTime()),
-    };
-  }, [entries, today]);
+  }, [doneStakes, deleteEntry]);
 
   const entriesForSheet = useMemo(
     () =>
@@ -272,9 +333,11 @@ export default function HomeScreen(): React.ReactElement {
 
         <StakesRunway
           items={stakeGauges}
+          done={doneStakes}
+          onClearDone={handleClearDoneStakes}
           itemHref={(item) => ({
             pathname: "/detail",
-            params: { id: item.id },
+            params: { id: item.id, entryType: item.type },
           })}
           zoneHref="/list?entryType=deadline"
           emptyHint="Nothing's on the line. Add a bill, deadline, or to-do."
@@ -285,7 +348,7 @@ export default function HomeScreen(): React.ReactElement {
           items={presentItems}
           itemHref={(item) => ({
             pathname: "/detail",
-            params: { id: item.id },
+            params: { id: item.id, entryType: item.type },
           })}
           zoneHref="/list?entryType=idea"
           emptyHint="Catch an idea, a someday, or an event before it's gone."

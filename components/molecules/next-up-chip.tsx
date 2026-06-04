@@ -31,7 +31,12 @@ export function NextUpChip({
 
   const chip = (
     <Pressable
-      onPress={() => router.push({ pathname: "/detail", params: { id: item.id } })}
+      onPress={() =>
+        router.push({
+          pathname: "/detail",
+          params: { id: item.id, entryType: item.type },
+        })
+      }
       accessibilityRole="button"
       accessibilityLabel={`Open ${item.title}${item.when ? `, ${item.when}` : ""}`}
       style={({ pressed }) => [

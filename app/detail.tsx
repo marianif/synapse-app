@@ -15,6 +15,7 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { DetailActionBar } from "@/components/molecules/detail-action-bar";
 import { DetailReadout } from "@/components/molecules/detail-readout";
 import { EmptyState } from "@/components/molecules/empty-state";
+import { SignalRail } from "@/components/molecules/signal-rail";
 import { ListScreenHeader } from "@/components/organisms/list-screen-header";
 import type { ThemeColors } from "@/constants/theme";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
@@ -27,7 +28,7 @@ import {
 import type { DbRecurrenceCompletion } from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
-import type { ActionItem } from "@/components/molecules/detail-action-bar";
+import type { PrimaryAction } from "@/components/molecules/detail-action-bar";
 import type { ReadoutLine } from "@/components/molecules/detail-readout";
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
@@ -94,55 +95,6 @@ function getStatusColor(
   if (status === "overdue") return tokens.feedback.danger;
   if (status === "active") return accentColor;
   return inkMuted;
-}
-
-const TYPE_LABELS: Record<EntryType, string> = {
-  todo: "TODO",
-  deadline: "DEADLINE",
-  event: "EVENT",
-  someday: "ONE DAY",
-  idea: "IDEA",
-};
-
-// ─── Signal rail ────────────────────────────────────────────────────────────
-//
-// The item that was tapped on the home Field is edge-barred in its entryColor;
-// the rail is that same Field Lab signature grown to screen scale, so the user
-// never loses the thread "this is the [cyan todo] I tapped". It carries the
-// type kicker on its shoulder (mono — the only all-caps) and the title at
-// display scale. Everything to the right of the rail belongs to this one item.
-
-function SignalRail({
-  entryType,
-  accentColor,
-  isRecurring,
-  title,
-  children,
-}: {
-  entryType: EntryType;
-  accentColor: string;
-  isRecurring: boolean;
-  title: string;
-  children: React.ReactNode;
-}): React.ReactElement {
-  return (
-    <View style={styles.railRow}>
-      <View style={[styles.rail, { backgroundColor: accentColor }]} />
-      <View style={styles.railBody}>
-        <ThemedText
-          type="label"
-          style={[styles.kicker, { color: accentColor }]}
-        >
-          {TYPE_LABELS[entryType]}
-          {isRecurring ? "  ↻" : ""}
-        </ThemedText>
-        <ThemedText type="display" style={styles.title}>
-          {title}
-        </ThemedText>
-        {children}
-      </View>
-    </View>
-  );
 }
 
 // ─── Delete confirm sheet (non-recurring) ─────────────────────────────────────
@@ -286,9 +238,10 @@ export default function DetailScreen(): React.ReactElement {
     ? (rawId ?? "").split("::")
     : [rawId, null];
 
-  const resolvedType = (entryType as EntryType) ?? "todo";
-  const accentColor = entryColor(resolvedType);
-  const isSomeday = entryType === "someday" || entryType === "idea";
+  // The URL param is only a hint — several call sites omit it entirely, so it
+  // can't be trusted for type/color/actions. It's used solely to tint the
+  // loading spinner before the real entry (the source of truth) resolves.
+  const hintType = (entryType as EntryType) ?? "todo";
 
   const {
     entries,
@@ -338,7 +291,7 @@ export default function DetailScreen(): React.ReactElement {
       >
         <ListScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
-          <ActivityIndicator color={accentColor} />
+          <ActivityIndicator color={entryColor(hintType)} />
         </View>
       </SafeAreaView>
     );
@@ -359,12 +312,20 @@ export default function DetailScreen(): React.ReactElement {
             description="This entry may have been deleted."
             ctaLabel="Go Back"
             onCta={() => router.back()}
-            accentColor={accentColor}
+            accentColor={entryColor(hintType)}
           />
         </View>
       </SafeAreaView>
     );
   }
+
+  // ── Type, color & derived flags — from the ENTRY, the source of truth ────────
+  // (not the URL param, which several navigation call sites omit). This is what
+  // keeps the accent color and the primary action honest for every entry type.
+
+  const type = entry.type;
+  const accentColor = entryColor(type);
+  const isSomeday = type === "someday" || type === "idea";
 
   // ── Action bar ───────────────────────────────────────────────────────────────
 
@@ -465,72 +426,25 @@ export default function DetailScreen(): React.ReactElement {
     if (qs) router.push(`/modal?${qs}`);
   };
 
-  const actions: [ActionItem, ActionItem, ActionItem] =
-    entryType === "todo" || entryType === "event"
-      ? [
-          {
-            icon: "check-circle-outline",
-            label: isCompleted ? "Completed" : "Complete",
-            onPress: handleComplete,
-            isPrimary: true,
-            accentColor,
-          },
-          {
-            icon: "pencil-outline",
-            label: "Edit",
-            onPress: handleEdit,
-            accentColor,
-          },
-          {
-            icon: "trash-can-outline",
-            label: "Delete",
-            onPress: handleDelete,
-            isDanger: true,
-          },
-        ]
-      : entryType === "deadline"
-        ? [
-            {
-              icon: "check-decagram-outline",
-              label: isMet ? "Met" : "Mark Met",
-              onPress: handleMarkMet,
-              isPrimary: true,
-              accentColor,
-            },
-            {
-              icon: "pencil-outline",
-              label: "Edit",
-              onPress: handleEdit,
-              accentColor,
-            },
-            {
-              icon: "trash-can-outline",
-              label: "Delete",
-              onPress: handleDelete,
-              isDanger: true,
-            },
-          ]
-        : [
-            {
-              icon: "arrow-up-circle-outline",
-              label: "Promote",
-              onPress: () => {},
-              isPrimary: true,
-              accentColor,
-            },
-            {
-              icon: "pencil-outline",
-              label: "Edit",
-              onPress: handleEdit,
-              accentColor,
-            },
-            {
-              icon: "trash-can-outline",
-              label: "Delete",
-              onPress: handleDelete,
-              isDanger: true,
-            },
-          ];
+  // someday / idea have no scheduled action, so they get NO primary — the bar
+  // falls back to the quiet Edit / Delete pair. (The old "Promote" tile was a
+  // no-op: there's no promote/convert path in the data layer.)
+  const primary: PrimaryAction | undefined =
+    type === "todo" || type === "event"
+      ? {
+          icon: "check-circle-outline",
+          label: isCompleted ? "Completed" : "Complete",
+          onPress: handleComplete,
+          done: isCompleted,
+        }
+      : type === "deadline"
+        ? {
+            icon: "check-decagram-outline",
+            label: isMet ? "Met" : "Mark Met",
+            onPress: handleMarkMet,
+            done: isMet,
+          }
+        : undefined;
 
   // ── Readout lines (mono telemetry) ───────────────────────────────────────────
 
@@ -542,8 +456,8 @@ export default function DetailScreen(): React.ReactElement {
 
   const readoutLines: ReadoutLine[] = [];
 
-  const isDeadline = entryType === "deadline";
-  const isTask = entryType === "todo" || entryType === "event";
+  const isDeadline = type === "deadline";
+  const isTask = type === "todo" || type === "event";
 
   if (isTask) {
     readoutLines.push({
@@ -595,8 +509,7 @@ export default function DetailScreen(): React.ReactElement {
         >
           {/* Signal rail: type-color edge-bar + kicker + title + readout */}
           <SignalRail
-            entryType={resolvedType}
-            accentColor={accentColor}
+            entryType={type}
             isRecurring={isRecurringEntry(entry)}
             title={title}
           >
@@ -611,21 +524,28 @@ export default function DetailScreen(): React.ReactElement {
             ) : null}
 
             {readoutLines.length > 0 ? (
-              <DetailReadout lines={readoutLines} />
+              <View style={styles.railChild}>
+                <DetailReadout lines={readoutLines} />
+              </View>
             ) : null}
 
             {/* Someday / idea inspiration — the one place a softer voice fits. */}
             {isSomeday && entry.inspiration ? (
               <ThemedText
                 type="body"
-                style={[styles.inspiration, { color: colors.inkMuted }]}
+                style={[
+                  styles.inspiration,
+                  styles.railChild,
+                  { color: colors.inkMuted },
+                ]}
               >
                 {entry.inspiration}
               </ThemedText>
             ) : null}
           </SignalRail>
 
-          {/* Notes */}
+          {/* Notes — Tier 3: the one block you actually read, so it earns a real
+              break from the hero and its own air. */}
           {notes ? (
             <View
               style={[
@@ -644,15 +564,18 @@ export default function DetailScreen(): React.ReactElement {
               </ThemedText>
             </View>
           ) : null}
-
-          <View style={styles.contentSpacer} />
         </ScrollView>
 
         {/* ── Action bar — pinned above safe area ─────────────── */}
         <View
           style={[styles.actionBarWrapper, { backgroundColor: colors.paper }]}
         >
-          <DetailActionBar actions={actions} />
+          <DetailActionBar
+            primary={primary}
+            accentColor={accentColor}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </View>
       </View>
 
@@ -696,38 +619,32 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: tokens.space.lg,
-    paddingBottom: tokens.space.lg,
-    gap: tokens.space.lg,
+    // Top breath sets the hero off the header; bottom seats the body close to
+    // the pinned action bar (no extra spacer block — the body shouldn't pad
+    // itself to fill space it doesn't need). Vertical zone gaps are owned by
+    // each block's marginTop, NOT a flat gap — the screen has a ratio now.
+    paddingTop: tokens.space.md,
+    paddingBottom: tokens.space.md,
   },
-  // ── Signal rail ─────────────────────────────────────────────
-  railRow: {
-    flexDirection: "row",
-    gap: tokens.space.lg,
-  },
-  rail: {
-    width: 4,
-    borderRadius: tokens.radius.pill,
-    // The rail spans the full height of the body it sits beside.
-    alignSelf: "stretch",
-  },
-  railBody: {
-    flex: 1,
-    gap: tokens.space.md,
-  },
-  kicker: {
-    // mono all-caps kicker — the only all-caps element (Field Lab signal voice).
-  },
-  title: {
-    // display scale from ThemedText; this is the one zoomed-in item.
+  // ── Signal rail children (Tier 2) ───────────────────────────
+  // The rail itself is now the autonomous <SignalRail>. These margins set the
+  // ratio for what the screen composes INSIDE it: telemetry / countdown /
+  // inspiration sit one real breath below the hero title.
+  railChild: {
+    marginTop: tokens.space.md,
   },
   countdownSlot: {
     alignSelf: "flex-start",
+    marginTop: tokens.space.md,
   },
   inspiration: {
     lineHeight: 22,
   },
-  // ── Notes ───────────────────────────────────────────────────
+  // ── Notes (Tier 3) ──────────────────────────────────────────
   notesBlock: {
+    // A real zone break from the hero/telemetry above — this is the only block
+    // the user reads, so the ratio gives it the biggest gap on the screen.
+    marginTop: tokens.space.xl,
     borderRadius: tokens.radius.md,
     padding: tokens.space.lg,
     gap: tokens.space.sm,
@@ -737,9 +654,6 @@ const styles = StyleSheet.create({
   },
   notesText: {
     lineHeight: 22,
-  },
-  contentSpacer: {
-    height: tokens.space.xl,
   },
   // ── Action bar ───────────────────────────────────────────────
   actionBarWrapper: {

@@ -145,6 +145,7 @@ const type = {
   item: { size: 16, lineHeight: 22, weight: "500" as const, tracking: 0 }, // Inter — entry titles
   body: { size: 14, lineHeight: 20, weight: "400" as const, tracking: 0 }, // Inter — detail
   kicker: { size: 11, lineHeight: 14, weight: "600" as const, tracking: 0.8 }, // mono all-caps — the only all-caps
+  micro: { size: 10, lineHeight: 13, weight: "600" as const, tracking: 1 }, // mono all-caps — sub-kicker dividers / tertiary metadata
   mono: { size: 13, lineHeight: 18, weight: "500" as const, tracking: 0 }, // mono — counts / status / time, tabular
 } as const;
 

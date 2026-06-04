@@ -12,6 +12,7 @@ export type TextType =
   | "body" // 14pt Inter — detail / supporting
   | "bodyBold" // 14pt Inter semibold
   | "label" // 11pt all-caps mono kicker
+  | "micro" // 10pt all-caps mono — sub-kicker dividers / tertiary metadata
   | "mono" // 13pt mono — counts / status / time
   | "caption"; // 11pt Inter, no transform
 
@@ -83,6 +84,13 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.kicker.size,
     lineHeight: tokens.type.kicker.lineHeight,
     letterSpacing: tokens.type.kicker.tracking,
+    fontFamily: tokens.type.fontMono.medium,
+    textTransform: "uppercase",
+  },
+  micro: {
+    fontSize: tokens.type.micro.size,
+    lineHeight: tokens.type.micro.lineHeight,
+    letterSpacing: tokens.type.micro.tracking,
     fontFamily: tokens.type.fontMono.medium,
     textTransform: "uppercase",
   },

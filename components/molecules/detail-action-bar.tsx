@@ -13,8 +13,12 @@ export interface PrimaryAction {
 }
 
 interface DetailActionBarProps {
-  /** The one decision the screen exists for — Complete / Mark Met / Promote. */
-  primary: PrimaryAction;
+  /**
+   * The one decision the screen exists for — Complete / Mark Met. Optional:
+   * some types (someday / idea) have no scheduled action, so the bar shows
+   * only the subordinate Edit / Delete pair.
+   */
+  primary?: PrimaryAction;
   /** The entry's type-color. The primary carries it; the screen's signal thread. */
   accentColor: string;
   onEdit: () => void;
@@ -45,33 +49,39 @@ export function DetailActionBar({
 }: DetailActionBarProps): React.ReactElement {
   const { colors } = useTheme();
 
-  const primaryInk = primary.done ? accentColor : chipInk();
+  const primaryInk = primary?.done ? accentColor : chipInk();
 
   return (
     <View style={styles.bar}>
-      {/* Primary — the decision. Type-color fill, or outlined once done. */}
-      <Pressable
-        onPress={primary.onPress}
-        style={({ pressed }) => [
-          styles.primary,
-          primary.done
-            ? { backgroundColor: colors.surface }
-            : { backgroundColor: accentColor },
-          pressed && styles.pressed,
-        ]}
-        accessibilityRole="button"
-        accessibilityState={{ selected: primary.done }}
-        accessibilityLabel={primary.label}
-      >
-        <MaterialCommunityIcons
-          name={primary.icon}
-          size={22}
-          color={primaryInk}
-        />
-        <ThemedText type="bodyBold" style={[styles.primaryLabel, { color: primaryInk }]}>
-          {primary.label}
-        </ThemedText>
-      </Pressable>
+      {/* Primary — the decision. Type-color fill, or outlined once done.
+          Absent for types with no scheduled action (someday / idea). */}
+      {primary ? (
+        <Pressable
+          onPress={primary.onPress}
+          style={({ pressed }) => [
+            styles.primary,
+            primary.done
+              ? { backgroundColor: colors.surface }
+              : { backgroundColor: accentColor },
+            pressed && styles.pressed,
+          ]}
+          accessibilityRole="button"
+          accessibilityState={{ selected: primary.done }}
+          accessibilityLabel={primary.label}
+        >
+          <MaterialCommunityIcons
+            name={primary.icon}
+            size={22}
+            color={primaryInk}
+          />
+          <ThemedText
+            type="bodyBold"
+            style={[styles.primaryLabel, { color: primaryInk }]}
+          >
+            {primary.label}
+          </ThemedText>
+        </Pressable>
+      ) : null}
 
       {/* Subordinate pair — quiet, equal to each other, below the decision. */}
       <View style={styles.secondaryRow}>

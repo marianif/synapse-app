@@ -106,7 +106,6 @@ function ThemedNavigationShell(): React.ReactElement | null {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="list" options={{ headerShown: false }} />
             <Stack.Screen name="detail" options={{ headerShown: false }} />
-            <Stack.Screen name="voice-input" options={{ headerShown: false }} />
             <Stack.Screen
               name="modal"
               options={{ presentation: "modal", headerShown: false }}

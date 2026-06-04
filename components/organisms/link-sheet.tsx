@@ -1,12 +1,29 @@
-import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useMemo, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
+
+// Above this many ideas, a search field earns its place; below it, the list is
+// short enough to graze and a search box would just be chrome.
+const SEARCH_THRESHOLD = 6;
 
 export interface LinkableIdea {
   id: string;
   title: string;
+  /** Diary notes already filed on this idea. Shown as a trailing mono count. */
+  noteCount?: number;
 }
 
 interface LinkSheetProps {
@@ -36,16 +53,35 @@ export function LinkSheet({
   const { colors } = useTheme();
   const idea = colors.type.ideas;
 
+  const [query, setQuery] = useState("");
+  const showSearch = ideas.length > SEARCH_THRESHOLD;
+  const searching = query.trim().length > 0;
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return ideas;
+    return ideas.filter((i) => i.title.toLowerCase().includes(q));
+  }, [ideas, query]);
+
+  // Leave the sheet clean for its next open — drop any half-typed search.
+  const close = (): void => {
+    setQuery("");
+    onClose();
+  };
+
   return (
     <Modal
       visible={visible}
       transparent
       animationType="slide"
       statusBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={close}
     >
-      <View style={styles.container}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <Pressable style={styles.backdrop} onPress={close} />
 
         <View style={[styles.sheet, { backgroundColor: colors.surfaceSubtle }]}>
           <View style={[styles.handle, { backgroundColor: colors.inkMuted }]} />
@@ -56,37 +92,76 @@ export function LinkSheet({
             </ThemedText>
           </View>
 
+          {showSearch ? (
+            <View style={styles.searchWrap}>
+              <View
+                style={[styles.search, { backgroundColor: colors.surface }]}
+              >
+                <IconSymbol name="magnify" size={18} color={colors.inkMuted} />
+                <TextInput
+                  value={query}
+                  onChangeText={setQuery}
+                  placeholder="Search ideas"
+                  placeholderTextColor={colors.inkMuted}
+                  selectionColor={idea}
+                  autoCorrect={false}
+                  returnKeyType="search"
+                  style={[styles.searchInput, { color: colors.ink }]}
+                  accessibilityLabel="Search ideas"
+                />
+                {searching ? (
+                  <Pressable
+                    onPress={() => setQuery("")}
+                    hitSlop={10}
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear search"
+                  >
+                    <IconSymbol name="close" size={16} color={colors.inkMuted} />
+                  </Pressable>
+                ) : null}
+              </View>
+            </View>
+          ) : null}
+
           <ScrollView
             style={styles.scroll}
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            {/* Free note — always first; clears the link. */}
-            <Pressable
-              onPress={() => {
-                onSelect(null);
-                onClose();
-              }}
-              style={[
-                styles.row,
-                { backgroundColor: colors.surface },
-                selected === null && { backgroundColor: colors.inkMuted + "1F" },
-              ]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: selected === null }}
-              accessibilityLabel="Free note, not related to any idea"
-            >
-              <View style={[styles.freeDot, { borderColor: colors.inkMuted }]} />
-              <ThemedText
-                style={[styles.rowLabel, { color: colors.ink }]}
-                numberOfLines={1}
+            {/* Free note — always first; clears the link. Hidden while searching,
+                since a query is clearly a hunt for a specific idea. */}
+            {!searching ? (
+              <Pressable
+                onPress={() => {
+                  onSelect(null);
+                  close();
+                }}
+                style={[
+                  styles.row,
+                  { backgroundColor: colors.surface },
+                  selected === null && {
+                    backgroundColor: colors.inkMuted + "1F",
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: selected === null }}
+                accessibilityLabel="Free note, not related to any idea"
               >
-                Free note
-              </ThemedText>
-              {selected === null ? (
-                <View style={[styles.activeDot, { backgroundColor: colors.inkMuted }]} />
-              ) : null}
-            </Pressable>
+                <View style={[styles.freeDot, { borderColor: colors.inkMuted }]} />
+                <ThemedText
+                  style={[styles.rowLabel, { color: colors.ink }]}
+                  numberOfLines={1}
+                >
+                  Free note
+                </ThemedText>
+                {selected === null ? (
+                  <View
+                    style={[styles.activeDot, { backgroundColor: colors.inkMuted }]}
+                  />
+                ) : null}
+              </Pressable>
+            ) : null}
 
             {ideas.length === 0 ? (
               <View style={styles.emptyHint}>
@@ -95,15 +170,21 @@ export function LinkSheet({
                   it.
                 </ThemedText>
               </View>
+            ) : filtered.length === 0 ? (
+              <View style={styles.emptyHint}>
+                <ThemedText type="body" muted>
+                  No ideas match “{query.trim()}”.
+                </ThemedText>
+              </View>
             ) : (
-              ideas.map((it) => {
+              filtered.map((it) => {
                 const active = selected === it.id;
                 return (
                   <Pressable
                     key={it.id}
                     onPress={() => {
                       onSelect(it.id);
-                      onClose();
+                      close();
                     }}
                     style={[
                       styles.row,
@@ -124,6 +205,14 @@ export function LinkSheet({
                     >
                       {it.title}
                     </ThemedText>
+                    {it.noteCount ? (
+                      <ThemedText
+                        type="mono"
+                        style={{ color: colors.inkMuted }}
+                      >
+                        {it.noteCount}
+                      </ThemedText>
+                    ) : null}
                     {active ? (
                       <View style={[styles.activeDot, { backgroundColor: idea }]} />
                     ) : null}
@@ -133,7 +222,7 @@ export function LinkSheet({
             )}
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -164,6 +253,24 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: tokens.space.lg,
     paddingBottom: tokens.space.md,
+  },
+  searchWrap: {
+    paddingHorizontal: tokens.space.lg,
+    paddingBottom: tokens.space.md,
+  },
+  search: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+    minHeight: 44,
+    paddingHorizontal: tokens.space.md,
+    borderRadius: tokens.radius.md,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 0,
+    fontSize: tokens.type.item.size,
+    fontFamily: tokens.type.fontInter.regular,
   },
   scroll: {
     flexGrow: 0,

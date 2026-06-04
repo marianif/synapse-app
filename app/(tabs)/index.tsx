@@ -159,7 +159,23 @@ export default function HomeScreen(): React.ReactElement {
     deleteEntry,
   } = useDatabase();
 
-  const { addEntry: addDiaryEntry } = useDiary();
+  const {
+    entries: diaryEntries,
+    addEntry: addDiaryEntry,
+    refresh: refreshDiary,
+  } = useDiary();
+
+  // entryId → count of diary notes filed on it, for the idea-chip "N notes"
+  // readout. Built once per diary change; ideas with no notes simply omit it.
+  const noteCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const n of diaryEntries) {
+      if (n.linked_entry_id) {
+        map[n.linked_entry_id] = (map[n.linked_entry_id] ?? 0) + 1;
+      }
+    }
+    return map;
+  }, [diaryEntries]);
 
   const { today: calendarToday } = useCalendarData(
     entries,
@@ -252,7 +268,8 @@ export default function HomeScreen(): React.ReactElement {
   useFocusEffect(
     useCallback(() => {
       fetchEntries();
-    }, [fetchEntries]),
+      refreshDiary();
+    }, [fetchEntries, refreshDiary]),
   );
 
   const today = useMemo(() => new Date(), []);
@@ -320,9 +337,9 @@ export default function HomeScreen(): React.ReactElement {
         stakeGauges: stakeEntries.map((e) => toRunwayItem(e)),
         doneStakes: doneStakeEntries.map((e) => toRunwayItem(e, true)),
         present: pick(PRESENT_TYPES),
-        presentItems: toPresentItems(presentEntries, today.getTime()),
+        presentItems: toPresentItems(presentEntries, today.getTime(), noteCounts),
       };
-    }, [entries, today]);
+    }, [entries, today, noteCounts]);
 
   // Wipe the whole recently-cleared run. These are completed entries; clearing
   // deletes them for good (the organism gates this behind a confirm).

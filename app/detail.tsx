@@ -336,7 +336,9 @@ export default function DetailScreen(): React.ReactElement {
 
   // Notes linked to this entry, newest-first (the diary store is already newest
   // -first, so a filter preserves order). Only ideas can be linked targets today.
-  const relatedNotes = diaryEntries.filter((n) => n.linked_entry_id === entry.id);
+  const relatedNotes = diaryEntries.filter(
+    (n) => n.linked_entry_id === entry.id,
+  );
 
   // ── Action bar ───────────────────────────────────────────────────────────────
 
@@ -564,9 +566,6 @@ export default function DetailScreen(): React.ReactElement {
                 { backgroundColor: colors.surfaceSubtle },
               ]}
             >
-              <ThemedText type="label" muted style={styles.notesLabel}>
-                NOTES
-              </ThemedText>
               <ThemedText
                 type="body"
                 style={[styles.notesText, { color: colors.ink }]}

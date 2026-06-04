@@ -73,6 +73,17 @@ export function PresentConstellation({
         >
           {item.title}
         </ThemedText>
+        {item.noteCount ? (
+          // Trailing mono count of diary notes filed on this idea — a quiet
+          // instrument-panel readout, not a badge. Holds full opacity so the
+          // signal survives even when the chip body has ghosted.
+          <ThemedText
+            type="mono"
+            style={[styles.count, { color: colors.inkMuted }]}
+          >
+            {item.noteCount}
+          </ThemedText>
+        ) : null}
       </Pressable>
     );
   };
@@ -128,5 +139,9 @@ const styles = StyleSheet.create({
   },
   label: {
     flexShrink: 1,
+  },
+  count: {
+    // tabular mono reads as a count; a hair of left space sets it off the title
+    marginLeft: 2,
   },
 });

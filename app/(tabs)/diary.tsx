@@ -38,12 +38,32 @@ export default function DiaryScreen(): React.ReactElement {
     return map;
   }, [boardEntries]);
 
+  // entryId → count of notes filed on it, from the diary store.
+  const noteCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const n of entries) {
+      if (n.linked_entry_id) {
+        map[n.linked_entry_id] = (map[n.linked_entry_id] ?? 0) + 1;
+      }
+    }
+    return map;
+  }, [entries]);
+
+  // Composer offers ALL ideas (you can relate to one with no notes yet), each
+  // carrying its current count.
   const ideas: LinkableIdea[] = useMemo(
     () =>
       boardEntries
         .filter((e) => e.type === "idea")
-        .map((e) => ({ id: e.id, title: e.title })),
-    [boardEntries],
+        .map((e) => ({ id: e.id, title: e.title, noteCount: noteCounts[e.id] })),
+    [boardEntries, noteCounts],
+  );
+
+  // The FILTER sheet only shows ideas that actually have notes — filtering to an
+  // empty idea would just yield a blank feed.
+  const ideasWithNotes = useMemo(
+    () => ideas.filter((i) => (i.noteCount ?? 0) > 0),
+    [ideas],
   );
 
   // Apply the active filter. An idea filter wins over the macro bucket.
@@ -104,7 +124,7 @@ export default function DiaryScreen(): React.ReactElement {
       <LinkSheet
         visible={ideaSheetOpen}
         selected={ideaId}
-        ideas={ideas}
+        ideas={ideasWithNotes}
         onSelect={(id) => {
           setIdeaId(id);
           // Picking "Free note" (null) in the filter context means: show free.

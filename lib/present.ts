@@ -19,6 +19,8 @@ export interface PresentItem {
   bucket: Bucket;
   /** Whole-day age since last touch — for "5d" style hints if a variant wants it. */
   ageDays: number;
+  /** Diary notes filed on this entry (ideas only). 0 / absent → no badge. */
+  noteCount?: number;
 }
 
 const DAY_MS = 86_400_000;
@@ -36,7 +38,11 @@ function bucketFor(ageDays: number): Bucket {
  * Map an entry to its present-model shape. `now` is injected so callers can
  * memoize against a stable timestamp (no Date.now() inside render paths).
  */
-export function toPresentItem(e: DbEntry, now: number): PresentItem {
+export function toPresentItem(
+  e: DbEntry,
+  now: number,
+  noteCount = 0,
+): PresentItem {
   const touched = e.updated_at || e.created_at || now;
   const ageDays = Math.max(0, Math.floor((now - touched) / DAY_MS));
   const raw = 1 - ageDays / DECAY_DAYS;
@@ -49,6 +55,7 @@ export function toPresentItem(e: DbEntry, now: number): PresentItem {
     freshness,
     bucket: bucketFor(ageDays),
     ageDays,
+    noteCount,
   };
 }
 
@@ -66,8 +73,13 @@ function presentNote(e: DbEntry): string | undefined {
  * NOT a ranking — variants are free to lay items out spatially however they read
  * best (a cloud, lanes, a stack).
  */
-export function toPresentItems(entries: DbEntry[], now: number): PresentItem[] {
+export function toPresentItems(
+  entries: DbEntry[],
+  now: number,
+  /** entryId → diary-note count, for the "N notes" badge on idea chips. */
+  noteCounts?: Record<string, number>,
+): PresentItem[] {
   return entries
-    .map((e) => toPresentItem(e, now))
+    .map((e) => toPresentItem(e, now, noteCounts?.[e.id] ?? 0))
     .sort((a, b) => b.freshness - a.freshness);
 }

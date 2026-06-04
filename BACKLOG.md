@@ -4,11 +4,31 @@
 
 ### Android Speech Recognizer
 
-- [ ] Create Android native module (`modules/speech-recognizer/`) mirroring iOS implementation
-- [ ] Implement `SpeechRecognizerModule.kt` with Speech Recognition API
-- [ ] Create `SpeechRecognizer.podspec` equivalent for Android (not needed, but create gradle config)
-- [ ] Add required Android permissions in plugin
-- [ ] Test speech-to-text functionality on Android
+- [x] Create Android native module (`modules/speech-recognizer/`) mirroring iOS implementation
+      → Added `android` platform to `expo-module.config.json` and an Android
+      source tree under `modules/speech-recognizer/android/`. JS layer
+      (`index.ts`, `SpeechRecognizerModule.ts`, `useSpeechRecognizer`) was already
+      platform-agnostic — `requireNativeModule('SpeechRecognizer')` now resolves
+      to the Kotlin module on Android, same `{transcript, isFinal, error?}` events.
+- [x] Implement `SpeechRecognizerModule.kt` with Speech Recognition API
+      → Uses `android.speech.SpeechRecognizer` + `RecognitionListener` for live
+      partial + final transcripts streamed over `onTranscriptUpdate`. Mirrors the
+      iOS contract: `requestPermissions`, `startRecognition`, `stopRecognition`.
+- [x] Create `SpeechRecognizer.podspec` equivalent for Android (not needed, but create gradle config)
+      → `android/build.gradle` using `expo-module-gradle-plugin` (inherits app
+      SDK/Kotlin versions) + `android/src/main/AndroidManifest.xml` declaring
+      `RECORD_AUDIO` and the `android.speech.RecognitionService` `<queries>` entry
+      (required for service discovery on Android 11+).
+- [x] Add required Android permissions in plugin
+      → Config plugin now injects `RECORD_AUDIO` via `withAndroidManifest` +
+      `AndroidConfig.Permissions.ensurePermissions`, alongside the existing iOS
+      Info.plist usage strings.
+- [ ] Test speech-to-text functionality on Android (needs prebuild + device/emulator run)
+
+  Note: `transcribeFile(uri)` is iOS-only — Android's `SpeechRecognizer` consumes
+  only live mic input, so the Android impl rejects `transcribeFile` with
+  `UNSUPPORTED` rather than failing silently. Live recognition is fully supported.
+  Run `npm run prewidget` (or `npx expo prebuild`) before building in Android Studio.
 
 ---
 
@@ -219,9 +239,8 @@ re-cutting the two heaviest content surfaces (Stakes, Detail).
 
 1. **Android Speech Recognizer** — Core functionality parity
 2. **OpenAI Integration** — Core value proposition
-3. **BYOK Settings** — Enables MVP launch
-4. **Voice Input UI** — User experience
-5. **Settings Enhancements** — Configuration
+3. **Voice Input UI** — User experience
+4. **Settings Enhancements** — Configuration
 
 **Home — Field Lab Polish** (parallel design track, not blocking MVP launch):
 pass 1 done — greeting redesign, capture-bar rethink, Present readability. The

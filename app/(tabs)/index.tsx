@@ -1,7 +1,11 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -151,6 +155,10 @@ export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
 
+  // Deep-link param from the home-screen voice widget (synapseapp:///?capture=voice).
+  // Present means "arm voice capture on arrival"; consumed once below.
+  const { capture } = useLocalSearchParams<{ capture?: string }>();
+
   const {
     entries,
     recurrenceCompletions,
@@ -264,6 +272,20 @@ export default function HomeScreen(): React.ReactElement {
     await stopRecording();
     setIsRecording(false);
   }, [stopRecording]);
+
+  // Arm voice capture when launched from the widget deep link. Guard with a ref
+  // so it fires once per link open, not on every re-render, and clear the param
+  // off the URL so re-focusing the tab doesn't re-trigger recording.
+  const armedFromLink = useRef(false);
+  useEffect(() => {
+    if (capture === "voice" && !armedFromLink.current && !isRecording) {
+      armedFromLink.current = true;
+      handleStartRecording();
+      router.setParams({ capture: undefined });
+    } else if (capture !== "voice") {
+      armedFromLink.current = false;
+    }
+  }, [capture, isRecording, handleStartRecording, router]);
 
   useFocusEffect(
     useCallback(() => {

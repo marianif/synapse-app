@@ -2,7 +2,8 @@ import WidgetKit
 import SwiftUI
 
 // MARK: - Voice Input Widget
-// A quick-capture widget that deep links to voice-input screen
+// A quick-capture widget that deep links to the home board and arms inline
+// voice capture there (the standalone voice-input screen was removed).
 
 // MARK: - Timeline Entry
 
@@ -87,7 +88,7 @@ struct VoiceInputWidgetEntryView: View {
 
 struct SmallVoiceWidgetView: View {
     var body: some View {
-        Link(destination: URL(string: "synapseapp:///voice-input?autoStart=true")!) {
+        Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
             VStack(spacing: Spacing.sm) {
                 MicButton(size: 60, iconSize: 26)
 
@@ -111,7 +112,7 @@ struct SmallVoiceWidgetView: View {
 
 struct MediumVoiceWidgetView: View {
     var body: some View {
-        Link(destination: URL(string: "synapseapp:///voice-input?autoStart=true")!) {
+        Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
             HStack(spacing: Spacing.xl) {
                 MicButton(size: 56, iconSize: 22)
 

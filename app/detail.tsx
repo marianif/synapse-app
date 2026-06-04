@@ -15,11 +15,13 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { DetailActionBar } from "@/components/molecules/detail-action-bar";
 import { DetailReadout } from "@/components/molecules/detail-readout";
 import { EmptyState } from "@/components/molecules/empty-state";
+import { RelatedNotes } from "@/components/molecules/related-notes";
 import { SignalRail } from "@/components/molecules/signal-rail";
 import { ListScreenHeader } from "@/components/organisms/list-screen-header";
 import type { ThemeColors } from "@/constants/theme";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
+import { useDiary } from "@/hooks/use-diary";
 import {
   getEffectiveStatus,
   humanizeRule,
@@ -257,10 +259,15 @@ export default function DetailScreen(): React.ReactElement {
     fetchEntries,
   } = useDatabase();
 
+  // Diary notes filed ON this entry (only ideas carry links today). Read-only
+  // here — surfaced so an idea shows the reflections gathered around it.
+  const { entries: diaryEntries, refresh: refreshDiary } = useDiary();
+
   useFocusEffect(
     useCallback(() => {
       fetchEntries();
-    }, [fetchEntries]),
+      refreshDiary();
+    }, [fetchEntries, refreshDiary]),
   );
 
   // ── Resolve entry ────────────────────────────────────────────────────────────
@@ -326,6 +333,10 @@ export default function DetailScreen(): React.ReactElement {
   const type = entry.type;
   const accentColor = entryColor(type);
   const isSomeday = type === "someday" || type === "idea";
+
+  // Notes linked to this entry, newest-first (the diary store is already newest
+  // -first, so a filter preserves order). Only ideas can be linked targets today.
+  const relatedNotes = diaryEntries.filter((n) => n.linked_entry_id === entry.id);
 
   // ── Action bar ───────────────────────────────────────────────────────────────
 
@@ -564,6 +575,9 @@ export default function DetailScreen(): React.ReactElement {
               </ThemedText>
             </View>
           ) : null}
+
+          {/* Reflections filed ON this idea — the reverse of the diary link. */}
+          <RelatedNotes notes={relatedNotes} />
         </ScrollView>
 
         {/* ── Action bar — pinned above safe area ─────────────── */}

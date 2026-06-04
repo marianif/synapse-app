@@ -245,7 +245,10 @@ every feed item shows its relatedness — an "ON · <idea>" chip, or a "FREE" ch
 when unlinked. Relating IS a commit: picking an idea with text written publishes
 immediately (no redundant KEEP); with an empty draft it just stages the link.
 The manual commit is a round send key (recessed→amber charge, matching the mic +
-the home capture bar) — the old slab KEEP button is gone. (Mood components —
+the home capture bar) — the old slab KEEP button is gone. An idea's detail screen
+lists its related notes (reverse of the link). The diary screen filters by macro
+bucket (ALL · LINKED · FREE segmented control) and, via a bottom sheet, down to a
+single idea's notes. (Mood components —
 `mood-glyph`, `mood-sheet`, `diary-moods` — are kept on disk, unused, in case
 mood returns as an optional layer.)
 

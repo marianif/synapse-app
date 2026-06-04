@@ -12,6 +12,9 @@ interface DiaryFeedProps {
   entries: DbDiaryEntry[];
   /** id → idea title, for notes filed ON an idea. Missing → render autonomous. */
   linkedTitles?: Record<string, string>;
+  /** True when a filter is narrowing the feed — changes the empty-state copy so
+   *  "nothing matches" never reads as "the diary is empty". */
+  filtered?: boolean;
   onDelete: (id: string) => void;
 }
 
@@ -44,6 +47,7 @@ function groupByDay(
 export function DiaryFeed({
   entries,
   linkedTitles,
+  filtered = false,
   onDelete,
 }: DiaryFeedProps): React.ReactElement {
   const { colors } = useTheme();
@@ -53,11 +57,12 @@ export function DiaryFeed({
     return (
       <View style={styles.empty}>
         <ThemedText type="title" style={{ color: colors.ink }}>
-          Your diary is empty
+          {filtered ? "No notes here" : "Your diary is empty"}
         </ThemedText>
         <ThemedText type="body" muted style={styles.emptyBody}>
-          Write a line above. Nothing here is a task — it is just for you, kept in
-          order.
+          {filtered
+            ? "Nothing matches this filter yet. Switch the view, or write a note that fits."
+            : "Write a line above. Nothing here is a task — it is just for you, kept in order."}
         </ThemedText>
       </View>
     );

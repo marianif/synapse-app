@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     gap: tokens.space.xs,
   },
   title: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
     textTransform: "uppercase",
   },
   description: {
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space.lg,
   },
   ctaText: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
     letterSpacing: 0.4,
   },
 });

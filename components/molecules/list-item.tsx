@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   },
   titleStrike: {
     flex: 1,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "HostGrotesk_500Medium",
     fontSize: 14,
     textDecorationLine: "line-through",
   },
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   statusLabel: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
     letterSpacing: 0.4,
   },
   statusTime: {},
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     marginRight: tokens.space.sm,
   },
   recurringBadgeText: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
     letterSpacing: 0.3,
   },
 });

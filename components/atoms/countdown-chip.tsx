@@ -76,12 +76,12 @@ const styles = StyleSheet.create({
   number: {
     fontSize: tokens.type.title.size,
     lineHeight: tokens.type.title.lineHeight,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: 'HostGrotesk_700Bold',
     fontVariant: ['tabular-nums'],
   },
   label: {
     fontSize: tokens.type.kicker.size,
     letterSpacing: tokens.type.kicker.tracking,
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'HostGrotesk_600SemiBold',
   },
 });

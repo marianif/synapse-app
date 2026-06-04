@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     paddingVertical: tokens.space.xs,
   },
   countText: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
   },
   stack: {
     gap: 0,

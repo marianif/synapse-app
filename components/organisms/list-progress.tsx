@@ -80,12 +80,12 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.display.size,
     lineHeight: tokens.type.display.lineHeight,
     letterSpacing: tokens.type.display.tracking,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "HostGrotesk_700Bold",
   },
   totalNum: {
     fontSize: tokens.type.title.size,
     lineHeight: tokens.type.title.lineHeight,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "HostGrotesk_400Regular",
     paddingBottom: 4,
   },
 });

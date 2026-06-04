@@ -17,6 +17,7 @@
     "@bacons/apple-targets": "^4.0.6",
     "@expo-google-fonts/caveat": "^0.4.2",
     "@expo-google-fonts/fraunces": "^0.4.1",
+    "@expo-google-fonts/host-grotesk": "^0.4.1",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo/vector-icons": "^15.0.3",

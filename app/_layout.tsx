@@ -14,12 +14,12 @@ import {
   JetBrainsMono_700Bold,
 } from "@expo-google-fonts/jetbrains-mono";
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
+  HostGrotesk_400Regular,
+  HostGrotesk_500Medium,
+  HostGrotesk_600SemiBold,
+  HostGrotesk_700Bold,
   useFonts,
-} from "@expo-google-fonts/inter";
+} from "@expo-google-fonts/host-grotesk";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -52,14 +52,14 @@ export default function RootLayout() {
 function ThemedNavigationShell(): React.ReactElement | null {
   const { resolvedScheme, isReady } = useThemeContext();
 
-  // Field Lab's hierarchy is sans + mono (Inter display/body, JetBrains Mono for the
-  // signal layer: counts/status/kickers). Load both before the splash clears so the
-  // greeting never flashes a fallback.
+  // Field Lab's hierarchy is sans + mono (Host Grotesk display/body, JetBrains Mono
+  // for the signal layer: counts/status/kickers). Load both before the splash clears
+  // so the greeting never flashes a fallback.
   const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+    HostGrotesk_400Regular,
+    HostGrotesk_500Medium,
+    HostGrotesk_600SemiBold,
+    HostGrotesk_700Bold,
     JetBrainsMono_400Regular,
     JetBrainsMono_500Medium,
     JetBrainsMono_700Bold,

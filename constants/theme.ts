@@ -1,7 +1,7 @@
 // Synapse Design System — "Field Lab"
 //
 // Your whole brain as a living instrument panel: cool graphite paper, five electric
-// type-colors that glow at equal volume across a STAKES + PRESENT board, Inter + a
+// type-colors that glow at equal volume across a STAKES + PRESENT board, Host Grotesk + a
 // mono signal layer, sharp edges. Activation through presence, not pressure.
 // Source of truth: .impeccable/brand-brief.json (direction "Field Lab").
 
@@ -121,20 +121,22 @@ const feedback = {
 
 const type = {
   // `fontFraunces` retained as a KEY so existing call-sites compile — repointed at
-  // the heaviest Inter weights. Fraunces (warm/editorial serif) is fully removed.
+  // the heaviest Host Grotesk weights. Fraunces (warm/editorial serif) is fully removed.
   fontFraunces: {
-    regular: "Inter_500Medium",
-    medium: "Inter_600SemiBold",
-    semiBold: "Inter_700Bold",
+    regular: "HostGrotesk_500Medium",
+    medium: "HostGrotesk_600SemiBold",
+    semiBold: "HostGrotesk_700Bold",
   },
+  // `fontInter` retained as a KEY so existing call-sites compile — repointed at
+  // Host Grotesk, the display/body sans. Inter (too neutral/sloppy) is fully removed.
   fontInter: {
-    regular: "Inter_400Regular",
-    medium: "Inter_500Medium",
-    semiBold: "Inter_600SemiBold",
-    bold: "Inter_700Bold",
+    regular: "HostGrotesk_400Regular",
+    medium: "HostGrotesk_500Medium",
+    semiBold: "HostGrotesk_600SemiBold",
+    bold: "HostGrotesk_700Bold",
   },
   // handwritten layer — agenda margin-notes. Caveat reads like a thing you
-  // scrawled to remember it; runs ~30% larger than Inter at the same size, so
+  // scrawled to remember it; runs ~30% larger than Host Grotesk at the same size, so
   // bump the size at call-sites to keep optical weight in line.
   fontHand: {
     regular: "Caveat_500Medium",
@@ -148,10 +150,10 @@ const type = {
     bold: "JetBrainsMono_700Bold",
   },
   // sans + mono + size + weight carries the hierarchy; no serif warmth.
-  display: { size: 28, lineHeight: 34, weight: "700" as const, tracking: -0.2 }, // Inter — home greeting
-  title: { size: 20, lineHeight: 26, weight: "700" as const, tracking: -0.2 }, // Inter — tile/section
-  item: { size: 16, lineHeight: 22, weight: "500" as const, tracking: 0 }, // Inter — entry titles
-  body: { size: 14, lineHeight: 20, weight: "400" as const, tracking: 0 }, // Inter — detail
+  display: { size: 28, lineHeight: 34, weight: "700" as const, tracking: -0.2 }, // Host Grotesk — home greeting
+  title: { size: 20, lineHeight: 26, weight: "700" as const, tracking: -0.2 }, // Host Grotesk — tile/section
+  item: { size: 16, lineHeight: 22, weight: "500" as const, tracking: 0 }, // Host Grotesk — entry titles
+  body: { size: 14, lineHeight: 20, weight: "400" as const, tracking: 0 }, // Host Grotesk — detail
   kicker: { size: 11, lineHeight: 14, weight: "600" as const, tracking: 0.8 }, // mono all-caps — the only all-caps
   micro: { size: 10, lineHeight: 13, weight: "600" as const, tracking: 1 }, // mono all-caps — sub-kicker dividers / tertiary metadata
   mono: { size: 13, lineHeight: 18, weight: "500" as const, tracking: 0 }, // mono — counts / status / time, tabular

@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.98 }],
   },
   buttonLabel: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
     letterSpacing: 0.4,
   },
 });

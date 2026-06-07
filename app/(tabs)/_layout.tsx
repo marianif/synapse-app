@@ -2,8 +2,8 @@ import { Tabs } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { CustomTabBar } from "@/components/organisms/custom-tab-bar";
 import { AppHeader } from "@/components/organisms/app-header";
+import { CustomTabBar } from "@/components/organisms/custom-tab-bar";
 import { useTheme } from "@/constants/theme";
 
 export default function TabLayout(): React.ReactElement {

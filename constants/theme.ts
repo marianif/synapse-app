@@ -5,9 +5,9 @@
 // mono signal layer, sharp edges. Activation through presence, not pressure.
 // Source of truth: .impeccable/brand-brief.json (direction "Field Lab").
 
-import { Platform } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { EntryType } from "@/lib/types";
+import { Platform } from "react-native";
 
 // ─── Token system: Field Lab ────────────────────────────────────────────────────
 
@@ -193,10 +193,10 @@ const elevation = {
   // cool-tinted lift per bento tile — depth encodes content, no pure-black shadow.
   tile: Platform.select({
     ios: {
-      shadowColor: "#141E2D",
+      shadowColor: "#28384f",
       shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.4,
-      shadowRadius: 18,
+      shadowRadius: 10,
     },
     android: { elevation: 2 },
     default: {},
@@ -204,10 +204,10 @@ const elevation = {
   // pinned always-on capture bar
   capture: Platform.select({
     ios: {
-      shadowColor: "#141E2D",
+      shadowColor: "#28384f",
       shadowOffset: { width: 0, height: -2 },
       shadowOpacity: 0.5,
-      shadowRadius: 16,
+      shadowRadius: 10,
     },
     android: { elevation: 8 },
     default: {},
@@ -357,7 +357,6 @@ export function useSurfaceColor(layer: SurfaceLayer): string {
   const { colors } = useTheme();
   return resolveSurface(layer, colors);
 }
-
 
 // ColorScheme kept as an alias of Scheme — consumed by hooks/use-color-scheme.ts.
 export type ColorScheme = Scheme;

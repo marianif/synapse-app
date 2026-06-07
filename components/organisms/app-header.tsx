@@ -1,9 +1,10 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { useTheme, tokens } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
+import { EntryCluster } from "../atoms/entry-cluster";
 import { AppMenu } from "./app-menu";
 
 interface AppHeaderProps {
@@ -21,6 +22,19 @@ export function AppHeader({
   return (
     <>
       <View style={styles.bar}>
+        <View style={styles.brand}>
+          <EntryCluster
+            types={["deadline", "event", "todo", "someday", "idea"]}
+            dotSize={7}
+            gap={3}
+            width={24}
+          />
+
+          <ThemedText type="headline" style={styles.wordmark}>
+            Synapse
+          </ThemedText>
+        </View>
+
         <Pressable
           onPress={() => setMenuVisible(true)}
           style={styles.iconBtn}
@@ -32,29 +46,6 @@ export function AppHeader({
             color={colors.inkMuted}
           />
         </Pressable>
-
-        <ThemedText type="headline" style={styles.wordmark}>
-          Synapse
-        </ThemedText>
-
-        <Pressable onPress={onAvatarPress} style={styles.iconBtn} hitSlop={8}>
-          {avatarUri ? (
-            <Image source={{ uri: avatarUri }} style={styles.avatar} />
-          ) : (
-            <View
-              style={[
-                styles.avatarFallback,
-                { backgroundColor: colors.surface },
-              ]}
-            >
-              <MaterialCommunityIcons
-                name="account"
-                size={20}
-                color={colors.inkMuted}
-              />
-            </View>
-          )}
-        </Pressable>
       </View>
 
       <AppMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
@@ -64,17 +55,21 @@ export function AppHeader({
 
 const styles = StyleSheet.create({
   bar: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: tokens.space.lg,
     paddingVertical: tokens.space.md,
   },
+  brand: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+  },
   iconBtn: {
     padding: tokens.space.xs,
   },
   wordmark: {
-    flex: 1,
     textAlign: "center",
     fontSize: 18,
     fontWeight: "700",

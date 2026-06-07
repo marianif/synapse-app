@@ -11,7 +11,8 @@ import Animated, {
 import { entryColor, tokens, useTheme } from "@/constants/theme";
 import { useThemeContext } from "@/contexts/theme-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
-import { clearAllData } from "@/lib/database";
+import { clearAllData, getDb } from "@/lib/database";
+import { seedDevDataIfEmpty } from "@/lib/dev-seed";
 import type { ThemePreference } from "@/lib/settings";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -128,6 +129,33 @@ export function AppMenu({
     );
   };
 
+  const handleSeedDatabase = () => {
+    Alert.alert(
+      "Seed database?",
+      "Inserts mock entries across all types. Only runs when the database is empty. Dev only.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Seed",
+          onPress: async () => {
+            try {
+              const inserted = await seedDevDataIfEmpty(getDb());
+              if (inserted) {
+                await fetchEntries();
+                onClose();
+              } else {
+                Alert.alert("Nothing seeded", "Clear the database first.");
+              }
+            } catch (error) {
+              console.error("[AppMenu] seedDevData failed:", error);
+              Alert.alert("Couldn't seed the database.");
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <View style={StyleSheet.absoluteFill}>
       <Pressable style={styles.backdrop} onPress={onClose} />
@@ -214,6 +242,31 @@ export function AppMenu({
           </View>
 
           <View style={styles.footer}>
+            {__DEV__ && (
+              <Pressable
+                onPress={handleSeedDatabase}
+                style={({ pressed }) => [
+                  styles.devButton,
+                  {
+                    backgroundColor: colors.surface,
+                    opacity: pressed ? 0.7 : 1,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Seed database (dev only)"
+              >
+                <MaterialCommunityIcons
+                  name="database-plus-outline"
+                  size={18}
+                  color={entryColor("idea")}
+                />
+                <Text
+                  style={[styles.devButtonLabel, { color: entryColor("idea") }]}
+                >
+                  Seed Database
+                </Text>
+              </Pressable>
+            )}
             {__DEV__ && (
               <Pressable
                 onPress={handleClearDatabase}

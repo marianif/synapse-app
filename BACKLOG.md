@@ -84,12 +84,12 @@ unmistakably ours, not template-grade.
 
 ### Section-title sketches
 
-- [x] Commission/draw custom SVG sketches to bring life to the home section
+- [ ] Commission/draw custom SVG sketches to bring life to the home section
       titles (`STAKES`, `PRESENT`, the `Coming up` subhead) — hand-drawn marks
       that sit beside or behind the mono kickers, not generic icons
-- [x] Keep them theme-reactive (light/dark) and reduced-motion-safe; tint from
+- [ ] Keep them theme-reactive (light/dark) and reduced-motion-safe; tint from
       `entryColor` / `inkMuted`, no new token VALUES
-- [x] Decide: static SVG marks vs. lightly animated (draw-on entrance)
+- [ ] Decide: static SVG marks vs. lightly animated (draw-on entrance)
 
 ### Present readability
 
@@ -192,10 +192,10 @@ re-cutting the two heaviest content surfaces (Stakes, Detail).
 
 ### Detail screen — redesign
 
-- [x] `app/detail.tsx` needs a from-scratch redesign to match the Field Lab
+- [ ] `app/detail.tsx` needs a from-scratch redesign to match the Field Lab
       language (it predates the rebrand). Per-type treatment (deadline vs. todo
       vs. idea/someday vs. event), the metadata rows, and the action bar.
-- [x] Reuse the established atoms/molecules (edge-bars, mono metadata,
+- [ ] Reuse the established atoms/molecules (edge-bars, mono metadata,
       `entryColor`/`entryKicker`); no new token values.
 
 ### Home header — suppress top-left icon, move settings out
@@ -233,45 +233,11 @@ re-cutting the two heaviest content surfaces (Stakes, Detail).
 - Collaboration features (share lists)
 - Smart reminders based on location/context
 
-### Diary — full organize model (evolutive)
-
-Today (shipped): the home bar captures a **thought**, then a post-send resolver
-(no timeout — stays until picked, with a discard ✕) files it as an **idea**, an
-**autonomous diary note**, or a **note ON a recent idea**
-(`diary_entries.linked_entry_id` → an `entries` idea row; app-side ON DELETE SET
-NULL). Mood was dropped as a concept; its composer/feed slots were repurposed for
-the idea-link. The diary composer relates a note to an idea via a LinkSheet, and
-every feed item shows its relatedness — an "ON · <idea>" chip, or a "FREE" chip
-when unlinked. Relating IS a commit: picking an idea with text written publishes
-immediately (no redundant KEEP); with an empty draft it just stages the link.
-The manual commit is a round send key (recessed→amber charge, matching the mic +
-the home capture bar) — the old slab KEEP button is gone. An idea's detail screen
-lists its related notes (reverse of the link). The diary screen filters by macro
-bucket (ALL · LINKED · FREE segmented control) and, via a bottom sheet, down to a
-single idea's notes. (Mood components —
-`mood-glyph`, `mood-sheet`, `diary-moods` — are kept on disk, unused, in case
-mood returns as an optional layer.)
-
-Evolve toward the richer "thoughts organized by project" model the user wants:
-
-- **Free-standing threads** — a note can belong to a named thread (e.g.
-  "Rebrand", "Health") that is NOT an action-board entry. Optional tag, never
-  required; untagged notes stay in the plain chronological feed. Add a "by
-  thread" lens on the diary screen alongside the chronological one.
-- **Link to ANY entry type**, not just ideas — pin a reflection to a specific
-  todo / deadline / event / "project", so the thought hangs off the action it
-  relates to.
-- **Reverse surface** — show a linked idea's reflections on its detail screen
-  ("3 notes on this idea"), so the connection reads from both sides.
-- Keep the calm: structure is always opt-in. A note with no thread / no link is
-  a first-class, valid diary note. Don't let the diary become a second to-do
-  list with feelings.
-
 ---
 
 ## Priority Order
 
-1. **Android Speech Recognizer** — Core functionality parity
+1. **Android Speech Recognizer** — Core functionality parity 
 2. **OpenAI Integration** — Core value proposition
 3. **Voice Input UI** — User experience
 4. **Settings Enhancements** — Configuration

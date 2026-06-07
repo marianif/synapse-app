@@ -15,7 +15,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
 import { WhenPicker } from "@/components/molecules/when-picker";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import {
+  entryColor,
+  entryKicker,
+  entryTint,
+  tokens,
+  useTheme,
+} from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import type { RecurrenceFrequency } from "@/lib/types";
 
@@ -50,7 +56,7 @@ export default function AddEntryModal(): React.ReactElement {
     recurrenceEndDate?: string;
   }>();
 
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const editing = isEditMode(searchParams);
 
   const [title, setTitle] = useState(searchParams.title ?? "");
@@ -111,8 +117,10 @@ export default function AddEntryModal(): React.ReactElement {
           title: title.trim(),
           type: type as EntryType,
           inspiration: notes.trim() || undefined,
-          scheduledDate: type !== "deadline" ? date.trim() || undefined : undefined,
-          scheduledTime: type !== "deadline" ? time.trim() || undefined : undefined,
+          scheduledDate:
+            type !== "deadline" ? date.trim() || undefined : undefined,
+          scheduledTime:
+            type !== "deadline" ? time.trim() || undefined : undefined,
           dueDate: type === "deadline" ? date.trim() : undefined,
           dueTime: type === "deadline" ? time.trim() : undefined,
           notes: notes.trim() || undefined,
@@ -244,7 +252,13 @@ export default function AddEntryModal(): React.ReactElement {
               <View style={styles.typeSelector}>
                 {TYPE_OPTIONS.map((option) => {
                   const isSelected = type === option.value;
+                  // Every option carries its type identity AT REST: soft tint
+                  // body, lit dot, kicker-shade label. Selection then reads as a
+                  // clear step up — full electric edge-bar + saturated dot/label —
+                  // not a leap from grey to color.
                   const optionAccent = entryColor(option.value);
+                  const optionTint = entryTint(option.value, scheme);
+                  const optionLabelColor = entryKicker(option.value, scheme);
 
                   return (
                     <Pressable
@@ -255,18 +269,18 @@ export default function AddEntryModal(): React.ReactElement {
                       accessibilityState={{ selected: isSelected }}
                       style={({ pressed }) => [
                         styles.typeOption,
-                        { backgroundColor: colors.surface },
-                        isSelected && { backgroundColor: optionAccent + "22" },
-                        pressed && !isSelected && { opacity: 0.7 },
+                        { backgroundColor: optionTint },
+                        isSelected && styles.typeOptionSelected,
+                        pressed && { opacity: 0.7 },
                       ]}
                     >
                       <View
                         style={[
                           styles.typeEdgeBar,
                           {
-                            backgroundColor: isSelected
-                              ? optionAccent
-                              : "transparent",
+                            backgroundColor: optionAccent,
+                            opacity: isSelected ? 1 : 0.45,
+                            width: isSelected ? 20 : 12,
                           },
                         ]}
                       />
@@ -276,8 +290,10 @@ export default function AddEntryModal(): React.ReactElement {
                         adjustsFontSizeToFit
                         style={[
                           styles.typeOptionText,
-                          { color: isSelected ? optionAccent : colors.inkMuted },
-                          isSelected && { fontWeight: "600" },
+                          {
+                            color: isSelected ? optionAccent : optionLabelColor,
+                            fontWeight: isSelected ? "700" : "600",
+                          },
                         ]}
                       >
                         {option.label}
@@ -422,11 +438,16 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
     paddingVertical: tokens.space.sm,
     paddingHorizontal: tokens.space.xs,
-    minHeight: 48,
-    gap: tokens.space.xs,
+    minHeight: 56,
+    gap: tokens.space.sm,
   },
+  // Selection: a tonal lift, no border. The tile floats above its siblings via
+  // the bento tile elevation, so the active type reads as "raised + lit".
+  typeOptionSelected: {
+    transform: [{ translateY: -20 }, { scale: 1.05 }],
+  },
+
   typeEdgeBar: {
-    width: 16,
     height: 3,
     borderRadius: tokens.radius.pill,
   },

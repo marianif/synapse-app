@@ -9,14 +9,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
 
+import { ThemedText } from "@/components/atoms/themed-text";
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
-import { FieldConsole } from "@/components/organisms/field-console";
+import {
+  FieldConsole,
+  type FieldConsoleVariant,
+} from "@/components/organisms/field-console";
 import { PresentZone } from "@/components/organisms/present/present-zone";
 import { StakesRunway } from "@/components/organisms/stakes-runway";
 
@@ -394,6 +399,11 @@ export default function HomeScreen(): React.ReactElement {
     doneStakes.length === 0 &&
     presentItems.length === 0;
 
+  // Temporary A/B switch for the empty-field design — flip between the two
+  // metaphors live to pick one. Remove once the variant is chosen.
+  const [emptyVariant, setEmptyVariant] =
+    useState<FieldConsoleVariant>("constellation");
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <ScrollView
@@ -402,7 +412,43 @@ export default function HomeScreen(): React.ReactElement {
         showsVerticalScrollIndicator={false}
       >
         {fieldIsEmpty ? (
-          <FieldConsole greeting={greetingFor(today.getHours())} />
+          <>
+            <View style={styles.variantToggle}>
+              {(["constellation", "orbit"] as FieldConsoleVariant[]).map((v) => (
+                <Pressable
+                  key={v}
+                  onPress={() => setEmptyVariant(v)}
+                  style={[
+                    styles.variantChip,
+                    {
+                      backgroundColor:
+                        emptyVariant === v
+                          ? colors.accent.clay
+                          : colors.surfaceSubtle,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Show ${v} empty state`}
+                >
+                  <ThemedText
+                    type="label"
+                    style={{
+                      color:
+                        emptyVariant === v
+                          ? colors.accent.onClay
+                          : colors.inkMuted,
+                    }}
+                  >
+                    {v}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
+            <FieldConsole
+              greeting={greetingFor(today.getHours())}
+              variant={emptyVariant}
+            />
+          </>
         ) : (
           <>
             <FieldBriefing
@@ -500,6 +546,17 @@ const styles = StyleSheet.create({
   },
   captureSpacer: {
     height: 72,
+  },
+  // Temporary empty-state A/B switch — remove with the chosen variant.
+  variantToggle: {
+    flexDirection: "row",
+    gap: tokens.space.xs,
+    alignSelf: "flex-end",
+  },
+  variantChip: {
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.xs,
+    borderRadius: tokens.radius.pill,
   },
   captureDock: {
     position: "absolute",

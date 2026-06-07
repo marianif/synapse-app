@@ -1,10 +1,10 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Pressable, View, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
-import { EntryDot } from "@/components/atoms/entry-dot";
+import { EntryCluster } from "@/components/atoms/entry-cluster";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, useTheme, tokens } from "@/constants/theme";
+import { entryColor, tokens, useTheme } from "@/constants/theme";
 
 import type { EntryType } from "@/lib/types";
 
@@ -66,11 +66,7 @@ export function ListScreenHeader({
           {entryType ? (
             <SketchIcon type={entryType} size={26} />
           ) : (
-            <View style={styles.cluster}>
-              {INCOMING_CLUSTER.map((t) => (
-                <EntryDot key={t} type={t} size={7} />
-              ))}
-            </View>
+            <EntryCluster types={INCOMING_CLUSTER} dotSize={7} gap={3} width={24} />
           )}
         </View>
         <View style={styles.titleBlock}>
@@ -130,13 +126,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-  },
-  cluster: {
-    width: 24,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 3,
-    justifyContent: "center",
   },
   titleBlock: {
     flex: 1,

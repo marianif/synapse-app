@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,6 +10,8 @@ import Animated, {
 
 import { entryColor, tokens, useTheme } from "@/constants/theme";
 import { useThemeContext } from "@/contexts/theme-context";
+import { useDatabase } from "@/hooks/use-database/use-database";
+import { clearAllData } from "@/lib/database";
 import type { ThemePreference } from "@/lib/settings";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -75,6 +77,7 @@ export function AppMenu({
   const router = useRouter();
   const { colors } = useTheme();
   const { preference, setPreference } = useThemeContext();
+  const { fetchEntries } = useDatabase();
   const translateX = useSharedValue(MENU_WIDTH);
 
   useEffect(() => {
@@ -99,6 +102,30 @@ export function AppMenu({
       router.push(item.route as any);
     }
     onClose();
+  };
+
+  const handleClearDatabase = () => {
+    Alert.alert(
+      "Clear database?",
+      "This permanently deletes all entries and diary notes. Dev only.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await clearAllData();
+              await fetchEntries();
+              onClose();
+            } catch (error) {
+              console.error("[AppMenu] clearAllData failed:", error);
+              Alert.alert("Couldn't clear the database.");
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -187,6 +214,31 @@ export function AppMenu({
           </View>
 
           <View style={styles.footer}>
+            {__DEV__ && (
+              <Pressable
+                onPress={handleClearDatabase}
+                style={({ pressed }) => [
+                  styles.devButton,
+                  {
+                    backgroundColor: colors.surface,
+                    opacity: pressed ? 0.7 : 1,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Clear database (dev only)"
+              >
+                <MaterialCommunityIcons
+                  name="database-remove-outline"
+                  size={18}
+                  color={entryColor("deadline")}
+                />
+                <Text
+                  style={[styles.devButtonLabel, { color: entryColor("deadline") }]}
+                >
+                  Clear Database
+                </Text>
+              </Pressable>
+            )}
             <Text style={[styles.version, { color: colors.inkMuted }]}>
               v1.0.0
             </Text>
@@ -327,5 +379,18 @@ const styles = StyleSheet.create({
   version: {
     fontSize: tokens.type.kicker.size,
     textAlign: "center",
+  },
+  devButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: tokens.space.xs,
+    minHeight: 44,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.space.md,
+  },
+  devButtonLabel: {
+    fontSize: tokens.type.kicker.size,
+    fontWeight: "600",
   },
 });

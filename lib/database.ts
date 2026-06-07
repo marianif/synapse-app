@@ -259,9 +259,13 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
     // can't carry a FK clause, so the ON DELETE SET NULL behaviour is enforced
     // in app code (unlinkDiaryNotesForEntry) when an entry is deleted.
     await db.withTransactionAsync(async () => {
-      await db.execAsync(
-        "ALTER TABLE diary_entries ADD COLUMN linked_entry_id TEXT",
-      );
+      try {
+        await db.execAsync(
+          "ALTER TABLE diary_entries ADD COLUMN linked_entry_id TEXT",
+        );
+      } catch {
+        // column already exists (fresh installs get it from CREATE_DIARY_TABLE)
+      }
       await db.runAsync(
         "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
         String(SCHEMA_VERSION),
@@ -330,6 +334,21 @@ export async function unlinkDiaryNotesForEntry(entryId: string): Promise<void> {
     'UPDATE diary_entries SET linked_entry_id = NULL WHERE linked_entry_id = ?',
     entryId,
   );
+}
+
+/**
+ * Wipes every row from the data tables, leaving the schema (and schema_version)
+ * intact. Dev-only convenience for starting from an empty slate. Order respects
+ * FK references — diary first (it points at entries), then completions, then
+ * the entries themselves.
+ */
+export async function clearAllData(): Promise<void> {
+  const db = getDb();
+  await db.withTransactionAsync(async () => {
+    await db.execAsync('DELETE FROM diary_entries');
+    await db.execAsync('DELETE FROM recurrence_completions');
+    await db.execAsync('DELETE FROM entries');
+  });
 }
 
 /**

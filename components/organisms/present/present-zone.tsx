@@ -57,19 +57,12 @@ export function PresentZone({
     <Animated.View entering={entering} style={styles.zone}>
       <View style={styles.header}>
         <ThemedText type="label" style={{ color: colors.inkMuted }}>
-          Present
+          Things to keep alive.
         </ThemedText>
         <ThemedText type="mono" style={{ color: colors.ink }}>
           {`·${items.length}`}
         </ThemedText>
       </View>
-
-      <ThemedText
-        type="caption"
-        style={[styles.caption, { color: colors.inkMuted }]}
-      >
-        Things to keep alive.
-      </ThemedText>
 
       {items.length === 0 ? (
         <Pressable
@@ -117,6 +110,7 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
     justifyContent: "space-between",
     paddingHorizontal: tokens.space.md,
+    marginBottom: tokens.space.md,
   },
   caption: {
     paddingHorizontal: tokens.space.md,

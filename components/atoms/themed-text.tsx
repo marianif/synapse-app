@@ -1,6 +1,6 @@
 import { StyleSheet, Text } from "react-native";
 
-import { useTheme, tokens } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 
 import type { TextProps } from "react-native";
 

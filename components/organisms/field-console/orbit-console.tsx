@@ -2,7 +2,6 @@ import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   FadeIn,
-  FadeInDown,
   useReducedMotion,
   ZoomIn,
 } from "react-native-reanimated";
@@ -10,7 +9,7 @@ import Svg, { Circle, Line } from "react-native-svg";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { FieldSummary } from "@/components/molecules/field-summary";
-import { entryColor, entryKicker, tokens, useTheme } from "@/constants/theme";
+import { entryColor, tokens, useTheme } from "@/constants/theme";
 
 import { CHANNELS } from "./channels";
 
@@ -80,7 +79,10 @@ export function OrbitConsole({
       <View style={styles.head}>
         {/* Instrument-panel readout — names the idle orbit state in the mono
             signal voice, so the header carries the metaphor before the SVG. */}
-        <ThemedText type="label" style={[styles.kicker, { color: colors.inkMuted }]}>
+        <ThemedText
+          type="label"
+          style={[styles.kicker, { color: colors.inkMuted }]}
+        >
           {`${n} in orbit · 0 landed`}
         </ThemedText>
         <ThemedText type="display" style={{ color: colors.ink }}>
@@ -101,7 +103,9 @@ export function OrbitConsole({
 
       {/* The orbit — SVG ring + spokes, with tappable dots overlaid for hit-area. */}
       <Animated.View
-        entering={reduced ? undefined : FadeIn.duration(tokens.motion.duration.slow)}
+        entering={
+          reduced ? undefined : FadeIn.duration(tokens.motion.duration.slow)
+        }
         style={styles.orbit}
       >
         <Svg width={CANVAS} height={CANVAS}>
@@ -179,10 +183,7 @@ export function OrbitConsole({
             <Animated.View
               key={`hit-${c.type}`}
               entering={reduced ? undefined : ZoomIn.delay(200 + i * 60)}
-              style={[
-                styles.hit,
-                { left: x - HIT / 2, top: y - HIT / 2 },
-              ]}
+              style={[styles.hit, { left: x - HIT / 2, top: y - HIT / 2 }]}
             >
               <Pressable
                 onPress={() => openChannel(c.type)}
@@ -195,40 +196,6 @@ export function OrbitConsole({
           );
         })}
       </Animated.View>
-
-      {/* Legend — the five types named, each row tappable so the affordance never
-          rides on hitting a small dot. Code dot + AA-safe kicker label. */}
-      <View style={styles.legend}>
-        {CHANNELS.map((c, i) => {
-          const entering = reduced
-            ? undefined
-            : FadeInDown.springify()
-                .damping(tokens.motion.spring.damping)
-                .stiffness(tokens.motion.spring.stiffness)
-                .delay(360 + i * 50);
-          return (
-            <Animated.View key={c.type} entering={entering}>
-              <Pressable
-                onPress={() => openChannel(c.type)}
-                accessibilityRole="button"
-                accessibilityLabel={`${c.label}. Tap to ${c.invite}.`}
-                style={({ pressed }) => [styles.legendRow, pressed && styles.pressed]}
-              >
-                <View style={[styles.legendDot, { backgroundColor: entryColor(c.type) }]} />
-                <ThemedText
-                  type="label"
-                  style={[styles.legendLabel, { color: entryKicker(c.type, scheme) }]}
-                >
-                  {c.label}
-                </ThemedText>
-                <ThemedText type="body" style={{ color: colors.inkMuted }}>
-                  {c.invite}
-                </ThemedText>
-              </Pressable>
-            </Animated.View>
-          );
-        })}
-      </View>
     </View>
   );
 }

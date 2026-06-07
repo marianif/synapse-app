@@ -93,20 +93,43 @@ export function StakesRunway({
         accessibilityRole="button"
         accessibilityLabel={`Stakes, ${items.length}. See all.`}
       >
-        <ThemedText type="label" style={{ color: colors.inkMuted }}>
-          Stakes
-        </ThemedText>
-        <ThemedText type="mono" style={{ color: colors.ink }}>
-          {`·${items.length}`}
-        </ThemedText>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "baseline",
+            gap: tokens.space.sm,
+          }}
+        >
+          <ThemedText type="mono" style={{ color: colors.ink }}>
+            {`·${items.length}`}
+          </ThemedText>
+          <ThemedText type="label" style={{ color: colors.inkMuted }}>
+            Things to do
+          </ThemedText>
+        </View>
+        {overflow > 0 ? (
+          <Pressable
+            onPress={() => router.push(zoneHref)}
+            accessibilityRole="button"
+            accessibilityLabel={`See all ${items.length} stakes`}
+            style={({ pressed }) => [styles.seeAll, pressed && styles.pressed]}
+            hitSlop={6}
+          >
+            <ThemedText
+              type="label"
+              style={[styles.seeAllText, { color: colors.inkMuted }]}
+            >
+              See all
+            </ThemedText>
+            <ThemedText
+              type="mono"
+              style={[styles.seeAllCount, { color: colors.inkMuted }]}
+            >
+              {`+${overflow} →`}
+            </ThemedText>
+          </Pressable>
+        ) : null}
       </Pressable>
-
-      <ThemedText
-        type="caption"
-        style={[styles.caption, { color: colors.inkMuted }]}
-      >
-        What&apos;s burning down.
-      </ThemedText>
 
       {items.length === 0 && done.length === 0 ? (
         <Pressable
@@ -127,32 +150,6 @@ export function StakesRunway({
           {shown.map((item) => (
             <StakeRow key={item.id} item={item} href={itemHref(item)} />
           ))}
-
-          {overflow > 0 ? (
-            <Pressable
-              onPress={() => router.push(zoneHref)}
-              accessibilityRole="button"
-              accessibilityLabel={`See all ${items.length} stakes`}
-              style={({ pressed }) => [
-                styles.seeAll,
-                pressed && styles.pressed,
-              ]}
-              hitSlop={6}
-            >
-              <ThemedText
-                type="label"
-                style={[styles.seeAllText, { color: colors.inkMuted }]}
-              >
-                See all
-              </ThemedText>
-              <ThemedText
-                type="mono"
-                style={[styles.seeAllCount, { color: colors.inkMuted }]}
-              >
-                {`+${overflow} →`}
-              </ThemedText>
-            </Pressable>
-          ) : null}
 
           {done.length > 0 ? (
             <>
@@ -207,6 +204,7 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
     justifyContent: "space-between",
     paddingHorizontal: tokens.space.md,
+    gap: tokens.space.sm,
   },
   caption: {
     paddingHorizontal: tokens.space.md,

@@ -56,10 +56,6 @@ export function FieldBriefing({
 
   return (
     <View style={styles.wrap}>
-      <ThemedText type="display" style={{ color: colors.ink }}>
-        {`${greetingFor(now.getHours())}.`}
-      </ThemedText>
-
       <FieldSummary stakes={stakes} present={present} />
 
       {next ? <NextUpChip item={next} onDelete={onDeleteNext} /> : null}

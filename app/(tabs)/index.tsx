@@ -24,7 +24,6 @@ import {
   type CaptureResolution,
   type LinkableIdea,
 } from "@/components/molecules/capture-resolver";
-import { FieldBriefing } from "@/components/molecules/field-briefing";
 import { tokens, useTheme } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
@@ -36,6 +35,7 @@ import { toPresentItems } from "@/lib/present";
 
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
 import type { RunwayItem } from "@/components/molecules/stake-row";
+import { FieldLegend } from "@/components/organisms/field-console/legend";
 import type { DbEntry, EntryType } from "@/lib/types";
 
 dayjs.extend(customParseFormat);
@@ -415,19 +415,9 @@ export default function HomeScreen(): React.ReactElement {
           stakes={stakes}
           present={present}
         />
+        {fieldIsEmpty && <FieldLegend />}
 
         <>
-          <FieldBriefing
-            now={today}
-            stakes={stakes}
-            present={present}
-            onDeleteNext={(id) =>
-              deleteEntry(id).catch((err) =>
-                console.error("Failed to delete entry:", err),
-              )
-            }
-          />
-
           <StakesRunway
             items={stakeGauges}
             done={doneStakes}

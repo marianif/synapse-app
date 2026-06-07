@@ -1,6 +1,9 @@
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, useReducedMotion } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  useReducedMotion,
+} from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { entryColor, entryKicker, tokens, useTheme } from "@/constants/theme";
@@ -46,16 +49,30 @@ export function FieldLegend(): React.ReactElement {
               onPress={() => openChannel(c.type)}
               accessibilityRole="button"
               accessibilityLabel={`${c.label}. Tap to ${c.invite}.`}
-              style={({ pressed }) => [styles.legendRow, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.legendRow,
+                pressed && styles.pressed,
+              ]}
             >
-              <View style={[styles.legendDot, { backgroundColor: entryColor(c.type) }]} />
+              <View
+                style={[
+                  styles.legendDot,
+                  { backgroundColor: entryColor(c.type) },
+                ]}
+              />
               <ThemedText
                 type="label"
-                style={[styles.legendLabel, { color: entryKicker(c.type, scheme) }]}
+                style={[
+                  styles.legendLabel,
+                  { color: entryKicker(c.type, scheme) },
+                ]}
               >
                 {c.label}
               </ThemedText>
-              <ThemedText type="body" style={{ color: colors.inkMuted }}>
+              <ThemedText
+                type="body"
+                style={{ color: colors.inkMuted, opacity: 0.8 }}
+              >
                 {c.invite}
               </ThemedText>
             </Pressable>

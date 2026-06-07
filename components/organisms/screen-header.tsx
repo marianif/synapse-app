@@ -12,7 +12,7 @@ import type { EntryType } from "@/lib/types";
 /** Types shown as the small cluster in the all-types "Incoming" header. */
 const INCOMING_CLUSTER: EntryType[] = ["deadline", "event", "todo", "someday"];
 
-interface ListScreenHeaderProps {
+interface ScreenHeaderProps {
   title: string;
   /** Mono kicker under the title, e.g. "DEADLINES" / "INCOMING". */
   kicker?: string;
@@ -23,13 +23,12 @@ interface ListScreenHeaderProps {
    */
   entryType?: EntryType;
   /**
-   * A MaterialCommunityIcons glyph to lead with instead of the type sketch /
-   * Incoming cluster — for non-entry screens like Calendar. Ignored when
-   * `entryType` is set.
+   * A custom leading glyph (e.g. <CalendarIcon />) for non-entry screens.
+   * Ignored when `entryType` is set; falls back to the Incoming cluster when
+   * neither is provided.
    */
-  icon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  glyph?: React.ReactNode;
   onBack?: () => void;
-  onOverflow?: () => void;
   /**
    * Add the top safe-area inset + a paper background. Set when this is mounted
    * as a navigator `header` (expo-router Stack), where no SafeAreaView wraps it.
@@ -39,24 +38,24 @@ interface ListScreenHeaderProps {
 }
 
 /**
- * Stack-screen header for the list/focus view — the opened tile's spine.
+ * Stack-screen header — the opened screen's spine. Shared across the focus
+ * lanes (list / Incoming), the calendar, and detail.
  *
  * Single-type: leads with the type's hand-drawn SketchIcon in its own hue, so
- * the lane keeps the identity of the tile that launched it. All-types
- * ("Incoming"): a small dot cluster of the upcoming types instead of one glyph,
- * because no single type owns the screen.
+ * the lane keeps the identity of the tile that launched it. Custom screens pass
+ * a `glyph` (e.g. the brand CalendarIcon). All-types ("Incoming"): a small dot
+ * cluster of the upcoming types, because no single type owns the screen.
  *
- * Layout: [back] [glyph/cluster + title + mono kicker] [overflow]
+ * Layout: [back] [glyph/cluster + title + mono kicker]
  */
-export function ListScreenHeader({
+export function ScreenHeader({
   title,
   kicker,
   entryType,
-  icon,
+  glyph,
   onBack,
-  onOverflow,
   inset = false,
-}: ListScreenHeaderProps): React.ReactElement {
+}: ScreenHeaderProps): React.ReactElement {
   const { colors } = useTheme();
   const safeArea = useSafeAreaInsets();
   const accent = entryType ? entryColor(entryType) : colors.ink;
@@ -89,41 +88,23 @@ export function ListScreenHeader({
         <View style={styles.glyphSlot}>
           {entryType ? (
             <SketchIcon type={entryType} size={26} />
-          ) : icon ? (
-            <MaterialCommunityIcons name={icon} size={24} color={colors.ink} />
+          ) : glyph ? (
+            glyph
           ) : (
-            <EntryCluster types={INCOMING_CLUSTER} dotSize={7} gap={3} width={24} />
+            <EntryCluster
+              types={INCOMING_CLUSTER}
+              dotSize={7}
+              gap={3}
+              width={24}
+            />
           )}
         </View>
         <View style={styles.titleBlock}>
           <ThemedText type="headline" numberOfLines={1} style={styles.title}>
             {title}
           </ThemedText>
-          {kicker ? (
-            <ThemedText
-              type="label"
-              style={[styles.kicker, { color: accent }]}
-              numberOfLines={1}
-            >
-              {kicker}
-            </ThemedText>
-          ) : null}
         </View>
       </View>
-
-      <Pressable
-        onPress={onOverflow}
-        hitSlop={12}
-        style={styles.iconButton}
-        accessibilityRole="button"
-        accessibilityLabel="More options"
-      >
-        <MaterialCommunityIcons
-          name="dots-vertical"
-          size={22}
-          color={colors.inkMuted}
-        />
-      </Pressable>
     </View>
   );
 }

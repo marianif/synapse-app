@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/molecules/empty-state";
 import { ListItem } from "@/components/molecules/list-item";
 import { WrapupCard } from "@/components/molecules/wrapup-card";
 import { Fab } from "@/components/organisms/fab";
-import { ListScreenHeader } from "@/components/organisms/list-screen-header";
+import { ScreenHeader } from "@/components/organisms/screen-header";
 import {
   entryColor,
   entryTint,
@@ -325,7 +325,7 @@ export default function ListScreen(): React.ReactElement {
         options={{
           headerShown: true,
           header: () => (
-            <ListScreenHeader
+            <ScreenHeader
               title={screenTitle}
               kicker={kicker}
               entryType={resolvedType ?? undefined}

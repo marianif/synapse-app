@@ -2,10 +2,11 @@ import { Stack, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
+import { CalendarIcon } from "@/components/atoms/calendar-icon";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { Fab } from "@/components/organisms/fab";
-import { ListScreenHeader } from "@/components/organisms/list-screen-header";
 import { MonthGrid } from "@/components/organisms/month-grid";
+import { ScreenHeader } from "@/components/organisms/screen-header";
 import { UpcomingPreviewCard } from "@/components/organisms/upcoming-preview-card";
 import { useTheme, tokens } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
@@ -119,10 +120,10 @@ export default function CalendarScreen(): React.ReactElement {
         options={{
           headerShown: true,
           header: () => (
-            <ListScreenHeader
+            <ScreenHeader
               title="Calendar"
               kicker={currentMonthLabel.toUpperCase()}
-              icon="calendar-month"
+              glyph={<CalendarIcon size={24} />}
               onBack={() => router.back()}
               inset
             />

@@ -17,7 +17,7 @@ import { DetailReadout } from "@/components/molecules/detail-readout";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { RelatedNotes } from "@/components/molecules/related-notes";
 import { SignalRail } from "@/components/molecules/signal-rail";
-import { ListScreenHeader } from "@/components/organisms/list-screen-header";
+import { ScreenHeader } from "@/components/organisms/screen-header";
 import type { ThemeColors } from "@/constants/theme";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
@@ -296,7 +296,7 @@ export default function DetailScreen(): React.ReactElement {
         style={[styles.safeArea, { backgroundColor: colors.paper }]}
         edges={["top", "bottom"]}
       >
-        <ListScreenHeader title="" onBack={() => router.back()} />
+        <ScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
           <ActivityIndicator color={entryColor(hintType)} />
         </View>
@@ -312,7 +312,7 @@ export default function DetailScreen(): React.ReactElement {
         style={[styles.safeArea, { backgroundColor: colors.paper }]}
         edges={["top", "bottom"]}
       >
-        <ListScreenHeader title="" onBack={() => router.back()} />
+        <ScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
           <EmptyState
             title="Entry not found"
@@ -512,7 +512,7 @@ export default function DetailScreen(): React.ReactElement {
     >
       <View style={[styles.screen, { backgroundColor: colors.paper }]}>
         {/* ── Header ───────────────────────────────────────────── */}
-        <ListScreenHeader title="Detail" onBack={() => router.back()} />
+        <ScreenHeader title="Detail" onBack={() => router.back()} />
 
         {/* ── Scrollable content ──────────────────────────────── */}
         <ScrollView

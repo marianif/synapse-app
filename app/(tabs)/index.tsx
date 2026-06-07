@@ -16,6 +16,7 @@ import {
 
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
+import { FieldConsole } from "@/components/organisms/field-console";
 import { PresentZone } from "@/components/organisms/present/present-zone";
 import { StakesRunway } from "@/components/organisms/stakes-runway";
 
@@ -41,6 +42,14 @@ import type { DbEntry, EntryType } from "@/lib/types";
 dayjs.extend(customParseFormat);
 
 const TODAY_START = () => dayjs().startOf("day");
+
+/** Time-of-day greeting — shared by the populated briefing and the empty console. */
+function greetingFor(hour: number): string {
+  if (hour < 5) return "Still up.";
+  if (hour < 12) return "Good morning.";
+  if (hour < 18) return "Good afternoon.";
+  return "Good evening.";
+}
 
 /** Days from today until an entry's date; null if undated. Negative = overdue. */
 function daysUntil(dateStr: string | null): number | null {
@@ -377,6 +386,14 @@ export default function HomeScreen(): React.ReactElement {
     [entries, recurrenceCompletions, selectedDate, today],
   );
 
+  // A truly clear field — no live stakes, nothing recently cleared, no present
+  // things. This is the brand's first statement, so it gets the powered-on
+  // console instead of three separate "·0" placeholders.
+  const fieldIsEmpty =
+    stakeGauges.length === 0 &&
+    doneStakes.length === 0 &&
+    presentItems.length === 0;
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <ScrollView
@@ -384,40 +401,46 @@ export default function HomeScreen(): React.ReactElement {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <FieldBriefing
-          now={today}
-          stakes={stakes}
-          present={present}
-          onDeleteNext={(id) =>
-            deleteEntry(id).catch((err) =>
-              console.error("Failed to delete entry:", err),
-            )
-          }
-        />
+        {fieldIsEmpty ? (
+          <FieldConsole greeting={greetingFor(today.getHours())} />
+        ) : (
+          <>
+            <FieldBriefing
+              now={today}
+              stakes={stakes}
+              present={present}
+              onDeleteNext={(id) =>
+                deleteEntry(id).catch((err) =>
+                  console.error("Failed to delete entry:", err),
+                )
+              }
+            />
 
-        <StakesRunway
-          items={stakeGauges}
-          done={doneStakes}
-          onClearDone={handleClearDoneStakes}
-          itemHref={(item) => ({
-            pathname: "/detail",
-            params: { id: item.id, entryType: item.type },
-          })}
-          zoneHref="/list?entryType=deadline"
-          emptyHint="Nothing's on the line. Add a bill, deadline, or to-do."
-          index={0}
-        />
+            <StakesRunway
+              items={stakeGauges}
+              done={doneStakes}
+              onClearDone={handleClearDoneStakes}
+              itemHref={(item) => ({
+                pathname: "/detail",
+                params: { id: item.id, entryType: item.type },
+              })}
+              zoneHref="/list?entryType=deadline"
+              emptyHint="Nothing's on the line. Add a bill, deadline, or to-do."
+              index={0}
+            />
 
-        <PresentZone
-          items={presentItems}
-          itemHref={(item) => ({
-            pathname: "/detail",
-            params: { id: item.id, entryType: item.type },
-          })}
-          zoneHref="/list?entryType=idea"
-          emptyHint="Catch an idea, a someday, or an event before it's gone."
-          index={1}
-        />
+            <PresentZone
+              items={presentItems}
+              itemHref={(item) => ({
+                pathname: "/detail",
+                params: { id: item.id, entryType: item.type },
+              })}
+              zoneHref="/list?entryType=idea"
+              emptyHint="Catch an idea, a someday, or an event before it's gone."
+              index={1}
+            />
+          </>
+        )}
 
         <View style={styles.captureSpacer} />
       </ScrollView>

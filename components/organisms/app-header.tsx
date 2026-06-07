@@ -1,10 +1,13 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useTheme } from "@/constants/theme";
+import { useIncomingCount } from "@/hooks/use-incoming-count";
 import { EntryCluster } from "../atoms/entry-cluster";
+import { NotificationBadge } from "../atoms/notification-badge";
 import { AppMenu } from "./app-menu";
 
 interface AppHeaderProps {
@@ -17,7 +20,9 @@ export function AppHeader({
   avatarUri,
 }: AppHeaderProps): React.ReactElement {
   const { colors } = useTheme();
+  const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
+  const incomingCount = useIncomingCount();
 
   return (
     <>
@@ -35,17 +40,56 @@ export function AppHeader({
           </ThemedText>
         </View>
 
-        <Pressable
-          onPress={() => setMenuVisible(true)}
-          style={styles.iconBtn}
-          hitSlop={8}
-        >
-          <MaterialCommunityIcons
-            name="menu"
-            size={22}
-            color={colors.inkMuted}
-          />
-        </Pressable>
+        <View style={styles.actions}>
+          {/* Incoming tray — opens the temporal lane (deadlines, events,
+              todos). Its badge counts what's due this week. */}
+          <Pressable
+            onPress={() => router.push("/list")}
+            style={styles.iconBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={
+              incomingCount > 0
+                ? `Incoming, ${incomingCount} this week`
+                : "Incoming"
+            }
+          >
+            <MaterialCommunityIcons
+              name="tray-arrow-down"
+              size={22}
+              color={colors.inkMuted}
+            />
+            <NotificationBadge count={incomingCount} />
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push("/(tabs)/calendar")}
+            style={styles.iconBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Calendar"
+          >
+            <MaterialCommunityIcons
+              name="calendar"
+              size={22}
+              color={colors.inkMuted}
+            />
+          </Pressable>
+
+          <Pressable
+            onPress={() => setMenuVisible(true)}
+            style={styles.iconBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Menu"
+          >
+            <MaterialCommunityIcons
+              name="dots-vertical"
+              size={22}
+              color={colors.inkMuted}
+            />
+          </Pressable>
+        </View>
       </View>
 
       <AppMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
@@ -65,6 +109,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.sm,
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
   },
   iconBtn: {
     padding: tokens.space.xs,

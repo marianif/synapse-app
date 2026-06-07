@@ -14,9 +14,7 @@ export function CustomTabBar(): React.ReactElement {
   const pathname = usePathname();
 
   const isHome = pathname === "/" || pathname === "/(tabs)";
-  const isIncoming = pathname === "/list";
   const isDiary = pathname === "/(tabs)/diary" || pathname === "/diary";
-  const isCalendar = pathname === "/(tabs)/calendar" || pathname === "/calendar";
 
   const active = (on: boolean): string =>
     on ? colors.accent.clay : colors.inkMuted;
@@ -34,18 +32,6 @@ export function CustomTabBar(): React.ReactElement {
           ]}
         >
           <TabIcon name="view-grid" color={active(isHome)} />
-        </Pressable>
-
-        <Pressable
-          onPress={() => router.push("/list")}
-          accessibilityRole="button"
-          accessibilityLabel="Incoming"
-          style={({ pressed }) => [
-            styles.tabButton,
-            pressed && styles.tabButtonPressed,
-          ]}
-        >
-          <TabIcon name="tray-arrow-down" color={active(isIncoming)} />
         </Pressable>
 
         {/* The create-key — richer entries (bills, deadlines, events, dates)
@@ -76,18 +62,6 @@ export function CustomTabBar(): React.ReactElement {
           ]}
         >
           <TabIcon name="notebook-outline" color={active(isDiary)} />
-        </Pressable>
-
-        <Pressable
-          onPress={() => router.push("/(tabs)/calendar")}
-          accessibilityRole="button"
-          accessibilityLabel="Calendar"
-          style={({ pressed }) => [
-            styles.tabButton,
-            pressed && styles.tabButtonPressed,
-          ]}
-        >
-          <TabIcon name="calendar" color={active(isCalendar)} />
         </Pressable>
       </View>
     </View>

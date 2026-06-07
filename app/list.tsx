@@ -97,15 +97,24 @@ function somedayEntryToListEntry(entry: DbEntry): ListEntry {
   };
 }
 
+/** Temporal types Incoming surfaces — the time-driven lanes only. */
+const INCOMING_TYPES: ReadonlySet<EntryType> = new Set([
+  "deadline",
+  "event",
+  "todo",
+]);
+
 /**
- * Mixed "Incoming" sections — every type together, bucketed by whichever date
- * the entry carries (scheduled or due), sorted soonest-first. Powers the
- * all-types view reached from the sidebar (no entryType param).
+ * "Incoming" sections — the temporal types together (deadlines, events, todos),
+ * bucketed by whichever date the entry carries (scheduled or due), sorted
+ * soonest-first. Untimed lanes (someday / idea) are deliberately excluded:
+ * Incoming is the time-driven view, reached from the header tray.
  */
 function buildIncomingSections(entries: DbEntry[]): Section[] {
   const now = new Date();
 
   const dated = entries
+    .filter((e) => INCOMING_TYPES.has(e.type))
     .map((e) => ({ e, date: parseDate(e.scheduled_date ?? e.due_date) }))
     .filter((x): x is { e: DbEntry; date: Date } => x.date !== null)
     .sort((a, b) => a.date.getTime() - b.date.getTime());

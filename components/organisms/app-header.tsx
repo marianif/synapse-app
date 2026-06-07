@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useTheme } from "@/constants/theme";
 import { useIncomingCount } from "@/hooks/use-incoming-count";
+import { CalendarIcon } from "../atoms/calendar-icon";
 import { EntryCluster } from "../atoms/entry-cluster";
 import { NotificationBadge } from "../atoms/notification-badge";
 import { AppMenu } from "./app-menu";
@@ -56,7 +57,7 @@ export function AppHeader({
           >
             <MaterialCommunityIcons
               name="tray-arrow-down"
-              size={22}
+              size={24}
               color={colors.inkMuted}
             />
             <NotificationBadge count={incomingCount} />
@@ -69,11 +70,7 @@ export function AppHeader({
             accessibilityRole="button"
             accessibilityLabel="Calendar"
           >
-            <MaterialCommunityIcons
-              name="calendar"
-              size={22}
-              color={colors.inkMuted}
-            />
+            <CalendarIcon size={26} />
           </Pressable>
 
           <Pressable

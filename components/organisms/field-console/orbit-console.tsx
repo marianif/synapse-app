@@ -9,10 +9,12 @@ import Animated, {
 import Svg, { Circle, Line } from "react-native-svg";
 
 import { ThemedText } from "@/components/atoms/themed-text";
+import { FieldSummary } from "@/components/molecules/field-summary";
 import { entryColor, entryKicker, tokens, useTheme } from "@/constants/theme";
 
 import { CHANNELS } from "./channels";
 
+import type { FieldRowItem } from "@/components/molecules/field-row";
 import type { EntryType } from "@/lib/types";
 
 /**
@@ -52,8 +54,12 @@ function dotPos(i: number, n: number): { x: number; y: number } {
 
 export function OrbitConsole({
   greeting,
+  stakes,
+  present,
 }: {
   greeting: string;
+  stakes: FieldRowItem[];
+  present: FieldRowItem[];
 }): React.ReactElement {
   const router = useRouter();
   const { colors, scheme } = useTheme();
@@ -64,6 +70,10 @@ export function OrbitConsole({
   };
 
   const n = CHANNELS.length;
+
+  // The field is clear when there are no stakes and nothing present. Empty keeps
+  // the "brain's in orbit" thesis; populated swaps it for the field summary.
+  const empty = stakes.length === 0 && present.length === 0;
 
   return (
     <View style={styles.wrap}>
@@ -76,10 +86,17 @@ export function OrbitConsole({
         <ThemedText type="display" style={{ color: colors.ink }}>
           {greeting}
         </ThemedText>
-        <ThemedText type="body" style={[styles.thesis, { color: colors.inkMuted }]}>
-          Your whole brain&apos;s in orbit. Pull the first thing down into the
-          field.
-        </ThemedText>
+        {empty ? (
+          <ThemedText
+            type="body"
+            style={[styles.thesis, { color: colors.inkMuted }]}
+          >
+            Your whole brain&apos;s in orbit. Pull the first thing down into the
+            field.
+          </ThemedText>
+        ) : (
+          <FieldSummary stakes={stakes} present={present} />
+        )}
       </View>
 
       {/* The orbit — SVG ring + spokes, with tappable dots overlaid for hit-area. */}

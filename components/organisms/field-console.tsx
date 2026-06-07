@@ -1,6 +1,8 @@
 import { ConstellationConsole } from "./field-console/constellation-console";
 import { OrbitConsole } from "./field-console/orbit-console";
 
+import type { FieldRowItem } from "@/components/molecules/field-row";
+
 /** Which empty-field staging to show. Two metaphors, same affordance + copy. */
 export type FieldConsoleVariant = "constellation" | "orbit";
 
@@ -9,6 +11,10 @@ interface FieldConsoleProps {
   greeting: string;
   /** Pick the metaphor. Defaults to constellation. */
   variant?: FieldConsoleVariant;
+  /** STAKES rows — when present, the orbit body shows the field summary. */
+  stakes: FieldRowItem[];
+  /** PRESENT rows — when present, the orbit body shows the field summary. */
+  present: FieldRowItem[];
 }
 
 /**
@@ -27,9 +33,11 @@ interface FieldConsoleProps {
 export function FieldConsole({
   greeting,
   variant = "constellation",
+  stakes,
+  present,
 }: FieldConsoleProps): React.ReactElement {
   return variant === "orbit" ? (
-    <OrbitConsole greeting={greeting} />
+    <OrbitConsole greeting={greeting} stakes={stakes} present={present} />
   ) : (
     <ConstellationConsole greeting={greeting} />
   );

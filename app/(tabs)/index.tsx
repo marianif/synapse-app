@@ -1,21 +1,15 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import {
-  useFocusEffect,
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
 
-import { ThemedText } from "@/components/atoms/themed-text";
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import {
@@ -373,7 +367,11 @@ export default function HomeScreen(): React.ReactElement {
         stakeGauges: stakeEntries.map((e) => toRunwayItem(e)),
         doneStakes: doneStakeEntries.map((e) => toRunwayItem(e, true)),
         present: pick(PRESENT_TYPES),
-        presentItems: toPresentItems(presentEntries, today.getTime(), noteCounts),
+        presentItems: toPresentItems(
+          presentEntries,
+          today.getTime(),
+          noteCounts,
+        ),
       };
     }, [entries, today, noteCounts]);
 
@@ -411,82 +409,49 @@ export default function HomeScreen(): React.ReactElement {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {fieldIsEmpty ? (
-          <>
-            <View style={styles.variantToggle}>
-              {(["constellation", "orbit"] as FieldConsoleVariant[]).map((v) => (
-                <Pressable
-                  key={v}
-                  onPress={() => setEmptyVariant(v)}
-                  style={[
-                    styles.variantChip,
-                    {
-                      backgroundColor:
-                        emptyVariant === v
-                          ? colors.accent.clay
-                          : colors.surfaceSubtle,
-                    },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Show ${v} empty state`}
-                >
-                  <ThemedText
-                    type="label"
-                    style={{
-                      color:
-                        emptyVariant === v
-                          ? colors.accent.onClay
-                          : colors.inkMuted,
-                    }}
-                  >
-                    {v}
-                  </ThemedText>
-                </Pressable>
-              ))}
-            </View>
-            <FieldConsole
-              greeting={greetingFor(today.getHours())}
-              variant={emptyVariant}
-            />
-          </>
-        ) : (
-          <>
-            <FieldBriefing
-              now={today}
-              stakes={stakes}
-              present={present}
-              onDeleteNext={(id) =>
-                deleteEntry(id).catch((err) =>
-                  console.error("Failed to delete entry:", err),
-                )
-              }
-            />
+        <FieldConsole
+          greeting={greetingFor(today.getHours())}
+          variant="orbit"
+          stakes={stakes}
+          present={present}
+        />
 
-            <StakesRunway
-              items={stakeGauges}
-              done={doneStakes}
-              onClearDone={handleClearDoneStakes}
-              itemHref={(item) => ({
-                pathname: "/detail",
-                params: { id: item.id, entryType: item.type },
-              })}
-              zoneHref="/list?entryType=deadline"
-              emptyHint="Nothing's on the line. Add a bill, deadline, or to-do."
-              index={0}
-            />
+        <>
+          <FieldBriefing
+            now={today}
+            stakes={stakes}
+            present={present}
+            onDeleteNext={(id) =>
+              deleteEntry(id).catch((err) =>
+                console.error("Failed to delete entry:", err),
+              )
+            }
+          />
 
-            <PresentZone
-              items={presentItems}
-              itemHref={(item) => ({
-                pathname: "/detail",
-                params: { id: item.id, entryType: item.type },
-              })}
-              zoneHref="/list?entryType=idea"
-              emptyHint="Catch an idea, a someday, or an event before it's gone."
-              index={1}
-            />
-          </>
-        )}
+          <StakesRunway
+            items={stakeGauges}
+            done={doneStakes}
+            onClearDone={handleClearDoneStakes}
+            itemHref={(item) => ({
+              pathname: "/detail",
+              params: { id: item.id, entryType: item.type },
+            })}
+            zoneHref="/list?entryType=deadline"
+            emptyHint="Nothing's on the line. Add a bill, deadline, or to-do."
+            index={0}
+          />
+
+          <PresentZone
+            items={presentItems}
+            itemHref={(item) => ({
+              pathname: "/detail",
+              params: { id: item.id, entryType: item.type },
+            })}
+            zoneHref="/list?entryType=idea"
+            emptyHint="Catch an idea, a someday, or an event before it's gone."
+            index={1}
+          />
+        </>
 
         <View style={styles.captureSpacer} />
       </ScrollView>

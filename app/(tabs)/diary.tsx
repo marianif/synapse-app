@@ -14,7 +14,10 @@ import {
   type DiaryMacro,
 } from "@/components/molecules/diary-filter-bar";
 import { DiaryFeed } from "@/components/organisms/diary-feed";
-import { LinkSheet, type LinkableIdea } from "@/components/organisms/link-sheet";
+import {
+  LinkSheet,
+  type LinkableIdea,
+} from "@/components/organisms/link-sheet";
 import { tokens } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
@@ -55,7 +58,11 @@ export default function DiaryScreen(): React.ReactElement {
     () =>
       boardEntries
         .filter((e) => e.type === "idea")
-        .map((e) => ({ id: e.id, title: e.title, noteCount: noteCounts[e.id] })),
+        .map((e) => ({
+          id: e.id,
+          title: e.title,
+          noteCount: noteCounts[e.id],
+        })),
     [boardEntries, noteCounts],
   );
 
@@ -74,7 +81,7 @@ export default function DiaryScreen(): React.ReactElement {
     return entries;
   }, [entries, ideaId, macro]);
 
-  const ideaLabel = ideaId ? linkedTitles[ideaId] ?? "Idea" : null;
+  const ideaLabel = ideaId ? (linkedTitles[ideaId] ?? "Idea") : null;
 
   const handleSave = useCallback(
     (body: string, linkedEntryId: string | null) =>

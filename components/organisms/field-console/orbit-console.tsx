@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   FadeIn,
@@ -14,6 +15,7 @@ import { FieldSummary } from "@/components/molecules/field-summary";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
 
 import { CHANNELS } from "./channels";
+import { FocusLine, segmentsFor } from "./focus-line";
 import { OrbitDot } from "./orbit-dot";
 
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
@@ -72,21 +74,24 @@ type TypeSignal = {
   count: number;
   /** Hottest heat present in this type — drives the glow halo. */
   heat: Heat;
+  /** This channel's own rows, in field order — named when it's focused. */
+  rows: FieldRowItem[];
 };
 
 const HEAT_RANK: Record<Heat, number> = { hot: 3, warm: 2, cool: 1 };
 
-/** Roll the field's rows up into a per-type count + peak heat. */
+/** Roll the field's rows up into a per-type count + peak heat + the rows
+    themselves, so a focused channel can name its real contents. */
 function signalFor(type: EntryType, rows: FieldRowItem[]): TypeSignal {
-  let count = 0;
+  const own: FieldRowItem[] = [];
   let peak = 0;
   for (const r of rows) {
     if (r.type !== type) continue;
-    count += 1;
+    own.push(r);
     peak = Math.max(peak, HEAT_RANK[r.heat]);
   }
   const heat: Heat = peak >= 3 ? "hot" : peak === 2 ? "warm" : "cool";
-  return { count, heat };
+  return { count: own.length, heat, rows: own };
 }
 
 /** Dot radius for a count — ramps DOT_R_MIN→DOT_R_MAX, hollow when empty. */
@@ -132,10 +137,17 @@ export function OrbitConsole({
   present: FieldRowItem[];
 }): React.ReactElement {
   const router = useRouter();
-  const { colors } = useTheme();
+  const { scheme, colors } = useTheme();
   const reduced = useReducedMotion();
   const presses = useChannelPresses();
 
+  // Which channel the companion is currently reading aloud. Tapping a populated
+  // dot focuses it; tapping the same dot again clears focus. The core's capture
+  // is untouched — a dot tap READS the field, the core WRITES to it.
+  const [focusedType, setFocusedType] = useState<EntryType | null>(null);
+
+  // A silent channel has nothing to read, so its tap falls back to a pre-typed
+  // capture — the only case where a dot still writes instead of reads.
   const openChannel = (type: EntryType): void => {
     router.push({ pathname: "/modal", params: { type } });
   };
@@ -157,6 +169,22 @@ export function OrbitConsole({
   const pressing = signals.filter((s) => s.heat === "hot" && s.count > 0).length;
   const inField = rows.length;
 
+  // The focused channel's rows, if any. Focus only "takes" when the channel
+  // still has something to read — a channel that's since emptied (or never had
+  // rows) yields no segments, so the header falls back to the field summary.
+  const focusedSignal = focusedType
+    ? signals[CHANNELS.findIndex((c) => c.type === focusedType)]
+    : null;
+  const hasFocus =
+    !!focusedType &&
+    !!focusedSignal &&
+    segmentsFor(focusedType, focusedSignal.rows) !== null;
+
+  // Toggle focus on a populated dot: re-tapping the focused channel clears it.
+  const toggleFocus = (type: EntryType): void => {
+    setFocusedType((cur) => (cur === type ? null : type));
+  };
+
   return (
     <View style={styles.wrap}>
       <View style={styles.head}>
@@ -168,7 +196,9 @@ export function OrbitConsole({
         >
           {empty
             ? `${n} in orbit · 0 landed`
-            : `${pressing} pressing · ${inField} in field`}
+            : hasFocus
+              ? `${focusedType} · tap again to clear`
+              : `${pressing} pressing · ${inField} in field`}
         </ThemedText>
         <ThemedText type="display" style={{ color: colors.ink }}>
           {greeting}
@@ -181,6 +211,15 @@ export function OrbitConsole({
             Your whole brain&apos;s in orbit. Pull the first thing down into the
             field.
           </ThemedText>
+        ) : hasFocus ? (
+          // The companion's read of the poked channel — same muted-body voice as
+          // the field summary, with the real items lifted in the agenda hand.
+          <FocusLine
+            type={focusedType!}
+            rows={focusedSignal!.rows}
+            scheme={scheme}
+            muted={colors.inkMuted}
+          />
         ) : (
           <FieldSummary stakes={stakes} present={present} />
         )}
@@ -216,7 +255,13 @@ export function OrbitConsole({
             const loaded = !empty && s.count > 0;
             // Scale stroke with the dot it feeds; idle/empty keeps the 1.5 baseline.
             const width = loaded ? 1.5 + (dotRadius(s.count) - DOT_R_MIN) * 0.18 : 1.5;
-            const opacity = loaded ? 0.18 + GLOW_ALPHA[s.heat] * 0.6 : 0.18;
+            let opacity = loaded ? 0.18 + GLOW_ALPHA[s.heat] * 0.6 : 0.18;
+            // When a channel is focused, its artery brightens and the rest recede,
+            // so the eye follows the spoke down to the dot you're reading.
+            if (focusedType) {
+              opacity =
+                focusedType === c.type ? Math.min(opacity * 1.6, 0.6) : opacity * 0.35;
+            }
             return (
               <Line
                 key={`spoke-${c.type}`}
@@ -276,6 +321,7 @@ export function OrbitConsole({
                 color={code}
                 index={i}
                 pressed={presses[i]}
+                dimmed={focusedType !== null && focusedType !== c.type}
               />
             );
           })}
@@ -312,13 +358,18 @@ export function OrbitConsole({
         {CHANNELS.map((c, i) => {
           const { x, y } = dotPos(i, n);
           const s = signals[i];
-          // Populated dots announce their live count; empty/idle keep the invite.
+          // Populated dots read their channel aloud on tap; empty/idle keep the
+          // invite (those route to a pre-typed capture, since there's nothing to
+          // read yet).
+          const focusedHere = focusedType === c.type;
           const label =
             empty || s.count === 0
               ? `${c.label}. Tap to ${c.invite}.`
-              : `${c.label}, ${s.count} in field${
-                  s.heat === "hot" ? ", pressing" : ""
-                }. Tap to add another.`;
+              : focusedHere
+                ? `${c.label} focused. Tap to clear.`
+                : `${c.label}, ${s.count} in field${
+                    s.heat === "hot" ? ", pressing" : ""
+                  }. Tap to read it.`;
           // A loaded dot reacts to touch (lunge + flare); empty/idle channels
           // have no animated dot, so they keep the plain opacity-dip feedback.
           const reactive = !empty && s.count > 0;
@@ -330,7 +381,9 @@ export function OrbitConsole({
               style={[styles.hit, { left: x - HIT / 2, top: y - HIT / 2 }]}
             >
               <Pressable
-                onPress={() => openChannel(c.type)}
+                onPress={() =>
+                  reactive ? toggleFocus(c.type) : openChannel(c.type)
+                }
                 onPressIn={
                   reactive
                     ? () => {

@@ -60,7 +60,12 @@ type OrbitDotProps = {
   index: number;
   /** 0 → 1 press progress, owned by the parent so the hit-target drives it. */
   pressed: SharedValue<number>;
+  /** Recede when ANOTHER channel is focused, so the read one stands alone. */
+  dimmed?: boolean;
 };
+
+/** Opacity a dot fades to while another channel holds focus. */
+const DIM_OPACITY = 0.25;
 
 /**
  * One populated orbiting type-dot, animated.
@@ -89,6 +94,7 @@ export function OrbitDot({
   color,
   index,
   pressed,
+  dimmed = false,
 }: OrbitDotProps): React.ReactElement {
   const reduced = useReducedMotion();
 
@@ -130,6 +136,15 @@ export function OrbitDot({
     );
   }, [breath, reduced, count]);
 
+  // Recede when another channel is focused. Opacity-only (no layout), so it's
+  // safe under reduced motion — it still springs, just a fade, never travel.
+  const dim = useSharedValue(dimmed ? DIM_OPACITY : 1);
+  useEffect(() => {
+    dim.value = withTiming(dimmed ? DIM_OPACITY : 1, {
+      duration: tokens.motion.duration.fast,
+    });
+  }, [dim, dimmed]);
+
   // Vector from the dot back toward the core, scaled to the press-lunge depth.
   const pullX = (cx - x) * PRESS_PULL;
   const pullY = (cy - y) * PRESS_PULL;
@@ -140,6 +155,7 @@ export function OrbitDot({
       r: liveR.value + breath.value,
       cx: x + pullX * p,
       cy: y + pullY * p,
+      fillOpacity: dim.value,
     };
   });
 
@@ -149,7 +165,7 @@ export function OrbitDot({
       r: liveR.value + breath.value + GLOW_PAD[heat],
       cx: x + pullX * p,
       cy: y + pullY * p,
-      fillOpacity: GLOW_ALPHA[heat] * (1 + (PRESS_FLARE - 1) * p),
+      fillOpacity: GLOW_ALPHA[heat] * (1 + (PRESS_FLARE - 1) * p) * dim.value,
     };
   });
 

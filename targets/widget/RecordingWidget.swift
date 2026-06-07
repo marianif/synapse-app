@@ -31,35 +31,24 @@ struct VoiceInputProvider: AppIntentTimelineProvider {
     }
 }
 
-// MARK: - Shared: Gradient mic button
+// MARK: - Shared: Clay mic disc
+//
+// The one action color, solid — no gradient, no glow. Color categorizes and
+// activates; it never decorates. The disc IS the affordance.
 
 private struct MicButton: View {
     let size: CGFloat
     let iconSize: CGFloat
 
     var body: some View {
-        ZStack {
-            // Ambient glow — tinted brand halo, not a black shadow
-            Circle()
-                .fill(Color.brandPrimary.opacity(0.20))
-                .frame(width: size + 16, height: size + 16)
-                .blur(radius: 10)
-
-            // Primary CTA gradient (135° brand → brandContainer per DESIGN.md)
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [Color.brandPrimary, Color.brandPrimaryContainer],
-                        startPoint: UnitPoint(x: 0.15, y: 0.15), // ~135°
-                        endPoint: UnitPoint(x: 0.85, y: 0.85)
-                    )
-                )
-                .frame(width: size, height: size)
-
-            Image(systemName: "mic.fill")
-                .font(.system(size: iconSize, weight: .semibold))
-                .foregroundStyle(Color.surfaceBase)
-        }
+        Circle()
+            .fill(Color.clay)
+            .frame(width: size, height: size)
+            .overlay(
+                Image(systemName: "mic.fill")
+                    .font(.system(size: iconSize, weight: .semibold))
+                    .foregroundStyle(Color.paper)
+            )
     }
 }
 
@@ -80,7 +69,45 @@ struct VoiceInputWidgetEntryView: View {
                 SmallVoiceWidgetView()
             }
         }
-        .containerBackground(Color.surfaceContainerLow, for: .widget)
+        .containerBackground(Color.paper, for: .widget)
+    }
+}
+
+// MARK: - Shared: clay kicker (the only all-caps element)
+
+private struct Kicker: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 11, weight: .semibold))
+            .tracking(0.6)
+            .foregroundStyle(Color.clay)
+    }
+}
+
+// MARK: - Shared: warm tile with a saturated clay edge-bar
+//
+// Structure without a 1px border — a tonal surface lifted off the paper, coded
+// down its leading edge in clay. The signature Field move.
+
+private struct FieldTile<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        content()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .background(
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: Radius.lg, style: .continuous)
+                        .fill(Color.surface)
+                    // Clay edge-code, inset and pill-capped so it reads as a mark, not a rule.
+                    Capsule()
+                        .fill(Color.clay)
+                        .frame(width: 4)
+                        .padding(.vertical, Spacing.md)
+                }
+            )
     }
 }
 
@@ -89,21 +116,25 @@ struct VoiceInputWidgetEntryView: View {
 struct SmallVoiceWidgetView: View {
     var body: some View {
         Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
-            VStack(spacing: Spacing.sm) {
-                MicButton(size: 60, iconSize: 26)
+            FieldTile {
+                VStack(alignment: .leading, spacing: Spacing.md) {
+                    MicButton(size: 52, iconSize: 22)
 
-                VStack(spacing: 2) {
-                    Text("Voice Capture")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.textPrimary)
+                    Spacer(minLength: 0)
 
-                    Text("TAP TO RECORD")
-                        .font(.system(size: 9, weight: .semibold))
-                        .tracking(0.55)
-                        .foregroundStyle(Color.textTertiary)
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Kicker(text: "VOICE")
+
+                        // Editorial serif headline — the New Yorker greeting you.
+                        Text("Capture\na thought")
+                            .font(.system(size: 19, weight: .semibold, design: .serif))
+                            .foregroundStyle(Color.ink)
+                            .lineSpacing(1)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
+                .padding(Spacing.lg)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
@@ -113,27 +144,31 @@ struct SmallVoiceWidgetView: View {
 struct MediumVoiceWidgetView: View {
     var body: some View {
         Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
-            HStack(spacing: Spacing.xl) {
-                MicButton(size: 56, iconSize: 22)
+            FieldTile {
+                HStack(spacing: Spacing.xl) {
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Kicker(text: "VOICE")
 
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text("VOICE CAPTURE")
-                        .font(.system(size: 9, weight: .semibold))
-                        .tracking(0.55)
-                        .foregroundStyle(Color.textTertiary)
+                        Text("Capture a thought")
+                            .font(.system(size: 24, weight: .semibold, design: .serif))
+                            .foregroundStyle(Color.ink)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
 
-                    Text("Capture a thought.")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color.textPrimary)
+                        Text("Tap to start recording, from anywhere.")
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundStyle(Color.inkMuted)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Text("Tap to start recording instantly.")
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundStyle(Color.textSecondary)
-                        .lineLimit(2)
+                    MicButton(size: 56, iconSize: 24)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, Spacing.lg)
+                .padding(.leading, Spacing.xl)
+                .padding(.trailing, Spacing.lg)
             }
-            .padding(Spacing.lg)
         }
     }
 }

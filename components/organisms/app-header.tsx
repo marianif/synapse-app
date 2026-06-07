@@ -63,7 +63,7 @@ export function AppHeader({
           </Pressable>
 
           <Pressable
-            onPress={() => router.push("/(tabs)/calendar")}
+            onPress={() => router.push("/calendar")}
             style={styles.iconBtn}
             hitSlop={8}
             accessibilityRole="button"

@@ -102,14 +102,16 @@ function ThemedNavigationShell(): React.ReactElement | null {
     <NavThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
       <DatabaseProvider>
         <ErrorBoundary>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="list" options={{ headerShown: false }} />
-            <Stack.Screen name="detail" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="modal"
-              options={{ presentation: "modal", headerShown: false }}
-            />
+          {/* Header default is off; the list & calendar screens opt back in by
+              supplying their own `header` via <Stack.Screen> in-screen, so the
+              chrome is owned by the navigator (not laid out in the screen body)
+              while still reading screen-local, param-driven title/kicker. */}
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="list" />
+            <Stack.Screen name="calendar" />
+            <Stack.Screen name="detail" />
+            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
           </Stack>
         </ErrorBoundary>
         <StatusBar style={isDark ? "light" : "dark"} />

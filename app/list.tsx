@@ -1,7 +1,11 @@
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import {
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 import { useCallback } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { EmptyState } from "@/components/molecules/empty-state";
@@ -314,19 +318,25 @@ export default function ListScreen(): React.ReactElement {
         : "+ Add Todo";
 
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.paper }]}
-      edges={["top"]}
-    >
-      <View style={[styles.screen, { backgroundColor: colors.paper }]}>
-        <ListScreenHeader
-          title={screenTitle}
-          kicker={kicker}
-          entryType={resolvedType ?? undefined}
-          onBack={() => router.back()}
-        />
+    <View style={[styles.screen, { backgroundColor: colors.paper }]}>
+      {/* Header lives on the navigator (Stack), not in the screen body — but
+          its title/kicker/hue are param-driven, so we set them here. */}
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          header: () => (
+            <ListScreenHeader
+              title={screenTitle}
+              kicker={kicker}
+              entryType={resolvedType ?? undefined}
+              onBack={() => router.back()}
+              inset
+            />
+          ),
+        }}
+      />
 
-        <ScrollView
+      <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
@@ -436,16 +446,12 @@ export default function ListScreen(): React.ReactElement {
           <View style={styles.fabSpacer} />
         </ScrollView>
 
-        <Fab onPress={() => router.push("/modal")} />
-      </View>
-    </SafeAreaView>
+      <Fab onPress={() => router.push("/modal")} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
   screen: {
     flex: 1,
   },

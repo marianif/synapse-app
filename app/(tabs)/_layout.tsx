@@ -26,7 +26,6 @@ export default function TabLayout(): React.ReactElement {
         >
           <Tabs.Screen name="index" />
           <Tabs.Screen name="diary" />
-          <Tabs.Screen name="calendar" />
         </Tabs>
         <CustomTabBar />
       </View>

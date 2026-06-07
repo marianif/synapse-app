@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EntryCluster } from "@/components/atoms/entry-cluster";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
@@ -14,15 +15,27 @@ const INCOMING_CLUSTER: EntryType[] = ["deadline", "event", "todo", "someday"];
 interface ListScreenHeaderProps {
   title: string;
   /** Mono kicker under the title, e.g. "DEADLINES" / "INCOMING". */
-  kicker: string;
+  kicker?: string;
   /**
    * The type whose lane this is. Drives the leading sketch glyph + hue so the
    * header reads as the tile you tapped, opened up. Omit for the mixed
    * "Incoming" view, which shows a multi-type dot cluster instead.
    */
   entryType?: EntryType;
+  /**
+   * A MaterialCommunityIcons glyph to lead with instead of the type sketch /
+   * Incoming cluster — for non-entry screens like Calendar. Ignored when
+   * `entryType` is set.
+   */
+  icon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
   onBack?: () => void;
   onOverflow?: () => void;
+  /**
+   * Add the top safe-area inset + a paper background. Set when this is mounted
+   * as a navigator `header` (expo-router Stack), where no SafeAreaView wraps it.
+   * Leave off when rendered inside a screen that already owns its top inset.
+   */
+  inset?: boolean;
 }
 
 /**
@@ -39,14 +52,25 @@ export function ListScreenHeader({
   title,
   kicker,
   entryType,
+  icon,
   onBack,
   onOverflow,
+  inset = false,
 }: ListScreenHeaderProps): React.ReactElement {
   const { colors } = useTheme();
+  const safeArea = useSafeAreaInsets();
   const accent = entryType ? entryColor(entryType) : colors.ink;
 
   return (
-    <View style={styles.header}>
+    <View
+      style={[
+        styles.header,
+        inset && {
+          paddingTop: safeArea.top + tokens.space.md,
+          backgroundColor: colors.paper,
+        },
+      ]}
+    >
       <Pressable
         onPress={onBack}
         hitSlop={12}
@@ -65,6 +89,8 @@ export function ListScreenHeader({
         <View style={styles.glyphSlot}>
           {entryType ? (
             <SketchIcon type={entryType} size={26} />
+          ) : icon ? (
+            <MaterialCommunityIcons name={icon} size={24} color={colors.ink} />
           ) : (
             <EntryCluster types={INCOMING_CLUSTER} dotSize={7} gap={3} width={24} />
           )}
@@ -73,13 +99,15 @@ export function ListScreenHeader({
           <ThemedText type="headline" numberOfLines={1} style={styles.title}>
             {title}
           </ThemedText>
-          <ThemedText
-            type="label"
-            style={[styles.kicker, { color: accent }]}
-            numberOfLines={1}
-          >
-            {kicker}
-          </ThemedText>
+          {kicker ? (
+            <ThemedText
+              type="label"
+              style={[styles.kicker, { color: accent }]}
+              numberOfLines={1}
+            >
+              {kicker}
+            </ThemedText>
+          ) : null}
         </View>
       </View>
 

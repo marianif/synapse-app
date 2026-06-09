@@ -23,6 +23,12 @@ interface SignalRailProps {
   entryType: EntryType;
   /** The display-scale entry title — the one zoomed-in item on the screen. */
   title: string;
+  /**
+   * Optional override for the title slot — used by the detail screen's edit
+   * mode to swap the static title for an inline TextInput at the same scale and
+   * position. When set, it replaces the default <ThemedText> title entirely.
+   */
+  titleSlot?: React.ReactNode;
   /** Recurring entries get a ↻ glyph inside the kicker tab. */
   isRecurring?: boolean;
   /** Telemetry / countdown / inspiration — composed by the caller, below title. */
@@ -50,6 +56,7 @@ interface SignalRailProps {
 export function SignalRail({
   entryType,
   title,
+  titleSlot,
   isRecurring = false,
   children,
 }: SignalRailProps): React.ReactElement {
@@ -70,9 +77,11 @@ export function SignalRail({
           </ThemedText>
         </View>
 
-        <ThemedText type="display" style={styles.title}>
-          {title}
-        </ThemedText>
+        {titleSlot ?? (
+          <ThemedText type="display" style={styles.title}>
+            {title}
+          </ThemedText>
+        )}
 
         {children}
       </View>

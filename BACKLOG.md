@@ -1,40 +1,162 @@
 # BACKLOG — Synapse App
 
-## Native Modules
-
-### Android Speech Recognizer
-
-- [x] Create Android native module (`modules/speech-recognizer/`) mirroring iOS implementation
-      → Added `android` platform to `expo-module.config.json` and an Android
-      source tree under `modules/speech-recognizer/android/`. JS layer
-      (`index.ts`, `SpeechRecognizerModule.ts`, `useSpeechRecognizer`) was already
-      platform-agnostic — `requireNativeModule('SpeechRecognizer')` now resolves
-      to the Kotlin module on Android, same `{transcript, isFinal, error?}` events.
-- [x] Implement `SpeechRecognizerModule.kt` with Speech Recognition API
-      → Uses `android.speech.SpeechRecognizer` + `RecognitionListener` for live
-      partial + final transcripts streamed over `onTranscriptUpdate`. Mirrors the
-      iOS contract: `requestPermissions`, `startRecognition`, `stopRecognition`.
-- [x] Create `SpeechRecognizer.podspec` equivalent for Android (not needed, but create gradle config)
-      → `android/build.gradle` using `expo-module-gradle-plugin` (inherits app
-      SDK/Kotlin versions) + `android/src/main/AndroidManifest.xml` declaring
-      `RECORD_AUDIO` and the `android.speech.RecognitionService` `<queries>` entry
-      (required for service discovery on Android 11+).
-- [x] Add required Android permissions in plugin
-      → Config plugin now injects `RECORD_AUDIO` via `withAndroidManifest` +
-      `AndroidConfig.Permissions.ensurePermissions`, alongside the existing iOS
-      Info.plist usage strings.
-- [ ] Test speech-to-text functionality on Android (needs prebuild + device/emulator run)
-
-  Note: `transcribeFile(uri)` is iOS-only — Android's `SpeechRecognizer` consumes
-  only live mic input, so the Android impl rejects `transcribeFile` with
-  `UNSUPPORTED` rather than failing silently. Live recognition is fully supported.
-  Run `npm run prewidget` (or `npx expo prebuild`) before building in Android Studio.
+> Ordered roughly by priority. Each item carries enough context to start cold.
+> Aesthetic north star: **"written by hand, agenda-like"** — the field-summary /
+> field-briefing voice is becoming the app's signature. Lean into it everywhere.
 
 ---
 
-## AI Integration
+## 🔴 Now — Monetization & First-Run (business-critical)
+
+### Freemium model
+
+The core: **everything is free until a threshold, then we ask for money.** Two
+gates to design and define precisely before building.
+
+- [ ] **Define the entry gate.** Free up to _N_ active entries (propose N, e.g.
+      ~50–100), then a soft paywall on _creating_ new ones. Reading, editing,
+      completing existing entries must stay free forever — never hold a user's
+      own data hostage.
+- [ ] **Define the AI gate explicitly.** AI is a paid capability. Enumerate
+      exactly what counts as "AI" so the line is unambiguous:
+  - Voice → structured entry parsing (the OpenAI flow in *AI Integration* below)
+  - Natural-language capture resolution (`capture-resolver.tsx`)
+  - Any future smart-reminder / summarization features
+- [ ] **Entitlement layer.** A `useEntitlement()` hook + `lib/entitlement.ts`
+      reading from AsyncStorage (mirror `lib/settings.ts` pattern) and, later,
+      the store receipt. Single source of truth — never gate inline in UI.
+- [ ] **Store integration.** `expo-in-app-purchases` or RevenueCat. Decide
+      one-time unlock vs. subscription (recommend subscription for AI cost
+      pass-through; one-time for the entry cap).
+- [ ] **Paywall surface.** A sheet in the field aesthetic (mono readouts, agenda
+      voice) triggered at the gate — not a generic modal. Count-aware copy:
+      "You're at 47 of 50 stakes."
+- [ ] **Restore purchases** + receipt validation.
+
+### Onboarding (first-run)
+
+High importance — sets the whole tone. The app's voice is editorial/agenda;
+onboarding must teach the field metaphor without a tutorial-overlay feel.
+
+- [ ] Define the 3–4 screen arc: what is "the field", what are the type codes
+      (todo / deadline / event / someday / idea + their colors), how capture
+      works (tab-bar key vs. home capture bar), the diary.
+- [ ] Permission priming **before** the OS prompt — explain *why* mic /
+      notifications matter, then trigger the real prompt.
+- [ ] Persist completion in `lib/settings.ts`
+      (`getOnboardingComplete` / `setOnboardingComplete`); route from
+      `app/index.tsx`.
+- [ ] Optional: seed one example stake + one diary note so the empty field
+      isn't a cold start, with a one-tap "clear examples".
+
+### Finish Settings
+
+- [ ] Build out the settings screen (only `theme_preference` is wired today).
+      Sections: Appearance (theme toggle — already a component), Capture
+      (default entry type — infra exists), Confirmations (see #1 below),
+      Notifications, Account / Subscription (ties to freemium), About.
+- [ ] Each new preference goes through `lib/settings.ts`, one key each.
+
+---
+
+## 🟡 Next — UX & Interaction
+
+### 1. Custom confirm-alert with "don't ask again" preference ✅ DONE
+
+Replace ad-hoc `Alert.alert` confirms with a branded sheet whose result can be
+remembered to local storage.
+
+- [x] Reusable confirm sheet in the field aesthetic
+      (`components/molecules/confirm-sheet.tsx`) — replaces the OS `Alert.alert`.
+- [x] **"Don't ask me again"** checkbox; persisted via `lib/settings.ts`
+      (`getConfirmSkip` / `setConfirmSkip`, keyed by `ConfirmKey`).
+- [x] **Adopted:** Home + Diary swipe-to-delete (via `SwipeableRow`, which now
+      owns the sheet through `hooks/use-confirm.ts`) and the detail screen's
+      non-recurring delete. When the pref is set, delete fires immediately.
+- [x] Generic per-key design — diary notes and entries carry independent
+      "don't ask" prefs; future destructive actions add a new `ConfirmKey`.
+
+### 9. Inline editing in detail screen (no modal) ✅ DONE
+
+Editing previously bounced to `/modal`. Now in place.
+
+- [x] Detail fields **directly editable in place** — the EDIT action enters an
+      inline edit mode: title becomes a display-scale `TextInput` in the signal
+      rail's title slot; notes become an inline textarea.
+- [x] In-screen metadata editors reuse the existing pickers (`WhenPicker`,
+      `RecurrencePicker`) — no modal route. Save/Cancel pair replaces the action
+      bar while editing.
+- [x] `/modal` is now creation-only (`buildEditParams` removed); detail is a
+      true view↔edit surface. Type stays a creation-level decision in `/modal`.
+
+### 3. Capture bar as a "half-drop" recording surface
+
+Reconsider whether the capture bar should be **partially dismissed** by default
+and only fully appear when triggered.
+
+- [ ] Evaluate: replace the tab-bar-center "open add modal" action
+      (`custom-tab-bar.tsx` → `router.push("/modal")`) with a flow where tapping
+      the center key **reveals the capture bar in a recording state** — the bar
+      becomes the recording surface, not just a text line.
+- [ ] The bar appears _on_ tapping the center tab button; it is **not** itself
+      the recording trigger when idle. Recording is armed by the tab key; the
+      bar then shows live state + a save affordance.
+- [ ] Reconcile with the home capture bar (`capture-bar.tsx`, the "quick idea
+      line") so the two capture entry points don't conflict conceptually.
+
+### 4. Incoming / list screen — real filtering & hierarchy ✅ DONE
+
+`app/list.tsx` Incoming lane is now genuinely filtered, not a flat dump.
+
+- [x] Grouped by time horizon (This Week → Later) with the type + status lenses
+      composing on top.
+- [x] Persistent filter affordances (`components/molecules/list-filter-bar.tsx`)
+      in the editorial `diary-filter-bar.tsx` voice — label rows with the active
+      one underlined (type underline borrows the type code), no pills. Two
+      lenses: type (All / Todos / Events / Deadlines) and status (All / Live /
+      Done).
+- [x] Section headers already in the agenda voice; filtered-empty state keeps
+      the bar visible with a "Clear filters" CTA so the lens can reopen.
+
+---
+
+## 🎨 Aesthetic — "agenda, written by hand"
+
+### 2. Rethink Stakes Runway in the hand-written agenda voice
+
+The field-summary / field-briefing established a beautiful "written like an
+agenda" feel. `stakes-runway.tsx` is already title-first / mono-when-label, but
+should be pushed further toward that hand-written editorial vibe.
+
+- [ ] Restyle Stakes Runway to read like a printed/handwritten agenda, matching
+      `field-summary.tsx` and `field-briefing.tsx`.
+- [ ] Keep the established token policy (danger on overdue, sage on done, tonal
+      rule not 1px border — see component header doc). No new token values.
+- [ ] This "agenda feel" is becoming the app's core aesthetic — treat this as a
+      reference implementation other zones follow.
+
+---
+
+## 🧪 Experimental — explore before committing
+
+### 5. An "ideas" orbit in the Diary
+
+Very experimental. Brainstorm whether the orbit-console metaphor (the
+breathing-dots channel reads from `field-console/orbit-console.tsx`) could host
+**ideas inside the Diary**.
+
+- [ ] Prototype: do ideas deserve their own orbit/channel in the diary surface?
+- [ ] Define the interaction — does it read aloud (tap-to-read like the field
+      orbit) or just cluster/visualize idea notes?
+- [ ] Decide keep / kill after a throwaway prototype; don't over-invest early.
+
+---
+
+## 🤖 AI Integration
 
 ### OpenAI API Integration
+
+> **Gated behind the freemium AI tier** — see Monetization above.
 
 - [ ] Connect voice-input results to OpenAI API
 - [ ] Define JSON schema for entry prefilling:
@@ -57,197 +179,16 @@
 
 ---
 
-## UI/UX Improvements
+## 🧱 Technical Debt
 
-### Voice Input Screen
-
-- [ ] Redesign with more polished aesthetics
-- [ ] Add animated waveform/visualizer during recording
-- [ ] Improve processing state UI (spinner, progress)
-- [ ] Add result preview before confirmation
-- [ ] Smooth transitions between states (idle → recording → processing → result)
-
-### General UI Polish
-
-- [ ] Consistent spacing using design tokens
-- [ ] Refine glassmorphism effects
-- [ ] Add micro-animations for delight
-- [ ] Accessibility improvements (VoiceOver/TalkBack support)
-
----
-
-## Home — Field Lab Polish
-
-The home board (two-zone Stakes runway + Present cloud/events mosaic + speaking
-briefing) is in. These are the next-pass refinements to make it feel alive and
-unmistakably ours, not template-grade.
-
-### Section-title sketches
-
-- [ ] Commission/draw custom SVG sketches to bring life to the home section
-      titles (`STAKES`, `PRESENT`, the `Coming up` subhead) — hand-drawn marks
-      that sit beside or behind the mono kickers, not generic icons
-- [ ] Keep them theme-reactive (light/dark) and reduced-motion-safe; tint from
-      `entryColor` / `inkMuted`, no new token VALUES
-- [ ] Decide: static SVG marks vs. lightly animated (draw-on entrance)
-
-### Present readability
-
-- [x] PRESENT items text color isn't readable enough — audit chip/tile title
-      contrast against the type-tints, esp. faded (ghosted) cloud chips where
-      opacity drops to ~0.47
-- [x] Fix: likely raise the freshness opacity floor for the TEXT specifically
-      (keep the chip background fading, keep the label legible), or bump the
-      ghost floor. Verify WCAG AA on the dimmest visible chip in both schemes
-      → Decoupled in `present-constellation.tsx`: freshness now fades a separate
-      absolute background layer (`bgOpacity` 0.28→1.0) + the type-dot, while the
-      label holds a legible floor (`labelOpacity` 0.74→1.0). Dimmest visible chip
-      measures 6.6:1 (light) / 8.3:1 (dark) — well past AA. Cloud chips only carry
-      idea/someday types, so the audited tints are ideas + someday.
-
-### Capture bar — rethink from scratch
-
-- [x] The "Capture a thought" bar must be redesigned from scratch (currently a
-      cyan pill, the brief's FAB replacement) — it's the primary capture surface
-      and the most-touched element; it should feel like the instrument's
-      command line, not a generic pill button
-      → Rebuilt as the board's COMMAND LINE: sharp `radius.md` corner + a 4px
-      clay edge-bar (the board's structural signature), a blinking mono `›`
-      caret, and a left-aligned mono placeholder. Dropped the full-clay idle
-      slab — clay now goes full-bleed ONLY when recording, so the color shift is
-      itself the "listening" signal.
-- [x] Reconsider idle vs. recording states, the waveform, and how voice vs. typed
-      capture is offered
-      → Settled the bar's ROLE: it is the quick IDEA line, both routes inline.
-      Idle is a live `TextInput` — type a note + ↵ (or the clay send-key that
-      appears once there's text) saves it straight as an `idea` into the Present
-      cloud, no navigation. The mic (shown when empty) arms voice; the spoken
-      transcript also lands as an idea on stop. Richer entries (bills, deadlines,
-      events, dates, recurrence) moved OUT of the bar to a center Add key in the
-      tab bar (opens the existing add-modal). Keyboard handled via
-      `KeyboardAvoidingView` on the dock. Fixed a pre-existing AA failure:
-      recording text was paper-on-cyan (1.6:1) — now cool-near-black on cyan
-      (9.6:1). Idle glyphs fall back to inkMuted in light (clay fails AA on the
-      light surface); clay identity rides the edge-bar. Same on-clay ink on the
-      tab-bar Add key.
-
-### Greeting — make it cooler / more human
-
-- [x] The briefing greeting ("Good evening.") feels seen-a-thousand-times.
-      Redesign it to feel more human, engaging, and distinctly Field Lab —
-      companion voice (between Coach and Ops), not a stock time-of-day label
-- [x] Explore: varied/observational lines, time + field-state aware, maybe a
-      typographic treatment that isn't just a bold Inter display line
-      → Landed the "conversational count sentence": keep the greeting opener,
-      then one flowing line that inlines the real per-type counts, each colored
-      by its AA-safe type shade (`entryKicker`). Stakes "need you this week",
-      present things "are still here". Plurals + subject-verb agreement handled.
-
----
-
-## Home — Field Lab Polish, pass 2
-
-Structural/navigation pass. The board and capture surfaces are in; this pass is
-about where things LIVE (sidebar vs. settings, weekly→incoming as a tab) and
-re-cutting the two heaviest content surfaces (Stakes, Detail).
-
-### Appearance — dark-default, drop "system"
-
-- [ ] Default scheme must be **dark** (the Field Lab instrument-panel look reads
-      dark-first). New installs land in dark, not "system".
-- [ ] User can only toggle **Light ⇄ Dark**; remove the "System" option entirely
-      from the appearance control. `ThemePreference` drops `"system"` (becomes
-      `"light" | "dark"`), default `"dark"`; migrate any persisted `"system"`
-      value to the resolved scheme (or just to dark) on read.
-- [ ] Touches `lib/*theme*` preference storage, `contexts/theme-context.tsx`
-      (default + no system resolution), and the appearance switcher (currently a
-      3-segment control in `app-menu.tsx` → becomes a 2-state toggle).
-
-### Weekly → "Incoming" screen (tab destination)
-
-- [ ] The planned weekly view becomes an **Incoming** screen: still scoped to
-      THIS WEEK, but shows everything with a date this week — **deadlines, todos,
-      AND events** together (not just one type), time-ordered.
-- [ ] Make it a real tab-bar destination (the long-planned "weekly in tab bar"
-      item — now resolved as Incoming). Decide the tab layout: Home · Add ·
-      Incoming · Calendar, or fold Calendar in. Resolve the orphaned
-      `DayDetailSheet` and the old `weekly-overview-card` / `week-strip` here.
-- [ ] Empty state when nothing's dated this week (observational, on-brand).
-
-### Stakes — redesign
-
-- [x] The Stakes zone (currently the time-to-edge runway of fuel gauges) needs a
-      rethink — decide whether the runway metaphor earns its complexity or a
-      simpler, denser readout serves the "what's on the line" job better.
-- [x] Hold the Field Lab vocabulary (mono readouts, edge-bars, electric type
-      codes, sharp corners); brand tokens read-only. WCAG AA in both schemes.
-      → Rebuilt as a uniform BURNDOWN LIST sorted hottest-first: each row is a
-      mono countdown + title + OVER chip / type-dot + a thin burndown bar. Heat
-      is color-only (bar/dot/chip go danger-red when overdue) so urgency reads
-      first without unequal rows. Capped at 5 with a "See all +N →" CTA (and a
-      tappable header) into `/list`. Countdown stays `ink` (AA); danger rides
-      solid fills, no new token values. Dropped the per-item fuel-gauge molecule.
-      OPEN: "See all" → `/list?entryType=deadline` shows deadlines only; stakes
-      also include todos — resolves when the Incoming screen lands.
-
-### Detail screen — redesign
-
-- [ ] `app/detail.tsx` needs a from-scratch redesign to match the Field Lab
-      language (it predates the rebrand). Per-type treatment (deadline vs. todo
-      vs. idea/someday vs. event), the metadata rows, and the action bar.
-- [ ] Reuse the established atoms/molecules (edge-bars, mono metadata,
-      `entryColor`/`entryKicker`); no new token values.
-
-### Home header — suppress top-left icon, move settings out
-
-- [ ] Decide the fate of the home header's top-left icon (currently a `menu`
-      button opening `AppMenu`, the de-facto sidebar). Likely **suppress it** and
-      relocate everything it holds (appearance, etc.) into a dedicated Settings
-      screen.
-- [ ] If the menu/sidebar goes away, re-home its contents (appearance toggle, any
-      actions) and remove `AppMenu` or repurpose it as the Settings screen body.
-
-### Settings screen — conceptualize
-
-- [ ] Define a proper **Settings screen** (destination, not a popover). First
-      cut of sections: Appearance (Light/Dark toggle), Notifications, BYOK / API
-      key (ties to the AI Integration track), About. Where it's reached from:
-      a Settings entry in the tab bar or an avatar/profile tap in the header.
-- [ ] This absorbs the old `app-menu` appearance control and becomes the home for
-      future config (the "Settings Enhancements" priority item).
-
----
-
-## Technical Debt
-
-- [ ] Set up test framework (jest + jest-expo)
 - [ ] Performance optimization (list virtualization)
 
 ---
 
-## Future Features (Backlog)
+## 🔮 Future Features
 
-- Widget support (iOS/Android home screen widgets)
-- Smart Watch widget (Crucial allows live recording)
+- Widget support (iOS/Android home-screen widgets) — *iOS in progress*
+- Smart Watch widget (crucial: allows live recording)
 - Calendar sync (Google Calendar, Apple Calendar)
 - Collaboration features (share lists)
-- Smart reminders based on location/context
-
----
-
-## Priority Order
-
-1. **Android Speech Recognizer** — Core functionality parity 
-2. **OpenAI Integration** — Core value proposition
-3. **Voice Input UI** — User experience
-4. **Settings Enhancements** — Configuration
-
-**Home — Field Lab Polish** (parallel design track, not blocking MVP launch):
-pass 1 done — greeting redesign, capture-bar rethink, Present readability. The
-accent token was also de-conflicted (was identical to `type.todo` cyan → now a
-scheme-aware neutral; capture bar wears the ideas/amber code).
-
-**Home — Field Lab Polish, pass 2** order: appearance dark-default + drop system
-(small, unblocks the look) → settings screen + suppress header menu (where config
-lives) → Incoming tab (weekly resolved) → Stakes redesign → Detail redesign
-(largest). Section-title sketches remain the lowest-priority polish.
+- Smart reminders based on location / context

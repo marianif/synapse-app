@@ -1,19 +1,28 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { Alert, Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import Animated, {
+  Easing,
+  interpolate,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { entryColor, type Scheme, tokens, useTheme } from "@/constants/theme";
 import { useThemeContext } from "@/contexts/theme-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { clearAllData, getDb } from "@/lib/database";
 import { seedDevDataIfEmpty } from "@/lib/dev-seed";
-import type { ThemePreference } from "@/lib/settings";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const MENU_WIDTH = SCREEN_WIDTH * 0.75;
@@ -55,18 +64,7 @@ const quickActions: MenuItem[] = [
   },
 ];
 
-const THEME_OPTIONS: { value: ThemePreference; label: string; icon: string }[] =
-  [
-    { value: "system", label: "System", icon: "cellphone" },
-    { value: "light", label: "Light", icon: "weather-sunny" },
-    { value: "dark", label: "Dark", icon: "weather-night" },
-  ];
-
 const menuItems: MenuItem[] = [
-  { label: "Today", icon: "clock-outline", route: "/" },
-  { label: "Incoming", icon: "calendar-week", route: "/list" },
-  { label: "Calendar", icon: "calendar-month", route: "/calendar" },
-  { label: "Stats", icon: "chart-bar", route: "/stats", dividerAfter: true },
   { label: "Settings", icon: "cog-outline", route: "/settings" },
   { label: "About", icon: "information-outline" },
 ];
@@ -77,7 +75,7 @@ export function AppMenu({
 }: AppMenuProps): React.ReactElement | null {
   const router = useRouter();
   const { colors } = useTheme();
-  const { preference, setPreference } = useThemeContext();
+  const { resolvedScheme, setPreference } = useThemeContext();
   const { fetchEntries } = useDatabase();
   const translateX = useSharedValue(MENU_WIDTH);
 
@@ -162,7 +160,7 @@ export function AppMenu({
       <Animated.View style={[styles.blurContainer, animatedStyle]}>
         <View style={[styles.menu, { backgroundColor: colors.surfaceSubtle }]}>
           <View style={styles.header}>
-            <Text style={[styles.logo, { color: colors.ink }]}>Synapse</Text>
+            <Text style={[styles.logo, { color: colors.ink }]}>Settings</Text>
             <Pressable onPress={onClose} hitSlop={8}>
               <MaterialCommunityIcons
                 name="close"
@@ -170,6 +168,16 @@ export function AppMenu({
                 color={colors.inkMuted}
               />
             </Pressable>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
+              Appearance
+            </Text>
+            <ThemeToggle
+              scheme={resolvedScheme}
+              onChange={(next) => setPreference(next)}
+            />
           </View>
 
           <View style={styles.section}>
@@ -183,62 +191,6 @@ export function AppMenu({
                 onPress={() => handleItemPress(item)}
               />
             ))}
-          </View>
-
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
-              App
-            </Text>
-            {menuItems.slice(4).map((item) => (
-              <MenuRow
-                key={item.label}
-                item={item}
-                onPress={() => handleItemPress(item)}
-              />
-            ))}
-          </View>
-
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
-              Appearance
-            </Text>
-            <View
-              style={[
-                styles.segmented,
-                { backgroundColor: colors.surface },
-              ]}
-            >
-              {THEME_OPTIONS.map((opt) => {
-                const active = preference === opt.value;
-                return (
-                  <Pressable
-                    key={opt.value}
-                    onPress={() => setPreference(opt.value)}
-                    style={[
-                      styles.segment,
-                      active && { backgroundColor: colors.accent.clay },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={`${opt.label} appearance`}
-                  >
-                    <MaterialCommunityIcons
-                      name={opt.icon as any}
-                      size={18}
-                      color={active ? colors.accent.onClay : colors.inkMuted}
-                    />
-                    <Text
-                      style={[
-                        styles.segmentLabel,
-                        { color: active ? colors.accent.onClay : colors.inkMuted },
-                      ]}
-                    >
-                      {opt.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
           </View>
 
           <View style={styles.footer}>
@@ -286,7 +238,10 @@ export function AppMenu({
                   color={entryColor("deadline")}
                 />
                 <Text
-                  style={[styles.devButtonLabel, { color: entryColor("deadline") }]}
+                  style={[
+                    styles.devButtonLabel,
+                    { color: entryColor("deadline") },
+                  ]}
                 >
                   Clear Database
                 </Text>
@@ -326,6 +281,85 @@ function MenuRow({
       <Text style={[styles.menuLabel, { color: colors.ink }]}>
         {item.label}
       </Text>
+    </Pressable>
+  );
+}
+
+// Track geometry, declared once so the component and styles agree on the math.
+const TOGGLE_PAD = 4;
+const TOGGLE_WELL = 40; // each glyph well — the knob matches this
+const TOGGLE_TRAVEL = TOGGLE_WELL; // knob slides exactly one well over
+
+/**
+ * Light/dark switch — one control, not two tabs. A clay knob slides between a
+ * sun well and a moon well; tapping anywhere flips to the opposite scheme. The
+ * slide IS the affordance: it reads as a physical switch, the glyph under the
+ * knob lit, the other dimmed. No labels, no system option.
+ */
+function ThemeToggle({
+  scheme,
+  onChange,
+}: {
+  scheme: Scheme;
+  onChange: (next: Scheme) => void;
+}): React.ReactElement {
+  const { colors } = useTheme();
+  const reduced = useReducedMotion();
+  const isDark = scheme === "dark";
+
+  // 0 = light (knob left), 1 = dark (knob right). Follows the resolved scheme.
+  const pos = useSharedValue(isDark ? 1 : 0);
+  useEffect(() => {
+    const next = isDark ? 1 : 0;
+    pos.value = reduced
+      ? next
+      : withTiming(next, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.bezier(...tokens.motion.bezier),
+        });
+  }, [isDark, pos, reduced]);
+
+  const knobStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: pos.value * TOGGLE_TRAVEL }],
+  }));
+  // Each glyph lights as the knob arrives over it, dims as it leaves.
+  const sunStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(pos.value, [0, 1], [1, 0.35]),
+  }));
+  const moonStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(pos.value, [0, 1], [0.35, 1]),
+  }));
+
+  return (
+    <Pressable
+      onPress={() => onChange(isDark ? "light" : "dark")}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: isDark }}
+      accessibilityLabel="Dark appearance"
+      hitSlop={8}
+      style={[styles.toggleTrack, { backgroundColor: colors.surface }]}
+    >
+      <Animated.View
+        style={[
+          styles.toggleKnob,
+          { backgroundColor: colors.accent.clay },
+          knobStyle,
+        ]}
+      />
+      <Animated.View style={[styles.toggleWell, sunStyle]}>
+        <MaterialCommunityIcons
+          name="weather-sunny"
+          size={20}
+          color={isDark ? colors.inkMuted : colors.accent.onClay}
+        />
+      </Animated.View>
+      <Animated.View style={[styles.toggleWell, moonStyle]}>
+        <MaterialCommunityIcons
+          name="weather-night"
+          size={20}
+          color={isDark ? colors.accent.onClay : colors.inkMuted}
+        />
+      </Animated.View>
     </Pressable>
   );
 }
@@ -374,24 +408,29 @@ const styles = StyleSheet.create({
     marginBottom: tokens.space.md,
     marginLeft: tokens.space.xs,
   },
-  segmented: {
+  // A self-contained switch: a pill track sized to exactly two wells + padding,
+  // so it never stretches edge-to-edge like a tab bar.
+  toggleTrack: {
+    alignSelf: "flex-start",
     flexDirection: "row",
-    borderRadius: tokens.radius.sm,
-    padding: tokens.space.xs,
-    gap: tokens.space.xs,
+    width: TOGGLE_WELL * 2 + TOGGLE_PAD * 2,
+    height: TOGGLE_WELL + TOGGLE_PAD * 2,
+    padding: TOGGLE_PAD,
+    borderRadius: tokens.radius.pill,
   },
-  segment: {
-    flex: 1,
-    flexDirection: "row",
+  toggleKnob: {
+    position: "absolute",
+    top: TOGGLE_PAD,
+    left: TOGGLE_PAD,
+    width: TOGGLE_WELL,
+    height: TOGGLE_WELL,
+    borderRadius: tokens.radius.pill,
+  },
+  toggleWell: {
+    width: TOGGLE_WELL,
+    height: TOGGLE_WELL,
     alignItems: "center",
     justifyContent: "center",
-    gap: tokens.space.xs,
-    minHeight: 44,
-    borderRadius: tokens.radius.sm,
-  },
-  segmentLabel: {
-    fontSize: tokens.type.kicker.size,
-    fontWeight: "600",
   },
   quickActions: {
     flexDirection: "row",

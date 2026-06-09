@@ -1,17 +1,30 @@
-import dayjs from "dayjs";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 
-import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { LinkSheet, type LinkableIdea } from "@/components/organisms/link-sheet";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import {
+  LinkSheet,
+  type LinkableIdea,
+} from "@/components/organisms/link-sheet";
 import { tokens, useTheme } from "@/constants/theme";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
-// Ink/icon color that sits ON the amber send key — a fixed cool-near-black that
-// clears AA on amber in BOTH schemes (matches the home capture bar's ON_AMBER).
-const ON_AMBER = tokens.color.dark.paper;
+const WAVEFORM_BARS = 9;
+
+// Ink/icon color that sits ON the saturated send key + the full-bleed recording
+// state — a fixed cool-near-black that clears AA on the butter/someday code in
+// BOTH schemes (matches the home capture bar's ON_AMBER pairing).
+const ON_CODE = tokens.color.dark.paper;
 
 interface DiaryComposerProps {
   /** Ideas this note can be related to (newest-first). */
@@ -21,11 +34,16 @@ interface DiaryComposerProps {
 }
 
 /**
- * The always-present "what happened today" line. Owns its own draft, idea-link,
- * and voice-capture state so the diary screen only has to wire persistence —
- * drop it anywhere a quick reflective note is wanted. Caveat body so it reads
- * like a thing you scrawled, not a form field. A note is either related to an
- * idea (the diary's organizing gesture) or free.
+ * The diary's command line — the bottom-pinned twin of the home CaptureBar,
+ * wearing the diary's butter/someday code instead of ideas/amber. At rest it's a
+ * single quiet line you FILL: a someday edge-bar (the diary channel), an inline
+ * TextInput, and one trailing affordance — a mic when empty, a charged send key
+ * once there's text. Engaging the line reveals the diary's one distinguishing
+ * gesture, RELATE (file the note onto an idea), as a leading inline chip. Voice
+ * capture goes full butter-bleed with a waveform, exactly as the CaptureBar goes
+ * full amber — the color shift IS the "listening" signal. Owns its own draft,
+ * link, and dictation state so the screen only wires persistence. A note is
+ * either related to an idea or free.
  */
 export function DiaryComposer({
   ideas,
@@ -34,7 +52,6 @@ export function DiaryComposer({
   const { colors } = useTheme();
 
   const [draft, setDraft] = useState("");
-  const [linkedId, setLinkedId] = useState<string | null>(null);
   const [linkSheetOpen, setLinkSheetOpen] = useState(false);
 
   // Voice capture appends into the draft. We snapshot whatever was already typed
@@ -59,143 +76,160 @@ export function DiaryComposer({
   }, [isRecording, transcript, draft]);
 
   const canSave = draft.trim().length > 0;
-  const linkedIdea = linkedId
-    ? ideas.find((i) => i.id === linkedId) ?? null
-    : null;
 
-  const commit = async (entryId: string | null): Promise<void> => {
+  const clear = (): void => {
+    setDraft("");
+  };
+
+  // Send doesn't commit directly — it opens the link sheet so filing the note
+  // (onto an idea, or free) IS the send. One action in the bar; the destination
+  // is the last choice. The sheet's selection is the commit path (handleLink).
+  const handleSend = (): void => {
+    if (!canSave) return;
+    setLinkSheetOpen(true);
+  };
+
+  // Picking in the sheet commits: an idea id files the note onto it, null files
+  // it free. Either way the note sends and the bar clears.
+  const handleLink = async (entryId: string | null): Promise<void> => {
+    setLinkSheetOpen(false);
     await onSave(draft, entryId);
     setDraft("");
-    setLinkedId(null);
   };
 
-  const handleSave = async (): Promise<void> => {
-    if (!canSave) return;
-    // If the linked idea vanished (deleted while composing), file it as free.
-    await commit(linkedIdea ? linkedIdea.id : null);
-  };
+  // Recording is the one full-bleed moment — the whole bar goes butter, mirroring
+  // the CaptureBar's full-amber listening state. The color shift IS the signal.
+  if (isRecording) {
+    return (
+      <View
+        style={[
+          styles.bar,
+          styles.recording,
+          { backgroundColor: colors.type.ideas },
+          tokens.elevation.capture,
+        ]}
+      >
+        <View style={styles.center}>
+          {transcript ? (
+            <ThemedText
+              type="item"
+              numberOfLines={1}
+              style={[styles.transcript, { color: ON_CODE }]}
+            >
+              {transcript}
+            </ThemedText>
+          ) : (
+            <Waveform tint={ON_CODE} />
+          )}
+        </View>
 
-  // Relating a note IS a commit: picking an idea publishes immediately when
-  // there's something written — one decisive action, no redundant KEEP. With an
-  // empty draft we can't save, so picking only stages the link until the writer
-  // types and hits send.
-  const handleLink = (entryId: string | null): void => {
-    if (entryId !== null && canSave) {
-      void commit(entryId);
-      return;
-    }
-    setLinkedId(entryId);
-  };
+        <Pressable
+          onPress={toggleRecording}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Stop recording"
+          style={styles.iconBtn}
+        >
+          <MaterialCommunityIcons name="check" size={24} color={ON_CODE} />
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <>
-      <View style={[styles.composer, { backgroundColor: colors.surface }]}>
-        <View
-          style={[styles.composerEdge, { backgroundColor: colors.type.someday }]}
-        />
-        <View style={styles.composerBody}>
-          <ThemedText type="label" style={{ color: colors.inkMuted }}>
-            {dayjs().format("dddd, MMM D").toUpperCase()}
-          </ThemedText>
-          <TextInput
-            value={draft}
-            onChangeText={setDraft}
-            placeholder="What happened today…"
-            placeholderTextColor={colors.inkMuted}
-            multiline
-            style={[
-              styles.input,
-              { color: colors.ink, fontFamily: tokens.type.fontHand.medium },
+      <View
+        style={[
+          styles.bar,
+          styles.idle,
+          { backgroundColor: colors.surface },
+          tokens.elevation.capture,
+        ]}
+      >
+        <View style={[styles.edge, { backgroundColor: colors.type.ideas }]} />
+
+        {/* Clear — appears only with content. A leading x wipes the draft so the
+            writer can abandon a line without backspacing it out. */}
+        {canSave ? (
+          <Pressable
+            onPress={clear}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Clear note"
+            style={({ pressed }) => [
+              styles.clearBtn,
+              pressed && styles.pressed,
             ]}
-          />
+          >
+            <MaterialCommunityIcons
+              name="close"
+              size={18}
+              color={colors.inkMuted}
+            />
+          </Pressable>
+        ) : null}
 
-          <View style={styles.toolRow}>
-            {/* Link trigger — opens the link sheet. Shows the related idea's
-                title + amber tint when linked, a neutral "relate" prompt when
-                free. This is the diary's organizing gesture (it replaced mood). */}
-            <Pressable
-              onPress={() => setLinkSheetOpen(true)}
-              hitSlop={6}
-              style={[
-                styles.toolButton,
-                { backgroundColor: colors.surfaceSubtle },
-                linkedIdea ? { backgroundColor: colors.type.ideas + "24" } : null,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={
-                linkedIdea ? `Related to idea: ${linkedIdea.title}` : "Relate to an idea"
-              }
-            >
-              <SketchIcon
-                type="idea"
-                size={18}
-                color={linkedIdea ? colors.type.ideas : colors.inkMuted}
-              />
-              <ThemedText
-                type="micro"
-                numberOfLines={1}
-                style={[
-                  styles.linkLabel,
-                  { color: linkedIdea ? colors.ink : colors.inkMuted },
-                ]}
-              >
-                {linkedIdea ? linkedIdea.title.toUpperCase() : "RELATE"}
-              </ThemedText>
-            </Pressable>
+        {/* The line you FILL. Single-line at rest; grows up to a few lines as you
+            write, but never back to a slab. */}
+        <TextInput
+          value={draft}
+          onChangeText={setDraft}
+          placeholder="Write a note, capture a thought..."
+          placeholderTextColor={colors.inkMuted}
+          selectionColor={colors.type.ideas}
+          multiline
+          accessibilityLabel="Write a diary note"
+          style={[
+            styles.input,
+            { color: colors.ink, fontFamily: tokens.type.fontHand.medium },
+          ]}
+        />
 
-            {/* Voice capture — dictation streams into the draft above. */}
-            <Pressable
-              onPress={toggleRecording}
-              hitSlop={6}
-              style={[
-                styles.micButton,
-                { backgroundColor: colors.surfaceSubtle },
-                isRecording && { backgroundColor: colors.feedback.danger + "24" },
-              ]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isRecording }}
-              accessibilityLabel={isRecording ? "Stop recording" : "Record a note"}
-            >
-              <IconSymbol
-                name={isRecording ? "stop" : "microphone"}
-                size={20}
-                color={isRecording ? colors.feedback.danger : colors.inkMuted}
-              />
-            </Pressable>
+        {/* Trailing cluster — mic and send are both always present (no longer
+            alternatives). Mic arms voice anytime; send appears charged beside it
+            once there's text and opens the link sheet (choosing there files the
+            note, so linking and sending are one gesture). */}
+        <View style={styles.controls}>
+          <Pressable
+            onPress={toggleRecording}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Record a note"
+            style={({ pressed }) => [styles.micBtn, pressed && styles.pressed]}
+          >
+            <MaterialCommunityIcons
+              name="microphone"
+              size={22}
+              color={colors.inkMuted}
+            />
+          </Pressable>
 
-            {/* Send key — the manual commit. A round affordance matching the mic:
-                recessed + muted when idle, charged amber (with the dark arrow)
-                once there's text, echoing the home capture bar's send key. The
-                tool row stays calm until the note is ready to keep. */}
-            <Pressable
-              onPress={handleSave}
-              disabled={!canSave}
-              hitSlop={10}
-              style={[
-                styles.sendKey,
-                {
-                  backgroundColor: canSave
-                    ? colors.type.ideas
-                    : colors.surfaceSubtle,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: !canSave }}
-              accessibilityLabel="Keep this note"
-            >
-              <IconSymbol
-                name="send"
-                size={20}
-                color={canSave ? ON_AMBER : colors.inkMuted}
-              />
-            </Pressable>
-          </View>
+          <Pressable
+            disabled={!canSave}
+            onPress={handleSend}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Send note"
+            accessibilityHint="Opens a sheet to file this note onto an idea, or as a free note."
+            style={({ pressed }) => [
+              styles.sendBtn,
+              { backgroundColor: colors.accent.clay },
+              pressed && styles.pressed,
+              !canSave && styles.disabled,
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="arrow-up"
+              size={22}
+              color={colors.surface}
+            />
+          </Pressable>
         </View>
       </View>
 
       <LinkSheet
         visible={linkSheetOpen}
-        selected={linkedId}
+        selected={null}
         ideas={ideas}
         onSelect={handleLink}
         onClose={() => setLinkSheetOpen(false)}
@@ -204,57 +238,148 @@ export function DiaryComposer({
   );
 }
 
+function Waveform({ tint }: { tint: string }): React.ReactElement {
+  return (
+    <View style={styles.waveform}>
+      {Array.from({ length: WAVEFORM_BARS }).map((_, i) => (
+        <WaveformBar key={i} index={i} tint={tint} />
+      ))}
+    </View>
+  );
+}
+
+function WaveformBar({
+  index,
+  tint,
+}: {
+  index: number;
+  tint: string;
+}): React.ReactElement {
+  const h = useSharedValue(6);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    if (reduced) {
+      h.value = 14;
+      return;
+    }
+    // deterministic per-bar phase (no Math.random in render path)
+    const a = 10 + (index % 4) * 4;
+    const b = 6 + (index % 3) * 3;
+    h.value = withRepeat(
+      withSequence(
+        withTiming(20, { duration: 300 + a * 12 }),
+        withTiming(b, { duration: 220 + b * 10 }),
+        withTiming(16, { duration: 260 }),
+        withTiming(6, { duration: 200, easing: Easing.out(Easing.quad) }),
+      ),
+      -1,
+      false,
+    );
+  }, [h, index, reduced]);
+
+  const style = useAnimatedStyle(() => ({ height: h.value }));
+
+  return (
+    <Animated.View
+      style={[styles.waveformBar, { backgroundColor: tint }, style]}
+    />
+  );
+}
+
 const styles = StyleSheet.create({
-  composer: {
+  bar: {
     flexDirection: "row",
+    alignItems: "center",
+    minHeight: 56,
     borderRadius: tokens.radius.md,
     overflow: "hidden",
   },
-  composerEdge: {
-    width: 3,
-  },
-  composerBody: {
-    flex: 1,
-    padding: tokens.space.lg,
-    gap: tokens.space.md,
-  },
-  input: {
-    fontSize: 22,
-    lineHeight: 28,
-    minHeight: 56,
-    paddingTop: tokens.space.xs,
-    textAlignVertical: "top",
-  },
-  toolRow: {
-    flexDirection: "row",
-    alignItems: "center",
+  // Idle: a command line — left edge-bar, prompt, trailing control cluster.
+  idle: {
+    paddingLeft: tokens.space.lg,
+    paddingRight: tokens.space.xs,
     gap: tokens.space.sm,
   },
-  toolButton: {
+  // Trailing cluster: mic + send grouped, both always rendered (send conditional
+  // on content), so they read as a control set rather than a swapping affordance.
+  controls: {
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.xs,
-    minHeight: 40,
-    maxWidth: 200,
-    paddingHorizontal: tokens.space.md,
-    borderRadius: tokens.radius.pill,
   },
-  linkLabel: {
-    flexShrink: 1,
+  // Recording: the one full-bleed moment — waveform/transcript + inline keep.
+  recording: {
+    gap: tokens.space.md,
+    paddingHorizontal: tokens.space.lg,
   },
-  micButton: {
-    width: 40,
-    height: 40,
+  edge: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+  },
+  // Clear key: a quiet leading x — recessed, smaller than the trailing key, so
+  // it reads as "undo this line" without competing with send.
+  clearBtn: {
+    width: 32,
+    height: 32,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: tokens.radius.pill,
   },
-  sendKey: {
-    marginLeft: "auto",
+  input: {
+    flex: 1,
+    paddingVertical: tokens.space.sm,
+    fontSize: 18,
+    lineHeight: 24,
+    maxHeight: 96,
+    textAlignVertical: "center",
+  },
+  micBtn: {
     width: 44,
     height: 44,
     alignItems: "center",
     justifyContent: "center",
+  },
+  // Send key: the one moment the code appears charged in the idle bar — a tight
+  // 36pt key (hitSlop carries it to 44pt), echoing the CaptureBar's enter key.
+  sendBtn: {
+    width: 36,
+    height: 36,
     borderRadius: tokens.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pressed: {
+    opacity: 0.6,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  transcript: {
+    alignSelf: "stretch",
+  },
+  iconBtn: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  waveform: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 24,
+    gap: 4,
+  },
+  waveformBar: {
+    width: 3,
+    borderRadius: 2,
   },
 });

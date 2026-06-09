@@ -12,12 +12,14 @@ import {
 
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
-import {
-  FieldConsole,
-  type FieldConsoleVariant,
-} from "@/components/organisms/field-console";
+import { OrbitConsole } from "@/components/organisms/field-console/orbit-console";
 import { PresentZone } from "@/components/organisms/present/present-zone";
 import { StakesRunway } from "@/components/organisms/stakes-runway";
+
+import {
+  FieldGreeting,
+  greetingFor,
+} from "@/components/molecules/field-greeting";
 
 import {
   CaptureResolver,
@@ -41,14 +43,6 @@ import type { DbEntry, EntryType } from "@/lib/types";
 dayjs.extend(customParseFormat);
 
 const TODAY_START = () => dayjs().startOf("day");
-
-/** Time-of-day greeting — shared by the populated briefing and the empty console. */
-function greetingFor(hour: number): string {
-  if (hour < 5) return "Still up.";
-  if (hour < 12) return "Good morning.";
-  if (hour < 18) return "Good afternoon.";
-  return "Good evening.";
-}
 
 /** Days from today until an entry's date; null if undated. Negative = overdue. */
 function daysUntil(dateStr: string | null): number | null {
@@ -397,10 +391,13 @@ export default function HomeScreen(): React.ReactElement {
     doneStakes.length === 0 &&
     presentItems.length === 0;
 
-  // Temporary A/B switch for the empty-field design — flip between the two
-  // metaphors live to pick one. Remove once the variant is chosen.
-  const [emptyVariant, setEmptyVariant] =
-    useState<FieldConsoleVariant>("constellation");
+  // Which orbit channel the companion is reading aloud, lifted here so the
+  // greeting molecule and the orbit ring — now siblings — share one focus.
+  // Tapping a populated dot focuses it; re-tapping the same one clears it.
+  const [focusedType, setFocusedType] = useState<EntryType | null>(null);
+  const handleToggleFocus = useCallback((type: EntryType) => {
+    setFocusedType((cur) => (cur === type ? null : type));
+  }, []);
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
@@ -409,11 +406,17 @@ export default function HomeScreen(): React.ReactElement {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <FieldConsole
+        <FieldGreeting
           greeting={greetingFor(today.getHours())}
-          variant="orbit"
           stakes={stakes}
           present={present}
+          focusedType={focusedType}
+        />
+        <OrbitConsole
+          stakes={stakes}
+          present={present}
+          focusedType={focusedType}
+          onToggleFocus={handleToggleFocus}
         />
         {fieldIsEmpty && <FieldLegend />}
 
@@ -501,17 +504,6 @@ const styles = StyleSheet.create({
   },
   captureSpacer: {
     height: 72,
-  },
-  // Temporary empty-state A/B switch — remove with the chosen variant.
-  variantToggle: {
-    flexDirection: "row",
-    gap: tokens.space.xs,
-    alignSelf: "flex-end",
-  },
-  variantChip: {
-    paddingHorizontal: tokens.space.md,
-    paddingVertical: tokens.space.xs,
-    borderRadius: tokens.radius.pill,
   },
   captureDock: {
     position: "absolute",

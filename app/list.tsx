@@ -4,11 +4,12 @@ import {
   useLocalSearchParams,
   useRouter,
 } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { EmptyState } from "@/components/molecules/empty-state";
+import { ListFilterBar } from "@/components/molecules/list-filter-bar";
 import { ListItem } from "@/components/molecules/list-item";
 import { WrapupCard } from "@/components/molecules/wrapup-card";
 import { Fab } from "@/components/organisms/fab";
@@ -24,6 +25,10 @@ import { isSameDay, parseDate } from "@/lib/date-utils";
 import { isRecurringEntry } from "@/lib/recurrence";
 
 import type { ItemStatus } from "@/components/molecules/list-item";
+import type {
+  ListStatusFilter,
+  ListTypeFilter,
+} from "@/components/molecules/list-filter-bar";
 import type { DbEntry, EntryType } from "@/lib/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -108,17 +113,38 @@ const INCOMING_TYPES: ReadonlySet<EntryType> = new Set([
   "todo",
 ]);
 
+/** True when an entry is finished (completed task/event or a met deadline). */
+function isDoneEntry(e: DbEntry): boolean {
+  return e.status === "completed" || e.status === "met";
+}
+
 /**
  * "Incoming" sections — the temporal types together (deadlines, events, todos),
  * bucketed by whichever date the entry carries (scheduled or due), sorted
  * soonest-first. Untimed lanes (someday / idea) are deliberately excluded:
  * Incoming is the time-driven view, reached from the header tray.
+ *
+ * Two optional lenses narrow it: `typeFilter` (one temporal type, or all) and
+ * `statusFilter` (live / done / all). They compose, so "live deadlines" is one
+ * focused view.
  */
-function buildIncomingSections(entries: DbEntry[]): Section[] {
+function buildIncomingSections(
+  entries: DbEntry[],
+  typeFilter: ListTypeFilter,
+  statusFilter: ListStatusFilter,
+): Section[] {
   const now = new Date();
 
   const dated = entries
     .filter((e) => INCOMING_TYPES.has(e.type))
+    .filter((e) => typeFilter === "all" || e.type === typeFilter)
+    .filter((e) =>
+      statusFilter === "all"
+        ? true
+        : statusFilter === "done"
+          ? isDoneEntry(e)
+          : !isDoneEntry(e),
+    )
     .map((e) => ({ e, date: parseDate(e.scheduled_date ?? e.due_date) }))
     .filter((x): x is { e: DbEntry; date: Date } => x.date !== null)
     .sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -230,6 +256,11 @@ export default function ListScreen(): React.ReactElement {
   const { entries, updateEntryStatus, deleteEntry, fetchEntries } =
     useDatabase();
 
+  // Incoming's persistent lenses. Session-local (resets on app restart) — a
+  // glanceable view, not a saved preference. Only the Incoming lane shows these.
+  const [typeFilter, setTypeFilter] = useState<ListTypeFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<ListStatusFilter>("all");
+
   useFocusEffect(
     useCallback(() => {
       // Incoming fetches every type; a lane fetches just its own.
@@ -244,7 +275,7 @@ export default function ListScreen(): React.ReactElement {
   );
 
   const sections: Section[] = isIncoming
-    ? buildIncomingSections(entries)
+    ? buildIncomingSections(entries, typeFilter, statusFilter)
     : isSomedayLane
       ? somedayEntries.length > 0
         ? [
@@ -293,29 +324,53 @@ export default function ListScreen(): React.ReactElement {
 
   // ── Empty state config ────────────────────────────────────────────────────────
 
-  const emptyTitle = isIncoming
-    ? "Nothing incoming"
-    : resolvedType === "deadline"
-      ? "No deadlines tracked"
-      : isSomedayLane
-        ? "Your ideas list is empty"
-        : "No todos yet";
+  // In Incoming, distinguish "no scheduled entries at all" from "the active
+  // filter hides them" — the copy and CTA differ, and a filtered-empty view must
+  // keep the filter bar so the user can widen the lens back out.
+  const hasAnyIncoming = isIncoming
+    ? entries.some((e) => INCOMING_TYPES.has(e.type) && parseDate(e.scheduled_date ?? e.due_date) !== null)
+    : false;
+  const isFilteredEmpty =
+    isIncoming && sections.length === 0 && hasAnyIncoming;
 
-  const emptyDescription = isIncoming
-    ? "Anything you schedule will land here, soonest first."
-    : resolvedType === "deadline"
-      ? "Add a deadline to stay ahead of critical dates."
-      : isSomedayLane
-        ? "Capture things you want to explore someday."
-        : "Add todos to build your weekly focus.";
+  const emptyTitle = isFilteredEmpty
+    ? "Nothing matches"
+    : isIncoming
+      ? "Nothing incoming"
+      : resolvedType === "deadline"
+        ? "No deadlines tracked"
+        : isSomedayLane
+          ? "Your ideas list is empty"
+          : "No todos yet";
 
-  const emptyCtaLabel = isIncoming
-    ? "+ Capture"
-    : resolvedType === "deadline"
-      ? "+ Add Deadline"
-      : isSomedayLane
-        ? "+ Capture Idea"
-        : "+ Add Todo";
+  const emptyDescription = isFilteredEmpty
+    ? "No entries fit this filter. Widen the lens above."
+    : isIncoming
+      ? "Anything you schedule will land here, soonest first."
+      : resolvedType === "deadline"
+        ? "Add a deadline to stay ahead of critical dates."
+        : isSomedayLane
+          ? "Capture things you want to explore someday."
+          : "Add todos to build your weekly focus.";
+
+  const emptyCtaLabel = isFilteredEmpty
+    ? "Clear filters"
+    : isIncoming
+      ? "+ Capture"
+      : resolvedType === "deadline"
+        ? "+ Add Deadline"
+        : isSomedayLane
+          ? "+ Capture Idea"
+          : "+ Add Todo";
+
+  function handleEmptyCta(): void {
+    if (isFilteredEmpty) {
+      setTypeFilter("all");
+      setStatusFilter("all");
+    } else {
+      router.push("/modal");
+    }
+  }
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
@@ -363,6 +418,17 @@ export default function ListScreen(): React.ReactElement {
             </View>
           ) : null}
 
+          {/* Incoming's persistent filter — only when there's something to narrow.
+              Stays visible in the filtered-empty state so the lens can reopen. */}
+          {isIncoming && hasAnyIncoming ? (
+            <ListFilterBar
+              type={typeFilter}
+              onType={setTypeFilter}
+              status={statusFilter}
+              onStatus={setStatusFilter}
+            />
+          ) : null}
+
           {/* Empty state — full-screen when no entries */}
           {sections.length === 0 ? (
             <View style={styles.emptyWrapper}>
@@ -370,7 +436,7 @@ export default function ListScreen(): React.ReactElement {
                 title={emptyTitle}
                 description={emptyDescription}
                 ctaLabel={emptyCtaLabel}
-                onCta={() => router.push("/modal")}
+                onCta={handleEmptyCta}
                 accentColor={accentColor}
               />
             </View>

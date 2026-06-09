@@ -5,6 +5,7 @@ import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { tokens, useTheme } from "@/constants/theme";
+import { ConfirmKey } from "@/lib/settings";
 
 import type { DbDiaryEntry } from "@/lib/types";
 
@@ -33,7 +34,12 @@ export function DiaryNote({
   const { colors } = useTheme();
 
   return (
-    <SwipeableRow onDelete={onDelete}>
+    <SwipeableRow
+      onDelete={onDelete}
+      confirmKey={ConfirmKey.deleteNote}
+      confirmKicker="DELETE NOTE"
+      confirmMessage="This note is just for you — deleting it can't be undone."
+    >
       <View style={[styles.note, { backgroundColor: colors.surface }]}>
         <View style={styles.noteMeta}>
           <ThemedText type="mono" style={{ color: colors.inkMuted }}>
@@ -64,7 +70,7 @@ export function DiaryNote({
                 style={[styles.freeDot, { borderColor: colors.inkMuted }]}
               />
               <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-                FREE
+                Unlinked
               </ThemedText>
             </View>
           )}

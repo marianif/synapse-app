@@ -2,32 +2,46 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CountdownChip } from "@/components/atoms/countdown-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DetailActionBar } from "@/components/molecules/detail-action-bar";
 import { DetailReadout } from "@/components/molecules/detail-readout";
 import { EmptyState } from "@/components/molecules/empty-state";
+import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
 import { RelatedNotes } from "@/components/molecules/related-notes";
 import { SignalRail } from "@/components/molecules/signal-rail";
+import { WhenPicker } from "@/components/molecules/when-picker";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import type { ThemeColors } from "@/constants/theme";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
+import { ConfirmKey } from "@/lib/settings";
 import {
   getEffectiveStatus,
   humanizeRule,
   isRecurringEntry,
+  parseRule,
 } from "@/lib/recurrence";
-import type { DbRecurrenceCompletion } from "@/lib/types";
+import type {
+  DbEntry,
+  DbRecurrenceCompletion,
+  RecurrenceFrequency,
+  RecurrenceRule,
+} from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { PrimaryAction } from "@/components/molecules/detail-action-bar";
@@ -76,6 +90,42 @@ function readoutDate(dateStr: string): string {
   return `${dd} ${MONTH_ABBRS[mm - 1]} ${yyyy}`;
 }
 
+// ─── Inline-edit draft ────────────────────────────────────────────────────────
+
+/**
+ * The editable shape of an entry while in inline-edit mode. Date/time map to
+ * whichever pair the type uses (scheduled for tasks/events, due for deadlines);
+ * the screen reconciles that on save. Type is intentionally NOT editable here —
+ * changing an entry's type is a creation-level decision, kept in /modal.
+ */
+interface EditDraft {
+  title: string;
+  date: string;
+  time: string;
+  notes: string;
+  recurrenceFreq: RecurrenceFrequency | null;
+  recurrenceDays: number[];
+  recurrenceEndDate: string;
+}
+
+function draftFromEntry(entry: DbEntry): EditDraft {
+  const isDeadline = entry.type === "deadline";
+  // recurrence_rule is stored as serialized JSON; parseRule tolerates null.
+  const rule =
+    typeof entry.recurrence_rule === "string"
+      ? parseRule(entry.recurrence_rule)
+      : (entry.recurrence_rule as RecurrenceRule | null);
+  return {
+    title: entry.title,
+    date: (isDeadline ? entry.due_date : entry.scheduled_date) ?? "",
+    time: (isDeadline ? entry.due_time : entry.scheduled_time) ?? "",
+    notes: entry.notes ?? "",
+    recurrenceFreq: rule?.freq ?? null,
+    recurrenceDays: rule?.days ?? [],
+    recurrenceEndDate: entry.recurrence_end_date ?? "",
+  };
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<string, string> = {
@@ -97,56 +147,6 @@ function getStatusColor(
   if (status === "overdue") return tokens.feedback.danger;
   if (status === "active") return accentColor;
   return inkMuted;
-}
-
-// ─── Delete confirm sheet (non-recurring) ─────────────────────────────────────
-
-function DeleteConfirmSheet({
-  visible,
-  onClose,
-  onConfirm,
-  colors,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  colors: ThemeColors;
-}): React.ReactElement {
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <Pressable style={styles.sheetOverlay} onPress={onClose}>
-        <View style={[styles.sheet, { backgroundColor: colors.surface }]}>
-          <ThemedText
-            type="label"
-            style={[styles.sheetTitle, { color: colors.inkMuted }]}
-          >
-            DELETE ENTRY
-          </ThemedText>
-          <Pressable style={styles.sheetOption} onPress={onConfirm}>
-            <ThemedText type="body" style={{ color: tokens.feedback.danger }}>
-              Delete
-            </ThemedText>
-          </Pressable>
-          <View
-            style={[
-              styles.sheetDivider,
-              { backgroundColor: colors.surfaceSubtle },
-            ]}
-          />
-          <Pressable style={styles.sheetOption} onPress={onClose}>
-            <ThemedText type="bodyBold" muted>
-              Cancel
-            </ThemedText>
-          </Pressable>
-        </View>
-      </Pressable>
-    </Modal>
-  );
 }
 
 // ─── Delete scope sheet (recurring) ───────────────────────────────────────────
@@ -232,7 +232,13 @@ export default function DetailScreen(): React.ReactElement {
   }>();
 
   const [deleteSheetVisible, setDeleteSheetVisible] = useState(false);
-  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteEntry });
+
+  // Inline edit mode — the detail screen is a view↔edit surface; /modal is now
+  // creation-only. `draft` holds the in-flight edits; null means "viewing".
+  const [draft, setDraft] = useState<EditDraft | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const editing = draft !== null;
 
   // Composite ID support: "masterId::instanceDate" for recurring instances
   const isRecurringInstance = rawId?.includes("::") ?? false;
@@ -256,6 +262,7 @@ export default function DetailScreen(): React.ReactElement {
     skipRecurringInstance,
     deleteRecurringFuture,
     deleteRecurringSeries,
+    updateEntry,
     fetchEntries,
   } = useDatabase();
 
@@ -342,24 +349,6 @@ export default function DetailScreen(): React.ReactElement {
 
   // ── Action bar ───────────────────────────────────────────────────────────────
 
-  function buildEditParams(): string {
-    if (!entry) return "";
-    const params = new URLSearchParams();
-    params.set("entryId", entry.id);
-    params.set("type", entry.type);
-    params.set("title", entry.title);
-    if (entry.scheduled_date) params.set("date", entry.scheduled_date);
-    if (entry.scheduled_time) params.set("time", entry.scheduled_time);
-    if (entry.due_date) params.set("date", entry.due_date);
-    if (entry.due_time) params.set("time", entry.due_time);
-    if (entry.notes) params.set("notes", entry.notes);
-    if (entry.recurrence_rule)
-      params.set("recurrence", JSON.stringify(entry.recurrence_rule));
-    if (entry.recurrence_end_date)
-      params.set("recurrenceEndDate", entry.recurrence_end_date);
-    return params.toString();
-  }
-
   async function handleComplete(): Promise<void> {
     if (!entry) return;
     if (isRecurringInstance && instanceDate) {
@@ -399,15 +388,12 @@ export default function DetailScreen(): React.ReactElement {
     if (isRecurringInstance) {
       setDeleteSheetVisible(true);
     } else {
-      setDeleteConfirmVisible(true);
+      // Branded confirm (or immediate delete, if the user opted out of the prompt).
+      const targetId = entry.id;
+      void deleteConfirm.request(() => {
+        void deleteEntry(targetId).then(() => router.back());
+      });
     }
-  }
-
-  async function handleDeleteConfirmed(): Promise<void> {
-    if (!entry) return;
-    setDeleteConfirmVisible(false);
-    await deleteEntry(entry.id);
-    router.back();
   }
 
   async function handleDeleteThis(): Promise<void> {
@@ -434,10 +420,61 @@ export default function DetailScreen(): React.ReactElement {
   const isCompleted = effectiveStatus === "completed";
   const isMet = effectiveStatus === "met";
 
-  const handleEdit = (): void => {
-    const qs = buildEditParams();
-    if (qs) router.push(`/modal?${qs}`);
-  };
+  // ── Inline edit ──────────────────────────────────────────────────────────────
+  // Editing happens in place on this screen now — no /modal round-trip. Entering
+  // edit mode seeds the draft from the live entry; Save patches it back through
+  // updateEntry; Cancel discards. /modal stays for creation only.
+
+  function handleEdit(): void {
+    if (!entry) return;
+    setDraft(draftFromEntry(entry));
+  }
+
+  function patchDraft(patch: Partial<EditDraft>): void {
+    setDraft((d) => (d ? { ...d, ...patch } : d));
+  }
+
+  function handleCancelEdit(): void {
+    setDraft(null);
+  }
+
+  async function handleSaveEdit(): Promise<void> {
+    if (!entry || !draft || isSaving) return;
+    const trimmedTitle = draft.title.trim();
+    if (!trimmedTitle) return;
+
+    setIsSaving(true);
+    try {
+      const isDeadlineType = entry.type === "deadline";
+      const recurrenceRule: RecurrenceRule | null = draft.recurrenceFreq
+        ? {
+            freq: draft.recurrenceFreq,
+            days:
+              draft.recurrenceFreq === "weekly"
+                ? draft.recurrenceDays
+                : undefined,
+          }
+        : null;
+
+      await updateEntry(entry.id, {
+        title: trimmedTitle,
+        scheduledDate: isDeadlineType ? null : draft.date.trim() || null,
+        scheduledTime: isDeadlineType ? null : draft.time.trim() || null,
+        dueDate: isDeadlineType ? draft.date.trim() || null : null,
+        dueTime: isDeadlineType ? draft.time.trim() || null : null,
+        notes: draft.notes.trim() || null,
+        recurrenceRule,
+        recurrenceEndDate: draft.recurrenceEndDate.trim() || null,
+      });
+      setDraft(null);
+    } catch (error) {
+      console.error("[detail] save edit failed:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  const canSaveEdit = (draft?.title.trim().length ?? 0) > 0 && !isSaving;
 
   // someday / idea have no scheduled action, so they get NO primary — the bar
   // falls back to the quiet Edit / Delete pair. (The old "Promote" tile was a
@@ -510,24 +547,42 @@ export default function DetailScreen(): React.ReactElement {
       style={[styles.safeArea, { backgroundColor: colors.paper }]}
       edges={["top", "bottom"]}
     >
-      <View style={[styles.screen, { backgroundColor: colors.paper }]}>
+      <KeyboardAvoidingView
+        style={[styles.screen, { backgroundColor: colors.paper }]}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         {/* ── Header ───────────────────────────────────────────── */}
-        <ScreenHeader title="Detail" onBack={() => router.back()} />
+        <ScreenHeader title={editing ? "Edit" : "Detail"} onBack={() => router.back()} />
 
         {/* ── Scrollable content ──────────────────────────────── */}
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Signal rail: type-color edge-bar + kicker + title + readout */}
+          {/* Signal rail: type-color edge-bar + kicker + title + readout. In edit
+              mode the title slot becomes an inline input at the same scale. */}
           <SignalRail
             entryType={type}
             isRecurring={isRecurringEntry(entry)}
             title={title}
+            titleSlot={
+              editing ? (
+                <TextInput
+                  value={draft.title}
+                  onChangeText={(t) => patchDraft({ title: t })}
+                  placeholder="Title"
+                  placeholderTextColor={colors.inkMuted}
+                  style={[styles.titleInput, { color: colors.ink }]}
+                  multiline
+                  accessibilityLabel="Entry title"
+                />
+              ) : undefined
+            }
           >
             {/* Deadlines lead with the countdown, then the readout below it. */}
-            {isDeadline ? (
+            {!editing && isDeadline ? (
               <View style={styles.countdownSlot}>
                 <CountdownChip
                   daysRemaining={parseDaysRemaining(entry.due_date)}
@@ -536,14 +591,14 @@ export default function DetailScreen(): React.ReactElement {
               </View>
             ) : null}
 
-            {readoutLines.length > 0 ? (
+            {!editing && readoutLines.length > 0 ? (
               <View style={styles.railChild}>
                 <DetailReadout lines={readoutLines} />
               </View>
             ) : null}
 
             {/* Someday / idea inspiration — the one place a softer voice fits. */}
-            {isSomeday && entry.inspiration ? (
+            {!editing && isSomeday && entry.inspiration ? (
               <ThemedText
                 type="body"
                 style={[
@@ -557,47 +612,157 @@ export default function DetailScreen(): React.ReactElement {
             ) : null}
           </SignalRail>
 
-          {/* Notes — Tier 3: the one block you actually read, so it earns a real
-              break from the hero and its own air. */}
-          {notes ? (
-            <View
-              style={[
-                styles.notesBlock,
-                { backgroundColor: colors.surfaceSubtle },
-              ]}
-            >
-              <ThemedText
-                type="body"
-                style={[styles.notesText, { color: colors.ink }]}
-              >
-                {notes}
-              </ThemedText>
-            </View>
-          ) : null}
+          {editing ? (
+            <>
+              {/* When — only the scheduled types carry a date/time. */}
+              {!isSomeday ? (
+                <View style={styles.editBlock}>
+                  <WhenPicker
+                    date={draft.date}
+                    time={draft.time}
+                    onDateChange={(v) => patchDraft({ date: v })}
+                    onTimeChange={(v) => patchDraft({ time: v })}
+                    accentColor={accentColor}
+                    dateLabel={isDeadline ? "DUE DATE" : "DATE"}
+                  />
+                </View>
+              ) : null}
 
-          {/* Reflections filed ON this idea — the reverse of the diary link. */}
-          <RelatedNotes notes={relatedNotes} />
+              {/* Recurrence — todos only, mirroring the create form. */}
+              {type === "todo" ? (
+                <View style={styles.editBlock}>
+                  <RecurrencePicker
+                    frequency={draft.recurrenceFreq}
+                    days={draft.recurrenceDays}
+                    endDate={draft.recurrenceEndDate}
+                    accentColor={accentColor}
+                    onFrequencyChange={(freq) =>
+                      patchDraft({
+                        recurrenceFreq: freq,
+                        recurrenceDays: [],
+                        recurrenceEndDate: "",
+                      })
+                    }
+                    onDaysChange={(d) => patchDraft({ recurrenceDays: d })}
+                    onEndDateChange={(v) =>
+                      patchDraft({ recurrenceEndDate: v })
+                    }
+                  />
+                </View>
+              ) : null}
+
+              {/* Notes — inline editable textarea. */}
+              <View style={styles.editBlock}>
+                <ThemedText type="label" muted style={styles.editLabel}>
+                  NOTES
+                </ThemedText>
+                <TextInput
+                  value={draft.notes}
+                  onChangeText={(t) => patchDraft({ notes: t })}
+                  placeholder="Add any notes…"
+                  placeholderTextColor={colors.inkMuted}
+                  style={[
+                    styles.notesInput,
+                    { backgroundColor: colors.surface, color: colors.ink },
+                  ]}
+                  multiline
+                  textAlignVertical="top"
+                  accessibilityLabel="Entry notes"
+                />
+              </View>
+            </>
+          ) : (
+            <>
+              {/* Notes — Tier 3: the one block you actually read, so it earns a
+                  real break from the hero and its own air. */}
+              {notes ? (
+                <View
+                  style={[
+                    styles.notesBlock,
+                    { backgroundColor: colors.surfaceSubtle },
+                  ]}
+                >
+                  <ThemedText
+                    type="body"
+                    style={[styles.notesText, { color: colors.ink }]}
+                  >
+                    {notes}
+                  </ThemedText>
+                </View>
+              ) : null}
+
+              {/* Reflections filed ON this idea — the reverse of the diary link. */}
+              <RelatedNotes notes={relatedNotes} />
+            </>
+          )}
         </ScrollView>
 
-        {/* ── Action bar — pinned above safe area ─────────────── */}
+        {/* ── Action bar — pinned above safe area. View mode: the act surface;
+            edit mode: a Save / Cancel pair. ─────────────────────── */}
         <View
           style={[styles.actionBarWrapper, { backgroundColor: colors.paper }]}
         >
-          <DetailActionBar
-            primary={primary}
-            accentColor={accentColor}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          {editing ? (
+            <View style={styles.editBar}>
+              <Pressable
+                onPress={handleSaveEdit}
+                disabled={!canSaveEdit}
+                style={({ pressed }) => [
+                  styles.saveButton,
+                  {
+                    backgroundColor: canSaveEdit
+                      ? accentColor
+                      : colors.surfaceSubtle,
+                  },
+                  pressed && styles.pressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={isSaving ? "Saving" : "Save changes"}
+                accessibilityState={{ disabled: !canSaveEdit }}
+              >
+                <ThemedText
+                  type="bodyBold"
+                  style={{
+                    color: canSaveEdit ? colors.paper : colors.inkMuted,
+                  }}
+                >
+                  {isSaving ? "Saving…" : "Save"}
+                </ThemedText>
+              </Pressable>
+              <Pressable
+                onPress={handleCancelEdit}
+                style={({ pressed }) => [
+                  styles.cancelButton,
+                  pressed && styles.pressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel editing"
+              >
+                <ThemedText type="bodyBold" muted>
+                  Cancel
+                </ThemedText>
+              </Pressable>
+            </View>
+          ) : (
+            <DetailActionBar
+              primary={primary}
+              accentColor={accentColor}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          )}
         </View>
-      </View>
+      </KeyboardAvoidingView>
 
       {/* ── Delete confirm sheet (non-recurring) ────────────── */}
-      <DeleteConfirmSheet
-        visible={deleteConfirmVisible}
-        onClose={() => setDeleteConfirmVisible(false)}
-        onConfirm={handleDeleteConfirmed}
-        colors={colors}
+      <ConfirmSheet
+        visible={deleteConfirm.visible}
+        kicker="DELETE ENTRY"
+        message="This removes it from the field for good."
+        dontAsk={deleteConfirm.dontAsk}
+        onToggleDontAsk={deleteConfirm.toggleDontAsk}
+        onConfirm={deleteConfirm.confirm}
+        onCancel={deleteConfirm.cancel}
       />
 
       {/* ── Delete scope sheet (recurring only) ─────────────── */}
@@ -667,6 +832,52 @@ const styles = StyleSheet.create({
   },
   notesText: {
     lineHeight: 22,
+  },
+  // ── Inline edit ──────────────────────────────────────────────
+  // The title input sits at display scale in the rail's title slot, so the hero
+  // reads identically in view and edit — only the caret betrays the mode.
+  titleInput: {
+    marginTop: tokens.space.xs,
+    fontFamily: tokens.type.fontInter.bold,
+    fontSize: tokens.type.display.size,
+    lineHeight: tokens.type.display.lineHeight,
+    letterSpacing: tokens.type.display.tracking,
+    padding: 0,
+  },
+  editBlock: {
+    marginTop: tokens.space.xl,
+    gap: tokens.space.xs,
+  },
+  editLabel: {
+    letterSpacing: tokens.type.kicker.tracking,
+  },
+  notesInput: {
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.md,
+    fontSize: tokens.type.body.size,
+    lineHeight: 22,
+    minHeight: 100,
+  },
+  editBar: {
+    gap: tokens.space.sm,
+  },
+  saveButton: {
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.lg,
+    minHeight: 56,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButton: {
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.md,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pressed: {
+    opacity: 0.75,
   },
   // ── Action bar ───────────────────────────────────────────────
   actionBarWrapper: {

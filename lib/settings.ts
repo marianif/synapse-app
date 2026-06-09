@@ -34,3 +34,48 @@ export async function setThemePreference(
     console.error("[settings] setThemePreference failed:", error);
   }
 }
+
+// ─── Destructive-confirm preferences ────────────────────────────────────────
+//
+// Each destructive action that offers a "don't ask again" affordance gets its
+// own boolean key here. The stored value means "skip the confirm" — absence
+// (the default) means "always ask", so a fresh install is never surprised by a
+// silent delete. Add a new key + getter/setter pair per action; never gate the
+// confirm inline in a component.
+
+const CONFIRM_SKIP_PREFIX = "confirm_skip:";
+
+/**
+ * Returns whether the confirm prompt for `key` should be skipped (the user
+ * checked "don't ask again"). Defaults to `false` — always ask — on any error
+ * or missing value, so we never delete silently by accident.
+ */
+export async function getConfirmSkip(key: string): Promise<boolean> {
+  try {
+    const value = await AsyncStorage.getItem(CONFIRM_SKIP_PREFIX + key);
+    return value === "true";
+  } catch (error) {
+    console.error("[settings] getConfirmSkip failed:", error);
+    return false;
+  }
+}
+
+/** Persists whether the confirm prompt for `key` should be skipped. */
+export async function setConfirmSkip(
+  key: string,
+  skip: boolean,
+): Promise<void> {
+  try {
+    await AsyncStorage.setItem(CONFIRM_SKIP_PREFIX + key, String(skip));
+  } catch (error) {
+    console.error("[settings] setConfirmSkip failed:", error);
+  }
+}
+
+/** Stable keys for the confirm-skip preferences. One per destructive action. */
+export const ConfirmKey = {
+  deleteEntry: "delete_entry",
+  deleteNote: "delete_note",
+} as const;
+
+export type ConfirmKeyValue = (typeof ConfirmKey)[keyof typeof ConfirmKey];

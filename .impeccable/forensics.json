@@ -1,0 +1,3117 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-05-31T14:42:05.713Z",
+  "inventory": {
+    "colors": {
+      "rawCount": 38,
+      "clusters": [
+        {
+          "id": "color-cluster-1",
+          "leader": "#000000",
+          "memberCount": 1,
+          "totalUsage": 5,
+          "members": [
+            {
+              "hex": "#000000",
+              "usageCount": 5,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-2",
+          "leader": "#ffffff",
+          "memberCount": 2,
+          "totalUsage": 5,
+          "members": [
+            {
+              "hex": "#ffffff",
+              "usageCount": 4,
+              "deltaE": 0
+            },
+            {
+              "hex": "#eeeeee",
+              "usageCount": 1,
+              "deltaE": 3.5
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "color-cluster-7",
+          "leader": "#f4efe6",
+          "memberCount": 4,
+          "totalUsage": 4,
+          "members": [
+            {
+              "hex": "#f4efe6",
+              "usageCount": 1,
+              "deltaE": 0
+            },
+            {
+              "hex": "#fbf7f0",
+              "usageCount": 1,
+              "deltaE": 1.9
+            },
+            {
+              "hex": "#efe8db",
+              "usageCount": 1,
+              "deltaE": 2.3
+            },
+            {
+              "hex": "#f0eae0",
+              "usageCount": 1,
+              "deltaE": 1.2
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "color-cluster-3",
+          "leader": "#ff6b6b",
+          "memberCount": 1,
+          "totalUsage": 2,
+          "members": [
+            {
+              "hex": "#ff6b6b",
+              "usageCount": 2,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-4",
+          "leader": "#6e9466",
+          "memberCount": 1,
+          "totalUsage": 2,
+          "members": [
+            {
+              "hex": "#6e9466",
+              "usageCount": 2,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-5",
+          "leader": "#c09a4b",
+          "memberCount": 1,
+          "totalUsage": 2,
+          "members": [
+            {
+              "hex": "#c09a4b",
+              "usageCount": 2,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-6",
+          "leader": "#503219",
+          "memberCount": 1,
+          "totalUsage": 2,
+          "members": [
+            {
+              "hex": "#503219",
+              "usageCount": 2,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-8",
+          "leader": "#2a2622",
+          "memberCount": 2,
+          "totalUsage": 2,
+          "members": [
+            {
+              "hex": "#2a2622",
+              "usageCount": 1,
+              "deltaE": 0
+            },
+            {
+              "hex": "#211e18",
+              "usageCount": 1,
+              "deltaE": 3.1
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "color-cluster-10",
+          "leader": "#16140f",
+          "memberCount": 2,
+          "totalUsage": 2,
+          "members": [
+            {
+              "hex": "#16140f",
+              "usageCount": 1,
+              "deltaE": 0
+            },
+            {
+              "hex": "#1c1a14",
+              "usageCount": 1,
+              "deltaE": 2.2
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "color-cluster-9",
+          "leader": "#6b6358",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#6b6358",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-11",
+          "leader": "#a39b8c",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#a39b8c",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-12",
+          "leader": "#d98c6a",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#d98c6a",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-13",
+          "leader": "#5b86a8",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#5b86a8",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-14",
+          "leader": "#8a6fa6",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#8a6fa6",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-15",
+          "leader": "#8a5943",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#8a5943",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-16",
+          "leader": "#486b86",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#486b86",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-17",
+          "leader": "#516d4b",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#516d4b",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-18",
+          "leader": "#6e5884",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#6e5884",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-19",
+          "leader": "#7a622f",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#7a622f",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-20",
+          "leader": "#f7e3d6",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#f7e3d6",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-21",
+          "leader": "#dde7f0",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#dde7f0",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-22",
+          "leader": "#dce7d6",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#dce7d6",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-23",
+          "leader": "#e6dcec",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#e6dcec",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-24",
+          "leader": "#f2e6c9",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#f2e6c9",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-25",
+          "leader": "#3a2a22",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#3a2a22",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-26",
+          "leader": "#22303a",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#22303a",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-27",
+          "leader": "#26331f",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#26331f",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-28",
+          "leader": "#2e2638",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#2e2638",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-29",
+          "leader": "#352b14",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#352b14",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-30",
+          "leader": "#d86b3c",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#d86b3c",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-31",
+          "leader": "#be5730",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#be5730",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "color-cluster-32",
+          "leader": "#c8553d",
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "hex": "#c8553d",
+              "usageCount": 1,
+              "deltaE": 0
+            }
+          ],
+          "perceptuallyDuplicate": false
+        }
+      ],
+      "perceptuallyDuplicateClusters": 4,
+      "perceptualThresholdDeltaE": 3.5
+    },
+    "fontSizes": {
+      "rawCount": 14,
+      "clusters": [
+        {
+          "id": "cluster-1",
+          "leader": 8,
+          "memberCount": 2,
+          "totalUsage": 3,
+          "members": [
+            {
+              "value": 8,
+              "usageCount": 2
+            },
+            {
+              "value": 9,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "cluster-2",
+          "leader": 10,
+          "memberCount": 2,
+          "totalUsage": 12,
+          "members": [
+            {
+              "value": 10,
+              "usageCount": 8
+            },
+            {
+              "value": 11,
+              "usageCount": 4
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "cluster-3",
+          "leader": 13,
+          "memberCount": 2,
+          "totalUsage": 7,
+          "members": [
+            {
+              "value": 13,
+              "usageCount": 2
+            },
+            {
+              "value": 14,
+              "usageCount": 5
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "cluster-4",
+          "leader": 15,
+          "memberCount": 2,
+          "totalUsage": 5,
+          "members": [
+            {
+              "value": 15,
+              "usageCount": 1
+            },
+            {
+              "value": 16,
+              "usageCount": 4
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "cluster-5",
+          "leader": 18,
+          "memberCount": 1,
+          "totalUsage": 2,
+          "members": [
+            {
+              "value": 18,
+              "usageCount": 2
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-6",
+          "leader": 20,
+          "memberCount": 1,
+          "totalUsage": 3,
+          "members": [
+            {
+              "value": 20,
+              "usageCount": 3
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-7",
+          "leader": 22,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 22,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-8",
+          "leader": 24,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 24,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-9",
+          "leader": 28,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 28,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-10",
+          "leader": 30,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 30,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        }
+      ],
+      "perceptuallyDuplicateClusters": 4
+    },
+    "spacings": {
+      "rawCount": 11,
+      "clusters": [
+        {
+          "id": "cluster-1",
+          "leader": 0,
+          "memberCount": 3,
+          "totalUsage": 20,
+          "members": [
+            {
+              "value": 0,
+              "usageCount": 1
+            },
+            {
+              "value": 1,
+              "usageCount": 2
+            },
+            {
+              "value": 2,
+              "usageCount": 17
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "cluster-2",
+          "leader": 3,
+          "memberCount": 2,
+          "totalUsage": 7,
+          "members": [
+            {
+              "value": 3,
+              "usageCount": 1
+            },
+            {
+              "value": 4,
+              "usageCount": 6
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "cluster-3",
+          "leader": 8,
+          "memberCount": 1,
+          "totalUsage": 2,
+          "members": [
+            {
+              "value": 8,
+              "usageCount": 2
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-4",
+          "leader": 14,
+          "memberCount": 2,
+          "totalUsage": 3,
+          "members": [
+            {
+              "value": 14,
+              "usageCount": 2
+            },
+            {
+              "value": 16,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "cluster-5",
+          "leader": 20,
+          "memberCount": 1,
+          "totalUsage": 5,
+          "members": [
+            {
+              "value": 20,
+              "usageCount": 5
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-6",
+          "leader": 40,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 40,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-7",
+          "leader": 60,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 60,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        }
+      ],
+      "perceptuallyDuplicateClusters": 3,
+      "rhythm": {
+        "base": 4,
+        "fit": 0.44,
+        "candidates": [
+          {
+            "base": 4,
+            "fit": 0.44
+          },
+          {
+            "base": 5,
+            "fit": 0.21
+          },
+          {
+            "base": 10,
+            "fit": 0.21
+          },
+          {
+            "base": 8,
+            "fit": 0.13
+          }
+        ]
+      }
+    },
+    "radii": {
+      "rawCount": 13,
+      "clusters": [
+        {
+          "id": "cluster-1",
+          "leader": 1,
+          "memberCount": 4,
+          "totalUsage": 9,
+          "members": [
+            {
+              "value": 1,
+              "usageCount": 2
+            },
+            {
+              "value": 2,
+              "usageCount": 5
+            },
+            {
+              "value": 2.5,
+              "usageCount": 1
+            },
+            {
+              "value": 3,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "cluster-2",
+          "leader": 4,
+          "memberCount": 2,
+          "totalUsage": 2,
+          "members": [
+            {
+              "value": 4,
+              "usageCount": 1
+            },
+            {
+              "value": 6,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "cluster-3",
+          "leader": 10,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 10,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-4",
+          "leader": 17,
+          "memberCount": 2,
+          "totalUsage": 3,
+          "members": [
+            {
+              "value": 17,
+              "usageCount": 2
+            },
+            {
+              "value": 18,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": true
+        },
+        {
+          "id": "cluster-5",
+          "leader": 22,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 22,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-6",
+          "leader": 50,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 50,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-7",
+          "leader": 60,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 60,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        },
+        {
+          "id": "cluster-8",
+          "leader": 9999,
+          "memberCount": 1,
+          "totalUsage": 1,
+          "members": [
+            {
+              "value": 9999,
+              "usageCount": 1
+            }
+          ],
+          "perceptuallyDuplicate": false
+        }
+      ],
+      "language": {
+        "dominant": "sharp",
+        "distribution": {
+          "sharp": 0.53,
+          "soft": 0.11,
+          "large": 0.32,
+          "pill": 0.05
+        }
+      }
+    },
+    "fontFamilies": [
+      {
+        "family": "Inter_600SemiBold",
+        "usageCount": 9
+      },
+      {
+        "family": "Inter_700Bold",
+        "usageCount": 3
+      },
+      {
+        "family": "Inter_500Medium",
+        "usageCount": 1
+      },
+      {
+        "family": "Inter_400Regular",
+        "usageCount": 1
+      }
+    ],
+    "summary": {
+      "filesScanned": 93,
+      "rawColors": 38,
+      "perceivedColors": 32,
+      "rawFontSizes": 14,
+      "perceivedFontSizes": 10,
+      "rawSpacings": 11,
+      "perceivedSpacings": 7,
+      "rawRadii": 13,
+      "perceivedRadii": 8,
+      "fontFamilyCount": 4,
+      "dominantRhythm": 4,
+      "rhythmFit": 0.44,
+      "dominantRadiusLanguage": "sharp"
+    }
+  },
+  "fingerprint": {
+    "paragraph": "Your app currently reads as warm and expressive, in a balanced density. The dominant hue family is orange (avg 33°, saturation 0.3). The corner language is \"sharp\" and the spacing rhythm is 4pt-based (44% fit). You have 32 perceptually-distinct colors and 4 cluster(s) where multiple colors collapse to the same visual answer. 4 font famil(y/ies) are in use, which dilutes the typographic signal. The era reads as \"mixed\" and the relationship to platform conventions is \"distinct\". The copy voice reads as \"direct\" (58 UI strings sampled).",
+    "axes": {
+      "temperature": {
+        "value": "warm",
+        "reason": "dominant hue family is orange (avg hue 33°)"
+      },
+      "density": {
+        "value": "balanced",
+        "reason": "spacing distribution is mixed"
+      },
+      "voice": {
+        "value": "direct",
+        "reason": "terse, action-led copy — 31% of strings start with a verb, avg 3.3 words",
+        "sampleCount": 58,
+        "signals": {
+          "avgWords": 3.3,
+          "exclaimRatio": 0.02,
+          "emojiRatio": 0,
+          "casualRatio": 0,
+          "formalRatio": 0,
+          "warmRatio": 0,
+          "imperativeRatio": 0.31
+        },
+        "samples": [
+          "Delete entry",
+          "Delete recurring entry",
+          "Delete this occurrence",
+          "Delete this and all future",
+          "Delete entire series",
+          "Due Date",
+          "Due Time",
+          "Entry not found",
+          "today && entryDate",
+          "What do you need to do?",
+          "Add any additional notes...",
+          "Voice Input"
+        ]
+      },
+      "posture": {
+        "value": "expressive",
+        "reason": "saturation 0.3, dominant radius \"sharp\", 32 colors — palette is assertive"
+      },
+      "era": {
+        "value": "mixed",
+        "reason": "no consistent era signal"
+      },
+      "convention": {
+        "value": "distinct",
+        "reason": "4 custom font famil(y/ies) — overrides platform defaults"
+      }
+    },
+    "evidence": {
+      "palette": {
+        "avgHue": 33,
+        "avgSaturation": 0.3,
+        "avgLightness": 0.5,
+        "dominantHueFamily": "orange",
+        "hueDistribution": {
+          "orange": 22,
+          "red": 3,
+          "green": 5,
+          "blue": 4,
+          "violet": 4
+        }
+      },
+      "radiusLanguage": {
+        "dominant": "sharp",
+        "distribution": {
+          "sharp": 0.53,
+          "soft": 0.11,
+          "large": 0.32,
+          "pill": 0.05
+        }
+      },
+      "spacingRhythm": {
+        "base": 4,
+        "fit": 0.44,
+        "candidates": [
+          {
+            "base": 4,
+            "fit": 0.44
+          },
+          {
+            "base": 5,
+            "fit": 0.21
+          },
+          {
+            "base": 10,
+            "fit": 0.21
+          },
+          {
+            "base": 8,
+            "fit": 0.13
+          }
+        ]
+      },
+      "perceivedColors": 32,
+      "perceptuallyDuplicateClusters": 4,
+      "fontFamilies": [
+        {
+          "family": "Inter_600SemiBold",
+          "usageCount": 9
+        },
+        {
+          "family": "Inter_700Bold",
+          "usageCount": 3
+        },
+        {
+          "family": "Inter_500Medium",
+          "usageCount": 1
+        },
+        {
+          "family": "Inter_400Regular",
+          "usageCount": 1
+        }
+      ]
+    },
+    "summary": {
+      "dominantHueFamily": "orange",
+      "avgSaturation": 0.3,
+      "temperature": "warm",
+      "density": "balanced",
+      "voice": "direct",
+      "posture": "expressive",
+      "era": "mixed",
+      "convention": "distinct"
+    }
+  },
+  "incoherence": {
+    "findings": [
+      {
+        "kind": "perceptual-color-duplicate",
+        "severity": "moderate",
+        "message": "2 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
+        "evidence": {
+          "leader": "#ffffff",
+          "members": [
+            "#ffffff (used 4×, ΔE 0)",
+            "#eeeeee (used 1×, ΔE 3.5)"
+          ],
+          "recommendation": "Collapse to a single token. The leader (#ffffff) is the most-used variant."
+        }
+      },
+      {
+        "kind": "perceptual-color-duplicate",
+        "severity": "severe",
+        "message": "4 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
+        "evidence": {
+          "leader": "#f4efe6",
+          "members": [
+            "#f4efe6 (used 1×, ΔE 0)",
+            "#fbf7f0 (used 1×, ΔE 1.9)",
+            "#efe8db (used 1×, ΔE 2.3)",
+            "#f0eae0 (used 1×, ΔE 1.2)"
+          ],
+          "recommendation": "Collapse to a single token. The leader (#f4efe6) is the most-used variant."
+        }
+      },
+      {
+        "kind": "perceptual-color-duplicate",
+        "severity": "moderate",
+        "message": "2 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
+        "evidence": {
+          "leader": "#2a2622",
+          "members": [
+            "#2a2622 (used 1×, ΔE 0)",
+            "#211e18 (used 1×, ΔE 3.1)"
+          ],
+          "recommendation": "Collapse to a single token. The leader (#2a2622) is the most-used variant."
+        }
+      },
+      {
+        "kind": "perceptual-color-duplicate",
+        "severity": "moderate",
+        "message": "2 colors are visually indistinguishable (ΔE ≤ 3.5) but used as if distinct.",
+        "evidence": {
+          "leader": "#16140f",
+          "members": [
+            "#16140f (used 1×, ΔE 0)",
+            "#1c1a14 (used 1×, ΔE 2.2)"
+          ],
+          "recommendation": "Collapse to a single token. The leader (#16140f) is the most-used variant."
+        }
+      },
+      {
+        "kind": "palette-overpopulated",
+        "severity": "severe",
+        "message": "32 perceptually-distinct colors in the palette. Coherent apps usually live within 8.",
+        "evidence": {
+          "topColors": [
+            "#000000 (×5)",
+            "#ffffff (×5)",
+            "#f4efe6 (×4)",
+            "#ff6b6b (×2)",
+            "#6e9466 (×2)",
+            "#c09a4b (×2)",
+            "#503219 (×2)",
+            "#2a2622 (×2)",
+            "#16140f (×2)",
+            "#6b6358 (×1)"
+          ],
+          "rawColorCount": 38,
+          "recommendation": "Restructure into roles (brand, surface, text, feedback) with one swatch each, optional accents."
+        }
+      },
+      {
+        "kind": "mixed-spacing-rhythm",
+        "severity": "severe",
+        "message": "Dominant rhythm is 4pt-based (44% fit) but 2 off-beat spacing value(s) coexist.",
+        "evidence": {
+          "rhythmBase": 4,
+          "rhythmFit": 0.44,
+          "offBeatValues": [
+            {
+              "value": 3,
+              "usages": 7
+            },
+            {
+              "value": 14,
+              "usages": 3
+            }
+          ],
+          "recommendation": "Pick one rhythm. The off-beat values (3, 14) are probably accidental."
+        }
+      },
+      {
+        "kind": "too-many-font-families",
+        "severity": "moderate",
+        "message": "4 custom font families in use. A coherent app usually has 1–2.",
+        "evidence": {
+          "families": [
+            "Inter_600SemiBold (9×)",
+            "Inter_700Bold (3×)",
+            "Inter_500Medium (1×)",
+            "Inter_400Regular (1×)"
+          ],
+          "recommendation": "Pick a primary + optional accent. Retire the rest."
+        }
+      },
+      {
+        "kind": "undisciplined-type-scale",
+        "severity": "moderate",
+        "message": "10 distinct font sizes in use. A coherent scale usually has 5–8 steps.",
+        "evidence": {
+          "topSizes": [
+            "10px (×12)",
+            "13px (×7)",
+            "15px (×5)",
+            "8px (×3)",
+            "20px (×3)",
+            "18px (×2)",
+            "22px (×1)",
+            "24px (×1)",
+            "28px (×1)",
+            "30px (×1)"
+          ],
+          "recommendation": "Define a 6-step scale with a clean ratio (e.g., 12/14/16/20/24/32). Map every usage onto the scale."
+        }
+      }
+    ],
+    "byKind": {
+      "perceptual-color-duplicate": 4,
+      "palette-overpopulated": 1,
+      "mixed-spacing-rhythm": 1,
+      "too-many-font-families": 1,
+      "undisciplined-type-scale": 1
+    },
+    "summary": {
+      "findingCount": 8,
+      "severeCount": 3,
+      "verdict": "incoherent"
+    }
+  },
+  "violations": {
+    "violations": [
+      {
+        "file": "app/(tabs)/calendar.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 150,
+        "col": 5,
+        "context": "height: 80,"
+      },
+      {
+        "file": "app/(tabs)/index.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 72",
+        "nearestToken": "spacing.5xl",
+        "line": 312,
+        "col": 5,
+        "context": "height: 72,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.6",
+        "nearestToken": "type.xs",
+        "line": 783,
+        "col": 5,
+        "context": "letterSpacing: 0.6,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 28",
+        "nearestToken": "type.4xl",
+        "line": 786,
+        "col": 5,
+        "context": "fontSize: 28,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 34",
+        "nearestToken": "type.5xl",
+        "line": 787,
+        "col": 5,
+        "context": "lineHeight: 34,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.8",
+        "nearestToken": "type.xs",
+        "line": 801,
+        "col": 5,
+        "context": "letterSpacing: 0.8,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.6",
+        "nearestToken": "type.xs",
+        "line": 813,
+        "col": 5,
+        "context": "letterSpacing: 0.6,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 22",
+        "nearestToken": "type.2xl",
+        "line": 816,
+        "col": 5,
+        "context": "lineHeight: 22,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 13",
+        "nearestToken": "type.sm",
+        "line": 842,
+        "col": 5,
+        "context": "fontSize: 13,"
+      },
+      {
+        "file": "app/detail.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.4",
+        "nearestToken": "type.xs",
+        "line": 843,
+        "col": 5,
+        "context": "letterSpacing: 0.4,"
+      },
+      {
+        "file": "app/list.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 405,
+        "col": 5,
+        "context": "height: 80,"
+      },
+      {
+        "file": "app/list.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 389,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "app/list.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 399,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 60",
+        "nearestToken": "spacing.5xl",
+        "line": 339,
+        "col": 5,
+        "context": "minWidth: 60,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 50",
+        "nearestToken": "spacing.5xl",
+        "line": 342,
+        "col": 5,
+        "context": "minWidth: 50,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 14",
+        "nearestToken": "type.md",
+        "line": 354,
+        "col": 5,
+        "context": "fontSize: 14,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 369,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 16",
+        "nearestToken": "type.lg",
+        "line": 375,
+        "col": 5,
+        "context": "fontSize: 16,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 18",
+        "nearestToken": "type.xl",
+        "line": 378,
+        "col": 5,
+        "context": "fontSize: 18,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 16",
+        "nearestToken": "type.lg",
+        "line": 423,
+        "col": 5,
+        "context": "fontSize: 16,"
+      },
+      {
+        "file": "app/modal.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 11",
+        "nearestToken": "type.xs",
+        "line": 440,
+        "col": 5,
+        "context": "fontSize: 11,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 60",
+        "nearestToken": "spacing.5xl",
+        "line": 199,
+        "col": 5,
+        "context": "minWidth: 60,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 60",
+        "nearestToken": "spacing.5xl",
+        "line": 202,
+        "col": 5,
+        "context": "minWidth: 60,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 120",
+        "nearestToken": "spacing.5xl",
+        "line": 236,
+        "col": 5,
+        "context": "width: 120,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 120",
+        "nearestToken": "spacing.5xl",
+        "line": 237,
+        "col": 5,
+        "context": "height: 120,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 250,
+        "col": 5,
+        "context": "width: 80,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 251,
+        "col": 5,
+        "context": "height: 80,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 4",
+        "nearestToken": "spacing.xs",
+        "line": 257,
+        "col": 31,
+        "context": "shadowOffset: { width: 0, height: 4 },"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 32",
+        "nearestToken": "spacing.3xl",
+        "line": 267,
+        "col": 5,
+        "context": "width: 32,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 32",
+        "nearestToken": "spacing.3xl",
+        "line": 268,
+        "col": 5,
+        "context": "height: 32,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 24",
+        "nearestToken": "spacing.2xl",
+        "line": 274,
+        "col": 5,
+        "context": "width: 24,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 24",
+        "nearestToken": "spacing.2xl",
+        "line": 275,
+        "col": 5,
+        "context": "height: 24,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 50",
+        "nearestToken": "radii.2xl",
+        "line": 245,
+        "col": 5,
+        "context": "borderRadius: 50,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 14",
+        "nearestToken": "type.md",
+        "line": 211,
+        "col": 5,
+        "context": "fontSize: 14,"
+      },
+      {
+        "file": "app/voice-input.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 280,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/atoms/DateInput.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 16",
+        "nearestToken": "type.lg",
+        "line": 51,
+        "col": 11,
+        "context": "fontSize: 16,"
+      },
+      {
+        "file": "components/atoms/TimeInput.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 16",
+        "nearestToken": "type.lg",
+        "line": 69,
+        "col": 11,
+        "context": "fontSize: 16,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-spacing",
+        "value": "maxHeight: 52",
+        "nearestToken": "spacing.5xl",
+        "line": 86,
+        "col": 5,
+        "context": "maxHeight: 52,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 4",
+        "nearestToken": "spacing.xs",
+        "line": 124,
+        "col": 5,
+        "context": "width: 4,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 4",
+        "nearestToken": "spacing.xs",
+        "line": 125,
+        "col": 5,
+        "context": "height: 4,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 14",
+        "nearestToken": "type.md",
+        "line": 109,
+        "col": 5,
+        "context": "fontSize: 14,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 18",
+        "nearestToken": "type.xl",
+        "line": 111,
+        "col": 5,
+        "context": "lineHeight: 18,"
+      },
+      {
+        "file": "components/atoms/day-cell.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 8",
+        "nearestToken": "type.xs",
+        "line": 129,
+        "col": 5,
+        "context": "fontSize: 8,"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 85,
+        "col": 5,
+        "context": "width: 44,"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 86,
+        "col": 5,
+        "context": "height: 44,"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 22",
+        "nearestToken": "radii.2xl",
+        "line": 87,
+        "col": 5,
+        "context": "borderRadius: 22,"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 20",
+        "nearestToken": "type.2xl",
+        "line": 96,
+        "col": 5,
+        "context": "fontSize: 20,"
+      },
+      {
+        "file": "components/atoms/month-navigator.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 100,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/atoms/streak-badge.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 80",
+        "nearestToken": "spacing.5xl",
+        "line": 44,
+        "col": 5,
+        "context": "minWidth: 80,"
+      },
+      {
+        "file": "components/atoms/streak-badge.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.8",
+        "nearestToken": "type.xs",
+        "line": 47,
+        "col": 5,
+        "context": "letterSpacing: 0.8,"
+      },
+      {
+        "file": "components/atoms/streak-badge.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 28",
+        "nearestToken": "type.4xl",
+        "line": 50,
+        "col": 5,
+        "context": "lineHeight: 28,"
+      },
+      {
+        "file": "components/atoms/waveform-bar.tsx",
+        "kind": "inline-color",
+        "value": "#FF6B6B",
+        "nearestToken": null,
+        "line": 18,
+        "col": 12,
+        "context": "color = \"#FF6B6B\","
+      },
+      {
+        "file": "components/atoms/waveform-bar.tsx",
+        "kind": "inline-color",
+        "value": "#FF6B6B",
+        "nearestToken": null,
+        "line": 52,
+        "col": 12,
+        "context": "color = \"#FF6B6B\","
+      },
+      {
+        "file": "components/atoms/waveform-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 68,
+        "col": 5,
+        "context": "height: 40,"
+      },
+      {
+        "file": "components/atoms/waveform-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "gap: 4",
+        "nearestToken": "spacing.xs",
+        "line": 69,
+        "col": 5,
+        "context": "gap: 4,"
+      },
+      {
+        "file": "components/atoms/waveform-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 4",
+        "nearestToken": "spacing.xs",
+        "line": 72,
+        "col": 5,
+        "context": "width: 4,"
+      },
+      {
+        "file": "components/error-boundary.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.4",
+        "nearestToken": "type.xs",
+        "line": 98,
+        "col": 5,
+        "context": "letterSpacing: 0.4,"
+      },
+      {
+        "file": "components/molecules/detail-action-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 60",
+        "nearestToken": "spacing.5xl",
+        "line": 82,
+        "col": 5,
+        "context": "minHeight: 60,"
+      },
+      {
+        "file": "components/molecules/detail-action-bar.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.3",
+        "nearestToken": "type.xs",
+        "line": 88,
+        "col": 5,
+        "context": "letterSpacing: 0.3,"
+      },
+      {
+        "file": "components/molecules/detail-metadata-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 52,
+        "col": 5,
+        "context": "width: 36,"
+      },
+      {
+        "file": "components/molecules/detail-metadata-row.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 53,
+        "col": 5,
+        "context": "height: 36,"
+      },
+      {
+        "file": "components/molecules/detail-metadata-row.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 64,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/molecules/detail-someday-hero.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 75,
+        "col": 5,
+        "context": "width: 40,"
+      },
+      {
+        "file": "components/molecules/detail-someday-hero.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 1.5",
+        "nearestToken": "spacing.xxs",
+        "line": 76,
+        "col": 5,
+        "context": "height: 1.5,"
+      },
+      {
+        "file": "components/molecules/detail-someday-hero.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 24",
+        "nearestToken": "type.3xl",
+        "line": 66,
+        "col": 5,
+        "context": "lineHeight: 24,"
+      },
+      {
+        "file": "components/molecules/empty-state.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 16",
+        "nearestToken": "type.lg",
+        "line": 72,
+        "col": 5,
+        "context": "lineHeight: 16,"
+      },
+      {
+        "file": "components/molecules/empty-state.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 11",
+        "nearestToken": "type.xs",
+        "line": 73,
+        "col": 5,
+        "context": "fontSize: 11,"
+      },
+      {
+        "file": "components/molecules/empty-state.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.4",
+        "nearestToken": "type.xs",
+        "line": 82,
+        "col": 5,
+        "context": "letterSpacing: 0.4,"
+      },
+      {
+        "file": "components/molecules/entry-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 12",
+        "nearestToken": "spacing.md",
+        "line": 54,
+        "col": 5,
+        "context": "width: 12,"
+      },
+      {
+        "file": "components/molecules/entry-row.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 52",
+        "nearestToken": "spacing.5xl",
+        "line": 63,
+        "col": 5,
+        "context": "minWidth: 52,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 267,
+        "col": 5,
+        "context": "width: 36,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 268,
+        "col": 5,
+        "context": "height: 36,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingLeft: 16",
+        "nearestToken": "spacing.lg",
+        "line": 274,
+        "col": 5,
+        "context": "paddingLeft: 16, // aligns under dot"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 278,
+        "col": 5,
+        "context": "width: 36,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 279,
+        "col": 5,
+        "context": "height: 36,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 18",
+        "nearestToken": "radii.xl",
+        "line": 280,
+        "col": 5,
+        "context": "borderRadius: 18,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 14",
+        "nearestToken": "type.md",
+        "line": 301,
+        "col": 5,
+        "context": "fontSize: 14,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.4",
+        "nearestToken": "type.xs",
+        "line": 311,
+        "col": 5,
+        "context": "letterSpacing: 0.4,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.2",
+        "nearestToken": "type.xs",
+        "line": 326,
+        "col": 5,
+        "context": "letterSpacing: 0.2,"
+      },
+      {
+        "file": "components/molecules/list-item.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.3",
+        "nearestToken": "type.xs",
+        "line": 339,
+        "col": 5,
+        "context": "letterSpacing: 0.3,"
+      },
+      {
+        "file": "components/molecules/recurrence-picker.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 165,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/molecules/recurrence-picker.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 11",
+        "nearestToken": "type.xs",
+        "line": 184,
+        "col": 5,
+        "context": "fontSize: 11,"
+      },
+      {
+        "file": "components/molecules/recurrence-picker.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 200,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/molecules/someday-item.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingLeft: 14",
+        "nearestToken": "spacing.md",
+        "line": 151,
+        "col": 5,
+        "context": "paddingLeft: 14,"
+      },
+      {
+        "file": "components/molecules/someday-item.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingLeft: 14",
+        "nearestToken": "spacing.md",
+        "line": 154,
+        "col": 5,
+        "context": "paddingLeft: 14,"
+      },
+      {
+        "file": "components/molecules/someday-item.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 120,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 3",
+        "nearestToken": "spacing.xxs",
+        "line": 83,
+        "col": 5,
+        "context": "width: 3,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 36",
+        "nearestToken": "spacing.3xl",
+        "line": 85,
+        "col": 5,
+        "context": "minHeight: 36,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "gap: 3",
+        "nearestToken": "spacing.xxs",
+        "line": 90,
+        "col": 5,
+        "context": "gap: 3,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 6",
+        "nearestToken": "spacing.xs",
+        "line": 98,
+        "col": 5,
+        "context": "width: 6,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 6",
+        "nearestToken": "spacing.xs",
+        "line": 99,
+        "col": 5,
+        "context": "height: 6,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 20",
+        "nearestToken": "spacing.xl",
+        "line": 110,
+        "col": 5,
+        "context": "width: 20,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 20",
+        "nearestToken": "spacing.xl",
+        "line": 111,
+        "col": 5,
+        "context": "height: 20,"
+      },
+      {
+        "file": "components/molecules/today-event-row.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 107,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/molecules/weekday-row.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 22",
+        "nearestToken": "spacing.xl",
+        "line": 75,
+        "col": 5,
+        "context": "minHeight: 22,"
+      },
+      {
+        "file": "components/molecules/weekday-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 78,
+        "col": 5,
+        "context": "width: 40,"
+      },
+      {
+        "file": "components/molecules/wrapup-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 44,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/molecules/wrapup-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 20",
+        "nearestToken": "type.2xl",
+        "line": 47,
+        "col": 5,
+        "context": "lineHeight: 20,"
+      },
+      {
+        "file": "components/molecules/wrapup-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 15",
+        "nearestToken": "type.md",
+        "line": 48,
+        "col": 5,
+        "context": "fontSize: 15,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 34",
+        "nearestToken": "spacing.3xl",
+        "line": 83,
+        "col": 5,
+        "context": "width: 34,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 34",
+        "nearestToken": "spacing.3xl",
+        "line": 84,
+        "col": 5,
+        "context": "height: 34,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 34",
+        "nearestToken": "spacing.3xl",
+        "line": 88,
+        "col": 5,
+        "context": "width: 34,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 34",
+        "nearestToken": "spacing.3xl",
+        "line": 89,
+        "col": 5,
+        "context": "height: 34,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 17",
+        "nearestToken": "radii.xl",
+        "line": 85,
+        "col": 5,
+        "context": "borderRadius: 17,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 17",
+        "nearestToken": "radii.xl",
+        "line": 90,
+        "col": 5,
+        "context": "borderRadius: 17,"
+      },
+      {
+        "file": "components/organisms/app-header.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 18",
+        "nearestToken": "type.xl",
+        "line": 79,
+        "col": 5,
+        "context": "fontSize: 18,"
+      },
+      {
+        "file": "components/organisms/app-menu.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 284,
+        "col": 5,
+        "context": "minHeight: 44,"
+      },
+      {
+        "file": "components/organisms/app-menu.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 24",
+        "nearestToken": "type.3xl",
+        "line": 259,
+        "col": 5,
+        "context": "fontSize: 24,"
+      },
+      {
+        "file": "components/organisms/app-menu.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.55",
+        "nearestToken": "type.xs",
+        "line": 268,
+        "col": 5,
+        "context": "letterSpacing: 0.55,"
+      },
+      {
+        "file": "components/organisms/capture-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 171,
+        "col": 5,
+        "context": "minHeight: 56,"
+      },
+      {
+        "file": "components/organisms/capture-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 187,
+        "col": 5,
+        "context": "width: 44,"
+      },
+      {
+        "file": "components/organisms/capture-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 188,
+        "col": 5,
+        "context": "height: 44,"
+      },
+      {
+        "file": "components/organisms/capture-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 24",
+        "nearestToken": "spacing.2xl",
+        "line": 195,
+        "col": 5,
+        "context": "height: 24,"
+      },
+      {
+        "file": "components/organisms/capture-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "gap: 4",
+        "nearestToken": "spacing.xs",
+        "line": 196,
+        "col": 5,
+        "context": "gap: 4,"
+      },
+      {
+        "file": "components/organisms/capture-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 3",
+        "nearestToken": "spacing.xxs",
+        "line": 199,
+        "col": 5,
+        "context": "width: 3,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingBottom: 20",
+        "nearestToken": "spacing.xl",
+        "line": 66,
+        "col": 5,
+        "context": "paddingBottom: 20,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingTop: 8",
+        "nearestToken": "spacing.sm",
+        "line": 67,
+        "col": 5,
+        "context": "paddingTop: 8,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingHorizontal: 60",
+        "nearestToken": "spacing.5xl",
+        "line": 74,
+        "col": 5,
+        "context": "paddingHorizontal: 60,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 77,
+        "col": 5,
+        "context": "width: 44,"
+      },
+      {
+        "file": "components/organisms/custom-tab-bar.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 78,
+        "col": 5,
+        "context": "height: 44,"
+      },
+      {
+        "file": "components/organisms/day-detail-sheet.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingBottom: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 129,
+        "col": 5,
+        "context": "paddingBottom: 40,"
+      },
+      {
+        "file": "components/organisms/day-detail-sheet.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 132,
+        "col": 5,
+        "context": "width: 40,"
+      },
+      {
+        "file": "components/organisms/day-detail-sheet.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 4",
+        "nearestToken": "spacing.xs",
+        "line": 133,
+        "col": 5,
+        "context": "height: 4,"
+      },
+      {
+        "file": "components/organisms/day-detail-sheet.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 20",
+        "nearestToken": "type.2xl",
+        "line": 146,
+        "col": 5,
+        "context": "fontSize: 20,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 72",
+        "nearestToken": "spacing.5xl",
+        "line": 136,
+        "col": 5,
+        "context": "width: 72,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 72",
+        "nearestToken": "spacing.5xl",
+        "line": 137,
+        "col": 5,
+        "context": "height: 72,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 142,
+        "col": 5,
+        "context": "width: 56,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 143,
+        "col": 5,
+        "context": "height: 56,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 170,
+        "col": 5,
+        "context": "height: 40,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "gap: 4",
+        "nearestToken": "spacing.xs",
+        "line": 171,
+        "col": 5,
+        "context": "gap: 4,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 4",
+        "nearestToken": "spacing.xs",
+        "line": 174,
+        "col": 5,
+        "context": "width: 4,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 72",
+        "nearestToken": "spacing.5xl",
+        "line": 179,
+        "col": 5,
+        "context": "width: 72,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 72",
+        "nearestToken": "spacing.5xl",
+        "line": 180,
+        "col": 5,
+        "context": "height: 72,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 185,
+        "col": 5,
+        "context": "width: 56,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 56",
+        "nearestToken": "spacing.5xl",
+        "line": 186,
+        "col": 5,
+        "context": "height: 56,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 194,
+        "col": 5,
+        "context": "width: 44,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 195,
+        "col": 5,
+        "context": "height: 44,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "marginLeft: 4",
+        "nearestToken": "spacing.xs",
+        "line": 199,
+        "col": 5,
+        "context": "marginLeft: 4,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-spacing",
+        "value": "marginRight: 8",
+        "nearestToken": "spacing.sm",
+        "line": 205,
+        "col": 5,
+        "context": "marginRight: 8,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 9999",
+        "nearestToken": "radii.full",
+        "line": 198,
+        "col": 5,
+        "context": "borderRadius: 9999,"
+      },
+      {
+        "file": "components/organisms/fab.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 14",
+        "nearestToken": "type.md",
+        "line": 203,
+        "col": 5,
+        "context": "fontSize: 14,"
+      },
+      {
+        "file": "components/organisms/field-tile.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 5",
+        "nearestToken": "spacing.xs",
+        "line": 212,
+        "col": 5,
+        "context": "width: 5,"
+      },
+      {
+        "file": "components/organisms/field-tile.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 226,
+        "col": 5,
+        "context": "minHeight: 44,"
+      },
+      {
+        "file": "components/organisms/field-tile.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 44",
+        "nearestToken": "spacing.4xl",
+        "line": 243,
+        "col": 5,
+        "context": "minHeight: 44,"
+      },
+      {
+        "file": "components/organisms/field-tile.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 7",
+        "nearestToken": "spacing.sm",
+        "line": 246,
+        "col": 5,
+        "context": "width: 7,"
+      },
+      {
+        "file": "components/organisms/field-tile.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 7",
+        "nearestToken": "spacing.sm",
+        "line": 247,
+        "col": 5,
+        "context": "height: 7,"
+      },
+      {
+        "file": "components/organisms/field-tile.tsx",
+        "kind": "magic-spacing",
+        "value": "minHeight: 32",
+        "nearestToken": "spacing.3xl",
+        "line": 259,
+        "col": 5,
+        "context": "minHeight: 32,"
+      },
+      {
+        "file": "components/organisms/list-progress.tsx",
+        "kind": "magic-spacing",
+        "value": "paddingBottom: 4",
+        "nearestToken": "spacing.xs",
+        "line": 89,
+        "col": 5,
+        "context": "paddingBottom: 4,"
+      },
+      {
+        "file": "components/organisms/list-progress.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.8",
+        "nearestToken": "type.xs",
+        "line": 72,
+        "col": 5,
+        "context": "letterSpacing: 0.8,"
+      },
+      {
+        "file": "components/organisms/list-screen-header.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 71,
+        "col": 5,
+        "context": "width: 40,"
+      },
+      {
+        "file": "components/organisms/list-screen-header.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 40",
+        "nearestToken": "spacing.4xl",
+        "line": 72,
+        "col": 5,
+        "context": "height: 40,"
+      },
+      {
+        "file": "components/organisms/month-grid.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 11",
+        "nearestToken": "type.xs",
+        "line": 123,
+        "col": 5,
+        "context": "fontSize: 11,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 8",
+        "nearestToken": "spacing.sm",
+        "line": 151,
+        "col": 5,
+        "context": "width: 8,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 8",
+        "nearestToken": "spacing.sm",
+        "line": 152,
+        "col": 5,
+        "context": "height: 8,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 120",
+        "nearestToken": "spacing.5xl",
+        "line": 171,
+        "col": 5,
+        "context": "width: 120,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 120",
+        "nearestToken": "spacing.5xl",
+        "line": 172,
+        "col": 5,
+        "context": "height: 120,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 60",
+        "nearestToken": "radii.2xl",
+        "line": 173,
+        "col": 5,
+        "context": "borderRadius: 60,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 22",
+        "nearestToken": "type.2xl",
+        "line": 142,
+        "col": 5,
+        "context": "fontSize: 22,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 163,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/organisms/next-up-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 164,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/organisms/swipeable-row.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 64",
+        "nearestToken": "spacing.5xl",
+        "line": 74,
+        "col": 5,
+        "context": "width: 64,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 64",
+        "nearestToken": "spacing.5xl",
+        "line": 154,
+        "col": 5,
+        "context": "minWidth: 64,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-spacing",
+        "value": "minWidth: 70",
+        "nearestToken": "spacing.5xl",
+        "line": 200,
+        "col": 5,
+        "context": "minWidth: 70,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 52",
+        "nearestToken": "type.5xl",
+        "line": 164,
+        "col": 5,
+        "context": "lineHeight: 52,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 190,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "letterSpacing: 0.5",
+        "nearestToken": "type.xs",
+        "line": 192,
+        "col": 5,
+        "context": "letterSpacing: 0.5,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 13",
+        "nearestToken": "type.sm",
+        "line": 196,
+        "col": 5,
+        "context": "fontSize: 13,"
+      },
+      {
+        "file": "components/organisms/upcoming-preview-card.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 199,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 16",
+        "nearestToken": "spacing.lg",
+        "line": 129,
+        "col": 5,
+        "context": "height: 16,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-spacing",
+        "value": "padding: 4",
+        "nearestToken": "spacing.xs",
+        "line": 138,
+        "col": 5,
+        "context": "padding: 4,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-spacing",
+        "value": "width: 5",
+        "nearestToken": "spacing.xs",
+        "line": 142,
+        "col": 5,
+        "context": "width: 5,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 5",
+        "nearestToken": "spacing.xs",
+        "line": 143,
+        "col": 5,
+        "context": "height: 5,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 2.5",
+        "nearestToken": "radii.xs",
+        "line": 144,
+        "col": 5,
+        "context": "borderRadius: 2.5,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 10",
+        "nearestToken": "type.xs",
+        "line": 126,
+        "col": 5,
+        "context": "fontSize: 10,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 9",
+        "nearestToken": "type.xs",
+        "line": 147,
+        "col": 5,
+        "context": "fontSize: 9,"
+      },
+      {
+        "file": "components/organisms/week-strip.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 8",
+        "nearestToken": "type.xs",
+        "line": 150,
+        "col": 5,
+        "context": "fontSize: 8,"
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-spacing",
+        "value": "size: 30",
+        "nearestToken": "spacing.3xl",
+        "line": 104,
+        "col": 14,
+        "context": "display: { size: 30, lineHeight: 36, weight: \"600\" as const, tracking: -0.3 }, /"
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-spacing",
+        "value": "size: 22",
+        "nearestToken": "spacing.xl",
+        "line": 105,
+        "col": 12,
+        "context": "title: { size: 22, lineHeight: 28, weight: \"600\" as const, tracking: -0.2 }, // "
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-spacing",
+        "value": "size: 17",
+        "nearestToken": "spacing.lg",
+        "line": 106,
+        "col": 11,
+        "context": "item: { size: 17, lineHeight: 23, weight: \"500\" as const, tracking: 0 }, // Inte"
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-spacing",
+        "value": "size: 14",
+        "nearestToken": "spacing.md",
+        "line": 107,
+        "col": 11,
+        "context": "body: { size: 14, lineHeight: 20, weight: \"400\" as const, tracking: 0 }, // Inte"
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-spacing",
+        "value": "size: 11",
+        "nearestToken": "spacing.md",
+        "line": 108,
+        "col": 13,
+        "context": "kicker: { size: 11, lineHeight: 14, weight: \"600\" as const, tracking: 0.6 }, // "
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-spacing",
+        "value": "height: 8",
+        "nearestToken": "spacing.sm",
+        "line": 146,
+        "col": 33,
+        "context": "shadowOffset: { width: 0, height: 8 },"
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 36",
+        "nearestToken": "type.5xl",
+        "line": 104,
+        "col": 24,
+        "context": "display: { size: 30, lineHeight: 36, weight: \"600\" as const, tracking: -0.3 }, /"
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 28",
+        "nearestToken": "type.4xl",
+        "line": 105,
+        "col": 22,
+        "context": "title: { size: 22, lineHeight: 28, weight: \"600\" as const, tracking: -0.2 }, // "
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 23",
+        "nearestToken": "type.3xl",
+        "line": 106,
+        "col": 21,
+        "context": "item: { size: 17, lineHeight: 23, weight: \"500\" as const, tracking: 0 }, // Inte"
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 20",
+        "nearestToken": "type.2xl",
+        "line": 107,
+        "col": 21,
+        "context": "body: { size: 14, lineHeight: 20, weight: \"400\" as const, tracking: 0 }, // Inte"
+      },
+      {
+        "file": "constants/theme.ts",
+        "kind": "magic-fontsize",
+        "value": "lineHeight: 14",
+        "nearestToken": "type.md",
+        "line": 108,
+        "col": 23,
+        "context": "kicker: { size: 11, lineHeight: 14, weight: \"600\" as const, tracking: 0.6 }, // "
+      },
+      {
+        "file": "speech-recognizer/example/App.tsx",
+        "kind": "inline-color",
+        "value": "#fff",
+        "nearestToken": null,
+        "line": 61,
+        "col": 23,
+        "context": "backgroundColor: '#fff',"
+      },
+      {
+        "file": "speech-recognizer/example/App.tsx",
+        "kind": "inline-color",
+        "value": "#eee",
+        "nearestToken": null,
+        "line": 67,
+        "col": 23,
+        "context": "backgroundColor: '#eee',"
+      },
+      {
+        "file": "speech-recognizer/example/App.tsx",
+        "kind": "magic-spacing",
+        "value": "margin: 20",
+        "nearestToken": "spacing.xl",
+        "line": 53,
+        "col": 5,
+        "context": "margin: 20,"
+      },
+      {
+        "file": "speech-recognizer/example/App.tsx",
+        "kind": "magic-spacing",
+        "value": "marginBottom: 20",
+        "nearestToken": "spacing.xl",
+        "line": 57,
+        "col": 5,
+        "context": "marginBottom: 20,"
+      },
+      {
+        "file": "speech-recognizer/example/App.tsx",
+        "kind": "magic-spacing",
+        "value": "margin: 20",
+        "nearestToken": "spacing.xl",
+        "line": 60,
+        "col": 5,
+        "context": "margin: 20,"
+      },
+      {
+        "file": "speech-recognizer/example/App.tsx",
+        "kind": "magic-spacing",
+        "value": "padding: 20",
+        "nearestToken": "spacing.xl",
+        "line": 63,
+        "col": 5,
+        "context": "padding: 20,"
+      },
+      {
+        "file": "speech-recognizer/example/App.tsx",
+        "kind": "magic-spacing",
+        "value": "height: 200",
+        "nearestToken": "spacing.5xl",
+        "line": 71,
+        "col": 5,
+        "context": "height: 200,"
+      },
+      {
+        "file": "speech-recognizer/example/App.tsx",
+        "kind": "magic-radius",
+        "value": "borderRadius: 10",
+        "nearestToken": "radii.md",
+        "line": 62,
+        "col": 5,
+        "context": "borderRadius: 10,"
+      },
+      {
+        "file": "speech-recognizer/example/App.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 30",
+        "nearestToken": "type.4xl",
+        "line": 52,
+        "col": 5,
+        "context": "fontSize: 30,"
+      },
+      {
+        "file": "speech-recognizer/example/App.tsx",
+        "kind": "magic-fontsize",
+        "value": "fontSize: 20",
+        "nearestToken": "type.2xl",
+        "line": 56,
+        "col": 5,
+        "context": "fontSize: 20,"
+      },
+      {
+        "file": "speech-recognizer/speech-recognizer-example/App.tsx",
+        "kind": "inline-color",
+        "value": "#fff",
+        "nearestToken": null,
+        "line": 16,
+        "col": 23,
+        "context": "backgroundColor: '#fff',"
+      },
+      {
+        "file": "targets/watch/expo-target.config.js",
+        "kind": "inline-color",
+        "value": "darkcyan",
+        "nearestToken": null,
+        "line": 6,
+        "col": 22,
+        "context": "colors: { $accent: \"darkcyan\" },"
+      },
+      {
+        "file": "targets/watch-widget/expo-target.config.js",
+        "kind": "inline-color",
+        "value": "darkcyan",
+        "nearestToken": null,
+        "line": 5,
+        "col": 22,
+        "context": "colors: { $accent: \"darkcyan\" },"
+      }
+    ],
+    "byFile": {
+      "app/(tabs)/calendar.tsx": 1,
+      "app/(tabs)/index.tsx": 1,
+      "app/detail.tsx": 8,
+      "app/list.tsx": 3,
+      "app/modal.tsx": 8,
+      "app/voice-input.tsx": 14,
+      "components/atoms/DateInput.tsx": 1,
+      "components/atoms/TimeInput.tsx": 1,
+      "components/atoms/day-cell.tsx": 6,
+      "components/atoms/month-navigator.tsx": 5,
+      "components/atoms/streak-badge.tsx": 3,
+      "components/atoms/waveform-bar.tsx": 5,
+      "components/error-boundary.tsx": 1,
+      "components/molecules/detail-action-bar.tsx": 2,
+      "components/molecules/detail-metadata-row.tsx": 3,
+      "components/molecules/detail-someday-hero.tsx": 3,
+      "components/molecules/empty-state.tsx": 3,
+      "components/molecules/entry-row.tsx": 2,
+      "components/molecules/list-item.tsx": 10,
+      "components/molecules/recurrence-picker.tsx": 3,
+      "components/molecules/someday-item.tsx": 3,
+      "components/molecules/today-event-row.tsx": 8,
+      "components/molecules/weekday-row.tsx": 2,
+      "components/molecules/wrapup-card.tsx": 3,
+      "components/organisms/app-header.tsx": 7,
+      "components/organisms/app-menu.tsx": 3,
+      "components/organisms/capture-bar.tsx": 6,
+      "components/organisms/custom-tab-bar.tsx": 5,
+      "components/organisms/day-detail-sheet.tsx": 4,
+      "components/organisms/fab.tsx": 17,
+      "components/organisms/field-tile.tsx": 6,
+      "components/organisms/list-progress.tsx": 2,
+      "components/organisms/list-screen-header.tsx": 2,
+      "components/organisms/month-grid.tsx": 1,
+      "components/organisms/next-up-card.tsx": 8,
+      "components/organisms/swipeable-row.tsx": 1,
+      "components/organisms/upcoming-preview-card.tsx": 7,
+      "components/organisms/week-strip.tsx": 8,
+      "constants/theme.ts": 11,
+      "speech-recognizer/example/App.tsx": 10,
+      "speech-recognizer/speech-recognizer-example/App.tsx": 1,
+      "targets/watch/expo-target.config.js": 1,
+      "targets/watch-widget/expo-target.config.js": 1
+    },
+    "byKind": {
+      "magic-spacing": 113,
+      "magic-fontsize": 71,
+      "magic-radius": 9,
+      "inline-color": 7
+    },
+    "totalCount": 200,
+    "verdict": "severe",
+    "recommendation": "200 hardcoded values found across multiple files. Resolve violations before migration — the new token system cannot reach these values and the migration will produce inconsistent results.",
+    "summary": {
+      "fileCount": 93,
+      "violationCount": 200,
+      "verdict": "severe"
+    }
+  },
+  "summary": {
+    "filesScanned": 93,
+    "perceivedColors": 32,
+    "perceivedFontSizes": 10,
+    "fontFamilyCount": 4,
+    "dominantHueFamily": "orange",
+    "temperature": "warm",
+    "density": "balanced",
+    "posture": "expressive",
+    "era": "mixed",
+    "convention": "distinct",
+    "incoherenceFindings": 8,
+    "severeContradictions": 3,
+    "hardcodedViolations": 200,
+    "readinessVerdict": "rebrand-recommended",
+    "flags": [
+      {
+        "kind": "high-incoherence",
+        "message": "3 severe contradiction(s) in the current system. Rebrand is recommended — the existing surface is incoherent."
+      },
+      {
+        "kind": "palette-sprawl",
+        "message": "32 perceptually-distinct colors. Palette has lost shape."
+      },
+      {
+        "kind": "hardcoded-violations",
+        "message": "200 hardcoded values bypass the token system. These won't respond to rebrand unless fixed."
+      }
+    ],
+    "recommendation": "Forensics found real signal that a rebrand would resolve."
+  }
+}

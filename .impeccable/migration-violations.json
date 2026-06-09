@@ -1,0 +1,340 @@
+{
+  "violations": [
+    {
+      "file": "app/(tabs)/calendar.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 80",
+      "nearestToken": "spacing.5xl",
+      "line": 150,
+      "col": 5,
+      "context": "height: 80,"
+    },
+    {
+      "file": "app/(tabs)/index.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 72",
+      "nearestToken": "spacing.5xl",
+      "line": 312,
+      "col": 5,
+      "context": "height: 72,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.6",
+      "nearestToken": "type.xs",
+      "line": 783,
+      "col": 5,
+      "context": "letterSpacing: 0.6,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 28",
+      "nearestToken": "type.4xl",
+      "line": 786,
+      "col": 5,
+      "context": "fontSize: 28,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 34",
+      "nearestToken": "type.5xl",
+      "line": 787,
+      "col": 5,
+      "context": "lineHeight: 34,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.8",
+      "nearestToken": "type.xs",
+      "line": 801,
+      "col": 5,
+      "context": "letterSpacing: 0.8,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.6",
+      "nearestToken": "type.xs",
+      "line": 813,
+      "col": 5,
+      "context": "letterSpacing: 0.6,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 22",
+      "nearestToken": "type.2xl",
+      "line": 816,
+      "col": 5,
+      "context": "lineHeight: 22,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 13",
+      "nearestToken": "type.sm",
+      "line": 842,
+      "col": 5,
+      "context": "fontSize: 13,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.4",
+      "nearestToken": "type.xs",
+      "line": 843,
+      "col": 5,
+      "context": "letterSpacing: 0.4,"
+    },
+    {
+      "file": "app/list.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 80",
+      "nearestToken": "spacing.5xl",
+      "line": 405,
+      "col": 5,
+      "context": "height: 80,"
+    },
+    {
+      "file": "app/list.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 10",
+      "nearestToken": "type.xs",
+      "line": 389,
+      "col": 5,
+      "context": "fontSize: 10,"
+    },
+    {
+      "file": "app/list.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 399,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 60",
+      "nearestToken": "spacing.5xl",
+      "line": 339,
+      "col": 5,
+      "context": "minWidth: 60,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 50",
+      "nearestToken": "spacing.5xl",
+      "line": 342,
+      "col": 5,
+      "context": "minWidth: 50,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 14",
+      "nearestToken": "type.md",
+      "line": 354,
+      "col": 5,
+      "context": "fontSize: 14,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 369,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 16",
+      "nearestToken": "type.lg",
+      "line": 375,
+      "col": 5,
+      "context": "fontSize: 16,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 18",
+      "nearestToken": "type.xl",
+      "line": 378,
+      "col": 5,
+      "context": "fontSize: 18,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 16",
+      "nearestToken": "type.lg",
+      "line": 423,
+      "col": 5,
+      "context": "fontSize: 16,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 11",
+      "nearestToken": "type.xs",
+      "line": 440,
+      "col": 5,
+      "context": "fontSize: 11,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 60",
+      "nearestToken": "spacing.5xl",
+      "line": 199,
+      "col": 5,
+      "context": "minWidth: 60,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 60",
+      "nearestToken": "spacing.5xl",
+      "line": 202,
+      "col": 5,
+      "context": "minWidth: 60,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 120",
+      "nearestToken": "spacing.5xl",
+      "line": 236,
+      "col": 5,
+      "context": "width: 120,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 120",
+      "nearestToken": "spacing.5xl",
+      "line": 237,
+      "col": 5,
+      "context": "height: 120,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 80",
+      "nearestToken": "spacing.5xl",
+      "line": 250,
+      "col": 5,
+      "context": "width: 80,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 80",
+      "nearestToken": "spacing.5xl",
+      "line": 251,
+      "col": 5,
+      "context": "height: 80,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 4",
+      "nearestToken": "spacing.xs",
+      "line": 257,
+      "col": 31,
+      "context": "shadowOffset: { width: 0, height: 4 },"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 32",
+      "nearestToken": "spacing.3xl",
+      "line": 267,
+      "col": 5,
+      "context": "width: 32,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 32",
+      "nearestToken": "spacing.3xl",
+      "line": 268,
+      "col": 5,
+      "context": "height: 32,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 24",
+      "nearestToken": "spacing.2xl",
+      "line": 274,
+      "col": 5,
+      "context": "width: 24,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 24",
+      "nearestToken": "spacing.2xl",
+      "line": 275,
+      "col": 5,
+      "context": "height: 24,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-radius",
+      "value": "borderRadius: 50",
+      "nearestToken": "radii.2xl",
+      "line": 245,
+      "col": 5,
+      "context": "borderRadius: 50,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 14",
+      "nearestToken": "type.md",
+      "line": 211,
+      "col": 5,
+      "context": "fontSize: 14,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 10",
+      "nearestToken": "type.xs",
+      "line": 280,
+      "col": 5,
+      "context": "fontSize: 10,"
+    }
+  ],
+  "byFile": {
+    "app/(tabs)/calendar.tsx": 1,
+    "app/(tabs)/index.tsx": 1,
+    "app/detail.tsx": 8,
+    "app/list.tsx": 3,
+    "app/modal.tsx": 8,
+    "app/voice-input.tsx": 14
+  },
+  "byKind": {
+    "magic-spacing": 16,
+    "magic-fontsize": 18,
+    "magic-radius": 1
+  },
+  "totalCount": 35,
+  "verdict": "severe",
+  "recommendation": "35 hardcoded values found across multiple files. Resolve violations before migration — the new token system cannot reach these values and the migration will produce inconsistent results.",
+  "summary": {
+    "fileCount": 6,
+    "violationCount": 35,
+    "verdict": "severe"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "scope": {
+    "kind": "app",
+    "name": "app",
+    "raw": "app"
+  },
+  "screens": [
+    {
+      "route": "/calendar",
+      "file": "app/(tabs)/calendar.tsx"
+    },
+    {
+      "route": "/",
+      "file": "app/(tabs)/index.tsx"
+    },
+    {
+      "route": "/detail",
+      "file": "app/detail.tsx"
+    },
+    {
+      "route": "/list",
+      "file": "app/list.tsx"
+    },
+    {
+      "route": "/modal",
+      "file": "app/modal.tsx"
+    },
+    {
+      "route": "/voice-input",
+      "file": "app/voice-input.tsx"
+    }
+  ],
+  "components": [],
+  "excluded": [],
+  "summary": {
+    "screenCount": 6,
+    "componentCount": 0,
+    "excludedCount": 0
+  }
+}

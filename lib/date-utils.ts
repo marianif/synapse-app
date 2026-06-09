@@ -72,3 +72,34 @@ export function isSameDay(
   if (!parsed) return false;
   return isSameDayDate(parsed, target);
 }
+
+// ─── Week window ──────────────────────────────────────────────────────────────
+
+/**
+ * Inclusive end of the current week (Friday 23:59:59) relative to `from`.
+ * Mirrors the "This Week" bucket the Incoming list uses, so a header badge and
+ * the list it opens agree on what counts as "this week".
+ */
+export function endOfWeek(from: Date): Date {
+  const dow = from.getDay();
+  const monday = new Date(from);
+  monday.setDate(from.getDate() - (dow === 0 ? 6 : dow - 1));
+  const friday = new Date(monday);
+  friday.setDate(monday.getDate() + 4);
+  friday.setHours(23, 59, 59, 999);
+  return friday;
+}
+
+/**
+ * True if a stored date string falls between now and end-of-week (inclusive),
+ * i.e. it's "incoming this week". Past-due dates count too — an overdue
+ * deadline is still something the user should see flagged.
+ */
+export function isWithinThisWeek(
+  dateStr: string | null | undefined,
+  from: Date,
+): boolean {
+  const parsed = parseDate(dateStr ?? null);
+  if (!parsed) return false;
+  return parsed <= endOfWeek(from);
+}

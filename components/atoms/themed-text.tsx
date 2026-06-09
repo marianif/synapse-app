@@ -1,24 +1,20 @@
 import { StyleSheet, Text } from "react-native";
 
-import {
-  Colors,
-  FontFamily,
-  FontSize,
-  LetterSpacing,
-  LineHeight,
-  TextColors,
-} from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { tokens, useTheme } from "@/constants/theme";
 
 import type { TextProps } from "react-native";
 
 export type TextType =
-  | "display" // 48pt hero counter
-  | "headline" // 24pt card title
-  | "body" // 14pt task description
-  | "bodyBold" // 14pt bold
-  | "label" // 11pt all-caps metadata
-  | "caption"; // 10pt extra-small
+  | "display" // 28pt Inter bold — home greeting
+  | "headline" // 20pt Inter bold — tile / section title (alias of title)
+  | "title" // 20pt Inter bold — tile / section title
+  | "item" // 16pt Inter — entry titles inside tiles
+  | "body" // 14pt Inter — detail / supporting
+  | "bodyBold" // 14pt Inter semibold
+  | "label" // 11pt all-caps mono kicker
+  | "micro" // 10pt all-caps mono — sub-kicker dividers / tertiary metadata
+  | "mono" // 13pt mono — counts / status / time
+  | "caption"; // 11pt Inter, no transform
 
 interface ThemedTextProps extends TextProps {
   type?: TextType;
@@ -36,8 +32,8 @@ export function ThemedText({
   children,
   ...rest
 }: ThemedTextProps): React.ReactElement {
-  const scheme = useColorScheme();
-  const color = muted ? TextColors.secondary : Colors[scheme].text;
+  const { colors } = useTheme();
+  const color = muted ? colors.inkMuted : colors.ink;
 
   return (
     <Text style={[styles.base, styles[type], { color }, style]} {...rest}>
@@ -46,44 +42,66 @@ export function ThemedText({
   );
 }
 
-// TODO: wire up Inter via useFonts in app/_layout.tsx (expo-font / @expo-google-fonts/inter)
-// so FontFamily tokens resolve. Until then, omitting fontFamily lets RN inherit the
-// system Inter substitute rather than locking to "System".
+// Fonts are loaded in app/_layout.tsx via useFonts and splash-gated. Hierarchy is
+// sans + mono (DESIGN.md): Inter carries display/title/body, JetBrains Mono carries
+// the signal layer (kicker label + mono counts/status). Hierarchy = size + weight.
 const styles = StyleSheet.create({
-  base: {
-    // fontFamily intentionally omitted — see TODO above
-  },
+  base: {},
   display: {
-    fontSize: FontSize.displayLg,
-    lineHeight: LineHeight.displayLg,
-    letterSpacing: LetterSpacing.displayLg,
-    fontFamily: FontFamily.bold,
+    fontSize: tokens.type.display.size,
+    lineHeight: tokens.type.display.lineHeight,
+    letterSpacing: tokens.type.display.tracking,
+    fontFamily: tokens.type.fontInter.bold,
   },
   headline: {
-    fontSize: FontSize.headlineSm,
-    lineHeight: LineHeight.headlineSm,
-    fontFamily: FontFamily.semiBold,
+    fontSize: tokens.type.title.size,
+    lineHeight: tokens.type.title.lineHeight,
+    letterSpacing: tokens.type.title.tracking,
+    fontFamily: tokens.type.fontInter.bold,
+  },
+  title: {
+    fontSize: tokens.type.title.size,
+    lineHeight: tokens.type.title.lineHeight,
+    letterSpacing: tokens.type.title.tracking,
+    fontFamily: tokens.type.fontInter.bold,
+  },
+  item: {
+    fontSize: tokens.type.item.size,
+    lineHeight: tokens.type.item.lineHeight,
+    fontFamily: tokens.type.fontInter.medium,
   },
   body: {
-    fontSize: FontSize.bodyMd,
-    lineHeight: LineHeight.bodyMd,
-    fontFamily: FontFamily.regular,
+    fontSize: tokens.type.body.size,
+    lineHeight: tokens.type.body.lineHeight,
+    fontFamily: tokens.type.fontInter.regular,
   },
   bodyBold: {
-    fontSize: FontSize.bodyMd,
-    lineHeight: LineHeight.bodyMd,
-    fontFamily: FontFamily.semiBold,
+    fontSize: tokens.type.body.size,
+    lineHeight: tokens.type.body.lineHeight,
+    fontFamily: tokens.type.fontInter.semiBold,
   },
   label: {
-    fontSize: FontSize.labelSm,
-    lineHeight: LineHeight.labelSm,
-    letterSpacing: LetterSpacing.labelSm,
-    fontFamily: FontFamily.semiBold,
+    fontSize: tokens.type.kicker.size,
+    lineHeight: tokens.type.kicker.lineHeight,
+    letterSpacing: tokens.type.kicker.tracking,
+    fontFamily: tokens.type.fontMono.medium,
     textTransform: "uppercase",
   },
+  micro: {
+    fontSize: tokens.type.micro.size,
+    lineHeight: tokens.type.micro.lineHeight,
+    letterSpacing: tokens.type.micro.tracking,
+    fontFamily: tokens.type.fontMono.medium,
+    textTransform: "uppercase",
+  },
+  mono: {
+    fontSize: tokens.type.mono.size,
+    lineHeight: tokens.type.mono.lineHeight,
+    fontFamily: tokens.type.fontMono.medium,
+  },
   caption: {
-    fontSize: FontSize.labelXs,
-    lineHeight: LineHeight.labelSm,
-    fontFamily: FontFamily.regular,
+    fontSize: tokens.type.kicker.size,
+    lineHeight: tokens.type.kicker.lineHeight,
+    fontFamily: tokens.type.fontInter.regular,
   },
 });

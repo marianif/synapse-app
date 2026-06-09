@@ -1,22 +1,28 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect } from "react";
+import {
+  Alert,
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import Animated, {
+  Easing,
+  interpolate,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 
-import {
-  EntryAccent,
-  FontSize,
-  Radius,
-  Spacing,
-  Surface,
-  TextColors,
-} from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { entryColor, type Scheme, tokens, useTheme } from "@/constants/theme";
+import { useThemeContext } from "@/contexts/theme-context";
+import { useDatabase } from "@/hooks/use-database/use-database";
+import { clearAllData, getDb } from "@/lib/database";
+import { seedDevDataIfEmpty } from "@/lib/dev-seed";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const MENU_WIDTH = SCREEN_WIDTH * 0.75;
@@ -42,27 +48,23 @@ const quickActions: MenuItem[] = [
     label: "Add Todo",
     icon: "checkbox-marked-outline",
     modalParams: { type: "todo" },
-    accentColor: EntryAccent.todo,
+    accentColor: entryColor("todo"),
   },
   {
     label: "Add Event",
     icon: "calendar-clock",
     modalParams: { type: "event" },
-    accentColor: EntryAccent.event,
+    accentColor: entryColor("event"),
   },
   {
     label: "Add Deadline",
     icon: "clock-alert-outline",
     modalParams: { type: "deadline" },
-    accentColor: EntryAccent.deadline,
+    accentColor: entryColor("deadline"),
   },
 ];
 
 const menuItems: MenuItem[] = [
-  { label: "Today", icon: "clock-outline", route: "/" },
-  { label: "Incoming", icon: "calendar-week", route: "/list" },
-  { label: "Calendar", icon: "calendar-month", route: "/calendar" },
-  { label: "Stats", icon: "chart-bar", route: "/stats", dividerAfter: true },
   { label: "Settings", icon: "cog-outline", route: "/settings" },
   { label: "About", icon: "information-outline" },
 ];
@@ -72,15 +74,10 @@ export function AppMenu({
   onClose,
 }: AppMenuProps): React.ReactElement | null {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const [isDark, setIsDark] = useState<"light" | "dark">(
-    colorScheme === "dark" ? "dark" : "light",
-  );
+  const { colors } = useTheme();
+  const { resolvedScheme, setPreference } = useThemeContext();
+  const { fetchEntries } = useDatabase();
   const translateX = useSharedValue(MENU_WIDTH);
-
-  const toggleTheme = () => {
-    setIsDark((prev) => (prev === "dark" ? "light" : "dark"));
-  };
 
   useEffect(() => {
     if (visible) {
@@ -106,33 +103,87 @@ export function AppMenu({
     onClose();
   };
 
+  const handleClearDatabase = () => {
+    Alert.alert(
+      "Clear database?",
+      "This permanently deletes all entries and diary notes. Dev only.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await clearAllData();
+              await fetchEntries();
+              onClose();
+            } catch (error) {
+              console.error("[AppMenu] clearAllData failed:", error);
+              Alert.alert("Couldn't clear the database.");
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleSeedDatabase = () => {
+    Alert.alert(
+      "Seed database?",
+      "Inserts mock entries across all types. Only runs when the database is empty. Dev only.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Seed",
+          onPress: async () => {
+            try {
+              const inserted = await seedDevDataIfEmpty(getDb());
+              if (inserted) {
+                await fetchEntries();
+                onClose();
+              } else {
+                Alert.alert("Nothing seeded", "Clear the database first.");
+              }
+            } catch (error) {
+              console.error("[AppMenu] seedDevData failed:", error);
+              Alert.alert("Couldn't seed the database.");
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <View style={StyleSheet.absoluteFill}>
       <Pressable style={styles.backdrop} onPress={onClose} />
       <Animated.View style={[styles.blurContainer, animatedStyle]}>
-        <View style={styles.menu}>
+        <View style={[styles.menu, { backgroundColor: colors.surfaceSubtle }]}>
           <View style={styles.header}>
-            <Text style={styles.logo}>Synapse</Text>
-            <View style={styles.headerActions}>
-              <Pressable onPress={toggleTheme} hitSlop={8}>
-                <MaterialCommunityIcons
-                  name={isDark ? "weather-sunny" : "weather-night"}
-                  size={22}
-                  color={TextColors.secondary}
-                />
-              </Pressable>
-              <Pressable onPress={onClose} hitSlop={8}>
-                <MaterialCommunityIcons
-                  name="close"
-                  size={24}
-                  color={TextColors.secondary}
-                />
-              </Pressable>
-            </View>
+            <Text style={[styles.logo, { color: colors.ink }]}>Settings</Text>
+            <Pressable onPress={onClose} hitSlop={8}>
+              <MaterialCommunityIcons
+                name="close"
+                size={24}
+                color={colors.inkMuted}
+              />
+            </Pressable>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Views</Text>
+            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
+              Appearance
+            </Text>
+            <ThemeToggle
+              scheme={resolvedScheme}
+              onChange={(next) => setPreference(next)}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
+              Views
+            </Text>
             {menuItems.slice(0, 4).map((item) => (
               <MenuRow
                 key={item.label}
@@ -142,19 +193,63 @@ export function AppMenu({
             ))}
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>App</Text>
-            {menuItems.slice(4).map((item) => (
-              <MenuRow
-                key={item.label}
-                item={item}
-                onPress={() => handleItemPress(item)}
-              />
-            ))}
-          </View>
-
           <View style={styles.footer}>
-            <Text style={styles.version}>v1.0.0</Text>
+            {__DEV__ && (
+              <Pressable
+                onPress={handleSeedDatabase}
+                style={({ pressed }) => [
+                  styles.devButton,
+                  {
+                    backgroundColor: colors.surface,
+                    opacity: pressed ? 0.7 : 1,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Seed database (dev only)"
+              >
+                <MaterialCommunityIcons
+                  name="database-plus-outline"
+                  size={18}
+                  color={entryColor("idea")}
+                />
+                <Text
+                  style={[styles.devButtonLabel, { color: entryColor("idea") }]}
+                >
+                  Seed Database
+                </Text>
+              </Pressable>
+            )}
+            {__DEV__ && (
+              <Pressable
+                onPress={handleClearDatabase}
+                style={({ pressed }) => [
+                  styles.devButton,
+                  {
+                    backgroundColor: colors.surface,
+                    opacity: pressed ? 0.7 : 1,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Clear database (dev only)"
+              >
+                <MaterialCommunityIcons
+                  name="database-remove-outline"
+                  size={18}
+                  color={entryColor("deadline")}
+                />
+                <Text
+                  style={[
+                    styles.devButtonLabel,
+                    { color: entryColor("deadline") },
+                  ]}
+                >
+                  Clear Database
+                </Text>
+              </Pressable>
+            )}
+            <Text style={[styles.version, { color: colors.inkMuted }]}>
+              v1.0.0
+            </Text>
           </View>
         </View>
       </Animated.View>
@@ -169,20 +264,102 @@ function MenuRow({
   item: MenuItem;
   onPress: () => void;
 }): React.ReactElement {
+  const { colors } = useTheme();
   return (
     <Pressable
       style={({ pressed }) => [
         styles.menuItem,
-        pressed && styles.menuItemPressed,
+        pressed && { backgroundColor: colors.surfaceSubtle },
       ]}
       onPress={onPress}
     >
       <MaterialCommunityIcons
         name={item.icon as any}
         size={22}
-        color={TextColors.primary}
+        color={colors.ink}
       />
-      <Text style={styles.menuLabel}>{item.label}</Text>
+      <Text style={[styles.menuLabel, { color: colors.ink }]}>
+        {item.label}
+      </Text>
+    </Pressable>
+  );
+}
+
+// Track geometry, declared once so the component and styles agree on the math.
+const TOGGLE_PAD = 4;
+const TOGGLE_WELL = 40; // each glyph well — the knob matches this
+const TOGGLE_TRAVEL = TOGGLE_WELL; // knob slides exactly one well over
+
+/**
+ * Light/dark switch — one control, not two tabs. A clay knob slides between a
+ * sun well and a moon well; tapping anywhere flips to the opposite scheme. The
+ * slide IS the affordance: it reads as a physical switch, the glyph under the
+ * knob lit, the other dimmed. No labels, no system option.
+ */
+function ThemeToggle({
+  scheme,
+  onChange,
+}: {
+  scheme: Scheme;
+  onChange: (next: Scheme) => void;
+}): React.ReactElement {
+  const { colors } = useTheme();
+  const reduced = useReducedMotion();
+  const isDark = scheme === "dark";
+
+  // 0 = light (knob left), 1 = dark (knob right). Follows the resolved scheme.
+  const pos = useSharedValue(isDark ? 1 : 0);
+  useEffect(() => {
+    const next = isDark ? 1 : 0;
+    pos.value = reduced
+      ? next
+      : withTiming(next, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.bezier(...tokens.motion.bezier),
+        });
+  }, [isDark, pos, reduced]);
+
+  const knobStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: pos.value * TOGGLE_TRAVEL }],
+  }));
+  // Each glyph lights as the knob arrives over it, dims as it leaves.
+  const sunStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(pos.value, [0, 1], [1, 0.35]),
+  }));
+  const moonStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(pos.value, [0, 1], [0.35, 1]),
+  }));
+
+  return (
+    <Pressable
+      onPress={() => onChange(isDark ? "light" : "dark")}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: isDark }}
+      accessibilityLabel="Dark appearance"
+      hitSlop={8}
+      style={[styles.toggleTrack, { backgroundColor: colors.surface }]}
+    >
+      <Animated.View
+        style={[
+          styles.toggleKnob,
+          { backgroundColor: colors.accent.clay },
+          knobStyle,
+        ]}
+      />
+      <Animated.View style={[styles.toggleWell, sunStyle]}>
+        <MaterialCommunityIcons
+          name="weather-sunny"
+          size={20}
+          color={isDark ? colors.inkMuted : colors.accent.onClay}
+        />
+      </Animated.View>
+      <Animated.View style={[styles.toggleWell, moonStyle]}>
+        <MaterialCommunityIcons
+          name="weather-night"
+          size={20}
+          color={isDark ? colors.accent.onClay : colors.inkMuted}
+        />
+      </Animated.View>
     </Pressable>
   );
 }
@@ -190,7 +367,7 @@ function MenuRow({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: tokens.color.scrim.medium,
     zIndex: 100,
   },
   blurContainer: {
@@ -203,82 +380,109 @@ const styles = StyleSheet.create({
   },
   menu: {
     flex: 1,
-    backgroundColor: Surface.containerLow,
-    paddingTop: Spacing.xxxl + Spacing.lg,
-    paddingHorizontal: Spacing.lg,
+    paddingTop: tokens.space.xxxl + tokens.space.lg,
+    paddingHorizontal: tokens.space.lg,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: Spacing.xxl,
+    marginBottom: tokens.space.xxl,
   },
   headerActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.md,
+    gap: tokens.space.md,
   },
   logo: {
     fontSize: 24,
     fontWeight: "700",
-    color: TextColors.primary,
   },
   section: {
-    marginBottom: Spacing.xl,
+    marginBottom: tokens.space.xl,
   },
   sectionLabel: {
-    fontSize: FontSize.labelSm,
-    color: TextColors.tertiary,
+    fontSize: tokens.type.kicker.size,
     textTransform: "uppercase",
     letterSpacing: 0.55,
-    marginBottom: Spacing.md,
-    marginLeft: Spacing.xs,
+    marginBottom: tokens.space.md,
+    marginLeft: tokens.space.xs,
+  },
+  // A self-contained switch: a pill track sized to exactly two wells + padding,
+  // so it never stretches edge-to-edge like a tab bar.
+  toggleTrack: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    width: TOGGLE_WELL * 2 + TOGGLE_PAD * 2,
+    height: TOGGLE_WELL + TOGGLE_PAD * 2,
+    padding: TOGGLE_PAD,
+    borderRadius: tokens.radius.pill,
+  },
+  toggleKnob: {
+    position: "absolute",
+    top: TOGGLE_PAD,
+    left: TOGGLE_PAD,
+    width: TOGGLE_WELL,
+    height: TOGGLE_WELL,
+    borderRadius: tokens.radius.pill,
+  },
+  toggleWell: {
+    width: TOGGLE_WELL,
+    height: TOGGLE_WELL,
+    alignItems: "center",
+    justifyContent: "center",
   },
   quickActions: {
     flexDirection: "row",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   quickAction: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: Radius.lg,
-    backgroundColor: Surface.container,
-    gap: Spacing.xs,
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.md,
+    gap: tokens.space.xs,
   },
   quickActionLabel: {
-    fontSize: FontSize.labelSm,
-    color: TextColors.primary,
+    fontSize: tokens.type.kicker.size,
     fontWeight: "500",
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: Radius.lg,
-    marginBottom: Spacing.xs,
-  },
-  menuItemPressed: {
-    backgroundColor: Surface.bright,
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.space.xs,
   },
   menuLabel: {
-    fontSize: FontSize.bodyMd,
-    color: TextColors.primary,
-    marginLeft: Spacing.md,
+    fontSize: tokens.type.body.size,
+    marginLeft: tokens.space.md,
   },
   footer: {
     position: "absolute",
-    bottom: Spacing.xxl,
-    left: Spacing.lg,
-    right: Spacing.lg,
+    bottom: tokens.space.xxl,
+    left: tokens.space.lg,
+    right: tokens.space.lg,
   },
   version: {
-    fontSize: FontSize.labelXs,
-    color: TextColors.tertiary,
+    fontSize: tokens.type.kicker.size,
     textAlign: "center",
+  },
+  devButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: tokens.space.xs,
+    minHeight: 44,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.space.md,
+  },
+  devButtonLabel: {
+    fontSize: tokens.type.kicker.size,
+    fontWeight: "600",
   },
 });

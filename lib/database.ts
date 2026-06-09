@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
-import { ALL_STATEMENTS, CREATE_ENTRIES_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, SCHEMA_VERSION } from './schema';
+import { ALL_STATEMENTS, CREATE_DIARY_TABLE, CREATE_ENTRIES_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, SCHEMA_VERSION } from './schema';
+import type { DbDiaryEntry, DiaryMood } from './types';
 
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 let isInitialized = false;
@@ -185,10 +186,169 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       await db.execAsync('DROP TABLE entries_old');
       await db.runAsync(
         "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        '5',
+      );
+    });
+  }
+
+  if (currentVersion < 6) {
+    // Migration 6: Re-introduce 'idea' into the type CHECK constraint.
+    // Migration 5 had stripped it out (remapping idea → someday); this restores
+    // the ability to store ideas going forward. SQLite cannot ALTER a CHECK
+    // constraint, so we use the rename+copy+drop pattern, copying all rows
+    // through unchanged.
+    // NOTE: ideas previously remapped to 'someday' by migration 5 are
+    // indistinguishable from genuine somedays and are NOT restored.
+    await db.withTransactionAsync(async () => {
+      await db.execAsync('ALTER TABLE entries RENAME TO entries_old');
+      await db.execAsync(`
+        CREATE TABLE entries (
+          id TEXT PRIMARY KEY NOT NULL,
+          title TEXT NOT NULL,
+          type TEXT NOT NULL CHECK(type IN ('todo', 'deadline', 'event', 'someday', 'idea')),
+          subtitle TEXT,
+          inspiration TEXT,
+          scheduled_date TEXT,
+          scheduled_time TEXT,
+          due_date TEXT,
+          due_time TEXT,
+          notes TEXT,
+          status TEXT DEFAULT 'scheduled' CHECK(status IN ('scheduled', 'active', 'completed', 'pending', 'met', 'overdue')),
+          recurrence_rule TEXT,
+          recurrence_end_date TEXT,
+          created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+          updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+        )
+      `);
+      await db.execAsync(`
+        INSERT INTO entries
+          (id, title, type, subtitle, inspiration, scheduled_date, scheduled_time,
+           due_date, due_time, notes, status, recurrence_rule, recurrence_end_date,
+           created_at, updated_at)
+        SELECT
+          id, title, type, subtitle, inspiration, scheduled_date, scheduled_time,
+          due_date, due_time, notes, status, recurrence_rule, recurrence_end_date,
+          created_at, updated_at
+        FROM entries_old
+      `);
+      await db.execAsync('DROP TABLE entries_old');
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        '6',
+      );
+    });
+  }
+
+  if (currentVersion < 7) {
+    // Migration 7: add the standalone diary_entries table. Independent of the
+    // action-item `entries` table, so no CHECK-constraint rebuild is needed —
+    // just create it for installs that predate it.
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(CREATE_DIARY_TABLE);
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        "7",
+      );
+    });
+  }
+
+  if (currentVersion < 8) {
+    // Migration 8: a diary note can link to an action-board 'idea'. Add the
+    // nullable column to pre-8 installs (fresh installs get the full column,
+    // incl. its REFERENCES clause, from CREATE_DIARY_TABLE). SQLite ADD COLUMN
+    // can't carry a FK clause, so the ON DELETE SET NULL behaviour is enforced
+    // in app code (unlinkDiaryNotesForEntry) when an entry is deleted.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync(
+          "ALTER TABLE diary_entries ADD COLUMN linked_entry_id TEXT",
+        );
+      } catch {
+        // column already exists (fresh installs get it from CREATE_DIARY_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
         String(SCHEMA_VERSION),
       );
     });
   }
+}
+
+// ─── Diary helpers ──────────────────────────────────────────────────────────────
+
+/**
+ * Insert a diary entry, returning the persisted row. `linkedEntryId` ties the
+ * note to an action-board entry (an 'idea') — a reflection ON that idea; null
+ * for an autonomous note.
+ */
+export async function insertDiaryEntry(
+  body: string,
+  mood: DiaryMood | null,
+  linkedEntryId: string | null = null,
+): Promise<DbDiaryEntry> {
+  const db = getDb();
+  const id = generateId();
+  const now = Math.floor(Date.now() / 1000);
+  await db.runAsync(
+    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+    id,
+    body,
+    mood,
+    linkedEntryId,
+    now,
+    now,
+  );
+  return {
+    id,
+    body,
+    mood,
+    linked_entry_id: linkedEntryId,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+/** All diary entries, newest first. */
+export async function getDiaryEntries(): Promise<DbDiaryEntry[]> {
+  const db = getDb();
+  return db.getAllAsync<DbDiaryEntry>(
+    'SELECT * FROM diary_entries ORDER BY created_at DESC',
+  );
+}
+
+/** Delete a diary entry by id. */
+export async function deleteDiaryEntry(id: string): Promise<void> {
+  const db = getDb();
+  await db.runAsync('DELETE FROM diary_entries WHERE id = ?', id);
+}
+
+/**
+ * Unlink any diary notes that point at the given entry — the app-side stand-in
+ * for `ON DELETE SET NULL` (the FK clause can't be added by ADD COLUMN, so we
+ * enforce it here). Call before deleting an entry so linked reflections survive
+ * as autonomous notes instead of dangling.
+ */
+export async function unlinkDiaryNotesForEntry(entryId: string): Promise<void> {
+  const db = getDb();
+  await db.runAsync(
+    'UPDATE diary_entries SET linked_entry_id = NULL WHERE linked_entry_id = ?',
+    entryId,
+  );
+}
+
+/**
+ * Wipes every row from the data tables, leaving the schema (and schema_version)
+ * intact. Dev-only convenience for starting from an empty slate. Order respects
+ * FK references — diary first (it points at entries), then completions, then
+ * the entries themselves.
+ */
+export async function clearAllData(): Promise<void> {
+  const db = getDb();
+  await db.withTransactionAsync(async () => {
+    await db.execAsync('DELETE FROM diary_entries');
+    await db.execAsync('DELETE FROM recurrence_completions');
+    await db.execAsync('DELETE FROM entries');
+  });
 }
 
 /**

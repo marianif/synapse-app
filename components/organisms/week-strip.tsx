@@ -2,13 +2,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import {
-  EntryAccent,
-  Radius,
-  Spacing,
-  Surface,
-  TextColors,
-} from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 import type { DayCount } from "@/hooks/use-calendar-data";
 
@@ -34,6 +28,7 @@ export function WeekStrip({
   today,
   onDayPress,
 }: WeekStripProps): React.ReactElement {
+  const { colors } = useTheme();
   const todayDow = today.getDay();
   const todayIndex = todayDow === 0 ? 6 : todayDow - 1;
 
@@ -45,7 +40,7 @@ export function WeekStrip({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceSubtle }]}>
       <View style={styles.strip}>
         {weekCounts.map((day, index) => {
           const isToday = index === todayIndex;
@@ -59,14 +54,23 @@ export function WeekStrip({
             >
               <ThemedText
                 type="label"
-                style={[styles.dayLabel, isToday && styles.dayLabelToday]}
+                style={[
+                  styles.dayLabel,
+                  { color: isToday ? colors.accent.clay : colors.inkMuted },
+                ]}
               >
                 {WEEKDAY_NAMES[index]}
               </ThemedText>
 
               <View style={styles.indicator}>
                 {hasEntries ? (
-                  <View style={[styles.dots, isToday && styles.dotsToday]}>
+                  <View
+                    style={[
+                      styles.dots,
+                      isToday && styles.dotsToday,
+                      isToday && { backgroundColor: colors.accent.clay },
+                    ]}
+                  >
                     {day.types.slice(0, 3).map((type) => (
                       <EntryDot key={type} type={type} size={5} />
                     ))}
@@ -78,7 +82,14 @@ export function WeekStrip({
                   </View>
                 ) : (
                   <View
-                    style={[styles.emptyDot, isToday && styles.emptyDotToday]}
+                    style={[
+                      styles.emptyDot,
+                      {
+                        backgroundColor: isToday
+                          ? colors.accent.clay
+                          : colors.inkMuted,
+                      },
+                    ]}
                   />
                 )}
               </View>
@@ -98,9 +109,8 @@ export function WeekStrip({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Surface.containerLow,
-    borderRadius: Radius.xl,
-    padding: Spacing.md,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.md,
   },
   strip: {
     flexDirection: "row",
@@ -109,19 +119,11 @@ const styles = StyleSheet.create({
   dayItem: {
     flex: 1,
     alignItems: "center",
-    gap: Spacing.xs,
-    paddingVertical: Spacing.xs,
-  },
-  dayItemToday: {
-    backgroundColor: EntryAccent.today + "33", // 20% opacity
-    borderRadius: Radius.md,
+    gap: tokens.space.xs,
+    paddingVertical: tokens.space.xs,
   },
   dayLabel: {
-    color: TextColors.tertiary,
     fontSize: 10,
-  },
-  dayLabelToday: {
-    color: EntryAccent.today,
   },
   indicator: {
     height: 16,
@@ -135,16 +137,11 @@ const styles = StyleSheet.create({
   dotsToday: {
     padding: 4,
     borderRadius: 6,
-    backgroundColor: "rgba(144, 238, 144, 0.15)",
   },
   emptyDot: {
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: TextColors.disabled,
-  },
-  emptyDotToday: {
-    backgroundColor: EntryAccent.today,
   },
   countLabel: {
     fontSize: 9,

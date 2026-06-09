@@ -1,0 +1,16 @@
+plugins {
+  id 'com.android.library'
+  id 'org.jetbrains.kotlin.android'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'dev.the-wedge.synapse-app'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.speechrecognizer"
+  defaultConfig {
+    versionCode 1
+    versionName '1.0.0'
+  }
+}

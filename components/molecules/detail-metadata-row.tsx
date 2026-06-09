@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 interface DetailMetadataRowProps {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -21,12 +21,13 @@ export function DetailMetadataRow({
   icon,
   label,
   value,
-  accentColor = TextColors.secondary,
+  accentColor,
 }: DetailMetadataRowProps): React.ReactElement {
+  const { colors } = useTheme();
   return (
-    <View style={styles.row}>
-      <View style={styles.iconSlot}>
-        <MaterialCommunityIcons name={icon} size={18} color={accentColor} />
+    <View style={[styles.row, { backgroundColor: colors.surfaceSubtle }]}>
+      <View style={[styles.iconSlot, { backgroundColor: colors.surface }]}>
+        <MaterialCommunityIcons name={icon} size={18} color={accentColor ?? colors.inkMuted} />
       </View>
       <View style={styles.content}>
         <ThemedText type="caption" muted style={styles.label}>
@@ -42,17 +43,15 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Surface.containerLow,
-    borderRadius: Radius.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.md,
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.lg,
+    gap: tokens.space.md,
   },
   iconSlot: {
     width: 36,
     height: 36,
-    backgroundColor: Surface.containerHigh,
-    borderRadius: Radius.md,
+    borderRadius: tokens.radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,

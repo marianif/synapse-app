@@ -3,7 +3,7 @@ import { Dimensions, Modal, Pressable, StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { EntryRow } from "@/components/molecules/entry-row";
-import { Brand, Radius, Spacing, Surface, TextColors } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 
 import type { CalendarEntry } from "@/hooks/use-calendar-data";
 
@@ -35,6 +35,7 @@ export function DayDetailSheet({
   onClose,
   onAdd,
 }: DayDetailSheetProps): React.ReactElement {
+  const { colors } = useTheme();
   const hasEntries = entries.length > 0;
   const isPastDay = date && date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const canAdd = !isPastDay;
@@ -50,11 +51,11 @@ export function DayDetailSheet({
       <View style={styles.container}>
         <Pressable style={styles.backdrop} onPress={onClose} />
 
-        <View style={styles.sheet}>
-          <View style={styles.handle} />
+        <View style={[styles.sheet, { backgroundColor: colors.surfaceSubtle }]}>
+          <View style={[styles.handle, { backgroundColor: colors.inkMuted }]} />
 
           {date && (
-            <View style={styles.header}>
+            <View style={[styles.header, { borderBottomColor: colors.surfaceSubtle }]}>
               <ThemedText type="headline" style={styles.dateLabel}>
                 {formatDateLabel(date)}
               </ThemedText>
@@ -84,13 +85,13 @@ export function DayDetailSheet({
                 description="No entries scheduled for this day."
                 ctaLabel="+ Add Entry"
                 onCta={() => date && onAdd(date)}
-                accentColor={Brand.primary}
+                accentColor={colors.accent.clay}
               />
             ) : (
               <EmptyState
                 title="Past day"
                 description="No entries for this day."
-                accentColor={TextColors.disabled}
+                accentColor={colors.inkMuted}
               />
             )}
           </View>
@@ -98,10 +99,10 @@ export function DayDetailSheet({
           {hasEntries && date && canAdd && (
             <Pressable
               onPress={() => onAdd(date)}
-              style={styles.addButton}
+              style={[styles.addButton, { backgroundColor: colors.accent.clay }]}
               accessibilityRole="button"
             >
-              <ThemedText type="body" style={styles.addButtonText}>
+              <ThemedText type="body" style={[styles.addButtonText, { color: colors.accent.onClay }]}>
                 + Add to this day
               </ThemedText>
             </Pressable>
@@ -119,29 +120,26 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: tokens.color.scrim.strong,
   },
   sheet: {
-    backgroundColor: Surface.containerLow,
-    borderTopLeftRadius: Radius.xl + 8,
-    borderTopRightRadius: Radius.xl + 8,
+    borderTopLeftRadius: tokens.radius.lg + 8,
+    borderTopRightRadius: tokens.radius.lg + 8,
     minHeight: SHEET_HEIGHT,
     paddingBottom: 40,
   },
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: TextColors.disabled,
     borderRadius: 2,
     alignSelf: "center",
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.md,
+    marginTop: tokens.space.sm,
+    marginBottom: tokens.space.md,
   },
   header: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingBottom: tokens.space.md,
     borderBottomWidth: 1,
-    borderBottomColor: Surface.outlineVariant,
     gap: 2,
   },
   dateLabel: {
@@ -149,22 +147,20 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingTop: tokens.space.md,
   },
   list: {
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   addButton: {
-    marginHorizontal: Spacing.lg,
-    marginTop: Spacing.md,
-    paddingVertical: Spacing.md,
+    marginHorizontal: tokens.space.lg,
+    marginTop: tokens.space.md,
+    paddingVertical: tokens.space.md,
     alignItems: "center",
-    backgroundColor: Brand.fabGlow,
-    borderRadius: Radius.md,
+    borderRadius: tokens.radius.sm,
   },
   addButtonText: {
-    color: Brand.primary,
     fontWeight: "600",
   },
 });

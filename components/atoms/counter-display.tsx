@@ -1,11 +1,6 @@
 import { StyleSheet, Text } from "react-native";
 
-import {
-  EntryAccent,
-  FontSize,
-  LetterSpacing,
-  LineHeight,
-} from "@/constants/theme";
+import { entryColor, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
@@ -24,7 +19,7 @@ export function CounterDisplay({
   accentType,
 }: CounterDisplayProps): React.ReactElement {
   return (
-    <Text style={[styles.counter, { color: EntryAccent[accentType] }]}>
+    <Text style={[styles.counter, { color: entryColor(accentType) }]}>
       {value}
     </Text>
   );
@@ -32,9 +27,9 @@ export function CounterDisplay({
 
 const styles = StyleSheet.create({
   counter: {
-    fontSize: FontSize.displayLg - 10,
-    lineHeight: LineHeight.displayLg,
-    letterSpacing: LetterSpacing.displayLg,
+    fontSize: tokens.type.display.size - 10,
+    lineHeight: tokens.type.display.lineHeight,
+    letterSpacing: tokens.type.display.tracking,
     fontWeight: "700",
     includeFontPadding: false,
   },

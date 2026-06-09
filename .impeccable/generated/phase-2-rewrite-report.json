@@ -1,0 +1,153 @@
+{
+  "phase": 2,
+  "generatedAt": "2026-05-31T12:17:17.445Z",
+  "dryRun": true,
+  "summary": {
+    "filesPlanned": 10,
+    "editsPlanned": 15,
+    "filesWritten": 10,
+    "conflicts": 0,
+    "errors": 0,
+    "requiresAgent": 10
+  },
+  "written": [
+    {
+      "file": "components/atoms/countdown-chip.tsx",
+      "edits": 2,
+      "sizeBefore": 2326,
+      "sizeAfter": 2353
+    },
+    {
+      "file": "components/molecules/detail-action-bar.tsx",
+      "edits": 3,
+      "sizeBefore": 2617,
+      "sizeAfter": 2658
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx",
+      "edits": 1,
+      "sizeBefore": 2803,
+      "sizeAfter": 2824
+    },
+    {
+      "file": "components/molecules/weekday-row.tsx",
+      "edits": 1,
+      "sizeBefore": 2070,
+      "sizeAfter": 2091
+    },
+    {
+      "file": "components/organisms/app-header.tsx",
+      "edits": 1,
+      "sizeBefore": 2169,
+      "sizeAfter": 2190
+    },
+    {
+      "file": "components/organisms/day-detail-sheet.tsx",
+      "edits": 1,
+      "sizeBefore": 4527,
+      "sizeAfter": 4545
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "edits": 3,
+      "sizeBefore": 4621,
+      "sizeAfter": 4663
+    },
+    {
+      "file": "components/organisms/swipeable-row.tsx",
+      "edits": 1,
+      "sizeBefore": 1750,
+      "sizeAfter": 1763
+    },
+    {
+      "file": "components/organisms/today-section.tsx",
+      "edits": 1,
+      "sizeBefore": 2558,
+      "sizeAfter": 2579
+    },
+    {
+      "file": "components/organisms/week-strip.tsx",
+      "edits": 1,
+      "sizeBefore": 3773,
+      "sizeAfter": 3791
+    }
+  ],
+  "conflicts": [],
+  "errors": [],
+  "requiresAgent": [
+    {
+      "file": "components/atoms/countdown-chip.tsx",
+      "reason": "add `import { tokens } from '@/constants/theme'` for promoted literal"
+    },
+    {
+      "file": "components/molecules/detail-action-bar.tsx",
+      "reason": "add `import { tokens } from '@/constants/theme'` for promoted literal"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx",
+      "reason": "add `import { tokens } from '@/constants/theme'` for promoted literal"
+    },
+    {
+      "file": "components/molecules/weekday-row.tsx",
+      "reason": "add `import { tokens } from '@/constants/theme'` for promoted literal"
+    },
+    {
+      "file": "components/organisms/app-header.tsx",
+      "reason": "add `import { tokens } from '@/constants/theme'` for promoted literal"
+    },
+    {
+      "file": "components/organisms/day-detail-sheet.tsx",
+      "reason": "add `import { tokens } from '@/constants/theme'` for promoted literal"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "reason": "add `import { tokens } from '@/constants/theme'` for promoted literal"
+    },
+    {
+      "file": "components/organisms/swipeable-row.tsx",
+      "reason": "add `import { tokens } from '@/constants/theme'` for promoted literal"
+    },
+    {
+      "file": "components/organisms/today-section.tsx",
+      "reason": "add `import { tokens } from '@/constants/theme'` for promoted literal"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx",
+      "reason": "add `import { tokens } from '@/constants/theme'` for promoted literal"
+    }
+  ],
+  "sampleEdits": {
+    "literal-promote": [
+      {
+        "file": "components/atoms/countdown-chip.tsx",
+        "line": 25,
+        "before": "'#52C87A'",
+        "after": "tokens.feedback.success"
+      },
+      {
+        "file": "components/atoms/countdown-chip.tsx",
+        "line": 27,
+        "before": "'#FF4444'",
+        "after": "tokens.feedback.danger"
+      },
+      {
+        "file": "components/molecules/detail-action-bar.tsx",
+        "line": 35,
+        "before": "'#131316'",
+        "after": "tokens.color.dark.paper"
+      },
+      {
+        "file": "components/molecules/detail-action-bar.tsx",
+        "line": 40,
+        "before": "'#131316'",
+        "after": "tokens.color.dark.paper"
+      },
+      {
+        "file": "components/molecules/detail-action-bar.tsx",
+        "line": 22,
+        "before": "'#FF4444'",
+        "after": "tokens.feedback.danger"
+      }
+    ]
+  }
+}

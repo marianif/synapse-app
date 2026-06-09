@@ -1,55 +1,193 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 
-import { AgendaSection } from "@/components/organisms/agenda-section";
+import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
-import { DeadlinesCard } from "@/components/organisms/deadlines-card";
-import { Fab } from "@/components/organisms/fab";
-import { TodaySection } from "@/components/organisms/today-section";
-import { WeekStrip } from "@/components/organisms/week-strip";
-import { NextUpCard } from "@/components/organisms/next-up-card";
-import { WeeklyOverviewCard } from "@/components/organisms/weekly-overview-card";
+import { OrbitConsole } from "@/components/organisms/field-console/orbit-console";
+import { PresentZone } from "@/components/organisms/present/present-zone";
+import { StakesRunway } from "@/components/organisms/stakes-runway";
 
-import { SomedayItem } from "@/components/molecules/someday-item";
-import { Spacing, Surface } from "@/constants/theme";
+import {
+  FieldGreeting,
+  greetingFor,
+} from "@/components/molecules/field-greeting";
+
+import {
+  CaptureResolver,
+  type CaptureResolution,
+  type LinkableIdea,
+} from "@/components/molecules/capture-resolver";
+import { tokens, useTheme } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
-import {
-  getDeadlines,
-  getEntriesForDay,
-  getTodayAgenda,
-  getTodayEvents,
-  getWeeklyTodos,
-} from "@/hooks/use-database/use-database.helpers";
+import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
+import { useDiary } from "@/hooks/use-diary";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
-import { DAY_NAMES, formatDateLabel } from "@/lib/date-utils";
+import { splitCapture } from "@/lib/capture";
+import { toPresentItems } from "@/lib/present";
+
+import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
+import type { RunwayItem } from "@/components/molecules/stake-row";
+import { FieldLegend } from "@/components/organisms/field-console/legend";
+import type { DbEntry, EntryType } from "@/lib/types";
 
 dayjs.extend(customParseFormat);
 
-function getWeekDays(): { abbr: string; fullName: string; date: Date }[] {
-  const today = new Date();
-  const dow = today.getDay();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-  return ["Mon", "Tue", "Wed", "Thu", "Fri"].map((abbr, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return { abbr, fullName: DAY_NAMES[d.getDay()], date: d };
-  });
+const TODAY_START = () => dayjs().startOf("day");
+
+/** Days from today until an entry's date; null if undated. Negative = overdue. */
+function daysUntil(dateStr: string | null): number | null {
+  if (!dateStr) return null;
+  return dayjs(dateStr, "DD/MM/YYYY").startOf("day").diff(TODAY_START(), "day");
 }
+
+/**
+ * Heat is aliveness, NOT urgency-rank. A dated thing close in time runs hot; a
+ * thing further out runs warm; an undated idea or someday runs cool — but cool
+ * still glows. Nothing goes dark for lacking a deadline (the brief's core rule).
+ */
+function heatOf(days: number | null): Heat {
+  if (days === null) return "cool"; // undated idea / someday — present, not pressing
+  if (days <= 1) return "hot"; // overdue, today, tomorrow
+  if (days < 7) return "warm";
+  return "cool";
+}
+
+/** Absolute when-label sized to distance: time today, weekday this week, else date. */
+function whenLabel(
+  dateStr: string | null,
+  time: string | null,
+  days: number | null,
+): string | undefined {
+  if (days === null) return undefined;
+  const d = dayjs(dateStr!, "DD/MM/YYYY");
+  if (days < 0) return `${Math.abs(days)}d over`;
+  if (days === 0) return time ?? "Today";
+  if (days === 1) return "Tomorrow";
+  if (days < 7) return d.format("ddd");
+  if (d.isSame(TODAY_START(), "year")) return d.format("D MMM");
+  return d.format("MMM YYYY");
+}
+
+function toRowItem(e: DbEntry): FieldRowItem {
+  const dateStr = e.due_date ?? e.scheduled_date ?? null;
+  const time = e.scheduled_time ?? e.due_time ?? null;
+  const days = daysUntil(dateStr);
+  return {
+    id: e.id,
+    type: e.type as EntryType,
+    title: e.title,
+    when: whenLabel(dateStr, time, days),
+    heat: heatOf(days),
+  };
+}
+
+/** Trailing mono when-label for a stake: "2d over", "now", "tomorrow", "5d". */
+function runwayReadout(days: number | null): string {
+  if (days === null) return "";
+  if (days < 0) return `${Math.abs(days)}d over`;
+  if (days === 0) return "now";
+  if (days === 1) return "tomorrow";
+  return `${days}d`;
+}
+
+function toRunwayItem(e: DbEntry, done = false): RunwayItem {
+  const days = daysUntil(e.due_date ?? e.scheduled_date ?? null);
+  const dated = days !== null;
+  return {
+    id: e.id,
+    type: e.type as EntryType,
+    title: e.title,
+    readout: runwayReadout(days),
+    overdue: !done && days !== null && days < 0,
+    dated,
+    done,
+  };
+}
+
+/** A stake stays in the "recently cleared" run this many days after being done. */
+const DONE_WINDOW_DAYS = 7;
+
+/** Most-recently-cleared first, so the freshest win sits at the top of the run. */
+function byRecentlyDone(a: DbEntry, b: DbEntry): number {
+  return b.updated_at - a.updated_at;
+}
+
+/** Runway order: most burnt-down first (overdue → soonest), undated last. */
+function byRunway(a: DbEntry, b: DbEntry): number {
+  const da = daysUntil(a.due_date ?? a.scheduled_date ?? null);
+  const db = daysUntil(b.due_date ?? b.scheduled_date ?? null);
+  if (da === null && db === null) return 0;
+  if (da === null) return 1;
+  if (db === null) return -1;
+  return da - db;
+}
+
+/** Order within a zone: hottest first, then soonest date, undated last. */
+const HEAT_RANK: Record<Heat, number> = { hot: 0, warm: 1, cool: 2 };
+
+function byHeatThenDate(a: DbEntry, b: DbEntry): number {
+  const ra =
+    HEAT_RANK[heatOf(daysUntil(a.due_date ?? a.scheduled_date ?? null))];
+  const rb =
+    HEAT_RANK[heatOf(daysUntil(b.due_date ?? b.scheduled_date ?? null))];
+  if (ra !== rb) return ra - rb;
+  const da = a.due_date ?? a.scheduled_date;
+  const db = b.due_date ?? b.scheduled_date;
+  if (!da && !db) return 0;
+  if (!da) return 1;
+  if (!db) return -1;
+  return dayjs(da, "DD/MM/YYYY").unix() - dayjs(db, "DD/MM/YYYY").unix();
+}
+
+// STAKES = things with consequences. PRESENT = things that must stay visible.
+const STAKES_TYPES: EntryType[] = ["deadline", "todo"];
+const PRESENT_TYPES: EntryType[] = ["idea", "event", "someday"];
 
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
+  const { colors } = useTheme();
 
-  const { entries, recurrenceCompletions, fetchEntries } =
-    useDatabase();
+  // Deep-link param from the home-screen voice widget (synapseapp:///?capture=voice).
+  // Present means "arm voice capture on arrival"; consumed once below.
+  const { capture } = useLocalSearchParams<{ capture?: string }>();
 
-  const somedayEntries = entries.filter((e) => e.type === "someday" || e.type === "idea");
+  const {
+    entries,
+    recurrenceCompletions,
+    fetchEntries,
+    createEntry,
+    deleteEntry,
+  } = useDatabase();
 
-  const { weekCounts, today: calendarToday } = useCalendarData(
+  const {
+    entries: diaryEntries,
+    addEntry: addDiaryEntry,
+    refresh: refreshDiary,
+  } = useDiary();
+
+  // entryId → count of diary notes filed on it, for the idea-chip "N notes"
+  // readout. Built once per diary change; ideas with no notes simply omit it.
+  const noteCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const n of diaryEntries) {
+      if (n.linked_entry_id) {
+        map[n.linked_entry_id] = (map[n.linked_entry_id] ?? 0) + 1;
+      }
+    }
+    return map;
+  }, [diaryEntries]);
+
+  const { today: calendarToday } = useCalendarData(
     entries,
     new Date(),
     recurrenceCompletions,
@@ -57,6 +195,69 @@ export default function HomeScreen(): React.ReactElement {
 
   const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
   const [isRecording, setIsRecording] = useState(false);
+
+  // The capture bar captures a THOUGHT, not (yet) an idea. A captured thought is
+  // held here as "pending" while the CaptureResolver lets the user file it as an
+  // idea (the default), an autonomous diary note, or a note ON a recent idea.
+  // Doing nothing auto-files an idea — old muscle memory (↵ then ignore) holds.
+  const [pendingThought, setPendingThought] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
+
+  // Recent ideas offered under "Note on…". Capped + newest-first; reading from
+  // the in-memory entries (single source of truth) keeps this in sync for free.
+  const recentIdeas: LinkableIdea[] = useMemo(
+    () =>
+      entries
+        .filter((e) => e.type === "idea")
+        .slice(0, 8)
+        .map((e) => ({ id: e.id, title: e.title })),
+    [entries],
+  );
+
+  // A thought arrives from the bar (typed or spoken): stash it and surface the
+  // resolver. Replacing a still-pending thought just swaps it (the resolver
+  // re-arms its countdown on text change), so nothing is silently dropped.
+  const handleCapture = useCallback((text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setPicking(false);
+    setPendingThought(trimmed);
+  }, []);
+
+  const fileAsIdea = useCallback(
+    (text: string) => {
+      const { title, notes } = splitCapture(text);
+      createEntry({ title, type: "idea", notes }).catch((err) =>
+        console.error("Failed to capture idea:", err),
+      );
+    },
+    [createEntry],
+  );
+
+  const resolveCapture = useCallback(
+    (resolution: CaptureResolution) => {
+      const text = pendingThought;
+      setPendingThought(null);
+      setPicking(false);
+      if (!text) return;
+      switch (resolution.kind) {
+        case "idea":
+          fileAsIdea(text);
+          break;
+        case "note":
+          addDiaryEntry(text, null).catch((err) =>
+            console.error("Failed to file diary note:", err),
+          );
+          break;
+        case "note-on":
+          addDiaryEntry(text, null, resolution.entryId).catch((err) =>
+            console.error("Failed to file linked diary note:", err),
+          );
+          break;
+      }
+    },
+    [pendingThought, fileAsIdea, addDiaryEntry],
+  );
 
   const handleStartRecording = useCallback(async () => {
     setIsRecording(true);
@@ -66,36 +267,39 @@ export default function HomeScreen(): React.ReactElement {
   const handleStopRecording = useCallback(async () => {
     await stopRecording();
     setIsRecording(false);
-    if (transcript.trim()) {
-      router.push({
-        pathname: "/modal",
-        params: { title: transcript.trim() },
-      });
-    }
-  }, [stopRecording, transcript, router]);
+    handleCapture(transcript);
+  }, [stopRecording, transcript, handleCapture]);
 
   const handleCancelRecording = useCallback(async () => {
     await stopRecording();
     setIsRecording(false);
   }, [stopRecording]);
 
+  // Arm voice capture when launched from the widget deep link. Guard with a ref
+  // so it fires once per link open, not on every re-render, and clear the param
+  // off the URL so re-focusing the tab doesn't re-trigger recording.
+  const armedFromLink = useRef(false);
+  useEffect(() => {
+    if (capture === "voice" && !armedFromLink.current && !isRecording) {
+      armedFromLink.current = true;
+      handleStartRecording();
+      router.setParams({ capture: undefined });
+    } else if (capture !== "voice") {
+      armedFromLink.current = false;
+    }
+  }, [capture, isRecording, handleStartRecording, router]);
+
   useFocusEffect(
     useCallback(() => {
       fetchEntries();
-    }, [fetchEntries]),
+      refreshDiary();
+    }, [fetchEntries, refreshDiary]),
   );
 
   const today = useMemo(() => new Date(), []);
-  const todayLabel = formatDateLabel(today);
-  const weekDays = getWeekDays();
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
-
-  const handleDayPress = useCallback((date: Date) => {
-    setSelectedDate(date);
-    setSheetVisible(true);
-  }, []);
 
   const handleCloseSheet = useCallback(() => {
     setSheetVisible(false);
@@ -120,26 +324,58 @@ export default function HomeScreen(): React.ReactElement {
     [router],
   );
 
-  const handleFabPress = () => {
-    isRecording ? handleStopRecording() : router.push("/voice-input");
-  };
+  // The field, split into the two zones the brief names: STAKES (consequence)
+  // and PRESENT (must-not-fade). Each zone is sorted hottest-first, but heat is
+  // aliveness not rank — a cool idea still glows beside a hot bill.
+  const { stakes, stakeGauges, doneStakes, present, presentItems } =
+    useMemo(() => {
+      const isDone = (e: DbEntry): boolean =>
+        e.status === "completed" || e.status === "met";
+      const open = entries.filter((e) => !isDone(e));
+      const pick = (types: EntryType[]): FieldRowItem[] =>
+        open
+          .filter((e) => types.includes(e.type as EntryType))
+          .sort(byHeatThenDate)
+          .map(toRowItem);
+      const stakeEntries = open
+        .filter((e) => STAKES_TYPES.includes(e.type as EntryType))
+        .sort(byRunway);
+      // Stakes cleared recently — the activating "crossed off" run. Keyed off
+      // updated_at (WHEN it was marked done), not the due date: a deadline a year
+      // out, finished early, still earns a spot. updated_at is stored in SECONDS
+      // (see database-context updateEntryStatus), so the window is in seconds too.
+      const doneSince = today.getTime() / 1000 - DONE_WINDOW_DAYS * 86_400;
+      const doneStakeEntries = entries
+        .filter(
+          (e) =>
+            isDone(e) &&
+            STAKES_TYPES.includes(e.type as EntryType) &&
+            e.updated_at >= doneSince,
+        )
+        .sort(byRecentlyDone);
+      const presentEntries = open.filter((e) =>
+        PRESENT_TYPES.includes(e.type as EntryType),
+      );
+      return {
+        stakes: pick(STAKES_TYPES),
+        stakeGauges: stakeEntries.map((e) => toRunwayItem(e)),
+        doneStakes: doneStakeEntries.map((e) => toRunwayItem(e, true)),
+        present: pick(PRESENT_TYPES),
+        presentItems: toPresentItems(
+          presentEntries,
+          today.getTime(),
+          noteCounts,
+        ),
+      };
+    }, [entries, today, noteCounts]);
 
-  const weeklyEntries = useMemo(
-    () => getWeeklyTodos(entries, weekDays),
-    [entries, weekDays],
-  );
-
-  const allDeadlines = useMemo(() => getDeadlines(entries), [entries]);
-
-  const todayEvents = useMemo(
-    () => getTodayEvents(entries, today),
-    [entries, today],
-  );
-
-  const todayAgenda = useMemo(
-    () => getTodayAgenda(entries, recurrenceCompletions, today),
-    [entries, recurrenceCompletions, today],
-  );
+  // Wipe the whole recently-cleared run. These are completed entries; clearing
+  // deletes them for good (the organism gates this behind a confirm).
+  const handleClearDoneStakes = useCallback(() => {
+    Promise.all(doneStakes.map((s) => deleteEntry(s.id))).catch((err) =>
+      console.error("Failed to clear done stakes:", err),
+    );
+  }, [doneStakes, deleteEntry]);
 
   const entriesForSheet = useMemo(
     () =>
@@ -147,61 +383,100 @@ export default function HomeScreen(): React.ReactElement {
     [entries, recurrenceCompletions, selectedDate, today],
   );
 
-  const taskEntries = entries.filter((e) => e.type === "todo");
-  const deadlineEntries = entries.filter((e) => e.type === "deadline");
+  // A truly clear field — no live stakes, nothing recently cleared, no present
+  // things. This is the brand's first statement, so it gets the powered-on
+  // console instead of three separate "·0" placeholders.
+  const fieldIsEmpty =
+    stakeGauges.length === 0 &&
+    doneStakes.length === 0 &&
+    presentItems.length === 0;
+
+  // Which orbit channel the companion is reading aloud, lifted here so the
+  // greeting molecule and the orbit ring — now siblings — share one focus.
+  // Tapping a populated dot focuses it; re-tapping the same one clears it.
+  const [focusedType, setFocusedType] = useState<EntryType | null>(null);
+  const handleToggleFocus = useCallback((type: EntryType) => {
+    setFocusedType((cur) => (cur === type ? null : type));
+  }, []);
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <WeekStrip
-          weekCounts={weekCounts}
-          today={calendarToday}
-          onDayPress={handleDayPress}
+        <FieldGreeting
+          greeting={greetingFor(today.getHours())}
+          stakes={stakes}
+          present={present}
+          focusedType={focusedType}
         />
+        <OrbitConsole
+          stakes={stakes}
+          present={present}
+          focusedType={focusedType}
+          onToggleFocus={handleToggleFocus}
+        />
+        {fieldIsEmpty && <FieldLegend />}
 
-        <NextUpCard entries={entries} />
+        <>
+          <StakesRunway
+            items={stakeGauges}
+            done={doneStakes}
+            onClearDone={handleClearDoneStakes}
+            itemHref={(item) => ({
+              pathname: "/detail",
+              params: { id: item.id, entryType: item.type },
+            })}
+            zoneHref="/list?entryType=deadline"
+            emptyHint="Nothing's on the line. Add a bill, deadline, or to-do."
+            index={0}
+          />
 
-        <AgendaSection
-          date={todayLabel}
-          entries={todayAgenda}
-          isEmpty={todayAgenda.length === 0}
-          onAdd={() => router.push("/modal")}
-        />
-        <WeeklyOverviewCard
-          totalCount={taskEntries.length}
-          spanDays={weeklyEntries.filter((e) => e.title).length || 5}
-          entries={weeklyEntries}
-          isEmpty={taskEntries.length === 0}
-          onAdd={() => router.push("/modal?type=task")}
-        />
-        <DeadlinesCard
-          totalCount={deadlineEntries.length}
-          entries={allDeadlines}
-          isEmpty={deadlineEntries.length === 0}
-          onAdd={() => router.push("/modal?type=deadline")}
-        />
-        <TodaySection
-          events={todayEvents}
-          isEmpty={todayEvents.length === 0}
-          onAdd={() => router.push("/modal?type=event")}
-        />
+          <PresentZone
+            items={presentItems}
+            itemHref={(item) => ({
+              pathname: "/detail",
+              params: { id: item.id, entryType: item.type },
+            })}
+            zoneHref="/list?entryType=idea"
+            emptyHint="Catch an idea, a someday, or an event before it's gone."
+            index={1}
+          />
+        </>
 
-        {somedayEntries.length > 0 && <SomedayItem ideas={somedayEntries} />}
-
-        <View style={styles.fabSpacer} />
+        <View style={styles.captureSpacer} />
       </ScrollView>
-      <Fab
-        onPress={handleFabPress}
-        onLongPress={handleStartRecording}
-        isRecording={isRecording}
-        transcript={transcript}
-        onStop={handleStopRecording}
-        onCancel={handleCancelRecording}
-      />
+
+      <KeyboardAvoidingView
+        style={styles.captureDock}
+        pointerEvents="box-none"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        {pendingThought !== null ? (
+          <CaptureResolver
+            text={pendingThought}
+            ideas={recentIdeas}
+            picking={picking}
+            onTogglePicking={() => setPicking((p) => !p)}
+            onResolve={resolveCapture}
+            onDismiss={() => {
+              setPendingThought(null);
+              setPicking(false);
+            }}
+          />
+        ) : null}
+        <CaptureBar
+          onSubmit={handleCapture}
+          onVoice={handleStartRecording}
+          isRecording={isRecording}
+          transcript={transcript}
+          onStop={handleStopRecording}
+          onCancel={handleCancelRecording}
+        />
+      </KeyboardAvoidingView>
+
       <DayDetailSheet
         visible={sheetVisible}
         date={selectedDate}
@@ -217,17 +492,23 @@ export default function HomeScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   scroll: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.lg,
-    paddingBottom: Spacing.xl,
+    paddingHorizontal: tokens.space.lg,
+    gap: tokens.space.xl,
+    paddingTop: tokens.space.sm,
+    paddingBottom: tokens.space.xl,
   },
-  fabSpacer: {
-    height: 80,
+  captureSpacer: {
+    height: 72,
+  },
+  captureDock: {
+    position: "absolute",
+    left: tokens.space.lg,
+    right: tokens.space.lg,
+    bottom: tokens.space.lg,
   },
 });

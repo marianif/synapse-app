@@ -1,17 +1,20 @@
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
+import { CalendarIcon } from "@/components/atoms/calendar-icon";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { Fab } from "@/components/organisms/fab";
 import { MonthGrid } from "@/components/organisms/month-grid";
+import { ScreenHeader } from "@/components/organisms/screen-header";
 import { UpcomingPreviewCard } from "@/components/organisms/upcoming-preview-card";
-import { Spacing, Surface } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
 
 export default function CalendarScreen(): React.ReactElement {
   const router = useRouter();
+  const { colors } = useTheme();
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -110,7 +113,23 @@ export default function CalendarScreen(): React.ReactElement {
   );
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: colors.paper }]}>
+      {/* Header owned by the navigator (Stack); the kicker tracks the visible
+          month so the spine reflects what's on screen. */}
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          header: () => (
+            <ScreenHeader
+              title="Calendar"
+              kicker={currentMonthLabel.toUpperCase()}
+              glyph={<CalendarIcon size={24} />}
+              onBack={() => router.back()}
+              inset
+            />
+          ),
+        }}
+      />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -136,15 +155,14 @@ export default function CalendarScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   scroll: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.lg,
-    paddingTop: Spacing.md,
+    paddingHorizontal: tokens.space.lg,
+    gap: tokens.space.lg,
+    paddingTop: tokens.space.md,
   },
   bottomSpacer: {
     height: 80,

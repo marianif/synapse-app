@@ -2,14 +2,7 @@ import { StyleSheet, View } from "react-native";
 
 import { StreakBadge } from "@/components/atoms/streak-badge";
 import { ThemedText } from "@/components/atoms/themed-text";
-import {
-  EntryAccent,
-  FontSize,
-  LetterSpacing,
-  LineHeight,
-  Spacing,
-  TextColors,
-} from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
@@ -31,12 +24,16 @@ export function ListProgress({
   streak,
   entryType,
 }: ListProgressProps): React.ReactElement {
-  const accentColor = EntryAccent[entryType] ?? EntryAccent.todo;
+  const { colors } = useTheme();
+  const accentColor = entryColor(entryType);
 
   return (
     <View style={styles.container}>
       <View style={styles.counterBlock}>
-        <ThemedText type="caption" style={styles.progressLabel}>
+        <ThemedText
+          type="caption"
+          style={[styles.progressLabel, { color: colors.inkMuted }]}
+        >
           WEEKLY PROGRESS
         </ThemedText>
         <View style={styles.counterRow}>
@@ -46,7 +43,10 @@ export function ListProgress({
           >
             {completed}
           </ThemedText>
-          <ThemedText style={styles.totalNum} numberOfLines={1}>
+          <ThemedText
+            style={[styles.totalNum, { color: colors.inkMuted }]}
+            numberOfLines={1}
+          >
             {"/ "}
             {total}
           </ThemedText>
@@ -63,31 +63,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: Spacing.sm,
+    paddingVertical: tokens.space.sm,
   },
   counterBlock: {
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   progressLabel: {
     letterSpacing: 0.8,
-    color: TextColors.tertiary,
   },
   counterRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   completedNum: {
-    fontSize: FontSize.displayLg,
-    lineHeight: LineHeight.displayLg,
-    letterSpacing: LetterSpacing.displayLg,
-    fontFamily: "Inter_700Bold",
+    fontSize: tokens.type.display.size,
+    lineHeight: tokens.type.display.lineHeight,
+    letterSpacing: tokens.type.display.tracking,
+    fontFamily: "HostGrotesk_700Bold",
   },
   totalNum: {
-    fontSize: FontSize.headlineSm,
-    lineHeight: LineHeight.headlineSm,
-    fontFamily: "Inter_400Regular",
-    color: TextColors.tertiary,
+    fontSize: tokens.type.title.size,
+    lineHeight: tokens.type.title.lineHeight,
+    fontFamily: "HostGrotesk_400Regular",
     paddingBottom: 4,
   },
 });

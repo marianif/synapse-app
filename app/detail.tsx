@@ -2,55 +2,66 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CountdownChip } from "@/components/atoms/countdown-chip";
-import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DetailActionBar } from "@/components/molecules/detail-action-bar";
-import { DetailMetadataRow } from "@/components/molecules/detail-metadata-row";
-import { DetailSomedayHero } from "@/components/molecules/detail-someday-hero";
+import { DetailReadout } from "@/components/molecules/detail-readout";
 import { EmptyState } from "@/components/molecules/empty-state";
-import { ListScreenHeader } from "@/components/organisms/list-screen-header";
-import {
-  EntryAccent,
-  Radius,
-  Spacing,
-  Surface,
-  TextColors,
-} from "@/constants/theme";
+import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
+import { RelatedNotes } from "@/components/molecules/related-notes";
+import { SignalRail } from "@/components/molecules/signal-rail";
+import { WhenPicker } from "@/components/molecules/when-picker";
+import { ScreenHeader } from "@/components/organisms/screen-header";
+import type { ThemeColors } from "@/constants/theme";
+import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
+import { useDiary } from "@/hooks/use-diary";
+import { ConfirmKey } from "@/lib/settings";
 import {
   getEffectiveStatus,
   humanizeRule,
   isRecurringEntry,
+  parseRule,
 } from "@/lib/recurrence";
-import type { DbRecurrenceCompletion } from "@/lib/types";
+import type {
+  DbEntry,
+  DbRecurrenceCompletion,
+  RecurrenceFrequency,
+  RecurrenceRule,
+} from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
-import type { ActionItem } from "@/components/molecules/detail-action-bar";
+import type { PrimaryAction } from "@/components/molecules/detail-action-bar";
+import type { ReadoutLine } from "@/components/molecules/detail-readout";
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
 const MONTH_ABBRS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
 ];
 
 function parseDaysRemaining(dueDateStr: string | null): number {
@@ -67,6 +78,54 @@ function parseDaysRemaining(dueDateStr: string | null): number {
   return Math.max(0, Math.ceil((due.getTime() - today.getTime()) / 86_400_000));
 }
 
+/** "12/06/2026" → "12 JUN 2026" for the mono readout. Falls back to the raw
+ *  string (uppercased) when it isn't a parseable DD/MM/YYYY value. */
+function readoutDate(dateStr: string): string {
+  const parts = dateStr.split("/");
+  if (parts.length < 3) return dateStr.toUpperCase();
+  const dd = parseInt(parts[0], 10);
+  const mm = parseInt(parts[1], 10);
+  const yyyy = parts[2];
+  if (isNaN(dd) || isNaN(mm) || mm < 1 || mm > 12) return dateStr.toUpperCase();
+  return `${dd} ${MONTH_ABBRS[mm - 1]} ${yyyy}`;
+}
+
+// ─── Inline-edit draft ────────────────────────────────────────────────────────
+
+/**
+ * The editable shape of an entry while in inline-edit mode. Date/time map to
+ * whichever pair the type uses (scheduled for tasks/events, due for deadlines);
+ * the screen reconciles that on save. Type is intentionally NOT editable here —
+ * changing an entry's type is a creation-level decision, kept in /modal.
+ */
+interface EditDraft {
+  title: string;
+  date: string;
+  time: string;
+  notes: string;
+  recurrenceFreq: RecurrenceFrequency | null;
+  recurrenceDays: number[];
+  recurrenceEndDate: string;
+}
+
+function draftFromEntry(entry: DbEntry): EditDraft {
+  const isDeadline = entry.type === "deadline";
+  // recurrence_rule is stored as serialized JSON; parseRule tolerates null.
+  const rule =
+    typeof entry.recurrence_rule === "string"
+      ? parseRule(entry.recurrence_rule)
+      : (entry.recurrence_rule as RecurrenceRule | null);
+  return {
+    title: entry.title,
+    date: (isDeadline ? entry.due_date : entry.scheduled_date) ?? "",
+    time: (isDeadline ? entry.due_time : entry.scheduled_time) ?? "",
+    notes: entry.notes ?? "",
+    recurrenceFreq: rule?.freq ?? null,
+    recurrenceDays: rule?.days ?? [],
+    recurrenceEndDate: entry.recurrence_end_date ?? "",
+  };
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<string, string> = {
@@ -78,220 +137,16 @@ const STATUS_LABELS: Record<string, string> = {
   met: "MET",
 };
 
-function getStatusColor(status: string, accentColor: string): string {
-  if (status === "completed" || status === "met") return "#52C87A";
-  if (status === "overdue") return "#FF4444";
+function getStatusColor(
+  status: string,
+  accentColor: string,
+  inkMuted: string,
+): string {
+  if (status === "completed" || status === "met")
+    return tokens.feedback.success;
+  if (status === "overdue") return tokens.feedback.danger;
   if (status === "active") return accentColor;
-  return TextColors.tertiary;
-}
-
-// ─── Type chip ────────────────────────────────────────────────────────────────
-
-function TypeChip({
-  entryType,
-  accentColor,
-  isRecurring,
-}: {
-  entryType: EntryType;
-  accentColor: string;
-  isRecurring?: boolean;
-}): React.ReactElement {
-  const labels: Record<EntryType, string> = {
-    todo: "TODO",
-    deadline: "DEADLINE",
-    event: "EVENT",
-    someday: "ONE DAY",
-    idea: "IDEA",
-  };
-  return (
-    <View style={[styles.typeChip, { backgroundColor: accentColor + "20" }]}>
-      <EntryDot type={entryType} size={6} />
-      <ThemedText
-        type="caption"
-        style={[styles.typeChipText, { color: accentColor }]}
-      >
-        {labels[entryType]}
-      </ThemedText>
-      {isRecurring && (
-        <ThemedText
-          type="caption"
-          style={[styles.typeChipText, { color: accentColor }]}
-        >
-          ↻
-        </ThemedText>
-      )}
-    </View>
-  );
-}
-
-// ─── Section: TODOS hero ───────────────────────────────────────────────────────
-
-function TaskHero({
-  status,
-  scheduledDate,
-  scheduledTime,
-  accentColor,
-  recurrenceRule,
-  recurrenceEndDate,
-}: {
-  status: string;
-  scheduledDate: string | null;
-  scheduledTime: string | null;
-  accentColor: string;
-  recurrenceRule?: string | null;
-  recurrenceEndDate?: string | null;
-}): React.ReactElement {
-  const statusColor = getStatusColor(status, accentColor);
-  return (
-    <View style={styles.heroBlock}>
-      <View
-        style={[styles.statusChip, { backgroundColor: statusColor + "18" }]}
-      >
-        <ThemedText
-          type="label"
-          style={[styles.statusLabel, { color: statusColor }]}
-        >
-          {STATUS_LABELS[status] ?? status.toUpperCase()}
-        </ThemedText>
-      </View>
-      <View style={styles.metaList}>
-        {scheduledDate ? (
-          <DetailMetadataRow
-            icon="calendar-outline"
-            label="Date"
-            value={scheduledDate}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {scheduledTime ? (
-          <DetailMetadataRow
-            icon="clock-outline"
-            label="Time"
-            value={scheduledTime}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {recurrenceRule ? (
-          <DetailMetadataRow
-            icon="repeat"
-            label="Repeat"
-            value={humanizeRule(recurrenceRule)}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {recurrenceEndDate ? (
-          <DetailMetadataRow
-            icon="calendar-end"
-            label="Ends"
-            value={recurrenceEndDate}
-            accentColor={accentColor}
-          />
-        ) : null}
-      </View>
-    </View>
-  );
-}
-
-// ─── Section: Deadline hero ───────────────────────────────────────────────────
-
-function DeadlineHero({
-  status,
-  dueDate,
-  dueTime,
-  accentColor,
-  recurrenceRule,
-  recurrenceEndDate,
-}: {
-  status: string;
-  dueDate: string | null;
-  dueTime: string | null;
-  accentColor: string;
-  recurrenceRule?: string | null;
-  recurrenceEndDate?: string | null;
-}): React.ReactElement {
-  const daysRemaining = parseDaysRemaining(dueDate);
-  return (
-    <View style={styles.heroBlock}>
-      <CountdownChip
-        daysRemaining={daysRemaining}
-        state={status as "pending" | "overdue" | "met"}
-      />
-      <View style={styles.metaList}>
-        {dueDate ? (
-          <DetailMetadataRow
-            icon="calendar-alert"
-            label="Due Date"
-            value={dueDate}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {dueTime ? (
-          <DetailMetadataRow
-            icon="clock-outline"
-            label="Due Time"
-            value={dueTime}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {recurrenceRule ? (
-          <DetailMetadataRow
-            icon="repeat"
-            label="Repeat"
-            value={humanizeRule(recurrenceRule)}
-            accentColor={accentColor}
-          />
-        ) : null}
-        {recurrenceEndDate ? (
-          <DetailMetadataRow
-            icon="calendar-end"
-            label="Ends"
-            value={recurrenceEndDate}
-            accentColor={accentColor}
-          />
-        ) : null}
-      </View>
-    </View>
-  );
-}
-
-// ─── Delete confirm sheet (non-recurring) ─────────────────────────────────────
-
-function DeleteConfirmSheet({
-  visible,
-  onClose,
-  onConfirm,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-}): React.ReactElement {
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <Pressable style={styles.sheetOverlay} onPress={onClose}>
-        <View style={styles.sheet}>
-          <ThemedText type="bodyBold" style={styles.sheetTitle}>
-            Delete entry
-          </ThemedText>
-          <Pressable style={styles.sheetOption} onPress={onConfirm}>
-            <ThemedText type="body" style={{ color: "#FF6B6B" }}>
-              Delete
-            </ThemedText>
-          </Pressable>
-          <View style={styles.sheetDivider} />
-          <Pressable style={styles.sheetOption} onPress={onClose}>
-            <ThemedText type="bodyBold" muted>
-              Cancel
-            </ThemedText>
-          </Pressable>
-        </View>
-      </Pressable>
-    </Modal>
-  );
+  return inkMuted;
 }
 
 // ─── Delete scope sheet (recurring) ───────────────────────────────────────────
@@ -302,12 +157,14 @@ function DeleteScopeSheet({
   onDeleteThis,
   onDeleteFuture,
   onDeleteAll,
+  colors,
 }: {
   visible: boolean;
   onClose: () => void;
   onDeleteThis: () => void;
   onDeleteFuture: () => void;
   onDeleteAll: () => void;
+  colors: ThemeColors;
 }): React.ReactElement {
   return (
     <Modal
@@ -317,24 +174,42 @@ function DeleteScopeSheet({
       onRequestClose={onClose}
     >
       <Pressable style={styles.sheetOverlay} onPress={onClose}>
-        <View style={styles.sheet}>
-          <ThemedText type="bodyBold" style={styles.sheetTitle}>
-            Delete recurring entry
+        <View style={[styles.sheet, { backgroundColor: colors.surface }]}>
+          <ThemedText
+            type="label"
+            style={[styles.sheetTitle, { color: colors.inkMuted }]}
+          >
+            DELETE RECURRING ENTRY
           </ThemedText>
           <Pressable style={styles.sheetOption} onPress={onDeleteThis}>
             <ThemedText type="body">Delete this occurrence</ThemedText>
           </Pressable>
-          <View style={styles.sheetDivider} />
+          <View
+            style={[
+              styles.sheetDivider,
+              { backgroundColor: colors.surfaceSubtle },
+            ]}
+          />
           <Pressable style={styles.sheetOption} onPress={onDeleteFuture}>
             <ThemedText type="body">Delete this and all future</ThemedText>
           </Pressable>
-          <View style={styles.sheetDivider} />
+          <View
+            style={[
+              styles.sheetDivider,
+              { backgroundColor: colors.surfaceSubtle },
+            ]}
+          />
           <Pressable style={styles.sheetOption} onPress={onDeleteAll}>
-            <ThemedText type="body" style={{ color: "#FF6B6B" }}>
+            <ThemedText type="body" style={{ color: tokens.feedback.danger }}>
               Delete entire series
             </ThemedText>
           </Pressable>
-          <View style={styles.sheetDivider} />
+          <View
+            style={[
+              styles.sheetDivider,
+              { backgroundColor: colors.surfaceSubtle },
+            ]}
+          />
           <Pressable style={styles.sheetOption} onPress={onClose}>
             <ThemedText type="bodyBold" muted>
               Cancel
@@ -350,13 +225,20 @@ function DeleteScopeSheet({
 
 export default function DetailScreen(): React.ReactElement {
   const router = useRouter();
+  const { colors } = useTheme();
   const { id: rawId, entryType } = useLocalSearchParams<{
     id?: string;
     entryType?: string;
   }>();
 
   const [deleteSheetVisible, setDeleteSheetVisible] = useState(false);
-  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteEntry });
+
+  // Inline edit mode — the detail screen is a view↔edit surface; /modal is now
+  // creation-only. `draft` holds the in-flight edits; null means "viewing".
+  const [draft, setDraft] = useState<EditDraft | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const editing = draft !== null;
 
   // Composite ID support: "masterId::instanceDate" for recurring instances
   const isRecurringInstance = rawId?.includes("::") ?? false;
@@ -364,8 +246,10 @@ export default function DetailScreen(): React.ReactElement {
     ? (rawId ?? "").split("::")
     : [rawId, null];
 
-  const accentColor = EntryAccent[entryType as EntryType] ?? EntryAccent.todo;
-  const isSomeday = entryType === "someday" || entryType === "idea";
+  // The URL param is only a hint — several call sites omit it entirely, so it
+  // can't be trusted for type/color/actions. It's used solely to tint the
+  // loading spinner before the real entry (the source of truth) resolves.
+  const hintType = (entryType as EntryType) ?? "todo";
 
   const {
     entries,
@@ -378,13 +262,19 @@ export default function DetailScreen(): React.ReactElement {
     skipRecurringInstance,
     deleteRecurringFuture,
     deleteRecurringSeries,
+    updateEntry,
     fetchEntries,
   } = useDatabase();
+
+  // Diary notes filed ON this entry (only ideas carry links today). Read-only
+  // here — surfaced so an idea shows the reflections gathered around it.
+  const { entries: diaryEntries, refresh: refreshDiary } = useDiary();
 
   useFocusEffect(
     useCallback(() => {
       fetchEntries();
-    }, [fetchEntries]),
+      refreshDiary();
+    }, [fetchEntries, refreshDiary]),
   );
 
   // ── Resolve entry ────────────────────────────────────────────────────────────
@@ -409,10 +299,13 @@ export default function DetailScreen(): React.ReactElement {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-        <ListScreenHeader title="" onBack={() => router.back()} />
+      <SafeAreaView
+        style={[styles.safeArea, { backgroundColor: colors.paper }]}
+        edges={["top", "bottom"]}
+      >
+        <ScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
-          <ActivityIndicator color={accentColor} />
+          <ActivityIndicator color={entryColor(hintType)} />
         </View>
       </SafeAreaView>
     );
@@ -422,20 +315,37 @@ export default function DetailScreen(): React.ReactElement {
 
   if (!entry) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-        <ListScreenHeader title="" onBack={() => router.back()} />
+      <SafeAreaView
+        style={[styles.safeArea, { backgroundColor: colors.paper }]}
+        edges={["top", "bottom"]}
+      >
+        <ScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
           <EmptyState
             title="Entry not found"
             description="This entry may have been deleted."
             ctaLabel="Go Back"
             onCta={() => router.back()}
-            accentColor={accentColor}
+            accentColor={entryColor(hintType)}
           />
         </View>
       </SafeAreaView>
     );
   }
+
+  // ── Type, color & derived flags — from the ENTRY, the source of truth ────────
+  // (not the URL param, which several navigation call sites omit). This is what
+  // keeps the accent color and the primary action honest for every entry type.
+
+  const type = entry.type;
+  const accentColor = entryColor(type);
+  const isSomeday = type === "someday" || type === "idea";
+
+  // Notes linked to this entry, newest-first (the diary store is already newest
+  // -first, so a filter preserves order). Only ideas can be linked targets today.
+  const relatedNotes = diaryEntries.filter(
+    (n) => n.linked_entry_id === entry.id,
+  );
 
   // ── Action bar ───────────────────────────────────────────────────────────────
 
@@ -478,15 +388,12 @@ export default function DetailScreen(): React.ReactElement {
     if (isRecurringInstance) {
       setDeleteSheetVisible(true);
     } else {
-      setDeleteConfirmVisible(true);
+      // Branded confirm (or immediate delete, if the user opted out of the prompt).
+      const targetId = entry.id;
+      void deleteConfirm.request(() => {
+        void deleteEntry(targetId).then(() => router.back());
+      });
     }
-  }
-
-  async function handleDeleteConfirmed(): Promise<void> {
-    if (!entry) return;
-    setDeleteConfirmVisible(false);
-    await deleteEntry(entry.id);
-    router.back();
   }
 
   async function handleDeleteThis(): Promise<void> {
@@ -513,181 +420,349 @@ export default function DetailScreen(): React.ReactElement {
   const isCompleted = effectiveStatus === "completed";
   const isMet = effectiveStatus === "met";
 
-  const actions: [ActionItem, ActionItem, ActionItem] =
-    entryType === "todo" || entryType === "event"
-      ? [
-          {
-            icon: "check-circle-outline",
-            label: isCompleted ? "Completed" : "Complete",
-            onPress: handleComplete,
-            isPrimary: true,
-            accentColor,
-          },
-          {
-            icon: "pencil-outline",
-            label: "Edit",
-            onPress: () => {
-              if (!entry) return;
-              const params = new URLSearchParams();
-              params.set("entryId", entry.id);
-              params.set("type", entry.type);
-              params.set("title", entry.title);
-              if (entry.scheduled_date)
-                params.set("date", entry.scheduled_date);
-              if (entry.scheduled_time)
-                params.set("time", entry.scheduled_time);
-              if (entry.due_date) params.set("date", entry.due_date);
-              if (entry.due_time) params.set("time", entry.due_time);
-              if (entry.notes) params.set("notes", entry.notes);
-              if (entry.recurrence_rule)
-                params.set("recurrence", JSON.stringify(entry.recurrence_rule));
-              if (entry.recurrence_end_date)
-                params.set("recurrenceEndDate", entry.recurrence_end_date);
-              router.push(`/modal?${params.toString()}`);
-            },
-            accentColor,
-          },
-          {
-            icon: "trash-can-outline",
-            label: "Delete",
-            onPress: handleDelete,
-            isDanger: true,
-          },
-        ]
-      : entryType === "deadline"
-        ? [
-            {
-              icon: "check-decagram-outline",
-              label: isMet ? "Met" : "Mark Met",
-              onPress: handleMarkMet,
-              isPrimary: true,
-              accentColor,
-            },
-            {
-              icon: "pencil-outline",
-              label: "Edit",
-              onPress: () => {
-                if (!entry) return;
-                const params = new URLSearchParams();
-                params.set("entryId", entry.id);
-                params.set("type", entry.type);
-                params.set("title", entry.title);
-                if (entry.scheduled_date)
-                  params.set("date", entry.scheduled_date);
-                if (entry.scheduled_time)
-                  params.set("time", entry.scheduled_time);
-                if (entry.due_date) params.set("date", entry.due_date);
-                if (entry.due_time) params.set("time", entry.due_time);
-                if (entry.notes) params.set("notes", entry.notes);
-                if (entry.recurrence_rule)
-                  params.set(
-                    "recurrence",
-                    JSON.stringify(entry.recurrence_rule),
-                  );
-                if (entry.recurrence_end_date)
-                  params.set("recurrenceEndDate", entry.recurrence_end_date);
-                router.push(`/modal?${params.toString()}`);
-              },
-              accentColor,
-            },
-            {
-              icon: "trash-can-outline",
-              label: "Delete",
-              onPress: handleDelete,
-              isDanger: true,
-            },
-          ]
-        : [
-            {
-              icon: "arrow-up-circle-outline",
-              label: "Promote",
-              onPress: () => {},
-              isPrimary: true,
-              accentColor,
-            },
-            { icon: "pencil-outline", label: "Edit", onPress: () => {} },
-            {
-              icon: "trash-can-outline",
-              label: "Delete",
-              onPress: () => router.back(),
-              isDanger: true,
-            },
-          ];
+  // ── Inline edit ──────────────────────────────────────────────────────────────
+  // Editing happens in place on this screen now — no /modal round-trip. Entering
+  // edit mode seeds the draft from the live entry; Save patches it back through
+  // updateEntry; Cancel discards. /modal stays for creation only.
+
+  function handleEdit(): void {
+    if (!entry) return;
+    setDraft(draftFromEntry(entry));
+  }
+
+  function patchDraft(patch: Partial<EditDraft>): void {
+    setDraft((d) => (d ? { ...d, ...patch } : d));
+  }
+
+  function handleCancelEdit(): void {
+    setDraft(null);
+  }
+
+  async function handleSaveEdit(): Promise<void> {
+    if (!entry || !draft || isSaving) return;
+    const trimmedTitle = draft.title.trim();
+    if (!trimmedTitle) return;
+
+    setIsSaving(true);
+    try {
+      const isDeadlineType = entry.type === "deadline";
+      const recurrenceRule: RecurrenceRule | null = draft.recurrenceFreq
+        ? {
+            freq: draft.recurrenceFreq,
+            days:
+              draft.recurrenceFreq === "weekly"
+                ? draft.recurrenceDays
+                : undefined,
+          }
+        : null;
+
+      await updateEntry(entry.id, {
+        title: trimmedTitle,
+        scheduledDate: isDeadlineType ? null : draft.date.trim() || null,
+        scheduledTime: isDeadlineType ? null : draft.time.trim() || null,
+        dueDate: isDeadlineType ? draft.date.trim() || null : null,
+        dueTime: isDeadlineType ? draft.time.trim() || null : null,
+        notes: draft.notes.trim() || null,
+        recurrenceRule,
+        recurrenceEndDate: draft.recurrenceEndDate.trim() || null,
+      });
+      setDraft(null);
+    } catch (error) {
+      console.error("[detail] save edit failed:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  const canSaveEdit = (draft?.title.trim().length ?? 0) > 0 && !isSaving;
+
+  // someday / idea have no scheduled action, so they get NO primary — the bar
+  // falls back to the quiet Edit / Delete pair. (The old "Promote" tile was a
+  // no-op: there's no promote/convert path in the data layer.)
+  const primary: PrimaryAction | undefined =
+    type === "todo" || type === "event"
+      ? {
+          icon: "check-circle-outline",
+          label: isCompleted ? "Completed" : "Complete",
+          onPress: handleComplete,
+          done: isCompleted,
+        }
+      : type === "deadline"
+        ? {
+            icon: "check-decagram-outline",
+            label: isMet ? "Met" : "Mark Met",
+            onPress: handleMarkMet,
+            done: isMet,
+          }
+        : undefined;
+
+  // ── Readout lines (mono telemetry) ───────────────────────────────────────────
+
+  const statusColor = getStatusColor(
+    effectiveStatus,
+    accentColor,
+    colors.inkMuted,
+  );
+
+  const readoutLines: ReadoutLine[] = [];
+
+  const isDeadline = type === "deadline";
+  const isTask = type === "todo" || type === "event";
+
+  if (isTask) {
+    readoutLines.push({
+      key: "STATUS",
+      value: STATUS_LABELS[effectiveStatus] ?? effectiveStatus.toUpperCase(),
+      dotColor: statusColor,
+    });
+    if (entry.scheduled_date)
+      readoutLines.push({
+        key: "DATE",
+        value: readoutDate(entry.scheduled_date),
+      });
+    if (entry.scheduled_time)
+      readoutLines.push({ key: "TIME", value: entry.scheduled_time });
+  } else if (isDeadline) {
+    if (entry.due_date)
+      readoutLines.push({ key: "DUE", value: readoutDate(entry.due_date) });
+    if (entry.due_time)
+      readoutLines.push({ key: "TIME", value: entry.due_time });
+  }
+
+  if (entry.recurrence_rule)
+    readoutLines.push({
+      key: "REPEAT",
+      value: humanizeRule(entry.recurrence_rule).toUpperCase(),
+    });
+  if (entry.recurrence_end_date)
+    readoutLines.push({
+      key: "ENDS",
+      value: readoutDate(entry.recurrence_end_date),
+    });
+  if (entry.subtitle)
+    readoutLines.push({ key: "PROJECT", value: entry.subtitle.toUpperCase() });
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <View style={styles.screen}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.paper }]}
+      edges={["top", "bottom"]}
+    >
+      <KeyboardAvoidingView
+        style={[styles.screen, { backgroundColor: colors.paper }]}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         {/* ── Header ───────────────────────────────────────────── */}
-        <ListScreenHeader title="Detail" onBack={() => router.back()} />
+        <ScreenHeader title={editing ? "Edit" : "Detail"} onBack={() => router.back()} />
 
         {/* ── Scrollable content ──────────────────────────────── */}
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Type chip */}
-          <TypeChip
-            entryType={entryType as EntryType}
-            accentColor={accentColor}
-            isRecurring={entry ? isRecurringEntry(entry) : false}
-          />
+          {/* Signal rail: type-color edge-bar + kicker + title + readout. In edit
+              mode the title slot becomes an inline input at the same scale. */}
+          <SignalRail
+            entryType={type}
+            isRecurring={isRecurringEntry(entry)}
+            title={title}
+            titleSlot={
+              editing ? (
+                <TextInput
+                  value={draft.title}
+                  onChangeText={(t) => patchDraft({ title: t })}
+                  placeholder="Title"
+                  placeholderTextColor={colors.inkMuted}
+                  style={[styles.titleInput, { color: colors.ink }]}
+                  multiline
+                  accessibilityLabel="Entry title"
+                />
+              ) : undefined
+            }
+          >
+            {/* Deadlines lead with the countdown, then the readout below it. */}
+            {!editing && isDeadline ? (
+              <View style={styles.countdownSlot}>
+                <CountdownChip
+                  daysRemaining={parseDaysRemaining(entry.due_date)}
+                  state={effectiveStatus as "pending" | "overdue" | "met"}
+                />
+              </View>
+            ) : null}
 
-          {/* Title */}
-          <ThemedText type="headline" style={styles.title}>
-            {title}
-          </ThemedText>
+            {!editing && readoutLines.length > 0 ? (
+              <View style={styles.railChild}>
+                <DetailReadout lines={readoutLines} />
+              </View>
+            ) : null}
 
-          {/* Type-specific hero block */}
-          {entry && (entryType === "todo" || entryType === "event") ? (
-            <TaskHero
-              status={effectiveStatus}
-              scheduledDate={entry.scheduled_date}
-              scheduledTime={entry.scheduled_time}
-              accentColor={accentColor}
-              recurrenceRule={entry.recurrence_rule}
-              recurrenceEndDate={entry.recurrence_end_date}
-            />
-          ) : entry && (entryType === "deadline" || isSomeday) ? (
-            <DetailSomedayHero inspiration={entry.inspiration ?? undefined} />
-          ) : null}
-
-          {/* Project / subtitle (ideas only) */}
-          {entry?.subtitle ? (
-            <DetailMetadataRow
-              icon="folder-outline"
-              label="Project"
-              value={entry.subtitle}
-              accentColor={accentColor}
-            />
-          ) : null}
-
-          {/* Notes */}
-          {notes ? (
-            <View style={styles.notesBlock}>
-              <ThemedText type="caption" muted style={styles.notesLabel}>
-                NOTES
+            {/* Someday / idea inspiration — the one place a softer voice fits. */}
+            {!editing && isSomeday && entry.inspiration ? (
+              <ThemedText
+                type="body"
+                style={[
+                  styles.inspiration,
+                  styles.railChild,
+                  { color: colors.inkMuted },
+                ]}
+              >
+                {entry.inspiration}
               </ThemedText>
-              <ThemedText type="body" style={styles.notesText}>
-                {notes}
-              </ThemedText>
-            </View>
-          ) : null}
+            ) : null}
+          </SignalRail>
 
-          <View style={styles.contentSpacer} />
+          {editing ? (
+            <>
+              {/* When — only the scheduled types carry a date/time. */}
+              {!isSomeday ? (
+                <View style={styles.editBlock}>
+                  <WhenPicker
+                    date={draft.date}
+                    time={draft.time}
+                    onDateChange={(v) => patchDraft({ date: v })}
+                    onTimeChange={(v) => patchDraft({ time: v })}
+                    accentColor={accentColor}
+                    dateLabel={isDeadline ? "DUE DATE" : "DATE"}
+                  />
+                </View>
+              ) : null}
+
+              {/* Recurrence — todos only, mirroring the create form. */}
+              {type === "todo" ? (
+                <View style={styles.editBlock}>
+                  <RecurrencePicker
+                    frequency={draft.recurrenceFreq}
+                    days={draft.recurrenceDays}
+                    endDate={draft.recurrenceEndDate}
+                    accentColor={accentColor}
+                    onFrequencyChange={(freq) =>
+                      patchDraft({
+                        recurrenceFreq: freq,
+                        recurrenceDays: [],
+                        recurrenceEndDate: "",
+                      })
+                    }
+                    onDaysChange={(d) => patchDraft({ recurrenceDays: d })}
+                    onEndDateChange={(v) =>
+                      patchDraft({ recurrenceEndDate: v })
+                    }
+                  />
+                </View>
+              ) : null}
+
+              {/* Notes — inline editable textarea. */}
+              <View style={styles.editBlock}>
+                <ThemedText type="label" muted style={styles.editLabel}>
+                  NOTES
+                </ThemedText>
+                <TextInput
+                  value={draft.notes}
+                  onChangeText={(t) => patchDraft({ notes: t })}
+                  placeholder="Add any notes…"
+                  placeholderTextColor={colors.inkMuted}
+                  style={[
+                    styles.notesInput,
+                    { backgroundColor: colors.surface, color: colors.ink },
+                  ]}
+                  multiline
+                  textAlignVertical="top"
+                  accessibilityLabel="Entry notes"
+                />
+              </View>
+            </>
+          ) : (
+            <>
+              {/* Notes — Tier 3: the one block you actually read, so it earns a
+                  real break from the hero and its own air. */}
+              {notes ? (
+                <View
+                  style={[
+                    styles.notesBlock,
+                    { backgroundColor: colors.surfaceSubtle },
+                  ]}
+                >
+                  <ThemedText
+                    type="body"
+                    style={[styles.notesText, { color: colors.ink }]}
+                  >
+                    {notes}
+                  </ThemedText>
+                </View>
+              ) : null}
+
+              {/* Reflections filed ON this idea — the reverse of the diary link. */}
+              <RelatedNotes notes={relatedNotes} />
+            </>
+          )}
         </ScrollView>
 
-        {/* ── Action bar — pinned above safe area ─────────────── */}
-        <View style={styles.actionBarWrapper}>
-          <DetailActionBar actions={actions} />
+        {/* ── Action bar — pinned above safe area. View mode: the act surface;
+            edit mode: a Save / Cancel pair. ─────────────────────── */}
+        <View
+          style={[styles.actionBarWrapper, { backgroundColor: colors.paper }]}
+        >
+          {editing ? (
+            <View style={styles.editBar}>
+              <Pressable
+                onPress={handleSaveEdit}
+                disabled={!canSaveEdit}
+                style={({ pressed }) => [
+                  styles.saveButton,
+                  {
+                    backgroundColor: canSaveEdit
+                      ? accentColor
+                      : colors.surfaceSubtle,
+                  },
+                  pressed && styles.pressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={isSaving ? "Saving" : "Save changes"}
+                accessibilityState={{ disabled: !canSaveEdit }}
+              >
+                <ThemedText
+                  type="bodyBold"
+                  style={{
+                    color: canSaveEdit ? colors.paper : colors.inkMuted,
+                  }}
+                >
+                  {isSaving ? "Saving…" : "Save"}
+                </ThemedText>
+              </Pressable>
+              <Pressable
+                onPress={handleCancelEdit}
+                style={({ pressed }) => [
+                  styles.cancelButton,
+                  pressed && styles.pressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel editing"
+              >
+                <ThemedText type="bodyBold" muted>
+                  Cancel
+                </ThemedText>
+              </Pressable>
+            </View>
+          ) : (
+            <DetailActionBar
+              primary={primary}
+              accentColor={accentColor}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          )}
         </View>
-      </View>
+      </KeyboardAvoidingView>
 
       {/* ── Delete confirm sheet (non-recurring) ────────────── */}
-      <DeleteConfirmSheet
-        visible={deleteConfirmVisible}
-        onClose={() => setDeleteConfirmVisible(false)}
-        onConfirm={handleDeleteConfirmed}
+      <ConfirmSheet
+        visible={deleteConfirm.visible}
+        kicker="DELETE ENTRY"
+        message="This removes it from the field for good."
+        dontAsk={deleteConfirm.dontAsk}
+        onToggleDontAsk={deleteConfirm.toggleDontAsk}
+        onConfirm={deleteConfirm.confirm}
+        onCancel={deleteConfirm.cancel}
       />
 
       {/* ── Delete scope sheet (recurring only) ─────────────── */}
@@ -697,6 +772,7 @@ export default function DetailScreen(): React.ReactElement {
         onDeleteThis={handleDeleteThis}
         onDeleteFuture={handleDeleteFuture}
         onDeleteAll={handleDeleteAll}
+        colors={colors}
       />
     </SafeAreaView>
   );
@@ -707,11 +783,9 @@ export default function DetailScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   screen: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   centered: {
     flex: 1,
@@ -722,95 +796,118 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.lg,
-    gap: Spacing.lg,
+    paddingHorizontal: tokens.space.lg,
+    // Top breath sets the hero off the header; bottom seats the body close to
+    // the pinned action bar (no extra spacer block — the body shouldn't pad
+    // itself to fill space it doesn't need). Vertical zone gaps are owned by
+    // each block's marginTop, NOT a flat gap — the screen has a ratio now.
+    paddingTop: tokens.space.md,
+    paddingBottom: tokens.space.md,
   },
-  typeChip: {
-    flexDirection: "row",
-    alignItems: "center",
+  // ── Signal rail children (Tier 2) ───────────────────────────
+  // The rail itself is now the autonomous <SignalRail>. These margins set the
+  // ratio for what the screen composes INSIDE it: telemetry / countdown /
+  // inspiration sit one real breath below the hero title.
+  railChild: {
+    marginTop: tokens.space.md,
+  },
+  countdownSlot: {
     alignSelf: "flex-start",
-    borderRadius: Radius.full,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.xs,
+    marginTop: tokens.space.md,
   },
-  typeChipText: {
-    fontFamily: "Inter_600SemiBold",
-    letterSpacing: 0.6,
+  inspiration: {
+    lineHeight: 22,
   },
-  title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontFamily: "Inter_700Bold",
-  },
-  // ── Hero block ──────────────────────────────────────────────
-  heroBlock: {
-    gap: Spacing.md,
-  },
-  statusChip: {
-    alignSelf: "flex-start",
-    borderRadius: Radius.full,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-  },
-  statusLabel: {
-    letterSpacing: 0.8,
-  },
-  metaList: {
-    gap: Spacing.sm,
-  },
-  // ── Notes ───────────────────────────────────────────────────
+  // ── Notes (Tier 3) ──────────────────────────────────────────
   notesBlock: {
-    backgroundColor: Surface.containerLow,
-    borderRadius: Radius.xl,
-    padding: Spacing.lg,
-    gap: Spacing.sm,
+    // A real zone break from the hero/telemetry above — this is the only block
+    // the user reads, so the ratio gives it the biggest gap on the screen.
+    marginTop: tokens.space.xl,
+    borderRadius: tokens.radius.md,
+    padding: tokens.space.lg,
+    gap: tokens.space.sm,
   },
   notesLabel: {
     letterSpacing: 0.6,
   },
   notesText: {
     lineHeight: 22,
-    color: TextColors.secondary,
   },
-  contentSpacer: {
-    height: Spacing.xl,
+  // ── Inline edit ──────────────────────────────────────────────
+  // The title input sits at display scale in the rail's title slot, so the hero
+  // reads identically in view and edit — only the caret betrays the mode.
+  titleInput: {
+    marginTop: tokens.space.xs,
+    fontFamily: tokens.type.fontInter.bold,
+    fontSize: tokens.type.display.size,
+    lineHeight: tokens.type.display.lineHeight,
+    letterSpacing: tokens.type.display.tracking,
+    padding: 0,
+  },
+  editBlock: {
+    marginTop: tokens.space.xl,
+    gap: tokens.space.xs,
+  },
+  editLabel: {
+    letterSpacing: tokens.type.kicker.tracking,
+  },
+  notesInput: {
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.md,
+    fontSize: tokens.type.body.size,
+    lineHeight: 22,
+    minHeight: 100,
+  },
+  editBar: {
+    gap: tokens.space.sm,
+  },
+  saveButton: {
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.lg,
+    minHeight: 56,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButton: {
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.md,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pressed: {
+    opacity: 0.75,
   },
   // ── Action bar ───────────────────────────────────────────────
   actionBarWrapper: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.lg,
-    paddingTop: Spacing.md,
-    backgroundColor: Surface.base,
+    paddingHorizontal: tokens.space.lg,
+    paddingBottom: tokens.space.lg,
+    paddingTop: tokens.space.md,
   },
-  // ── Delete scope sheet ───────────────────────────────────────
+  // ── Delete sheets ────────────────────────────────────────────
   sheetOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: tokens.color.scrim.strong,
     justifyContent: "flex-end",
   },
   sheet: {
-    backgroundColor: Surface.containerLow,
-    borderTopLeftRadius: Radius.xl,
-    borderTopRightRadius: Radius.xl,
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.xl,
+    borderTopLeftRadius: tokens.radius.lg,
+    borderTopRightRadius: tokens.radius.lg,
+    paddingTop: tokens.space.lg,
+    paddingBottom: tokens.space.xl,
   },
   sheetTitle: {
-    paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing.md,
-    color: TextColors.secondary,
-    fontSize: 13,
-    letterSpacing: 0.4,
+    paddingHorizontal: tokens.space.xl,
+    paddingBottom: tokens.space.md,
+    letterSpacing: 0.6,
   },
   sheetDivider: {
     height: 1,
-    backgroundColor: Surface.outlineVariant,
-    marginHorizontal: Spacing.lg,
+    marginHorizontal: tokens.space.lg,
   },
   sheetOption: {
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.xl,
+    paddingVertical: tokens.space.lg,
+    paddingHorizontal: tokens.space.xl,
   },
 });

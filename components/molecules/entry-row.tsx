@@ -2,7 +2,7 @@ import { View, StyleSheet } from 'react-native';
 
 import { EntryDot } from '@/components/atoms/entry-dot';
 import { ThemedText } from '@/components/atoms/themed-text';
-import { Spacing } from '@/constants/theme';
+import { tokens } from '@/constants/theme';
 
 import type { EntryType } from '@/components/atoms/entry-dot';
 
@@ -47,8 +47,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.xs,
+    gap: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
   },
   dotWrapper: {
     width: 12,

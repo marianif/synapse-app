@@ -1,0 +1,13 @@
+{
+  "phase": "directions-v2",
+  "answers": {
+    "activation": "Jolt + Focus, both cool, no pure blacks",
+    "swing": "Full opposite of The Field. Keep only bento + always-on capture bar.",
+    "presence": "Companion/coach with a voice that pushes",
+    "voice": "Between coach and ops: energizing + signal-driven, stakes-aware",
+    "ground": "Slate/graphite #1A1E24-#20252E, instrument-panel. Keep light+dark parity.",
+    "principle": "ACTIVATION != PRESSURE. Every type glows equally; ideas/somedays must NOT fade. Two zones: hot STAKES (bills, due todos) + cool PRESENT (ideas, somedays).",
+    "colorMapping": "ideas=yellow-ish(cool electric amber), someday=lime, todo=cyan(NOT green=done), bills=coral/red, events=violet",
+    "parked": "rotation/resurfacing -> MVP 2 with AI, not this brief"
+  }
+}

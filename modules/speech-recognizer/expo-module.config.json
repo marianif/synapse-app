@@ -1,7 +1,10 @@
 {
-  "platforms": ["apple"],
+  "platforms": ["apple", "android"],
   "apple": {
     "modules": ["SpeechRecognizerModule"],
     "podspecPath": "./SpeechRecognizer.podspec"
+  },
+  "android": {
+    "modules": ["expo.modules.speechrecognizer.SpeechRecognizerModule"]
   }
 }

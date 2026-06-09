@@ -1,9 +1,14 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Spacing, TextColors } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
+import { useIncomingCount } from "@/hooks/use-incoming-count";
+import { CalendarIcon } from "../atoms/calendar-icon";
+import { EntryCluster } from "../atoms/entry-cluster";
+import { NotificationBadge } from "../atoms/notification-badge";
 import { AppMenu } from "./app-menu";
 
 interface AppHeaderProps {
@@ -15,40 +20,73 @@ export function AppHeader({
   onAvatarPress,
   avatarUri,
 }: AppHeaderProps): React.ReactElement {
+  const { colors } = useTheme();
+  const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
+  const incomingCount = useIncomingCount();
 
   return (
     <>
       <View style={styles.bar}>
-        <Pressable
-          onPress={() => setMenuVisible(true)}
-          style={styles.iconBtn}
-          hitSlop={8}
-        >
-          <MaterialCommunityIcons
-            name="menu"
-            size={22}
-            color={TextColors.secondary}
+        <View style={styles.brand}>
+          <EntryCluster
+            types={["deadline", "event", "todo", "someday", "idea"]}
+            dotSize={7}
+            gap={3}
+            width={24}
           />
-        </Pressable>
 
-        <ThemedText type="headline" style={styles.wordmark}>
-          Synapse
-        </ThemedText>
+          <ThemedText type="headline" style={styles.wordmark}>
+            Synapse
+          </ThemedText>
+        </View>
 
-        <Pressable onPress={onAvatarPress} style={styles.iconBtn} hitSlop={8}>
-          {avatarUri ? (
-            <Image source={{ uri: avatarUri }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarFallback}>
-              <MaterialCommunityIcons
-                name="account"
-                size={20}
-                color={TextColors.secondary}
-              />
-            </View>
-          )}
-        </Pressable>
+        <View style={styles.actions}>
+          {/* Incoming tray — opens the temporal lane (deadlines, events,
+              todos). Its badge counts what's due this week. */}
+          <Pressable
+            onPress={() => router.push("/list")}
+            style={styles.iconBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={
+              incomingCount > 0
+                ? `Incoming, ${incomingCount} this week`
+                : "Incoming"
+            }
+          >
+            <MaterialCommunityIcons
+              name="tray-arrow-down"
+              size={24}
+              color={colors.inkMuted}
+            />
+            <NotificationBadge count={incomingCount} />
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push("/calendar")}
+            style={styles.iconBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Calendar"
+          >
+            <CalendarIcon size={26} />
+          </Pressable>
+
+          <Pressable
+            onPress={() => setMenuVisible(true)}
+            style={styles.iconBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Menu"
+          >
+            <MaterialCommunityIcons
+              name="dots-vertical"
+              size={22}
+              color={colors.inkMuted}
+            />
+          </Pressable>
+        </View>
       </View>
 
       <AppMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
@@ -58,17 +96,26 @@ export function AppHeader({
 
 const styles = StyleSheet.create({
   bar: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.md,
+  },
+  brand: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
   },
   iconBtn: {
-    padding: Spacing.xs,
+    padding: tokens.space.xs,
   },
   wordmark: {
-    flex: 1,
     textAlign: "center",
     fontSize: 18,
     fontWeight: "700",
@@ -82,7 +129,6 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "rgba(255,255,255,0.08)",
     alignItems: "center",
     justifyContent: "center",
   },

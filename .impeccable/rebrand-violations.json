@@ -1,0 +1,1863 @@
+{
+  "violations": [
+    {
+      "file": "app/(tabs)/calendar.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 80",
+      "nearestToken": "spacing.5xl",
+      "line": 150,
+      "col": 5,
+      "context": "height: 80,"
+    },
+    {
+      "file": "app/(tabs)/index.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 72",
+      "nearestToken": "spacing.5xl",
+      "line": 312,
+      "col": 5,
+      "context": "height: 72,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.6",
+      "nearestToken": "type.xs",
+      "line": 783,
+      "col": 5,
+      "context": "letterSpacing: 0.6,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 28",
+      "nearestToken": "type.4xl",
+      "line": 786,
+      "col": 5,
+      "context": "fontSize: 28,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 34",
+      "nearestToken": "type.5xl",
+      "line": 787,
+      "col": 5,
+      "context": "lineHeight: 34,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.8",
+      "nearestToken": "type.xs",
+      "line": 801,
+      "col": 5,
+      "context": "letterSpacing: 0.8,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.6",
+      "nearestToken": "type.xs",
+      "line": 813,
+      "col": 5,
+      "context": "letterSpacing: 0.6,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 22",
+      "nearestToken": "type.2xl",
+      "line": 816,
+      "col": 5,
+      "context": "lineHeight: 22,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 13",
+      "nearestToken": "type.sm",
+      "line": 842,
+      "col": 5,
+      "context": "fontSize: 13,"
+    },
+    {
+      "file": "app/detail.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.4",
+      "nearestToken": "type.xs",
+      "line": 843,
+      "col": 5,
+      "context": "letterSpacing: 0.4,"
+    },
+    {
+      "file": "app/list.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 80",
+      "nearestToken": "spacing.5xl",
+      "line": 405,
+      "col": 5,
+      "context": "height: 80,"
+    },
+    {
+      "file": "app/list.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 10",
+      "nearestToken": "type.xs",
+      "line": 389,
+      "col": 5,
+      "context": "fontSize: 10,"
+    },
+    {
+      "file": "app/list.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 399,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 60",
+      "nearestToken": "spacing.5xl",
+      "line": 339,
+      "col": 5,
+      "context": "minWidth: 60,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 50",
+      "nearestToken": "spacing.5xl",
+      "line": 342,
+      "col": 5,
+      "context": "minWidth: 50,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 14",
+      "nearestToken": "type.md",
+      "line": 354,
+      "col": 5,
+      "context": "fontSize: 14,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 369,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 16",
+      "nearestToken": "type.lg",
+      "line": 375,
+      "col": 5,
+      "context": "fontSize: 16,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 18",
+      "nearestToken": "type.xl",
+      "line": 378,
+      "col": 5,
+      "context": "fontSize: 18,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 16",
+      "nearestToken": "type.lg",
+      "line": 423,
+      "col": 5,
+      "context": "fontSize: 16,"
+    },
+    {
+      "file": "app/modal.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 11",
+      "nearestToken": "type.xs",
+      "line": 440,
+      "col": 5,
+      "context": "fontSize: 11,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 60",
+      "nearestToken": "spacing.5xl",
+      "line": 199,
+      "col": 5,
+      "context": "minWidth: 60,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 60",
+      "nearestToken": "spacing.5xl",
+      "line": 202,
+      "col": 5,
+      "context": "minWidth: 60,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 120",
+      "nearestToken": "spacing.5xl",
+      "line": 236,
+      "col": 5,
+      "context": "width: 120,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 120",
+      "nearestToken": "spacing.5xl",
+      "line": 237,
+      "col": 5,
+      "context": "height: 120,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 80",
+      "nearestToken": "spacing.5xl",
+      "line": 250,
+      "col": 5,
+      "context": "width: 80,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 80",
+      "nearestToken": "spacing.5xl",
+      "line": 251,
+      "col": 5,
+      "context": "height: 80,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 4",
+      "nearestToken": "spacing.xs",
+      "line": 257,
+      "col": 31,
+      "context": "shadowOffset: { width: 0, height: 4 },"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 32",
+      "nearestToken": "spacing.3xl",
+      "line": 267,
+      "col": 5,
+      "context": "width: 32,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 32",
+      "nearestToken": "spacing.3xl",
+      "line": 268,
+      "col": 5,
+      "context": "height: 32,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 24",
+      "nearestToken": "spacing.2xl",
+      "line": 274,
+      "col": 5,
+      "context": "width: 24,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 24",
+      "nearestToken": "spacing.2xl",
+      "line": 275,
+      "col": 5,
+      "context": "height: 24,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-radius",
+      "value": "borderRadius: 50",
+      "nearestToken": "radii.2xl",
+      "line": 245,
+      "col": 5,
+      "context": "borderRadius: 50,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 14",
+      "nearestToken": "type.md",
+      "line": 211,
+      "col": 5,
+      "context": "fontSize: 14,"
+    },
+    {
+      "file": "app/voice-input.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 10",
+      "nearestToken": "type.xs",
+      "line": 280,
+      "col": 5,
+      "context": "fontSize: 10,"
+    },
+    {
+      "file": "components/atoms/DateInput.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 16",
+      "nearestToken": "type.lg",
+      "line": 51,
+      "col": 11,
+      "context": "fontSize: 16,"
+    },
+    {
+      "file": "components/atoms/TimeInput.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 16",
+      "nearestToken": "type.lg",
+      "line": 69,
+      "col": 11,
+      "context": "fontSize: 16,"
+    },
+    {
+      "file": "components/atoms/day-cell.tsx",
+      "kind": "magic-spacing",
+      "value": "maxHeight: 52",
+      "nearestToken": "spacing.5xl",
+      "line": 86,
+      "col": 5,
+      "context": "maxHeight: 52,"
+    },
+    {
+      "file": "components/atoms/day-cell.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 4",
+      "nearestToken": "spacing.xs",
+      "line": 124,
+      "col": 5,
+      "context": "width: 4,"
+    },
+    {
+      "file": "components/atoms/day-cell.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 4",
+      "nearestToken": "spacing.xs",
+      "line": 125,
+      "col": 5,
+      "context": "height: 4,"
+    },
+    {
+      "file": "components/atoms/day-cell.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 14",
+      "nearestToken": "type.md",
+      "line": 109,
+      "col": 5,
+      "context": "fontSize: 14,"
+    },
+    {
+      "file": "components/atoms/day-cell.tsx",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 18",
+      "nearestToken": "type.xl",
+      "line": 111,
+      "col": 5,
+      "context": "lineHeight: 18,"
+    },
+    {
+      "file": "components/atoms/day-cell.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 8",
+      "nearestToken": "type.xs",
+      "line": 129,
+      "col": 5,
+      "context": "fontSize: 8,"
+    },
+    {
+      "file": "components/atoms/month-navigator.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 85,
+      "col": 5,
+      "context": "width: 44,"
+    },
+    {
+      "file": "components/atoms/month-navigator.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 86,
+      "col": 5,
+      "context": "height: 44,"
+    },
+    {
+      "file": "components/atoms/month-navigator.tsx",
+      "kind": "magic-radius",
+      "value": "borderRadius: 22",
+      "nearestToken": "radii.2xl",
+      "line": 87,
+      "col": 5,
+      "context": "borderRadius: 22,"
+    },
+    {
+      "file": "components/atoms/month-navigator.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 20",
+      "nearestToken": "type.2xl",
+      "line": 96,
+      "col": 5,
+      "context": "fontSize: 20,"
+    },
+    {
+      "file": "components/atoms/month-navigator.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 10",
+      "nearestToken": "type.xs",
+      "line": 100,
+      "col": 5,
+      "context": "fontSize: 10,"
+    },
+    {
+      "file": "components/atoms/streak-badge.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 80",
+      "nearestToken": "spacing.5xl",
+      "line": 44,
+      "col": 5,
+      "context": "minWidth: 80,"
+    },
+    {
+      "file": "components/atoms/streak-badge.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.8",
+      "nearestToken": "type.xs",
+      "line": 47,
+      "col": 5,
+      "context": "letterSpacing: 0.8,"
+    },
+    {
+      "file": "components/atoms/streak-badge.tsx",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 28",
+      "nearestToken": "type.4xl",
+      "line": 50,
+      "col": 5,
+      "context": "lineHeight: 28,"
+    },
+    {
+      "file": "components/atoms/waveform-bar.tsx",
+      "kind": "inline-color",
+      "value": "#FF6B6B",
+      "nearestToken": null,
+      "line": 18,
+      "col": 12,
+      "context": "color = \"#FF6B6B\","
+    },
+    {
+      "file": "components/atoms/waveform-bar.tsx",
+      "kind": "inline-color",
+      "value": "#FF6B6B",
+      "nearestToken": null,
+      "line": 52,
+      "col": 12,
+      "context": "color = \"#FF6B6B\","
+    },
+    {
+      "file": "components/atoms/waveform-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 40",
+      "nearestToken": "spacing.4xl",
+      "line": 68,
+      "col": 5,
+      "context": "height: 40,"
+    },
+    {
+      "file": "components/atoms/waveform-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "gap: 4",
+      "nearestToken": "spacing.xs",
+      "line": 69,
+      "col": 5,
+      "context": "gap: 4,"
+    },
+    {
+      "file": "components/atoms/waveform-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 4",
+      "nearestToken": "spacing.xs",
+      "line": 72,
+      "col": 5,
+      "context": "width: 4,"
+    },
+    {
+      "file": "components/error-boundary.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.4",
+      "nearestToken": "type.xs",
+      "line": 98,
+      "col": 5,
+      "context": "letterSpacing: 0.4,"
+    },
+    {
+      "file": "components/molecules/detail-action-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 60",
+      "nearestToken": "spacing.5xl",
+      "line": 82,
+      "col": 5,
+      "context": "minHeight: 60,"
+    },
+    {
+      "file": "components/molecules/detail-action-bar.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.3",
+      "nearestToken": "type.xs",
+      "line": 88,
+      "col": 5,
+      "context": "letterSpacing: 0.3,"
+    },
+    {
+      "file": "components/molecules/detail-metadata-row.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 36",
+      "nearestToken": "spacing.3xl",
+      "line": 52,
+      "col": 5,
+      "context": "width: 36,"
+    },
+    {
+      "file": "components/molecules/detail-metadata-row.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 36",
+      "nearestToken": "spacing.3xl",
+      "line": 53,
+      "col": 5,
+      "context": "height: 36,"
+    },
+    {
+      "file": "components/molecules/detail-metadata-row.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 64,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "components/molecules/detail-someday-hero.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 40",
+      "nearestToken": "spacing.4xl",
+      "line": 75,
+      "col": 5,
+      "context": "width: 40,"
+    },
+    {
+      "file": "components/molecules/detail-someday-hero.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 1.5",
+      "nearestToken": "spacing.xxs",
+      "line": 76,
+      "col": 5,
+      "context": "height: 1.5,"
+    },
+    {
+      "file": "components/molecules/detail-someday-hero.tsx",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 24",
+      "nearestToken": "type.3xl",
+      "line": 66,
+      "col": 5,
+      "context": "lineHeight: 24,"
+    },
+    {
+      "file": "components/molecules/empty-state.tsx",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 16",
+      "nearestToken": "type.lg",
+      "line": 72,
+      "col": 5,
+      "context": "lineHeight: 16,"
+    },
+    {
+      "file": "components/molecules/empty-state.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 11",
+      "nearestToken": "type.xs",
+      "line": 73,
+      "col": 5,
+      "context": "fontSize: 11,"
+    },
+    {
+      "file": "components/molecules/empty-state.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.4",
+      "nearestToken": "type.xs",
+      "line": 82,
+      "col": 5,
+      "context": "letterSpacing: 0.4,"
+    },
+    {
+      "file": "components/molecules/entry-row.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 12",
+      "nearestToken": "spacing.md",
+      "line": 54,
+      "col": 5,
+      "context": "width: 12,"
+    },
+    {
+      "file": "components/molecules/entry-row.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 52",
+      "nearestToken": "spacing.5xl",
+      "line": 63,
+      "col": 5,
+      "context": "minWidth: 52,"
+    },
+    {
+      "file": "components/molecules/list-item.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 36",
+      "nearestToken": "spacing.3xl",
+      "line": 267,
+      "col": 5,
+      "context": "width: 36,"
+    },
+    {
+      "file": "components/molecules/list-item.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 36",
+      "nearestToken": "spacing.3xl",
+      "line": 268,
+      "col": 5,
+      "context": "height: 36,"
+    },
+    {
+      "file": "components/molecules/list-item.tsx",
+      "kind": "magic-spacing",
+      "value": "paddingLeft: 16",
+      "nearestToken": "spacing.lg",
+      "line": 274,
+      "col": 5,
+      "context": "paddingLeft: 16, // aligns under dot"
+    },
+    {
+      "file": "components/molecules/list-item.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 36",
+      "nearestToken": "spacing.3xl",
+      "line": 278,
+      "col": 5,
+      "context": "width: 36,"
+    },
+    {
+      "file": "components/molecules/list-item.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 36",
+      "nearestToken": "spacing.3xl",
+      "line": 279,
+      "col": 5,
+      "context": "height: 36,"
+    },
+    {
+      "file": "components/molecules/list-item.tsx",
+      "kind": "magic-radius",
+      "value": "borderRadius: 18",
+      "nearestToken": "radii.xl",
+      "line": 280,
+      "col": 5,
+      "context": "borderRadius: 18,"
+    },
+    {
+      "file": "components/molecules/list-item.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 14",
+      "nearestToken": "type.md",
+      "line": 301,
+      "col": 5,
+      "context": "fontSize: 14,"
+    },
+    {
+      "file": "components/molecules/list-item.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.4",
+      "nearestToken": "type.xs",
+      "line": 311,
+      "col": 5,
+      "context": "letterSpacing: 0.4,"
+    },
+    {
+      "file": "components/molecules/list-item.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.2",
+      "nearestToken": "type.xs",
+      "line": 326,
+      "col": 5,
+      "context": "letterSpacing: 0.2,"
+    },
+    {
+      "file": "components/molecules/list-item.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.3",
+      "nearestToken": "type.xs",
+      "line": 339,
+      "col": 5,
+      "context": "letterSpacing: 0.3,"
+    },
+    {
+      "file": "components/molecules/recurrence-picker.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 165,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "components/molecules/recurrence-picker.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 11",
+      "nearestToken": "type.xs",
+      "line": 184,
+      "col": 5,
+      "context": "fontSize: 11,"
+    },
+    {
+      "file": "components/molecules/recurrence-picker.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 10",
+      "nearestToken": "type.xs",
+      "line": 200,
+      "col": 5,
+      "context": "fontSize: 10,"
+    },
+    {
+      "file": "components/molecules/someday-item.tsx",
+      "kind": "magic-spacing",
+      "value": "paddingLeft: 14",
+      "nearestToken": "spacing.md",
+      "line": 151,
+      "col": 5,
+      "context": "paddingLeft: 14,"
+    },
+    {
+      "file": "components/molecules/someday-item.tsx",
+      "kind": "magic-spacing",
+      "value": "paddingLeft: 14",
+      "nearestToken": "spacing.md",
+      "line": 154,
+      "col": 5,
+      "context": "paddingLeft: 14,"
+    },
+    {
+      "file": "components/molecules/someday-item.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 120,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 3",
+      "nearestToken": "spacing.xxs",
+      "line": 83,
+      "col": 5,
+      "context": "width: 3,"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 36",
+      "nearestToken": "spacing.3xl",
+      "line": 85,
+      "col": 5,
+      "context": "minHeight: 36,"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx",
+      "kind": "magic-spacing",
+      "value": "gap: 3",
+      "nearestToken": "spacing.xxs",
+      "line": 90,
+      "col": 5,
+      "context": "gap: 3,"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 6",
+      "nearestToken": "spacing.xs",
+      "line": 98,
+      "col": 5,
+      "context": "width: 6,"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 6",
+      "nearestToken": "spacing.xs",
+      "line": 99,
+      "col": 5,
+      "context": "height: 6,"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 20",
+      "nearestToken": "spacing.xl",
+      "line": 110,
+      "col": 5,
+      "context": "width: 20,"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 20",
+      "nearestToken": "spacing.xl",
+      "line": 111,
+      "col": 5,
+      "context": "height: 20,"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 107,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "components/molecules/weekday-row.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 22",
+      "nearestToken": "spacing.xl",
+      "line": 75,
+      "col": 5,
+      "context": "minHeight: 22,"
+    },
+    {
+      "file": "components/molecules/weekday-row.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 40",
+      "nearestToken": "spacing.4xl",
+      "line": 78,
+      "col": 5,
+      "context": "width: 40,"
+    },
+    {
+      "file": "components/molecules/wrapup-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 44,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "components/molecules/wrapup-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 20",
+      "nearestToken": "type.2xl",
+      "line": 47,
+      "col": 5,
+      "context": "lineHeight: 20,"
+    },
+    {
+      "file": "components/molecules/wrapup-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 15",
+      "nearestToken": "type.md",
+      "line": 48,
+      "col": 5,
+      "context": "fontSize: 15,"
+    },
+    {
+      "file": "components/organisms/app-header.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 34",
+      "nearestToken": "spacing.3xl",
+      "line": 83,
+      "col": 5,
+      "context": "width: 34,"
+    },
+    {
+      "file": "components/organisms/app-header.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 34",
+      "nearestToken": "spacing.3xl",
+      "line": 84,
+      "col": 5,
+      "context": "height: 34,"
+    },
+    {
+      "file": "components/organisms/app-header.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 34",
+      "nearestToken": "spacing.3xl",
+      "line": 88,
+      "col": 5,
+      "context": "width: 34,"
+    },
+    {
+      "file": "components/organisms/app-header.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 34",
+      "nearestToken": "spacing.3xl",
+      "line": 89,
+      "col": 5,
+      "context": "height: 34,"
+    },
+    {
+      "file": "components/organisms/app-header.tsx",
+      "kind": "magic-radius",
+      "value": "borderRadius: 17",
+      "nearestToken": "radii.xl",
+      "line": 85,
+      "col": 5,
+      "context": "borderRadius: 17,"
+    },
+    {
+      "file": "components/organisms/app-header.tsx",
+      "kind": "magic-radius",
+      "value": "borderRadius: 17",
+      "nearestToken": "radii.xl",
+      "line": 90,
+      "col": 5,
+      "context": "borderRadius: 17,"
+    },
+    {
+      "file": "components/organisms/app-header.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 18",
+      "nearestToken": "type.xl",
+      "line": 79,
+      "col": 5,
+      "context": "fontSize: 18,"
+    },
+    {
+      "file": "components/organisms/app-menu.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 284,
+      "col": 5,
+      "context": "minHeight: 44,"
+    },
+    {
+      "file": "components/organisms/app-menu.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 24",
+      "nearestToken": "type.3xl",
+      "line": 259,
+      "col": 5,
+      "context": "fontSize: 24,"
+    },
+    {
+      "file": "components/organisms/app-menu.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.55",
+      "nearestToken": "type.xs",
+      "line": 268,
+      "col": 5,
+      "context": "letterSpacing: 0.55,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 56",
+      "nearestToken": "spacing.5xl",
+      "line": 171,
+      "col": 5,
+      "context": "minHeight: 56,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 187,
+      "col": 5,
+      "context": "width: 44,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 188,
+      "col": 5,
+      "context": "height: 44,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 24",
+      "nearestToken": "spacing.2xl",
+      "line": 195,
+      "col": 5,
+      "context": "height: 24,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "gap: 4",
+      "nearestToken": "spacing.xs",
+      "line": 196,
+      "col": 5,
+      "context": "gap: 4,"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 3",
+      "nearestToken": "spacing.xxs",
+      "line": 199,
+      "col": 5,
+      "context": "width: 3,"
+    },
+    {
+      "file": "components/organisms/custom-tab-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "paddingBottom: 20",
+      "nearestToken": "spacing.xl",
+      "line": 66,
+      "col": 5,
+      "context": "paddingBottom: 20,"
+    },
+    {
+      "file": "components/organisms/custom-tab-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "paddingTop: 8",
+      "nearestToken": "spacing.sm",
+      "line": 67,
+      "col": 5,
+      "context": "paddingTop: 8,"
+    },
+    {
+      "file": "components/organisms/custom-tab-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "paddingHorizontal: 60",
+      "nearestToken": "spacing.5xl",
+      "line": 74,
+      "col": 5,
+      "context": "paddingHorizontal: 60,"
+    },
+    {
+      "file": "components/organisms/custom-tab-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 77,
+      "col": 5,
+      "context": "width: 44,"
+    },
+    {
+      "file": "components/organisms/custom-tab-bar.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 78,
+      "col": 5,
+      "context": "height: 44,"
+    },
+    {
+      "file": "components/organisms/day-detail-sheet.tsx",
+      "kind": "magic-spacing",
+      "value": "paddingBottom: 40",
+      "nearestToken": "spacing.4xl",
+      "line": 129,
+      "col": 5,
+      "context": "paddingBottom: 40,"
+    },
+    {
+      "file": "components/organisms/day-detail-sheet.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 40",
+      "nearestToken": "spacing.4xl",
+      "line": 132,
+      "col": 5,
+      "context": "width: 40,"
+    },
+    {
+      "file": "components/organisms/day-detail-sheet.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 4",
+      "nearestToken": "spacing.xs",
+      "line": 133,
+      "col": 5,
+      "context": "height: 4,"
+    },
+    {
+      "file": "components/organisms/day-detail-sheet.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 20",
+      "nearestToken": "type.2xl",
+      "line": 146,
+      "col": 5,
+      "context": "fontSize: 20,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 72",
+      "nearestToken": "spacing.5xl",
+      "line": 136,
+      "col": 5,
+      "context": "width: 72,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 72",
+      "nearestToken": "spacing.5xl",
+      "line": 137,
+      "col": 5,
+      "context": "height: 72,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 56",
+      "nearestToken": "spacing.5xl",
+      "line": 142,
+      "col": 5,
+      "context": "width: 56,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 56",
+      "nearestToken": "spacing.5xl",
+      "line": 143,
+      "col": 5,
+      "context": "height: 56,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 40",
+      "nearestToken": "spacing.4xl",
+      "line": 170,
+      "col": 5,
+      "context": "height: 40,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "gap: 4",
+      "nearestToken": "spacing.xs",
+      "line": 171,
+      "col": 5,
+      "context": "gap: 4,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 4",
+      "nearestToken": "spacing.xs",
+      "line": 174,
+      "col": 5,
+      "context": "width: 4,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 72",
+      "nearestToken": "spacing.5xl",
+      "line": 179,
+      "col": 5,
+      "context": "width: 72,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 72",
+      "nearestToken": "spacing.5xl",
+      "line": 180,
+      "col": 5,
+      "context": "height: 72,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 56",
+      "nearestToken": "spacing.5xl",
+      "line": 185,
+      "col": 5,
+      "context": "width: 56,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 56",
+      "nearestToken": "spacing.5xl",
+      "line": 186,
+      "col": 5,
+      "context": "height: 56,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 194,
+      "col": 5,
+      "context": "width: 44,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 195,
+      "col": 5,
+      "context": "height: 44,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "marginLeft: 4",
+      "nearestToken": "spacing.xs",
+      "line": 199,
+      "col": 5,
+      "context": "marginLeft: 4,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-spacing",
+      "value": "marginRight: 8",
+      "nearestToken": "spacing.sm",
+      "line": 205,
+      "col": 5,
+      "context": "marginRight: 8,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-radius",
+      "value": "borderRadius: 9999",
+      "nearestToken": "radii.full",
+      "line": 198,
+      "col": 5,
+      "context": "borderRadius: 9999,"
+    },
+    {
+      "file": "components/organisms/fab.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 14",
+      "nearestToken": "type.md",
+      "line": 203,
+      "col": 5,
+      "context": "fontSize: 14,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 5",
+      "nearestToken": "spacing.xs",
+      "line": 212,
+      "col": 5,
+      "context": "width: 5,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 226,
+      "col": 5,
+      "context": "minHeight: 44,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 44",
+      "nearestToken": "spacing.4xl",
+      "line": 243,
+      "col": 5,
+      "context": "minHeight: 44,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 7",
+      "nearestToken": "spacing.sm",
+      "line": 246,
+      "col": 5,
+      "context": "width: 7,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 7",
+      "nearestToken": "spacing.sm",
+      "line": 247,
+      "col": 5,
+      "context": "height: 7,"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx",
+      "kind": "magic-spacing",
+      "value": "minHeight: 32",
+      "nearestToken": "spacing.3xl",
+      "line": 259,
+      "col": 5,
+      "context": "minHeight: 32,"
+    },
+    {
+      "file": "components/organisms/list-progress.tsx",
+      "kind": "magic-spacing",
+      "value": "paddingBottom: 4",
+      "nearestToken": "spacing.xs",
+      "line": 89,
+      "col": 5,
+      "context": "paddingBottom: 4,"
+    },
+    {
+      "file": "components/organisms/list-progress.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.8",
+      "nearestToken": "type.xs",
+      "line": 72,
+      "col": 5,
+      "context": "letterSpacing: 0.8,"
+    },
+    {
+      "file": "components/organisms/list-screen-header.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 40",
+      "nearestToken": "spacing.4xl",
+      "line": 71,
+      "col": 5,
+      "context": "width: 40,"
+    },
+    {
+      "file": "components/organisms/list-screen-header.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 40",
+      "nearestToken": "spacing.4xl",
+      "line": 72,
+      "col": 5,
+      "context": "height: 40,"
+    },
+    {
+      "file": "components/organisms/month-grid.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 11",
+      "nearestToken": "type.xs",
+      "line": 123,
+      "col": 5,
+      "context": "fontSize: 11,"
+    },
+    {
+      "file": "components/organisms/next-up-card.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 8",
+      "nearestToken": "spacing.sm",
+      "line": 151,
+      "col": 5,
+      "context": "width: 8,"
+    },
+    {
+      "file": "components/organisms/next-up-card.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 8",
+      "nearestToken": "spacing.sm",
+      "line": 152,
+      "col": 5,
+      "context": "height: 8,"
+    },
+    {
+      "file": "components/organisms/next-up-card.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 120",
+      "nearestToken": "spacing.5xl",
+      "line": 171,
+      "col": 5,
+      "context": "width: 120,"
+    },
+    {
+      "file": "components/organisms/next-up-card.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 120",
+      "nearestToken": "spacing.5xl",
+      "line": 172,
+      "col": 5,
+      "context": "height: 120,"
+    },
+    {
+      "file": "components/organisms/next-up-card.tsx",
+      "kind": "magic-radius",
+      "value": "borderRadius: 60",
+      "nearestToken": "radii.2xl",
+      "line": 173,
+      "col": 5,
+      "context": "borderRadius: 60,"
+    },
+    {
+      "file": "components/organisms/next-up-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 22",
+      "nearestToken": "type.2xl",
+      "line": 142,
+      "col": 5,
+      "context": "fontSize: 22,"
+    },
+    {
+      "file": "components/organisms/next-up-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 10",
+      "nearestToken": "type.xs",
+      "line": 163,
+      "col": 5,
+      "context": "fontSize: 10,"
+    },
+    {
+      "file": "components/organisms/next-up-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 164,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "components/organisms/swipeable-row.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 64",
+      "nearestToken": "spacing.5xl",
+      "line": 74,
+      "col": 5,
+      "context": "width: 64,"
+    },
+    {
+      "file": "components/organisms/upcoming-preview-card.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 64",
+      "nearestToken": "spacing.5xl",
+      "line": 154,
+      "col": 5,
+      "context": "minWidth: 64,"
+    },
+    {
+      "file": "components/organisms/upcoming-preview-card.tsx",
+      "kind": "magic-spacing",
+      "value": "minWidth: 70",
+      "nearestToken": "spacing.5xl",
+      "line": 200,
+      "col": 5,
+      "context": "minWidth: 70,"
+    },
+    {
+      "file": "components/organisms/upcoming-preview-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 52",
+      "nearestToken": "type.5xl",
+      "line": 164,
+      "col": 5,
+      "context": "lineHeight: 52,"
+    },
+    {
+      "file": "components/organisms/upcoming-preview-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 10",
+      "nearestToken": "type.xs",
+      "line": 190,
+      "col": 5,
+      "context": "fontSize: 10,"
+    },
+    {
+      "file": "components/organisms/upcoming-preview-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "letterSpacing: 0.5",
+      "nearestToken": "type.xs",
+      "line": 192,
+      "col": 5,
+      "context": "letterSpacing: 0.5,"
+    },
+    {
+      "file": "components/organisms/upcoming-preview-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 13",
+      "nearestToken": "type.sm",
+      "line": 196,
+      "col": 5,
+      "context": "fontSize: 13,"
+    },
+    {
+      "file": "components/organisms/upcoming-preview-card.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 10",
+      "nearestToken": "type.xs",
+      "line": 199,
+      "col": 5,
+      "context": "fontSize: 10,"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 16",
+      "nearestToken": "spacing.lg",
+      "line": 129,
+      "col": 5,
+      "context": "height: 16,"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx",
+      "kind": "magic-spacing",
+      "value": "padding: 4",
+      "nearestToken": "spacing.xs",
+      "line": 138,
+      "col": 5,
+      "context": "padding: 4,"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx",
+      "kind": "magic-spacing",
+      "value": "width: 5",
+      "nearestToken": "spacing.xs",
+      "line": 142,
+      "col": 5,
+      "context": "width: 5,"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 5",
+      "nearestToken": "spacing.xs",
+      "line": 143,
+      "col": 5,
+      "context": "height: 5,"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx",
+      "kind": "magic-radius",
+      "value": "borderRadius: 2.5",
+      "nearestToken": "radii.xs",
+      "line": 144,
+      "col": 5,
+      "context": "borderRadius: 2.5,"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 10",
+      "nearestToken": "type.xs",
+      "line": 126,
+      "col": 5,
+      "context": "fontSize: 10,"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 9",
+      "nearestToken": "type.xs",
+      "line": 147,
+      "col": 5,
+      "context": "fontSize: 9,"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 8",
+      "nearestToken": "type.xs",
+      "line": 150,
+      "col": 5,
+      "context": "fontSize: 8,"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "size: 30",
+      "nearestToken": "spacing.3xl",
+      "line": 104,
+      "col": 14,
+      "context": "display: { size: 30, lineHeight: 36, weight: \"600\" as const, tracking: -0.3 }, /"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "size: 22",
+      "nearestToken": "spacing.xl",
+      "line": 105,
+      "col": 12,
+      "context": "title: { size: 22, lineHeight: 28, weight: \"600\" as const, tracking: -0.2 }, // "
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "size: 17",
+      "nearestToken": "spacing.lg",
+      "line": 106,
+      "col": 11,
+      "context": "item: { size: 17, lineHeight: 23, weight: \"500\" as const, tracking: 0 }, // Inte"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "size: 14",
+      "nearestToken": "spacing.md",
+      "line": 107,
+      "col": 11,
+      "context": "body: { size: 14, lineHeight: 20, weight: \"400\" as const, tracking: 0 }, // Inte"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "size: 11",
+      "nearestToken": "spacing.md",
+      "line": 108,
+      "col": 13,
+      "context": "kicker: { size: 11, lineHeight: 14, weight: \"600\" as const, tracking: 0.6 }, // "
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-spacing",
+      "value": "height: 8",
+      "nearestToken": "spacing.sm",
+      "line": 146,
+      "col": 33,
+      "context": "shadowOffset: { width: 0, height: 8 },"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 36",
+      "nearestToken": "type.5xl",
+      "line": 104,
+      "col": 24,
+      "context": "display: { size: 30, lineHeight: 36, weight: \"600\" as const, tracking: -0.3 }, /"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 28",
+      "nearestToken": "type.4xl",
+      "line": 105,
+      "col": 22,
+      "context": "title: { size: 22, lineHeight: 28, weight: \"600\" as const, tracking: -0.2 }, // "
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 23",
+      "nearestToken": "type.3xl",
+      "line": 106,
+      "col": 21,
+      "context": "item: { size: 17, lineHeight: 23, weight: \"500\" as const, tracking: 0 }, // Inte"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 20",
+      "nearestToken": "type.2xl",
+      "line": 107,
+      "col": 21,
+      "context": "body: { size: 14, lineHeight: 20, weight: \"400\" as const, tracking: 0 }, // Inte"
+    },
+    {
+      "file": "constants/theme.ts",
+      "kind": "magic-fontsize",
+      "value": "lineHeight: 14",
+      "nearestToken": "type.md",
+      "line": 108,
+      "col": 23,
+      "context": "kicker: { size: 11, lineHeight: 14, weight: \"600\" as const, tracking: 0.6 }, // "
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx",
+      "kind": "inline-color",
+      "value": "#fff",
+      "nearestToken": null,
+      "line": 61,
+      "col": 23,
+      "context": "backgroundColor: '#fff',"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx",
+      "kind": "inline-color",
+      "value": "#eee",
+      "nearestToken": null,
+      "line": 67,
+      "col": 23,
+      "context": "backgroundColor: '#eee',"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx",
+      "kind": "magic-spacing",
+      "value": "margin: 20",
+      "nearestToken": "spacing.xl",
+      "line": 53,
+      "col": 5,
+      "context": "margin: 20,"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx",
+      "kind": "magic-spacing",
+      "value": "marginBottom: 20",
+      "nearestToken": "spacing.xl",
+      "line": 57,
+      "col": 5,
+      "context": "marginBottom: 20,"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx",
+      "kind": "magic-spacing",
+      "value": "margin: 20",
+      "nearestToken": "spacing.xl",
+      "line": 60,
+      "col": 5,
+      "context": "margin: 20,"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx",
+      "kind": "magic-spacing",
+      "value": "padding: 20",
+      "nearestToken": "spacing.xl",
+      "line": 63,
+      "col": 5,
+      "context": "padding: 20,"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx",
+      "kind": "magic-spacing",
+      "value": "height: 200",
+      "nearestToken": "spacing.5xl",
+      "line": 71,
+      "col": 5,
+      "context": "height: 200,"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx",
+      "kind": "magic-radius",
+      "value": "borderRadius: 10",
+      "nearestToken": "radii.md",
+      "line": 62,
+      "col": 5,
+      "context": "borderRadius: 10,"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 30",
+      "nearestToken": "type.4xl",
+      "line": 52,
+      "col": 5,
+      "context": "fontSize: 30,"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx",
+      "kind": "magic-fontsize",
+      "value": "fontSize: 20",
+      "nearestToken": "type.2xl",
+      "line": 56,
+      "col": 5,
+      "context": "fontSize: 20,"
+    },
+    {
+      "file": "speech-recognizer/speech-recognizer-example/App.tsx",
+      "kind": "inline-color",
+      "value": "#fff",
+      "nearestToken": null,
+      "line": 16,
+      "col": 23,
+      "context": "backgroundColor: '#fff',"
+    },
+    {
+      "file": "targets/watch/expo-target.config.js",
+      "kind": "inline-color",
+      "value": "darkcyan",
+      "nearestToken": null,
+      "line": 6,
+      "col": 22,
+      "context": "colors: { $accent: \"darkcyan\" },"
+    },
+    {
+      "file": "targets/watch-widget/expo-target.config.js",
+      "kind": "inline-color",
+      "value": "darkcyan",
+      "nearestToken": null,
+      "line": 5,
+      "col": 22,
+      "context": "colors: { $accent: \"darkcyan\" },"
+    }
+  ],
+  "byFile": {
+    "app/(tabs)/calendar.tsx": 1,
+    "app/(tabs)/index.tsx": 1,
+    "app/detail.tsx": 8,
+    "app/list.tsx": 3,
+    "app/modal.tsx": 8,
+    "app/voice-input.tsx": 14,
+    "components/atoms/DateInput.tsx": 1,
+    "components/atoms/TimeInput.tsx": 1,
+    "components/atoms/day-cell.tsx": 6,
+    "components/atoms/month-navigator.tsx": 5,
+    "components/atoms/streak-badge.tsx": 3,
+    "components/atoms/waveform-bar.tsx": 5,
+    "components/error-boundary.tsx": 1,
+    "components/molecules/detail-action-bar.tsx": 2,
+    "components/molecules/detail-metadata-row.tsx": 3,
+    "components/molecules/detail-someday-hero.tsx": 3,
+    "components/molecules/empty-state.tsx": 3,
+    "components/molecules/entry-row.tsx": 2,
+    "components/molecules/list-item.tsx": 10,
+    "components/molecules/recurrence-picker.tsx": 3,
+    "components/molecules/someday-item.tsx": 3,
+    "components/molecules/today-event-row.tsx": 8,
+    "components/molecules/weekday-row.tsx": 2,
+    "components/molecules/wrapup-card.tsx": 3,
+    "components/organisms/app-header.tsx": 7,
+    "components/organisms/app-menu.tsx": 3,
+    "components/organisms/capture-bar.tsx": 6,
+    "components/organisms/custom-tab-bar.tsx": 5,
+    "components/organisms/day-detail-sheet.tsx": 4,
+    "components/organisms/fab.tsx": 17,
+    "components/organisms/field-tile.tsx": 6,
+    "components/organisms/list-progress.tsx": 2,
+    "components/organisms/list-screen-header.tsx": 2,
+    "components/organisms/month-grid.tsx": 1,
+    "components/organisms/next-up-card.tsx": 8,
+    "components/organisms/swipeable-row.tsx": 1,
+    "components/organisms/upcoming-preview-card.tsx": 7,
+    "components/organisms/week-strip.tsx": 8,
+    "constants/theme.ts": 11,
+    "speech-recognizer/example/App.tsx": 10,
+    "speech-recognizer/speech-recognizer-example/App.tsx": 1,
+    "targets/watch/expo-target.config.js": 1,
+    "targets/watch-widget/expo-target.config.js": 1
+  },
+  "byKind": {
+    "magic-spacing": 113,
+    "magic-fontsize": 71,
+    "magic-radius": 9,
+    "inline-color": 7
+  },
+  "totalCount": 200,
+  "verdict": "severe",
+  "recommendation": "200 hardcoded values found across multiple files. Resolve violations before migration — the new token system cannot reach these values and the migration will produce inconsistent results.",
+  "summary": {
+    "fileCount": 93,
+    "violationCount": 200,
+    "verdict": "severe"
+  }
+}

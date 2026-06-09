@@ -3,7 +3,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { ThemedText } from '@/components/atoms/themed-text';
 import { DayCell } from '@/components/atoms/day-cell';
 import { MonthNavigator } from '@/components/atoms/month-navigator';
-import { Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 import type { CalendarEntry } from '@/hooks/use-calendar-data';
 
@@ -32,6 +32,8 @@ export function MonthGrid({
   onDayPress,
   onGoToToday,
 }: MonthGridProps): React.ReactElement {
+  const { colors } = useTheme();
+
   const handlePrevMonth = () => {
     onMonthChange('prev');
   };
@@ -46,7 +48,7 @@ export function MonthGrid({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceSubtle }]}>
       <MonthNavigator
         label={currentMonthLabel}
         isCurrentMonth={isCurrentMonth}
@@ -58,7 +60,7 @@ export function MonthGrid({
       <View style={styles.weekdayRow}>
         {WEEKDAY_LABELS.map((label, i) => (
           <View key={i} style={styles.weekdayCell}>
-            <ThemedText type="label" style={styles.weekdayLabel}>
+            <ThemedText type="label" style={[styles.weekdayLabel, { color: colors.inkMuted }]}>
               {label}
             </ThemedText>
           </View>
@@ -103,23 +105,21 @@ function isSameDay(a: Date, b: Date): boolean {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Surface.containerLow,
-    borderRadius: Radius.xl,
-    padding: Spacing.md,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.md,
   },
   weekdayRow: {
     flexDirection: 'row',
     paddingHorizontal: 2,
-    marginBottom: Spacing.xs,
+    marginBottom: tokens.space.xs,
   },
   weekdayCell: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.xs,
+    paddingVertical: tokens.space.xs,
   },
   weekdayLabel: {
-    color: TextColors.tertiary,
     fontSize: 11,
   },
   gridWrapper: {

@@ -21,6 +21,27 @@ export interface DbEntry {
   updated_at: number;
 }
 
+/** A small, calm affective layer for diary entries. Optional. */
+export type DiaryMood = "calm" | "low" | "charged" | "tired" | "bright";
+
+/**
+ * A diary / journal entry. Lives in its own `diary_entries` table, deliberately
+ * separate from action-item `entries` so it never surfaces in the Field,
+ * Incoming, or Calendar zones. A free body, an auto timestamp, an optional mood.
+ */
+export interface DbDiaryEntry {
+  id: string;
+  body: string;
+  mood: DiaryMood | null;
+  /**
+   * Optional link to an action-board `entries` row (an 'idea'). Set → this note
+   * is a reflection ON that idea; null → an autonomous diary note.
+   */
+  linked_entry_id: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
 /**
  * TypeScript representation of a recurrence_completions row.
  */

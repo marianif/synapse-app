@@ -1,29 +1,35 @@
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback } from "react";
+import {
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
+import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { EmptyState } from "@/components/molecules/empty-state";
+import { ListFilterBar } from "@/components/molecules/list-filter-bar";
 import { ListItem } from "@/components/molecules/list-item";
 import { WrapupCard } from "@/components/molecules/wrapup-card";
 import { Fab } from "@/components/organisms/fab";
-import { ListProgress } from "@/components/organisms/list-progress";
-import { ListScreenHeader } from "@/components/organisms/list-screen-header";
+import { ScreenHeader } from "@/components/organisms/screen-header";
 import {
-  EntryAccent,
-  Radius,
-  Spacing,
-  Surface,
-  TextColors,
+  entryColor,
+  entryTint,
+  useTheme,
+  tokens,
 } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { isSameDay, parseDate } from "@/lib/date-utils";
 import { isRecurringEntry } from "@/lib/recurrence";
 
-import type { EntryType } from "@/components/atoms/entry-dot";
 import type { ItemStatus } from "@/components/molecules/list-item";
-import type { DbEntry } from "@/lib/types";
+import type {
+  ListStatusFilter,
+  ListTypeFilter,
+} from "@/components/molecules/list-filter-bar";
+import type { DbEntry, EntryType } from "@/lib/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -94,9 +100,71 @@ function somedayEntryToListEntry(entry: DbEntry): ListEntry {
     id: entry.id,
     title: entry.title,
     subtitle: entry.subtitle ?? undefined,
-    entryType: "someday",
+    // keep the real type (someday vs idea) so the edge-bar codes correctly
+    entryType: entry.type,
     status: "scheduled",
   };
+}
+
+/** Temporal types Incoming surfaces — the time-driven lanes only. */
+const INCOMING_TYPES: ReadonlySet<EntryType> = new Set([
+  "deadline",
+  "event",
+  "todo",
+]);
+
+/** True when an entry is finished (completed task/event or a met deadline). */
+function isDoneEntry(e: DbEntry): boolean {
+  return e.status === "completed" || e.status === "met";
+}
+
+/**
+ * "Incoming" sections — the temporal types together (deadlines, events, todos),
+ * bucketed by whichever date the entry carries (scheduled or due), sorted
+ * soonest-first. Untimed lanes (someday / idea) are deliberately excluded:
+ * Incoming is the time-driven view, reached from the header tray.
+ *
+ * Two optional lenses narrow it: `typeFilter` (one temporal type, or all) and
+ * `statusFilter` (live / done / all). They compose, so "live deadlines" is one
+ * focused view.
+ */
+function buildIncomingSections(
+  entries: DbEntry[],
+  typeFilter: ListTypeFilter,
+  statusFilter: ListStatusFilter,
+): Section[] {
+  const now = new Date();
+
+  const dated = entries
+    .filter((e) => INCOMING_TYPES.has(e.type))
+    .filter((e) => typeFilter === "all" || e.type === typeFilter)
+    .filter((e) =>
+      statusFilter === "all"
+        ? true
+        : statusFilter === "done"
+          ? isDoneEntry(e)
+          : !isDoneEntry(e),
+    )
+    .map((e) => ({ e, date: parseDate(e.scheduled_date ?? e.due_date) }))
+    .filter((x): x is { e: DbEntry; date: Date } => x.date !== null)
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  const thisWeekItems: ListEntry[] = [];
+  const laterItems: ListEntry[] = [];
+
+  for (const { e } of dated) {
+    const bucket = classifyEntry(e.scheduled_date ?? e.due_date, now);
+    const item = entryToListEntry(e);
+    if (bucket === "today" || bucket === "thisWeek") thisWeekItems.push(item);
+    else laterItems.push(item);
+  }
+
+  const sections: Section[] = [];
+  if (thisWeekItems.length > 0)
+    sections.push({ label: "This Week", entries: thisWeekItems });
+  if (laterItems.length > 0)
+    sections.push({ label: "Later", entries: laterItems });
+  return sections;
 }
 
 function buildTaskSections(entries: DbEntry[]): Section[] {
@@ -149,30 +217,54 @@ function buildDeadlineSections(entries: DbEntry[]): Section[] {
 
 export default function ListScreen(): React.ReactElement {
   const router = useRouter();
+  const { colors, scheme } = useTheme();
   const { entryType } = useLocalSearchParams<{ entryType?: string }>();
 
-  const resolvedType: EntryType =
+  // No param → the mixed "Incoming" lane (reached from the sidebar). A bare
+  // /list used to silently coerce to "todo", hiding every other type.
+  const resolvedType: EntryType | null =
     entryType === "deadline"
       ? "deadline"
       : entryType === "someday"
         ? "someday"
-        : "todo";
+        : entryType === "idea"
+          ? "idea"
+          : entryType === "event"
+            ? "event"
+            : entryType === "todo"
+              ? "todo"
+              : null;
 
-  const accentColor = EntryAccent[resolvedType];
+  const isIncoming = resolvedType === null;
+  const isSomedayLane = resolvedType === "someday" || resolvedType === "idea";
 
-  const screenTitle =
-    resolvedType === "deadline"
+  // Accent + tint follow the lane's type; Incoming has no single owner, so it
+  // borrows neutral ink and a faint surface tint.
+  const accentColor = resolvedType ? entryColor(resolvedType) : colors.ink;
+  const tintColor = resolvedType
+    ? entryTint(resolvedType, scheme)
+    : colors.surfaceSubtle;
+
+  const screenTitle = isIncoming
+    ? "Incoming"
+    : resolvedType === "deadline"
       ? "Deadlines"
-      : resolvedType === "someday"
+      : isSomedayLane
         ? "One Day"
         : "Weekly Todos";
 
   const { entries, updateEntryStatus, deleteEntry, fetchEntries } =
     useDatabase();
 
+  // Incoming's persistent lenses. Session-local (resets on app restart) — a
+  // glanceable view, not a saved preference. Only the Incoming lane shows these.
+  const [typeFilter, setTypeFilter] = useState<ListTypeFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<ListStatusFilter>("all");
+
   useFocusEffect(
     useCallback(() => {
-      fetchEntries(resolvedType);
+      // Incoming fetches every type; a lane fetches just its own.
+      fetchEntries(resolvedType ?? undefined);
     }, [resolvedType, fetchEntries]),
   );
 
@@ -182,8 +274,9 @@ export default function ListScreen(): React.ReactElement {
     (e) => e.type === "someday" || e.type === "idea",
   );
 
-  const sections: Section[] =
-    resolvedType === "someday"
+  const sections: Section[] = isIncoming
+    ? buildIncomingSections(entries, typeFilter, statusFilter)
+    : isSomedayLane
       ? somedayEntries.length > 0
         ? [
             {
@@ -196,23 +289,23 @@ export default function ListScreen(): React.ReactElement {
         ? buildDeadlineSections(entries)
         : buildTaskSections(entries);
 
-  // ── Progress counts ───────────────────────────────────────────────────────────
+  // ── Telemetry counts ──────────────────────────────────────────────────────────
 
   const allItems = sections.flatMap((s) => s.entries);
-  const total = allItems.length;
-  const completedCount = allItems.filter(
-    (e) => e.status === "completed",
-  ).length;
+  const liveCount = allItems.filter((e) => e.status !== "completed").length;
+  const doneCount = allItems.filter((e) => e.status === "completed").length;
 
-  const firstSectionCount =
-    sections[0]?.entries.filter((e) => e.status !== "completed").length ?? 0;
+  const showTelemetry = !isSomedayLane && sections.length > 0;
 
-  const badgeLabel =
-    resolvedType === "deadline"
+  const kicker = isIncoming
+    ? "INCOMING"
+    : resolvedType === "deadline"
       ? "DEADLINES"
-      : resolvedType === "someday"
+      : isSomedayLane
         ? "IDEAS"
-        : "TODOS";
+        : resolvedType === "event"
+          ? "EVENTS"
+          : "TODOS";
 
   // ── Toggle handler ────────────────────────────────────────────────────────────
 
@@ -231,44 +324,108 @@ export default function ListScreen(): React.ReactElement {
 
   // ── Empty state config ────────────────────────────────────────────────────────
 
-  const emptyTitle =
-    resolvedType === "deadline"
-      ? "No deadlines tracked"
-      : resolvedType === "someday"
-        ? "Your ideas list is empty"
-        : "No todos yet";
+  // In Incoming, distinguish "no scheduled entries at all" from "the active
+  // filter hides them" — the copy and CTA differ, and a filtered-empty view must
+  // keep the filter bar so the user can widen the lens back out.
+  const hasAnyIncoming = isIncoming
+    ? entries.some((e) => INCOMING_TYPES.has(e.type) && parseDate(e.scheduled_date ?? e.due_date) !== null)
+    : false;
+  const isFilteredEmpty =
+    isIncoming && sections.length === 0 && hasAnyIncoming;
 
-  const emptyDescription =
-    resolvedType === "deadline"
-      ? "Add a deadline to stay ahead of critical dates."
-      : resolvedType === "someday"
-        ? "Capture things you want to explore someday."
-        : "Add todos to build your weekly focus.";
+  const emptyTitle = isFilteredEmpty
+    ? "Nothing matches"
+    : isIncoming
+      ? "Nothing incoming"
+      : resolvedType === "deadline"
+        ? "No deadlines tracked"
+        : isSomedayLane
+          ? "Your ideas list is empty"
+          : "No todos yet";
 
-  const emptyCtaLabel =
-    resolvedType === "deadline"
-      ? "+ Add Deadline"
-      : resolvedType === "someday"
-        ? "+ Capture Idea"
-        : "+ Add Todo";
+  const emptyDescription = isFilteredEmpty
+    ? "No entries fit this filter. Widen the lens above."
+    : isIncoming
+      ? "Anything you schedule will land here, soonest first."
+      : resolvedType === "deadline"
+        ? "Add a deadline to stay ahead of critical dates."
+        : isSomedayLane
+          ? "Capture things you want to explore someday."
+          : "Add todos to build your weekly focus.";
+
+  const emptyCtaLabel = isFilteredEmpty
+    ? "Clear filters"
+    : isIncoming
+      ? "+ Capture"
+      : resolvedType === "deadline"
+        ? "+ Add Deadline"
+        : isSomedayLane
+          ? "+ Capture Idea"
+          : "+ Add Todo";
+
+  function handleEmptyCta(): void {
+    if (isFilteredEmpty) {
+      setTypeFilter("all");
+      setStatusFilter("all");
+    } else {
+      router.push("/modal");
+    }
+  }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.screen}>
-        <ListScreenHeader title={screenTitle} onBack={() => router.back()} />
+    <View style={[styles.screen, { backgroundColor: colors.paper }]}>
+      {/* Header lives on the navigator (Stack), not in the screen body — but
+          its title/kicker/hue are param-driven, so we set them here. */}
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          header: () => (
+            <ScreenHeader
+              title={screenTitle}
+              kicker={kicker}
+              entryType={resolvedType ?? undefined}
+              onBack={() => router.back()}
+              inset
+            />
+          ),
+        }}
+      />
 
-        <ScrollView
+      <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {/* Progress header — hidden for someday */}
-          {resolvedType !== "someday" ? (
-            <ListProgress
-              completed={completedCount}
-              total={total}
-              streak={0}
-              entryType={resolvedType}
+          {/* Telemetry band — the opened tile's status line. Orientation, not
+              a gamified score: "N live · M done this week" on the type tint. */}
+          {showTelemetry ? (
+            <View
+              style={[styles.telemetry, { backgroundColor: tintColor }]}
+            >
+              <ThemedText
+                type="mono"
+                style={[styles.telemetryStrong, { color: accentColor }]}
+              >
+                {liveCount} live
+              </ThemedText>
+              <ThemedText
+                type="mono"
+                style={[styles.telemetryMuted, { color: colors.inkMuted }]}
+              >
+                {"  ·  "}
+                {doneCount} done this week
+              </ThemedText>
+            </View>
+          ) : null}
+
+          {/* Incoming's persistent filter — only when there's something to narrow.
+              Stays visible in the filtered-empty state so the lens can reopen. */}
+          {isIncoming && hasAnyIncoming ? (
+            <ListFilterBar
+              type={typeFilter}
+              onType={setTypeFilter}
+              status={statusFilter}
+              onStatus={setStatusFilter}
             />
           ) : null}
 
@@ -279,33 +436,40 @@ export default function ListScreen(): React.ReactElement {
                 title={emptyTitle}
                 description={emptyDescription}
                 ctaLabel={emptyCtaLabel}
-                onCta={() => router.push("/modal")}
+                onCta={handleEmptyCta}
                 accentColor={accentColor}
               />
             </View>
           ) : (
             sections.map((section, sectionIndex) => (
               <View key={section.label} style={styles.section}>
-                {/* Section header */}
+                {/* Section header — primary section reads full-weight, later
+                    sections recede so the live lane carries the eye. */}
                 <View style={styles.sectionHeader}>
-                  <ThemedText type="label" style={styles.sectionLabel}>
+                  <ThemedText
+                    type="label"
+                    style={[
+                      styles.sectionLabel,
+                      {
+                        color:
+                          sectionIndex === 0 ? colors.ink : colors.inkMuted,
+                      },
+                    ]}
+                  >
                     {section.label.toUpperCase()}
                   </ThemedText>
-                  {sectionIndex === 0 && firstSectionCount > 0 ? (
-                    <View
-                      style={[
-                        styles.countBadge,
-                        { backgroundColor: accentColor + "12" },
-                      ]}
-                    >
-                      <ThemedText
-                        type="caption"
-                        style={[styles.countBadgeText, { color: accentColor }]}
-                      >
-                        {firstSectionCount} {badgeLabel}
-                      </ThemedText>
-                    </View>
-                  ) : null}
+                  <View
+                    style={[
+                      styles.sectionRule,
+                      { backgroundColor: colors.surfaceSubtle },
+                    ]}
+                  />
+                  <ThemedText
+                    type="micro"
+                    style={[styles.sectionCount, { color: colors.inkMuted }]}
+                  >
+                    {section.entries.length}
+                  </ThemedText>
                 </View>
 
                 {/* Items */}
@@ -322,9 +486,10 @@ export default function ListScreen(): React.ReactElement {
                       accentColor={accentColor}
                       isRecurring={entry.isRecurring}
                       onToggle={
-                        resolvedType !== "someday"
-                          ? () => toggleItem(entry.id)
-                          : undefined
+                        entry.entryType === "someday" ||
+                        entry.entryType === "idea"
+                          ? undefined
+                          : () => toggleItem(entry.id)
                       }
                       onPress={() =>
                         router.push(
@@ -339,7 +504,7 @@ export default function ListScreen(): React.ReactElement {
             ))
           )}
 
-          {resolvedType !== "someday" && sections.length > 0 ? (
+          {!isSomedayLane && !isIncoming && sections.length > 0 ? (
             <WrapupCard />
           ) : null}
 
@@ -347,61 +512,61 @@ export default function ListScreen(): React.ReactElement {
           <View style={styles.fabSpacer} />
         </ScrollView>
 
-        <Fab onPress={() => router.push("/modal")} />
-      </View>
-    </SafeAreaView>
+      <Fab onPress={() => router.push("/modal")} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Surface.base,
-  },
   screen: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   scroll: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.xl,
-    paddingBottom: Spacing.xl,
+    paddingHorizontal: tokens.space.lg,
+    gap: tokens.space.xl,
+    paddingBottom: tokens.space.xl,
   },
   emptyWrapper: {
     flex: 1,
     justifyContent: "center",
-    paddingTop: Spacing.xl * 2,
+    paddingTop: tokens.space.xl * 2,
   },
   section: {
-    gap: Spacing.lg,
-    marginBottom: Spacing.sm,
+    gap: tokens.space.lg,
+    marginBottom: tokens.space.sm,
   },
+  telemetry: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.lg,
+  },
+  telemetryStrong: {},
+  telemetryMuted: {},
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: Spacing.xs,
+    gap: tokens.space.md,
+    paddingHorizontal: tokens.space.xs,
   },
   sectionLabel: {
-    color: TextColors.tertiary,
-    letterSpacing: 1,
-    fontSize: 10,
-    fontWeight: "700",
+    flexShrink: 0,
   },
-  countBadge: {
-    borderRadius: Radius.full,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.md,
+  // hairline tonal rule — no 1px borders; this is a surface shift, not a stroke.
+  sectionRule: {
+    flex: 1,
+    height: 2,
+    borderRadius: tokens.radius.pill,
   },
-  countBadgeText: {
-    fontFamily: "Inter_600SemiBold",
-    letterSpacing: 0.5,
+  sectionCount: {
+    flexShrink: 0,
   },
   itemList: {
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   fabSpacer: {
     height: 80,

@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Brand, Radius, Spacing, Surface, TextColors } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 interface WrapupCardProps {
   title?: string;
@@ -16,11 +16,12 @@ export function WrapupCard({
   title = "Weekly Wrap-up",
   body = "You're on track to finish your weekly todos.",
 }: WrapupCardProps): React.ReactElement {
+  const { colors } = useTheme();
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surfaceSubtle }]}>
       <View style={styles.textBlock}>
-        <ThemedText type="label" style={styles.label}>{title.toUpperCase()}</ThemedText>
-        <ThemedText type="body" muted style={styles.body}>
+        <ThemedText type="label" style={[styles.label, { color: colors.accent.clay }]}>{title.toUpperCase()}</ThemedText>
+        <ThemedText type="body" muted style={[styles.body, { color: colors.inkMuted }]}>
           {body}
         </ThemedText>
       </View>
@@ -30,23 +31,20 @@ export function WrapupCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Surface.containerLow,
-    borderRadius: Radius.xl,
-    padding: Spacing.xl,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.xl,
     flexDirection: "row",
     alignItems: "center",
   },
   textBlock: {
     flex: 1,
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   label: {
-    color: Brand.primary,
     letterSpacing: 0.5,
   },
   body: {
     lineHeight: 20,
     fontSize: 15,
-    color: TextColors.secondary,
   },
 });

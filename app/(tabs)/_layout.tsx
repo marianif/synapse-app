@@ -2,14 +2,18 @@ import { Tabs } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { CustomTabBar } from "@/components/organisms/custom-tab-bar";
 import { AppHeader } from "@/components/organisms/app-header";
-import { Surface } from "@/constants/theme";
+import { CustomTabBar } from "@/components/organisms/custom-tab-bar";
+import { useTheme } from "@/constants/theme";
 
 export default function TabLayout(): React.ReactElement {
+  const { colors } = useTheme();
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.container}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.paper }]}
+      edges={["top"]}
+    >
+      <View style={[styles.container, { backgroundColor: colors.paper }]}>
         <AppHeader />
         <Tabs
           screenOptions={{
@@ -21,7 +25,7 @@ export default function TabLayout(): React.ReactElement {
           }}
         >
           <Tabs.Screen name="index" />
-          <Tabs.Screen name="calendar" />
+          <Tabs.Screen name="diary" />
         </Tabs>
         <CustomTabBar />
       </View>
@@ -32,10 +36,8 @@ export default function TabLayout(): React.ReactElement {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
   container: {
     flex: 1,
-    backgroundColor: Surface.base,
   },
 });

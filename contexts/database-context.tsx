@@ -5,6 +5,7 @@ import { AppState } from "react-native";
 import * as SQLite from "expo-sqlite";
 
 import { generateId, initDatabase } from "@/lib/database";
+import { seedDevDataIfEmpty } from "@/lib/dev-seed";
 import {
   cancelNotificationForEntry,
   rescheduleAllEntries,
@@ -162,8 +163,17 @@ export function DatabaseProvider({
   }, []);
 
   useEffect(() => {
-    fetchEntries();
-    fetchRecurrenceCompletions();
+    (async () => {
+      // DEV: populate mock data once if the table is empty, then load.
+      try {
+        const db = await getDb();
+        await seedDevDataIfEmpty(db);
+      } catch (err) {
+        console.warn("[DatabaseContext] dev seed failed:", err);
+      }
+      fetchEntries();
+      fetchRecurrenceCompletions();
+    })();
   }, [fetchEntries, fetchRecurrenceCompletions]);
 
   // After the initial load, rebuild all scheduled notifications from scratch.
@@ -493,6 +503,12 @@ export function DatabaseProvider({
   const deleteEntry = useCallback(async (id: string): Promise<void> => {
     try {
       const db = await getDb();
+      // App-side ON DELETE SET NULL for linked diary notes (the FK clause can't
+      // be added by ADD COLUMN) — a reflection survives as an autonomous note.
+      await db.runAsync(
+        "UPDATE diary_entries SET linked_entry_id = NULL WHERE linked_entry_id = ?",
+        id,
+      );
       await db.runAsync("DELETE FROM entries WHERE id = ?", id);
       setEntries((prev) => {
         const next = prev.filter((e) => e.id !== id);
@@ -633,6 +649,10 @@ export function DatabaseProvider({
     async (entryId: string): Promise<void> => {
       try {
         const db = await getDb();
+        await db.runAsync(
+          "UPDATE diary_entries SET linked_entry_id = NULL WHERE linked_entry_id = ?",
+          entryId,
+        );
         await db.runAsync("DELETE FROM entries WHERE id = ?", entryId);
         setEntries((prev) => {
           const next = prev.filter((e) => e.id !== entryId);

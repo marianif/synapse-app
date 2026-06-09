@@ -1,83 +1,67 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import type { IconSymbolName } from "@/components/ui/icon-symbol";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Brand, Colors, Radius, Shadow, Surface } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { tokens, useTheme } from "@/constants/theme";
 
-interface TabBarIconProps {
-  focused: boolean;
-  color: string;
-}
-
-function TabIcon({ name, focused, color }: TabBarIconProps & { name: string }) {
-  return (
-    <IconSymbol
-      name={name as "view-grid" | "calendar"}
-      size={24}
-      color={color}
-    />
-  );
+function TabIcon({ name, color }: { name: IconSymbolName; color: string }) {
+  return <IconSymbol name={name} size={24} color={color} />;
 }
 
 export function CustomTabBar(): React.ReactElement {
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme];
+  const { colors } = useTheme();
   const pathname = usePathname();
 
   const isHome = pathname === "/" || pathname === "/(tabs)";
-  const isCalendar = pathname === "/(tabs)/calendar";
+  const isDiary = pathname === "/(tabs)/diary" || pathname === "/diary";
+
+  const active = (on: boolean): string =>
+    on ? colors.accent.clay : colors.inkMuted;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceSubtle }]}>
       <View style={styles.tabBar}>
         <Pressable
           onPress={() => router.push("/")}
+          accessibilityRole="button"
+          accessibilityLabel="Field"
           style={({ pressed }) => [
             styles.tabButton,
             pressed && styles.tabButtonPressed,
           ]}
         >
-          <TabIcon
-            name="view-grid"
-            focused={isHome}
-            color={isHome ? theme.tint : theme.tabIconDefault}
-          />
+          <TabIcon name="view-grid" color={active(isHome)} />
         </Pressable>
 
+        {/* The create-key — richer entries (bills, deadlines, events, dates)
+            live here; the home capture bar stays the quick idea line. The one
+            neutral-accent control in the chrome, so "make something" reads at a
+            glance without clashing with any saturated type code. */}
         <Pressable
-          onPress={() =>
-            router.push({
-              pathname: "/modal",
-              params: {
-                type: "todo",
-              },
-            })
-          }
+          onPress={() => router.push("/modal")}
+          accessibilityRole="button"
+          accessibilityLabel="Add an entry"
           style={({ pressed }) => [
             styles.addButton,
+            { backgroundColor: colors.accent.clay },
+            tokens.elevation.capture,
             pressed && styles.addButtonPressed,
           ]}
         >
-          <View style={styles.addButtonGlow} />
-          <View style={styles.addButtonInner}>
-            <MaterialCommunityIcons name="plus" size={24} color={Brand.onPrimary} />
-          </View>
+          <IconSymbol name="plus" size={28} color={colors.accent.onClay} />
         </Pressable>
 
         <Pressable
-          onPress={() => router.push("/(tabs)/calendar")}
+          onPress={() => router.push("/(tabs)/diary")}
+          accessibilityRole="button"
+          accessibilityLabel="Diary"
           style={({ pressed }) => [
             styles.tabButton,
             pressed && styles.tabButtonPressed,
           ]}
         >
-          <TabIcon
-            name="calendar"
-            focused={isCalendar}
-            color={isCalendar ? theme.tint : theme.tabIconDefault}
-          />
+          <TabIcon name="notebook-outline" color={active(isDiary)} />
         </Pressable>
       </View>
     </View>
@@ -86,7 +70,6 @@ export function CustomTabBar(): React.ReactElement {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Surface.containerLow,
     paddingBottom: 20,
     paddingTop: 8,
     borderTopWidth: 0,
@@ -95,14 +78,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    paddingHorizontal: 60,
+    paddingHorizontal: tokens.space.lg,
   },
   tabButton: {
     width: 44,
     height: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: Radius.md,
+    borderRadius: tokens.radius.sm,
   },
   tabButtonPressed: {
     opacity: 0.7,
@@ -112,28 +95,9 @@ const styles = StyleSheet.create({
     height: 52,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -26,
+    borderRadius: tokens.radius.pill,
   },
   addButtonPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.95 }],
-  },
-  addButtonGlow: {
-    position: "absolute",
-    width: 56,
-    height: 56,
-    borderRadius: Radius.full,
-    backgroundColor: Brand.fabGlow,
-    opacity: 0.6,
-    ...Shadow.fab,
-  },
-  addButtonInner: {
-    width: 48,
-    height: 48,
-    borderRadius: Radius.full,
-    backgroundColor: Brand.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    ...Shadow.fab,
+    opacity: 0.8,
   },
 });

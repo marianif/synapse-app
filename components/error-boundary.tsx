@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Brand, Radius, Spacing, Surface, TextColors } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 type Props = {
   children: React.ReactNode;
@@ -11,6 +11,37 @@ type Props = {
 type State = {
   hasError: boolean;
 };
+
+function ErrorFallback({ onReset }: { onReset: () => void }): React.ReactElement {
+  const { colors } = useTheme();
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.paper }]}>
+      <View style={[styles.card, { backgroundColor: colors.surfaceSubtle }]}>
+        <ThemedText type="headline" style={[styles.title, { color: colors.ink }]}>
+          Something went wrong
+        </ThemedText>
+        <ThemedText type="body" style={[styles.body, { color: colors.inkMuted }]}>
+          An unexpected error occurred. Your data is safe.
+        </ThemedText>
+        <Pressable
+          onPress={onReset}
+          style={({ pressed }) => [
+            styles.button,
+            { backgroundColor: pressed ? colors.accent.clayPressed : colors.accent.clay },
+            pressed && styles.buttonPressed,
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel="Try again"
+        >
+          <ThemedText type="label" style={[styles.buttonLabel, { color: colors.accent.onClay }]}>
+            Try again
+          </ThemedText>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
 export class ErrorBoundary extends React.Component<Props, State> {
   state: State = { hasError: false };
@@ -32,68 +63,38 @@ export class ErrorBoundary extends React.Component<Props, State> {
       return this.props.children;
     }
 
-    return (
-      <View style={styles.container}>
-        <View style={styles.card}>
-          <ThemedText type="headline" style={styles.title}>
-            Something went wrong
-          </ThemedText>
-          <ThemedText type="body" style={styles.body}>
-            An unexpected error occurred. Your data is safe.
-          </ThemedText>
-          <Pressable
-            onPress={this.handleReset}
-            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-            accessibilityRole="button"
-            accessibilityLabel="Try again"
-          >
-            <ThemedText type="label" style={styles.buttonLabel}>
-              Try again
-            </ThemedText>
-          </Pressable>
-        </View>
-      </View>
-    );
+    return <ErrorFallback onReset={this.handleReset} />;
   }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Surface.base,
     alignItems: "center",
     justifyContent: "center",
-    padding: Spacing.xl,
+    padding: tokens.space.xl,
   },
   card: {
-    backgroundColor: Surface.containerLow,
-    borderRadius: Radius.xl,
-    padding: Spacing.xxl,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.xxl,
     width: "100%",
-    gap: Spacing.lg,
+    gap: tokens.space.lg,
     alignItems: "flex-start",
   },
-  title: {
-    color: TextColors.primary,
-  },
-  body: {
-    color: TextColors.secondary,
-  },
+  title: {},
+  body: {},
   button: {
     alignSelf: "flex-start",
-    backgroundColor: Brand.primary,
-    borderRadius: Radius.full,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.xl,
-    marginTop: Spacing.sm,
+    borderRadius: tokens.radius.pill,
+    paddingVertical: tokens.space.sm,
+    paddingHorizontal: tokens.space.xl,
+    marginTop: tokens.space.sm,
   },
   buttonPressed: {
-    backgroundColor: Brand.primaryContainer,
     transform: [{ scale: 0.98 }],
   },
   buttonLabel: {
-    color: Surface.base,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
     letterSpacing: 0.4,
   },
 });

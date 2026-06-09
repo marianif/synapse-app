@@ -1,9 +1,11 @@
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Radius, Spacing } from "@/constants/theme";
+import { tokens } from "@/constants/theme";
 
 interface EmptyStateProps {
+  /** Optional leading icon name. Accepted by callers; not rendered in this compact layout. */
+  icon?: string;
   title: string;
   description: string;
   ctaLabel?: string;
@@ -54,16 +56,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: Spacing.md,
-    paddingVertical: Spacing.lg,
+    gap: tokens.space.md,
+    paddingVertical: tokens.space.lg,
   },
   text: {
     flex: 1,
     alignItems: "flex-start",
-    gap: Spacing.xs,
+    gap: tokens.space.xs,
   },
   title: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
     textTransform: "uppercase",
   },
   description: {
@@ -71,12 +73,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   cta: {
-    borderRadius: Radius.full,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
+    borderRadius: tokens.radius.pill,
+    paddingVertical: tokens.space.sm,
+    paddingHorizontal: tokens.space.lg,
   },
   ctaText: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
     letterSpacing: 0.4,
   },
 });

@@ -4,17 +4,21 @@
 
 product
 
+## App type
+
+tool
+
 ## Users
 
-Overwhelmed professionals and time-conscious creators, 28–36, technically comfortable, urban dwellers. They open the app in brief intentional moments — a pause before the day begins, a check between meetings, a last glance before winding down. They are not power users; they want clarity without configuration. They've tried other planners and felt worse for it.
+A capture-first person who opens the app mid-thought to get something down before it is gone: a bill to pay, an idea worth keeping, a to-do, an event. They are often ADHD-adjacent, so out of sight is out of mind: they need their entire mental field present and actionable at a glance, not curated down to a "today" view or hidden behind filters. They want few things done well, and they want to feel in charge of the day. Modern, but warm.
 
 ## Product Purpose
 
-Synapse is a temporal clarity tool. It answers one question instantly: what matters today? It does not manage projects, celebrate streaks, or show everything at once. It curates time — showing scale (how much?), direction (what's next?), and context (what's coming?) — and gets out of the way. Success looks like opening the app and feeling less anxious, not more productive.
+The Field is a bento board of your whole brain. Open it and everything you are carrying is already there: bills, ideas, to-dos, events, somedays, each in its own soft-tinted tile, color-coded and packed with the real, tappable items rather than a count to click through. A warm Fraunces serif headline greets you like a person, not a dashboard. Capture lives in an always-on clay bar pinned to the bottom, one tap from any screen. Nothing is hidden behind a filter; nothing on screen is a dead label.
 
 ## Platform Fidelity
 
-custom-cross-platform
+custom-cross-platform (distinct) — one warm editorial design language on both iOS and Android. Not Material 3 defaults, not iOS-stock.
 
 ## Primary Devices
 
@@ -22,23 +26,29 @@ phone-only
 
 ## Brand Personality
 
-Focused intensity. Like a good Moleskine notebook: tactile, purposeful, analog-adjacent. The app feels like a trusted tool — worn-in, unhurried, undecorated. Every element earns its presence. Nothing performs usefulness; things either are or are not. Warm without being soft. Direct without being cold.
+Activating, editorial, warm. Bold the way an editorial page is bold: through confident type and a disciplined pastel system, never through gradients, badges, or decoration. The New Yorker organizing your life. A direct, human voice; calm but not cold.
+
+**Is:** activating · editorial · warm
+**Is not:** corporate · gamified · minimalist-empty
 
 ## Anti-references
 
-- Todoist and Things 3: clean but corporate, lists and badges, productivity as performance
-- Notion and Linear: keyboard-first information density, database aesthetic, feature maximalism
-- Any.do and TickTick: gamified, badge-heavy, consumer-cheerful, dopamine-loop design
-- Material 3 defaults: Google's dynamic color system and component defaults in their out-of-the-box form
+- Corporate productivity tools (the rejected "Kinetic Equilibrium" blue-lavender system felt corporate)
+- Gamified / habit-tracker apps: streaks, badges, confetti, dopamine loops
+- Pastel-illustration journaling apps: decorative mush, mascots, spot art
+- Pure white / pure black interfaces
 
 ## Design Principles
 
-1. **Temporal clarity over completeness.** Show what matters now. Hide what doesn't. Never sacrifice the 5-second read for a feature.
-2. **Restraint is craft.** Every pixel removed is a design decision. Decoration that doesn't carry meaning is visual noise.
-3. **Color categorizes, never alarms.** Accent colors identify entry types. They are signal, not urgency manipulation.
-4. **Earned depth.** Depth is tonal — stacked surfaces, not shadows or borders. The interface breathes through surface shifts, not structural lines.
-5. **Speak plainly.** Copy is direct, factual, and brief. The app does not celebrate, nag, or explain itself.
+1. **Everything at a glance.** The home shows the whole field — every type, actionable items visible, color-coded. No "today" curation, no filters that hide things. Out of sight is out of mind.
+2. **Capture is always one tap away.** An always-on clay capture bar, pinned to the bottom on every screen. No FAB.
+3. **Bold through type, calm through color.** Hierarchy comes from a Fraunces serif against Inter and from scale, so the pastel system can stay quiet. Color categorizes; it never alarms or decorates.
+4. **Warm, never stark.** No pure white, no pure black: warm oat-cream paper in light, warm soot-brown in dark. No 1px structural borders — tonal layering and saturated edge-bars instead.
+5. **Speak plainly, warmly.** Direct, human, brief. No celebration, no nagging, no gamification.
 
 ## Accessibility
 
-Dynamic Type and Android font scale are in scope for v1. Layouts must reflow correctly at 2x font scale. No fixed-height containers with unscaled text. Minimum touch targets: 44pt iOS / 48dp Android throughout. VoiceOver and reduced motion are acknowledged but deferred to a post-v1 pass.
+- WCAG AA contrast in both light and dark schemes. Ink-on-tint and saturated kicker-on-tint pairs verified ≥ 4.5:1 (kickers use the darker `typeKicker` token set).
+- True light + dark mode parity is first-class and live: a persisted System / Light / Dark preference (set in the app menu) drives every surface through `useTheme()`.
+- Dynamic Type / Android font scale to 2x with no fixed-height tiles.
+- Touch targets: 44pt iOS / 48dp Android throughout, including the capture bar and tile items.

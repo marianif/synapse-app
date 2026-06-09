@@ -2,7 +2,7 @@ import { StyleSheet, View } from "react-native";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Spacing, TextColors } from "@/constants/theme";
+import { useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { ItemStatus } from "@/components/molecules/list-item";
@@ -25,6 +25,7 @@ export function WeekdayRow({
   entryType = "todo",
   status,
 }: WeekdayRowProps): React.ReactElement {
+  const { colors } = useTheme();
   const hasEntry = Boolean(title);
   const isCompleted = status === "completed";
 
@@ -32,7 +33,11 @@ export function WeekdayRow({
     <View style={styles.row}>
       <ThemedText
         type="caption"
-        style={[styles.day, !hasEntry && { color: TextColors.disabled }]}
+        style={[
+          styles.day,
+          { color: colors.inkMuted },
+          !hasEntry && { color: colors.inkMuted },
+        ]}
       >
         {day}
       </ThemedText>
@@ -45,7 +50,7 @@ export function WeekdayRow({
               styles.title,
               isCompleted && {
                 textDecorationLine: "line-through",
-                color: TextColors.tertiary,
+                color: colors.inkMuted,
               },
             ]}
             numberOfLines={1}
@@ -54,7 +59,9 @@ export function WeekdayRow({
           </ThemedText>
         </>
       ) : (
-        <View style={styles.emptyLine} />
+        <View
+          style={[styles.emptyLine, { backgroundColor: colors.surfaceSubtle }]}
+        />
       )}
     </View>
   );
@@ -64,12 +71,11 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
     minHeight: 22,
   },
   day: {
     width: 40,
-    color: TextColors.secondary,
   },
   title: {
     flex: 1,
@@ -77,7 +83,6 @@ const styles = StyleSheet.create({
   emptyLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "rgba(255,255,255,0.06)",
     borderRadius: 1,
   },
 });

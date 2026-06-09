@@ -1,0 +1,32 @@
+{
+  "graph": {
+    "app/(tabs)/calendar.tsx": [],
+    "app/(tabs)/index.tsx": [],
+    "app/detail.tsx": [],
+    "app/list.tsx": [],
+    "app/modal.tsx": [],
+    "app/voice-input.tsx": []
+  },
+  "cycles": [],
+  "phases": [
+    {
+      "phase": 1,
+      "kind": "screen",
+      "files": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "rationale": "Screen with unknown hop distance"
+    }
+  ],
+  "summary": {
+    "fileCount": 6,
+    "cycleCount": 0,
+    "blockingCycles": 0,
+    "phaseCount": 1
+  }
+}

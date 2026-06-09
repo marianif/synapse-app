@@ -5,7 +5,7 @@ import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ThemedView } from "@/components/atoms/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { EntryAccent, Radius, Spacing, Surface, TextColors } from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 
 import type { DbEntry } from "@/lib/types";
 
@@ -22,6 +22,7 @@ interface SomedayItemProps {
  */
 export function SomedayItem({ ideas }: SomedayItemProps): React.ReactElement {
   const router = useRouter();
+  const { colors } = useTheme();
   const displayIdeas = ideas.slice(0, 3);
   const remainingCount = ideas.length - displayIdeas.length;
 
@@ -38,17 +39,17 @@ export function SomedayItem({ ideas }: SomedayItemProps): React.ReactElement {
             <IconSymbol
               name="star-four-points"
               size={18}
-              color={EntryAccent.someday}
+              color={entryColor("someday")}
             />
             <ThemedText
               type="label"
-              style={[styles.label, { color: EntryAccent.someday }]}
+              style={[styles.label, { color: entryColor("someday") }]}
             >
               SOMEDAY
             </ThemedText>
           </View>
-          <View style={styles.countBadge}>
-            <ThemedText type="caption" style={styles.countText}>
+          <View style={[styles.countBadge, { backgroundColor: colors.surface }]}>
+            <ThemedText type="caption" style={[styles.countText, { color: colors.inkMuted }]}>
               {ideas.length}
             </ThemedText>
           </View>
@@ -62,12 +63,13 @@ export function SomedayItem({ ideas }: SomedayItemProps): React.ReactElement {
               style={[
                 styles.ideaRow,
                 index !== displayIdeas.length - 1 && styles.ideaRowBorder,
+                index !== displayIdeas.length - 1 && { borderBottomColor: colors.paper },
               ]}
             >
               <View style={styles.ideaContent}>
                 <View style={styles.ideaTitleRow}>
                   <EntryDot type="someday" size={6} />
-                  <ThemedText type="bodyBold" numberOfLines={1} style={styles.ideaTitle}>
+                  <ThemedText type="bodyBold" numberOfLines={1} style={[styles.ideaTitle, { color: colors.ink }]}>
                     {idea.title}
                   </ThemedText>
                 </View>
@@ -77,7 +79,7 @@ export function SomedayItem({ ideas }: SomedayItemProps): React.ReactElement {
                   </ThemedText>
                 )}
                 {idea.inspiration && (
-                  <ThemedText type="caption" numberOfLines={1} style={styles.ideaInspiration}>
+                  <ThemedText type="caption" numberOfLines={1} style={[styles.ideaInspiration, { color: colors.inkMuted }]}>
                     &ldquo;{idea.inspiration}&rdquo;
                   </ThemedText>
                 )}
@@ -99,10 +101,10 @@ export function SomedayItem({ ideas }: SomedayItemProps): React.ReactElement {
 
 const styles = StyleSheet.create({
   card: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderRadius: Radius.lg,
-    gap: Spacing.sm,
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.md,
+    borderRadius: tokens.radius.md,
+    gap: tokens.space.sm,
   },
   header: {
     flexDirection: "row",
@@ -112,30 +114,27 @@ const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   label: {
     letterSpacing: 0.5,
   },
   countBadge: {
-    backgroundColor: Surface.containerHigh,
-    borderRadius: Radius.sm,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
+    borderRadius: tokens.radius.sm,
+    paddingHorizontal: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
   },
   countText: {
-    color: TextColors.secondary,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
   },
   stack: {
     gap: 0,
   },
   ideaRow: {
-    paddingVertical: Spacing.sm,
+    paddingVertical: tokens.space.sm,
   },
   ideaRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: Surface.containerLowest,
   },
   ideaContent: {
     gap: 2,
@@ -143,11 +142,10 @@ const styles = StyleSheet.create({
   ideaTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   ideaTitle: {
     flex: 1,
-    color: TextColors.primary,
   },
   ideaSubtitle: {
     paddingLeft: 14,
@@ -155,10 +153,9 @@ const styles = StyleSheet.create({
   ideaInspiration: {
     paddingLeft: 14,
     fontStyle: "italic",
-    color: TextColors.tertiary,
   },
   moreRow: {
-    paddingVertical: Spacing.sm,
+    paddingVertical: tokens.space.sm,
     alignItems: "center",
   },
 });

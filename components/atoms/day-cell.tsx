@@ -1,7 +1,7 @@
 import { Pressable, View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { EntryAccent, Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { entryColor, useTheme, tokens } from '@/constants/theme';
 
 import type { CalendarEntry } from '@/hooks/use-calendar-data';
 
@@ -22,6 +22,7 @@ export function DayCell({
   entries,
   onPress,
 }: DayCellProps): React.ReactElement {
+  const { colors } = useTheme();
   const hasEntries = entries.length > 0;
   const overflow = entries.length > 3 ? entries.length - 3 : 0;
 
@@ -34,8 +35,9 @@ export function DayCell({
       onPress={handlePress}
       style={({ pressed }) => [
         styles.cell,
-        pressed && styles.cellPressed,
-        isToday && styles.cellToday,
+        { backgroundColor: colors.surface },
+        pressed && [styles.cellPressed, { backgroundColor: colors.surface }],
+        isToday && [styles.cellToday, { backgroundColor: colors.surface, borderColor: colors.accent.clay }],
         !isCurrentMonth && styles.cellOutside,
       ]}
       accessibilityRole="button"
@@ -46,8 +48,9 @@ export function DayCell({
           type="body"
           style={[
             styles.dayNumber,
-            isToday && styles.dayNumberToday,
-            !isCurrentMonth && styles.dayNumberOutside,
+            { color: colors.ink },
+            isToday && [styles.dayNumberToday, { color: colors.accent.clay }],
+            !isCurrentMonth && [styles.dayNumberOutside, { color: colors.inkMuted }],
           ]}
         >
           {dayNumber}
@@ -60,12 +63,12 @@ export function DayCell({
                 key={entry.id}
                 style={[
                   styles.dot,
-                  { backgroundColor: EntryAccent[entry.type] },
+                  { backgroundColor: entryColor(entry.type) },
                 ]}
               />
             ))}
             {overflow > 0 && (
-              <ThemedText type="caption" style={styles.overflow}>
+              <ThemedText type="caption" style={[styles.overflow, { color: colors.inkMuted }]}>
                 +{overflow}
               </ThemedText>
             )}
@@ -81,21 +84,17 @@ const styles = StyleSheet.create({
     flex: 1,
     aspectRatio: 1,
     maxHeight: 52,
-    backgroundColor: Surface.container,
-    borderRadius: Radius.lg,
-    padding: Spacing.xs,
+    borderRadius: tokens.radius.md,
+    padding: tokens.space.xs,
     margin: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cellPressed: {
-    backgroundColor: Surface.containerHigh,
     transform: [{ scale: 0.96 }],
   },
   cellToday: {
-    backgroundColor: Surface.container,
     borderWidth: 2,
-    borderColor: EntryAccent.today,
   },
   cellOutside: {
     backgroundColor: 'transparent',
@@ -109,16 +108,12 @@ const styles = StyleSheet.create({
   dayNumber: {
     fontSize: 14,
     fontWeight: '500',
-    color: TextColors.primary,
     lineHeight: 18,
   },
   dayNumberToday: {
-    color: EntryAccent.today,
     fontWeight: '700',
   },
-  dayNumberOutside: {
-    color: TextColors.tertiary,
-  },
+  dayNumberOutside: {},
   dots: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -131,7 +126,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   overflow: {
-    color: TextColors.tertiary,
     fontSize: 8,
   },
 });

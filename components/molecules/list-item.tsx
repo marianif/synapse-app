@@ -5,13 +5,7 @@ import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import {
-  EntryAccent,
-  Radius,
-  Spacing,
-  Surface,
-  TextColors,
-} from "@/constants/theme";
+import { entryColor, useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
@@ -59,14 +53,22 @@ export function ListItem({
   onPress,
   onDelete,
 }: ListItemProps): React.ReactElement {
+  const { colors } = useTheme();
   const isSomeday = entryType === "someday";
+  // The row's own type drives the edge-bar, so a mixed "Incoming" list stays
+  // color-coded per row instead of collapsing to one screen accent.
+  const edgeColor = entryColor(entryType);
 
   const renderContent = (): React.ReactElement => {
     if (isSomeday) {
       return (
         <Pressable
           onPress={onPress}
-          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+          style={({ pressed }) => [
+            styles.row,
+            { backgroundColor: colors.surfaceSubtle, borderLeftColor: edgeColor },
+            pressed && styles.rowPressed,
+          ]}
           accessibilityRole="button"
           accessibilityLabel={`Open ${title}`}
         >
@@ -75,7 +77,7 @@ export function ListItem({
             <IconSymbol
               name="star-four-points"
               size={18}
-              color={EntryAccent.someday}
+              color={entryColor("someday")}
             />
           </View>
 
@@ -102,7 +104,7 @@ export function ListItem({
           <MaterialCommunityIcons
             name="chevron-right"
             size={18}
-            color={EntryAccent.someday + "80"}
+            color={entryColor("someday") + "80"}
           />
         </Pressable>
       );
@@ -119,15 +121,23 @@ export function ListItem({
         : "SCHEDULED";
 
     const statusColor = isCompleted
-      ? TextColors.tertiary
+      ? colors.inkMuted
       : isActive
         ? accentColor
-        : TextColors.tertiary;
+        : colors.inkMuted;
 
     return (
       <Pressable
         onPress={onPress}
-        style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+        style={({ pressed }) => [
+          styles.row,
+          {
+            backgroundColor: colors.surfaceSubtle,
+            borderLeftColor: isCompleted ? colors.inkMuted : edgeColor,
+          },
+          isCompleted && styles.rowCompleted,
+          pressed && styles.rowPressed,
+        ]}
         accessibilityRole="button"
         accessibilityLabel={title}
       >
@@ -137,7 +147,11 @@ export function ListItem({
           hitSlop={8}
           style={[
             styles.checkbox,
-            isCompleted && styles.checkboxCompleted,
+            { borderColor: colors.inkMuted },
+            isCompleted && {
+              backgroundColor: colors.inkMuted,
+              borderColor: colors.inkMuted,
+            },
             isActive && { borderColor: accentColor },
           ]}
           accessibilityRole="checkbox"
@@ -148,7 +162,7 @@ export function ListItem({
             <MaterialCommunityIcons
               name="check"
               size={16}
-              color={TextColors.primary}
+              color={colors.ink}
             />
           )}
         </Pressable>
@@ -159,7 +173,7 @@ export function ListItem({
             <EntryDot type={entryType} size={8} />
             {isCompleted ? (
               <Text
-                style={[styles.titleStrike, { color: TextColors.tertiary }]}
+                style={[styles.titleStrike, { color: colors.inkMuted }]}
                 numberOfLines={1}
               >
                 {title}
@@ -203,7 +217,10 @@ export function ListItem({
                 {statusLabel}
               </ThemedText>
               {time ? (
-                <ThemedText type="caption" style={styles.statusTime}>
+                <ThemedText
+                  type="caption"
+                  style={[styles.statusTime, { color: colors.inkMuted }]}
+                >
                   {" • "}
                   {time}
                 </ThemedText>
@@ -220,8 +237,11 @@ export function ListItem({
 
         {/* Optional time chip (e.g. "10:00") */}
         {timeChip ? (
-          <View style={styles.timeChip}>
-            <ThemedText type="caption" style={styles.timeChipText}>
+          <View style={[styles.timeChip, { backgroundColor: colors.surface }]}>
+            <ThemedText
+              type="caption"
+              style={[styles.timeChipText, { color: colors.inkMuted }]}
+            >
               {timeChip}
             </ThemedText>
           </View>
@@ -241,11 +261,16 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Surface.containerLow,
-    borderRadius: Radius.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.md,
+    borderRadius: tokens.radius.md,
+    // saturated edge-bar = structure + per-row type code (no 1px borders).
+    borderLeftWidth: 3,
+    paddingVertical: tokens.space.md,
+    paddingLeft: tokens.space.md - 3, // keep content flush despite the bar
+    paddingRight: tokens.space.md,
+    gap: tokens.space.md,
+  },
+  rowCompleted: {
+    opacity: 0.6,
   },
   rowPressed: {
     opacity: 0.8,
@@ -267,14 +292,9 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: TextColors.disabled,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-  },
-  checkboxCompleted: {
-    backgroundColor: TextColors.tertiary,
-    borderColor: TextColors.tertiary,
   },
   content: {
     flex: 1,
@@ -283,14 +303,14 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   titleText: {
     flex: 1,
   },
   titleStrike: {
     flex: 1,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "HostGrotesk_500Medium",
     fontSize: 14,
     textDecorationLine: "line-through",
   },
@@ -300,39 +320,35 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   statusLabel: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
     letterSpacing: 0.4,
   },
-  statusTime: {
-    color: TextColors.tertiary,
-  },
+  statusTime: {},
   statusTextContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: tokens.space.sm,
   },
   timeChip: {
-    backgroundColor: Surface.containerHigh,
-    borderRadius: Radius.sm,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
+    borderRadius: tokens.radius.sm,
+    paddingVertical: tokens.space.xs,
+    paddingHorizontal: tokens.space.sm,
     flexShrink: 0,
   },
   timeChipText: {
-    color: TextColors.secondary,
     letterSpacing: 0.2,
   },
   recurringBadge: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: Radius.full,
-    gap: Spacing.xs,
-    marginRight: Spacing.sm,
+    paddingVertical: tokens.space.xs,
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.pill,
+    gap: tokens.space.xs,
+    marginRight: tokens.space.sm,
   },
   recurringBadgeText: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "HostGrotesk_600SemiBold",
     letterSpacing: 0.3,
   },
 });

@@ -78,7 +78,7 @@ struct EntriesWidgetEntryView: View {
                 SmallWidgetView(entry: entry)
             }
         }
-        .containerBackground(Color.surfaceBase, for: .widget)
+        .containerBackground(Color.paper, for: .widget)
     }
 }
 
@@ -110,7 +110,7 @@ struct SmallWidgetView: View {
         .padding(Spacing.lg)
         .background(
             RoundedRectangle(cornerRadius: Radius.lg)
-                .fill(Color.surfaceContainer)
+                .fill(Color.surface)
         )
     }
 }
@@ -162,7 +162,7 @@ struct MediumWidgetView: View {
         .padding(Spacing.lg)
         .background(
             RoundedRectangle(cornerRadius: Radius.lg)
-                .fill(Color.surfaceContainer)
+                .fill(Color.surface)
         )
     }
 }
@@ -209,7 +209,7 @@ struct LargeWidgetView: View {
         .padding(Spacing.lg)
         .background(
             RoundedRectangle(cornerRadius: Radius.lg)
-                .fill(Color.surfaceContainer)
+                .fill(Color.surface)
         )
     }
 }
@@ -218,19 +218,15 @@ struct LargeWidgetView: View {
 
 struct WidgetHeader: View {
     let title: String
-    let icon: String
+    var icon: String = "" // retained for call-site compatibility; no longer rendered
 
     var body: some View {
-        HStack(spacing: Spacing.sm) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Color.brandPrimary)
-            
-            Text(title.uppercased())
-                .font(.system(size: 11, weight: .semibold))
-                .tracking(0.55)
-                .foregroundStyle(Color.textSecondary)
-        }
+        // The kicker is the only all-caps element, and it carries the clay code —
+        // no decorative icon. Structure comes from type, not chrome.
+        Text(title.uppercased())
+            .font(.system(size: 11, weight: .semibold))
+            .tracking(0.6)
+            .foregroundStyle(Color.clay)
     }
 }
 
@@ -247,10 +243,10 @@ struct EntryRow: View {
                 .fill(accentColor)
                 .frame(width: 6, height: 6)
             
-            // Title
+            // Title — the actual content, so primary ink, not muted.
             Text(entry.title)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(Color.textSecondary)
+                .foregroundStyle(Color.ink)
                 .lineLimit(1)
             
             Spacer()
@@ -273,17 +269,17 @@ struct EntryRow: View {
 
     private var accentColor: Color {
         if entry.status == "done" || entry.status == "completed" {
-            return .accentDone
+            return .success
         }
         
         if let type = entry.type?.lowercased() {
             switch type {
-            case "todo": return .accentTodo
-            case "deadline": return .accentDeadline
-            case "event": return .accentEvent
-            case "someday": return .accentSomeday
-            case "idea": return .accentIdea
-            default: return .accentTodo
+            case "todo": return .typeTodo
+            case "deadline": return .typeBills
+            case "event": return .typeEvent
+            case "someday": return .typeSomeday
+            case "idea": return .typeIdea
+            default: return .typeTodo
             }
         }
         
@@ -293,13 +289,13 @@ struct EntryRow: View {
     private var statusColor: Color {
         switch entry.status.lowercased() {
         case "done", "completed":
-            return .accentDone
+            return .success
         case "in-progress", "inprogress":
-            return .accentToday
+            return .clay
         case "deadline", "urgent":
-            return .accentDeadline
+            return .typeBills
         default:
-            return .textTertiary
+            return .inkMuted
         }
     }
     
@@ -319,22 +315,22 @@ struct EntryRow: View {
     private var statusTextColor: Color {
         switch entry.status.lowercased() {
         case "done", "completed":
-            return .accentDone
+            return .success
         case "in-progress", "inprogress":
-            return .accentToday
+            return .clay
         default:
-            return .textTertiary
+            return .inkMuted
         }
     }
     
     private var statusBgColor: Color {
         switch entry.status.lowercased() {
         case "done", "completed":
-            return .accentDone.opacity(0.15)
+            return .success.opacity(0.15)
         case "in-progress", "inprogress":
-            return .accentToday.opacity(0.15)
+            return .clay.opacity(0.15)
         default:
-            return .surfaceContainerHighest
+            return .surfaceSubtle
         }
     }
 }
@@ -346,14 +342,14 @@ struct StatsCard: View {
 
     var body: some View {
         VStack(spacing: Spacing.sm) {
-            StatItem(count: stats.done, label: "Done", color: .accentDone)
-            StatItem(count: stats.pending, label: "Pending", color: .textTertiary)
-            StatItem(count: stats.inProgress, label: "Active", color: .accentToday)
+            StatItem(count: stats.done, label: "Done", color: .success)
+            StatItem(count: stats.pending, label: "Pending", color: .inkMuted)
+            StatItem(count: stats.inProgress, label: "Active", color: .clay)
         }
         .padding(Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: Radius.md)
-                .fill(Color.surfaceContainerLowest)
+                .fill(Color.surfaceSubtle)
         )
     }
 }
@@ -371,17 +367,17 @@ struct WidgetStatsRow: View {
         HStack(spacing: Spacing.sm) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 12))
-                .foregroundStyle(Color.accentDone)
+                .foregroundStyle(Color.success)
             
             Text("\(doneCount)/\(entries.count)")
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(Color.textSecondary)
+                .foregroundStyle(Color.inkMuted)
         }
         .padding(.horizontal, Spacing.sm)
         .padding(.vertical, Spacing.xs)
         .background(
             Capsule()
-                .fill(Color.surfaceContainerHighest)
+                .fill(Color.surfaceSubtle)
         )
     }
 }
@@ -395,14 +391,15 @@ struct StatItem: View {
 
     var body: some View {
         VStack(spacing: 2) {
+            // Display numeral — editorial serif, not rounded.
             Text("\(count)")
-                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .font(.system(size: 18, weight: .semibold, design: .serif))
                 .foregroundStyle(color)
-            
+
             Text(label.uppercased())
-                .font(.system(size: 8, weight: .medium))
-                .tracking(0.3)
-                .foregroundStyle(Color.textTertiary)
+                .font(.system(size: 8, weight: .semibold))
+                .tracking(0.4)
+                .foregroundStyle(Color.inkMuted)
         }
         .frame(maxWidth: .infinity)
     }
@@ -412,16 +409,18 @@ struct StatItem: View {
 
 struct EmptyStateView: View {
     var body: some View {
-        VStack(spacing: Spacing.sm) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 20))
-                .foregroundStyle(Color.textTertiary.opacity(0.5))
-            
-            Text("No entries yet")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(Color.textTertiary)
+        // Warm, plain, editorial — no sparkles, no mascot. Teach the next move.
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text("Nothing yet")
+                .font(.system(size: 16, weight: .semibold, design: .serif))
+                .foregroundStyle(Color.ink)
+
+            Text("Capture a thought to fill the field.")
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(Color.inkMuted)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 }
 
@@ -434,13 +433,13 @@ struct MoreEntriesRow: View {
         HStack {
             Text("+\(count) more")
                 .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(Color.textTertiary)
+                .foregroundStyle(Color.inkMuted)
             
             Spacer()
             
             Image(systemName: "chevron.right")
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(Color.textTertiary)
+                .foregroundStyle(Color.inkMuted)
         }
         .padding(.vertical, Spacing.xs)
     }

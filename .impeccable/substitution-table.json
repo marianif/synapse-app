@@ -1,0 +1,1026 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-05-31T11:40:00.000Z",
+  "sourceMigrationBrief": ".impeccable/migration-brief.json",
+  "sourceBrandBrief": ".impeccable/brand-brief.json",
+  "stylingApproach": "stylesheet",
+  "note": "constants/theme.ts is REPLACED wholesale in phase 1 (new tokens object + useTheme + compat shim), so there are no in-place tokenFileChanges value-patches; structural change is the rename rules below. Old named exports (Surface/TextColors/EntryAccent/Brand/FontSize/...) remain as a compat shim until cleanup.",
+  "tokenFileChanges": [],
+  "renameRules": [
+    {
+      "id": "rename-1",
+      "old": "Surface.base",
+      "new": "tokens.color.dark.paper",
+      "affectedFiles": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "components/error-boundary.tsx"
+      ],
+      "rationale": "The Field migration: Surface.base -> tokens.color.dark.paper"
+    },
+    {
+      "id": "rename-2",
+      "old": "Surface.containerLow",
+      "new": "tokens.color.dark.surfaceSubtle",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "app/modal.tsx",
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/recurrence-picker.tsx",
+        "components/molecules/wrapup-card.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/custom-tab-bar.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/deadlines-card.tsx",
+        "components/organisms/month-grid.tsx",
+        "components/organisms/today-section.tsx",
+        "components/organisms/upcoming-preview-card.tsx",
+        "components/organisms/week-strip.tsx",
+        "components/organisms/weekly-overview-card.tsx"
+      ],
+      "rationale": "The Field migration: Surface.containerLow -> tokens.color.dark.surfaceSubtle"
+    },
+    {
+      "id": "rename-3",
+      "old": "Surface.container",
+      "new": "tokens.color.dark.surface",
+      "affectedFiles": [
+        "components/atoms/day-cell.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/next-up-card.tsx"
+      ],
+      "rationale": "The Field migration: Surface.container -> tokens.color.dark.surface"
+    },
+    {
+      "id": "rename-4",
+      "old": "Surface.containerHigh",
+      "new": "tokens.color.dark.surface",
+      "affectedFiles": [
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "components/atoms/day-cell.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/someday-item.tsx"
+      ],
+      "rationale": "The Field migration: Surface.containerHigh -> tokens.color.dark.surface"
+    },
+    {
+      "id": "rename-5",
+      "old": "Surface.containerHighest",
+      "new": "tokens.color.dark.surfaceSubtle",
+      "affectedFiles": [
+        "app/voice-input.tsx"
+      ],
+      "rationale": "The Field migration: Surface.containerHighest -> tokens.color.dark.surfaceSubtle"
+    },
+    {
+      "id": "rename-6",
+      "old": "Surface.containerLowest",
+      "new": "tokens.color.dark.paper",
+      "affectedFiles": [
+        "components/molecules/someday-item.tsx"
+      ],
+      "rationale": "The Field migration: Surface.containerLowest -> tokens.color.dark.paper"
+    },
+    {
+      "id": "rename-7",
+      "old": "Surface.bright",
+      "new": "tokens.color.dark.surfaceSubtle",
+      "affectedFiles": [
+        "components/organisms/app-menu.tsx"
+      ],
+      "rationale": "The Field migration: Surface.bright -> tokens.color.dark.surfaceSubtle"
+    },
+    {
+      "id": "rename-8",
+      "old": "Surface.outlineVariant",
+      "new": "tokens.color.dark.surfaceSubtle",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "app/modal.tsx",
+        "components/organisms/day-detail-sheet.tsx"
+      ],
+      "rationale": "The Field migration: Surface.outlineVariant -> tokens.color.dark.surfaceSubtle"
+    },
+    {
+      "id": "rename-9",
+      "old": "TextColors.primary",
+      "new": "tokens.color.dark.ink",
+      "affectedFiles": [
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/atoms/day-cell.tsx",
+        "components/atoms/month-navigator.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/list-screen-header.tsx",
+        "components/organisms/swipeable-row.tsx"
+      ],
+      "rationale": "The Field migration: TextColors.primary -> tokens.color.dark.ink"
+    },
+    {
+      "id": "rename-10",
+      "old": "TextColors.secondary",
+      "new": "tokens.color.dark.inkMuted",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/atoms/themed-text.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/bento-card-header.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/molecules/weekday-row.tsx",
+        "components/molecules/wrapup-card.tsx",
+        "components/organisms/app-header.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/deadlines-card.tsx",
+        "components/organisms/list-screen-header.tsx",
+        "components/organisms/upcoming-preview-card.tsx",
+        "components/organisms/weekly-overview-card.tsx"
+      ],
+      "rationale": "The Field migration: TextColors.secondary -> tokens.color.dark.inkMuted"
+    },
+    {
+      "id": "rename-11",
+      "old": "TextColors.tertiary",
+      "new": "tokens.color.dark.inkMuted",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/voice-input.tsx",
+        "components/atoms/day-cell.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/recurrence-picker.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/molecules/today-event-row.tsx",
+        "components/molecules/weekday-row.tsx",
+        "components/organisms/agenda-section.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/list-progress.tsx",
+        "components/organisms/month-grid.tsx",
+        "components/organisms/next-up-card.tsx",
+        "components/organisms/today-section.tsx",
+        "components/organisms/upcoming-preview-card.tsx",
+        "components/organisms/week-strip.tsx"
+      ],
+      "rationale": "The Field migration: TextColors.tertiary -> tokens.color.dark.inkMuted"
+    },
+    {
+      "id": "rename-12",
+      "old": "TextColors.disabled",
+      "new": "tokens.color.dark.inkMuted",
+      "affectedFiles": [
+        "app/modal.tsx",
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/weekday-row.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/week-strip.tsx"
+      ],
+      "rationale": "The Field migration: TextColors.disabled -> tokens.color.dark.inkMuted"
+    },
+    {
+      "id": "rename-13",
+      "old": "EntryAccent.todo",
+      "new": "tokens.color.type.todo",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "app/modal.tsx",
+        "components/molecules/today-event-row.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/list-progress.tsx",
+        "components/organisms/weekly-overview-card.tsx"
+      ],
+      "rationale": "The Field migration: EntryAccent.todo -> tokens.color.type.todo"
+    },
+    {
+      "id": "rename-14",
+      "old": "EntryAccent.deadline",
+      "new": "tokens.color.type.bills",
+      "affectedFiles": [
+        "app/modal.tsx",
+        "components/atoms/countdown-chip.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/deadlines-card.tsx",
+        "components/organisms/fab.tsx",
+        "components/organisms/next-up-card.tsx"
+      ],
+      "rationale": "The Field migration: EntryAccent.deadline -> tokens.color.type.bills"
+    },
+    {
+      "id": "rename-15",
+      "old": "EntryAccent.event",
+      "new": "tokens.color.type.event",
+      "affectedFiles": [
+        "app/modal.tsx",
+        "components/molecules/today-event-row.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/next-up-card.tsx",
+        "components/organisms/today-section.tsx"
+      ],
+      "rationale": "The Field migration: EntryAccent.event -> tokens.color.type.event"
+    },
+    {
+      "id": "rename-16",
+      "old": "EntryAccent.someday",
+      "new": "tokens.color.type.someday",
+      "affectedFiles": [
+        "app/modal.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/someday-item.tsx"
+      ],
+      "rationale": "The Field migration: EntryAccent.someday -> tokens.color.type.someday"
+    },
+    {
+      "id": "rename-17",
+      "old": "EntryAccent.idea",
+      "new": "tokens.color.type.ideas",
+      "affectedFiles": [],
+      "rationale": "The Field migration: EntryAccent.idea -> tokens.color.type.ideas"
+    },
+    {
+      "id": "rename-18",
+      "old": "EntryAccent.today",
+      "new": "tokens.color.type.someday",
+      "affectedFiles": [
+        "components/atoms/day-cell.tsx",
+        "components/organisms/week-strip.tsx"
+      ],
+      "rationale": "The Field migration: EntryAccent.today -> tokens.color.type.someday",
+      "_handByAgent": true
+    },
+    {
+      "id": "rename-19",
+      "old": "Brand.primary",
+      "new": "tokens.accent.clay",
+      "affectedFiles": [
+        "app/voice-input.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/wrapup-card.tsx",
+        "components/organisms/agenda-section.tsx",
+        "components/organisms/custom-tab-bar.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/fab.tsx",
+        "components/organisms/today-section.tsx"
+      ],
+      "rationale": "The Field migration: Brand.primary -> tokens.accent.clay"
+    },
+    {
+      "id": "rename-20",
+      "old": "Brand.primaryContainer",
+      "new": "tokens.accent.clayPressed",
+      "affectedFiles": [
+        "components/error-boundary.tsx"
+      ],
+      "rationale": "The Field migration: Brand.primaryContainer -> tokens.accent.clayPressed",
+      "_handByAgent": true
+    },
+    {
+      "id": "rename-21",
+      "old": "Brand.fabGlow",
+      "new": "tokens.accent.clay",
+      "affectedFiles": [
+        "components/organisms/custom-tab-bar.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/fab.tsx"
+      ],
+      "rationale": "The Field migration: Brand.fabGlow -> tokens.accent.clay",
+      "_handByAgent": true
+    },
+    {
+      "id": "rename-22",
+      "old": "Brand.onPrimary",
+      "new": "tokens.color.light.paper",
+      "affectedFiles": [
+        "components/organisms/custom-tab-bar.tsx",
+        "components/organisms/fab.tsx"
+      ],
+      "rationale": "The Field migration: Brand.onPrimary -> tokens.color.light.paper"
+    },
+    {
+      "id": "rename-23",
+      "old": "FontFamily.regular",
+      "new": "tokens.type.fontInter.regular",
+      "affectedFiles": [
+        "components/atoms/themed-text.tsx"
+      ],
+      "rationale": "The Field migration: FontFamily.regular -> tokens.type.fontInter.regular"
+    },
+    {
+      "id": "rename-24",
+      "old": "FontFamily.medium",
+      "new": "tokens.type.fontInter.medium",
+      "affectedFiles": [],
+      "rationale": "The Field migration: FontFamily.medium -> tokens.type.fontInter.medium"
+    },
+    {
+      "id": "rename-25",
+      "old": "FontFamily.semiBold",
+      "new": "tokens.type.fontInter.semiBold",
+      "affectedFiles": [
+        "components/atoms/themed-text.tsx"
+      ],
+      "rationale": "The Field migration: FontFamily.semiBold -> tokens.type.fontInter.semiBold"
+    },
+    {
+      "id": "rename-26",
+      "old": "FontFamily.bold",
+      "new": "tokens.type.fontInter.bold",
+      "affectedFiles": [
+        "components/atoms/themed-text.tsx"
+      ],
+      "rationale": "The Field migration: FontFamily.bold -> tokens.type.fontInter.bold"
+    },
+    {
+      "id": "rename-27",
+      "old": "FontSize.displayLg",
+      "new": "tokens.type.display.size",
+      "affectedFiles": [
+        "components/atoms/countdown-chip.tsx",
+        "components/atoms/counter-display.tsx",
+        "components/atoms/themed-text.tsx",
+        "components/organisms/list-progress.tsx",
+        "components/organisms/next-up-card.tsx",
+        "components/organisms/upcoming-preview-card.tsx"
+      ],
+      "rationale": "The Field migration: FontSize.displayLg -> tokens.type.display.size"
+    },
+    {
+      "id": "rename-28",
+      "old": "FontSize.displayMd",
+      "new": "tokens.type.title.size",
+      "affectedFiles": [
+        "app/voice-input.tsx"
+      ],
+      "rationale": "The Field migration: FontSize.displayMd -> tokens.type.title.size"
+    },
+    {
+      "id": "rename-29",
+      "old": "FontSize.headlineSm",
+      "new": "tokens.type.title.size",
+      "affectedFiles": [
+        "components/atoms/themed-text.tsx",
+        "components/organisms/list-progress.tsx"
+      ],
+      "rationale": "The Field migration: FontSize.headlineSm -> tokens.type.title.size"
+    },
+    {
+      "id": "rename-30",
+      "old": "FontSize.bodyMd",
+      "new": "tokens.type.body.size",
+      "affectedFiles": [
+        "app/voice-input.tsx",
+        "components/atoms/themed-text.tsx",
+        "components/organisms/app-menu.tsx"
+      ],
+      "rationale": "The Field migration: FontSize.bodyMd -> tokens.type.body.size"
+    },
+    {
+      "id": "rename-31",
+      "old": "FontSize.labelSm",
+      "new": "tokens.type.kicker.size",
+      "affectedFiles": [
+        "components/atoms/countdown-chip.tsx",
+        "components/atoms/themed-text.tsx",
+        "components/organisms/app-menu.tsx"
+      ],
+      "rationale": "The Field migration: FontSize.labelSm -> tokens.type.kicker.size"
+    },
+    {
+      "id": "rename-32",
+      "old": "FontSize.labelXs",
+      "new": "tokens.type.kicker.size",
+      "affectedFiles": [
+        "components/atoms/themed-text.tsx",
+        "components/organisms/app-menu.tsx"
+      ],
+      "rationale": "The Field migration: FontSize.labelXs -> tokens.type.kicker.size"
+    },
+    {
+      "id": "rename-33",
+      "old": "LetterSpacing.displayLg",
+      "new": "tokens.type.display.tracking",
+      "affectedFiles": [
+        "components/atoms/countdown-chip.tsx",
+        "components/atoms/counter-display.tsx",
+        "components/atoms/themed-text.tsx",
+        "components/organisms/list-progress.tsx"
+      ],
+      "rationale": "The Field migration: LetterSpacing.displayLg -> tokens.type.display.tracking"
+    },
+    {
+      "id": "rename-34",
+      "old": "LetterSpacing.labelSm",
+      "new": "tokens.type.kicker.tracking",
+      "affectedFiles": [
+        "components/atoms/countdown-chip.tsx",
+        "components/atoms/themed-text.tsx"
+      ],
+      "rationale": "The Field migration: LetterSpacing.labelSm -> tokens.type.kicker.tracking"
+    },
+    {
+      "id": "rename-35",
+      "old": "LineHeight.displayLg",
+      "new": "tokens.type.display.lineHeight",
+      "affectedFiles": [
+        "app/voice-input.tsx",
+        "components/atoms/countdown-chip.tsx",
+        "components/atoms/counter-display.tsx",
+        "components/atoms/themed-text.tsx",
+        "components/organisms/list-progress.tsx"
+      ],
+      "rationale": "The Field migration: LineHeight.displayLg -> tokens.type.display.lineHeight"
+    },
+    {
+      "id": "rename-36",
+      "old": "LineHeight.headlineSm",
+      "new": "tokens.type.title.lineHeight",
+      "affectedFiles": [
+        "components/atoms/themed-text.tsx",
+        "components/organisms/list-progress.tsx"
+      ],
+      "rationale": "The Field migration: LineHeight.headlineSm -> tokens.type.title.lineHeight"
+    },
+    {
+      "id": "rename-37",
+      "old": "LineHeight.bodyMd",
+      "new": "tokens.type.body.lineHeight",
+      "affectedFiles": [
+        "app/voice-input.tsx",
+        "components/atoms/themed-text.tsx"
+      ],
+      "rationale": "The Field migration: LineHeight.bodyMd -> tokens.type.body.lineHeight"
+    },
+    {
+      "id": "rename-38",
+      "old": "LineHeight.labelSm",
+      "new": "tokens.type.kicker.lineHeight",
+      "affectedFiles": [
+        "components/atoms/themed-text.tsx"
+      ],
+      "rationale": "The Field migration: LineHeight.labelSm -> tokens.type.kicker.lineHeight"
+    },
+    {
+      "id": "rename-39",
+      "old": "Spacing.xs",
+      "new": "tokens.space.xs",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "components/atoms/countdown-chip.tsx",
+        "components/atoms/day-cell.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/molecules/empty-state.tsx",
+        "components/molecules/entry-row.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/recurrence-picker.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/molecules/today-event-row.tsx",
+        "components/molecules/wrapup-card.tsx",
+        "components/organisms/agenda-section.tsx",
+        "components/organisms/app-header.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/list-progress.tsx",
+        "components/organisms/month-grid.tsx",
+        "components/organisms/next-up-card.tsx",
+        "components/organisms/today-section.tsx",
+        "components/organisms/upcoming-preview-card.tsx",
+        "components/organisms/week-strip.tsx",
+        "components/organisms/weekly-overview-card.tsx"
+      ],
+      "rationale": "The Field migration: Spacing.xs -> tokens.space.xs"
+    },
+    {
+      "id": "rename-40",
+      "old": "Spacing.sm",
+      "new": "tokens.space.sm",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "components/atoms/month-navigator.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/molecules/empty-state.tsx",
+        "components/molecules/entry-row.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/recurrence-picker.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/molecules/today-event-row.tsx",
+        "components/molecules/weekday-row.tsx",
+        "components/organisms/agenda-section.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/deadlines-card.tsx",
+        "components/organisms/list-progress.tsx",
+        "components/organisms/list-screen-header.tsx",
+        "components/organisms/next-up-card.tsx",
+        "components/organisms/swipeable-row.tsx",
+        "components/organisms/today-section.tsx",
+        "components/organisms/upcoming-preview-card.tsx"
+      ],
+      "rationale": "The Field migration: Spacing.sm -> tokens.space.sm"
+    },
+    {
+      "id": "rename-41",
+      "old": "Spacing.md",
+      "new": "tokens.space.md",
+      "affectedFiles": [
+        "app/(tabs)/calendar.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/atoms/month-navigator.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/molecules/bento-card-header.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/molecules/empty-state.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/molecules/today-event-row.tsx",
+        "components/organisms/app-header.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/fab.tsx",
+        "components/organisms/list-screen-header.tsx",
+        "components/organisms/month-grid.tsx",
+        "components/organisms/today-section.tsx",
+        "components/organisms/upcoming-preview-card.tsx",
+        "components/organisms/week-strip.tsx",
+        "components/organisms/weekly-overview-card.tsx"
+      ],
+      "rationale": "The Field migration: Spacing.md -> tokens.space.md"
+    },
+    {
+      "id": "rename-42",
+      "old": "Spacing.lg",
+      "new": "tokens.space.lg",
+      "affectedFiles": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/molecules/empty-state.tsx",
+        "components/organisms/app-header.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/deadlines-card.tsx",
+        "components/organisms/list-screen-header.tsx",
+        "components/organisms/upcoming-preview-card.tsx",
+        "components/organisms/weekly-overview-card.tsx"
+      ],
+      "rationale": "The Field migration: Spacing.lg -> tokens.space.lg"
+    },
+    {
+      "id": "rename-43",
+      "old": "Spacing.xl",
+      "new": "tokens.space.xl",
+      "affectedFiles": [
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "components/atoms/countdown-chip.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/molecules/wrapup-card.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/deadlines-card.tsx",
+        "components/organisms/next-up-card.tsx",
+        "components/organisms/today-section.tsx",
+        "components/organisms/upcoming-preview-card.tsx"
+      ],
+      "rationale": "The Field migration: Spacing.xl -> tokens.space.xl"
+    },
+    {
+      "id": "rename-44",
+      "old": "Spacing.xxl",
+      "new": "tokens.space.xxl",
+      "affectedFiles": [
+        "app/voice-input.tsx",
+        "components/atoms/countdown-chip.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/organisms/app-menu.tsx"
+      ],
+      "rationale": "The Field migration: Spacing.xxl -> tokens.space.xxl"
+    },
+    {
+      "id": "rename-45",
+      "old": "Spacing.xxxl",
+      "new": "tokens.space.xxxl",
+      "affectedFiles": [
+        "app/voice-input.tsx",
+        "components/organisms/app-menu.tsx"
+      ],
+      "rationale": "The Field migration: Spacing.xxxl -> tokens.space.xxxl"
+    },
+    {
+      "id": "rename-46",
+      "old": "Spacing.section",
+      "new": "tokens.space.xxxl",
+      "affectedFiles": [],
+      "rationale": "The Field migration: Spacing.section -> tokens.space.xxxl"
+    },
+    {
+      "id": "rename-47",
+      "old": "Radius.sm",
+      "new": "tokens.radius.sm",
+      "affectedFiles": [
+        "app/voice-input.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/recurrence-picker.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/molecules/today-event-row.tsx"
+      ],
+      "rationale": "The Field migration: Radius.sm -> tokens.radius.sm"
+    },
+    {
+      "id": "rename-48",
+      "old": "Radius.md",
+      "new": "tokens.radius.sm",
+      "affectedFiles": [
+        "app/modal.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/recurrence-picker.tsx",
+        "components/organisms/custom-tab-bar.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/week-strip.tsx"
+      ],
+      "rationale": "The Field migration: Radius.md -> tokens.radius.sm"
+    },
+    {
+      "id": "rename-49",
+      "old": "Radius.lg",
+      "new": "tokens.radius.md",
+      "affectedFiles": [
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/atoms/day-cell.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/swipeable-row.tsx"
+      ],
+      "rationale": "The Field migration: Radius.lg -> tokens.radius.md"
+    },
+    {
+      "id": "rename-50",
+      "old": "Radius.xl",
+      "new": "tokens.radius.lg",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "components/atoms/countdown-chip.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/molecules/wrapup-card.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/deadlines-card.tsx",
+        "components/organisms/month-grid.tsx",
+        "components/organisms/next-up-card.tsx",
+        "components/organisms/today-section.tsx",
+        "components/organisms/upcoming-preview-card.tsx",
+        "components/organisms/week-strip.tsx",
+        "components/organisms/weekly-overview-card.tsx"
+      ],
+      "rationale": "The Field migration: Radius.xl -> tokens.radius.lg"
+    },
+    {
+      "id": "rename-51",
+      "old": "Radius.full",
+      "new": "tokens.radius.pill",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/empty-state.tsx",
+        "components/molecules/list-item.tsx",
+        "components/organisms/custom-tab-bar.tsx",
+        "components/organisms/fab.tsx"
+      ],
+      "rationale": "The Field migration: Radius.full -> tokens.radius.pill"
+    },
+    {
+      "id": "rename-52",
+      "old": "Shadow.fab",
+      "new": "tokens.elevation.capture",
+      "affectedFiles": [
+        "components/organisms/custom-tab-bar.tsx",
+        "components/organisms/fab.tsx"
+      ],
+      "rationale": "The Field migration: Shadow.fab -> tokens.elevation.capture"
+    }
+  ],
+  "classRules": [],
+  "literalPromotions": [
+    {
+      "id": "lit-c1",
+      "kind": "color-semantic",
+      "literal": "#131316",
+      "newTokenExpression": "tokens.color.dark.paper",
+      "confidence": "semantic",
+      "affectedFiles": [
+        "app/modal.tsx",
+        "components/molecules/detail-action-bar.tsx"
+      ],
+      "rationale": "old Surface.base -> warm soot paper"
+    },
+    {
+      "id": "lit-c2",
+      "kind": "color-semantic",
+      "literal": "#52C87A",
+      "newTokenExpression": "tokens.feedback.success",
+      "confidence": "semantic",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "components/atoms/countdown-chip.tsx"
+      ],
+      "rationale": "completion green -> sage success"
+    },
+    {
+      "id": "lit-c3",
+      "kind": "color-semantic",
+      "literal": "#FAFAFA",
+      "newTokenExpression": "tokens.color.dark.ink",
+      "confidence": "semantic",
+      "affectedFiles": [
+        "components/organisms/fab.tsx"
+      ],
+      "rationale": "old TextColors.primary -> warm cream ink"
+    },
+    {
+      "id": "lit-c4",
+      "kind": "color-semantic",
+      "literal": "#FF4444",
+      "newTokenExpression": "tokens.feedback.danger",
+      "confidence": "semantic",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "components/atoms/countdown-chip.tsx",
+        "components/molecules/detail-action-bar.tsx"
+      ],
+      "rationale": "destructive red -> warm terracotta danger"
+    },
+    {
+      "id": "lit-c5",
+      "kind": "color-semantic",
+      "literal": "#FF6B6B",
+      "newTokenExpression": "tokens.feedback.danger",
+      "confidence": "semantic",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "app/voice-input.tsx",
+        "components/organisms/swipeable-row.tsx"
+      ],
+      "rationale": "old deadline/destructive red -> warm terracotta danger"
+    }
+  ],
+  "unresolvedPromotions": [
+    {
+      "id": "unres-1",
+      "literal": "#000",
+      "createdToken": "colors.unresolved.hex000",
+      "tokenExpression": "tokens.colors.unresolved.hex000",
+      "addedTo": "constants/theme.ts",
+      "affectedFiles": [
+        "app/voice-input.tsx"
+      ],
+      "rationale": "overlay/scrim, off-palette; legacy token until cleanup review"
+    },
+    {
+      "id": "unres-2",
+      "literal": "rgba(0, 0, 0, 0.6)",
+      "createdToken": "colors.unresolved.rgba0_0_0_0_6",
+      "tokenExpression": "tokens.colors.unresolved.rgba0_0_0_0_6",
+      "addedTo": "constants/theme.ts",
+      "affectedFiles": [
+        "app/detail.tsx",
+        "components/organisms/day-detail-sheet.tsx"
+      ],
+      "rationale": "overlay/scrim, off-palette; legacy token until cleanup review",
+      "literalVariants": [
+        "rgba(0, 0, 0, 0.6)",
+        "rgba(0,0,0,0.6)"
+      ]
+    },
+    {
+      "id": "unres-3",
+      "literal": "rgba(0,0,0,0.5)",
+      "createdToken": "colors.unresolved.rgba0_0_0_0_5",
+      "tokenExpression": "tokens.colors.unresolved.rgba0_0_0_0_5",
+      "addedTo": "constants/theme.ts",
+      "affectedFiles": [
+        "components/organisms/app-menu.tsx"
+      ],
+      "rationale": "overlay/scrim, off-palette; legacy token until cleanup review"
+    },
+    {
+      "id": "unres-4",
+      "literal": "rgba(144, 238, 144, 0.15)",
+      "createdToken": "colors.unresolved.rgba144_238_144_0_15",
+      "tokenExpression": "tokens.colors.unresolved.rgba144_238_144_0_15",
+      "addedTo": "constants/theme.ts",
+      "affectedFiles": [
+        "components/organisms/week-strip.tsx"
+      ],
+      "rationale": "overlay/scrim, off-palette; legacy token until cleanup review"
+    },
+    {
+      "id": "unres-5",
+      "literal": "rgba(192,132,252,0.3)",
+      "createdToken": "colors.unresolved.rgba192_132_252_0_3",
+      "tokenExpression": "tokens.colors.unresolved.rgba192_132_252_0_3",
+      "addedTo": "constants/theme.ts",
+      "affectedFiles": [
+        "components/molecules/today-event-row.tsx"
+      ],
+      "rationale": "overlay/scrim, off-palette; legacy token until cleanup review"
+    },
+    {
+      "id": "unres-6",
+      "literal": "rgba(255, 107, 107, 0.2)",
+      "createdToken": "colors.unresolved.rgba255_107_107_0_2",
+      "tokenExpression": "tokens.colors.unresolved.rgba255_107_107_0_2",
+      "addedTo": "constants/theme.ts",
+      "affectedFiles": [
+        "components/organisms/fab.tsx"
+      ],
+      "rationale": "overlay/scrim, off-palette; legacy token until cleanup review"
+    },
+    {
+      "id": "unres-7",
+      "literal": "rgba(255,255,255,0.04)",
+      "createdToken": "colors.unresolved.rgba255_255_255_0_04",
+      "tokenExpression": "tokens.colors.unresolved.rgba255_255_255_0_04",
+      "addedTo": "constants/theme.ts",
+      "affectedFiles": [
+        "components/organisms/today-section.tsx"
+      ],
+      "rationale": "overlay/scrim, off-palette; legacy token until cleanup review"
+    },
+    {
+      "id": "unres-8",
+      "literal": "rgba(255,255,255,0.05)",
+      "createdToken": "colors.unresolved.rgba255_255_255_0_05",
+      "tokenExpression": "tokens.colors.unresolved.rgba255_255_255_0_05",
+      "addedTo": "constants/theme.ts",
+      "affectedFiles": [
+        "components/atoms/month-navigator.tsx"
+      ],
+      "rationale": "overlay/scrim, off-palette; legacy token until cleanup review"
+    },
+    {
+      "id": "unres-9",
+      "literal": "rgba(255,255,255,0.06)",
+      "createdToken": "colors.unresolved.rgba255_255_255_0_06",
+      "tokenExpression": "tokens.colors.unresolved.rgba255_255_255_0_06",
+      "addedTo": "constants/theme.ts",
+      "affectedFiles": [
+        "components/molecules/weekday-row.tsx"
+      ],
+      "rationale": "overlay/scrim, off-palette; legacy token until cleanup review"
+    },
+    {
+      "id": "unres-10",
+      "literal": "rgba(255,255,255,0.08)",
+      "createdToken": "colors.unresolved.rgba255_255_255_0_08",
+      "tokenExpression": "tokens.colors.unresolved.rgba255_255_255_0_08",
+      "addedTo": "constants/theme.ts",
+      "affectedFiles": [
+        "components/organisms/app-header.tsx"
+      ],
+      "rationale": "overlay/scrim, off-palette; legacy token until cleanup review"
+    }
+  ],
+  "ambiguous": [
+    {
+      "id": "amb-1",
+      "issue": "EntryAccent.today (RETIRED concept) currently maps to tokens.color.type.someday as nearest; brief folds 'today' into headline+ordering, not a color. Agent should remove the today color usage rather than recolor.",
+      "candidates": [
+        "tokens.color.type.someday",
+        "(remove usage)"
+      ],
+      "affectedFiles": [
+        "components/atoms/day-cell.tsx",
+        "components/organisms/week-strip.tsx"
+      ],
+      "resolution": "remove",
+      "resolvedNote": "Agent removes today-colored styling in requiresAgent pass (not recolored)."
+    },
+    {
+      "id": "amb-2",
+      "issue": "Brand.fabGlow / Brand.primaryContainer reference the retired FAB+gradient. Renamed to clay for safety, but agent should DELETE these usages (FAB replaced by capture bar; no gradients).",
+      "candidates": [
+        "tokens.accent.clay",
+        "(remove usage)"
+      ],
+      "affectedFiles": [
+        "components/error-boundary.tsx",
+        "components/organisms/custom-tab-bar.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/fab.tsx"
+      ],
+      "resolution": "delete",
+      "resolvedNote": "Agent deletes fabGlow/primaryContainer usages; FAB reworked to capture bar in phase 3."
+    }
+  ],
+  "retirements": [
+    {
+      "old": "Brand.primaryContainer",
+      "deleteAfter": "cleanup-commit"
+    },
+    {
+      "old": "Brand.fabGlow",
+      "deleteAfter": "cleanup-commit"
+    },
+    {
+      "old": "EntryAccent.today",
+      "deleteAfter": "cleanup-commit"
+    },
+    {
+      "old": "Colors",
+      "deleteAfter": "cleanup-commit",
+      "note": "unused in scope"
+    }
+  ],
+  "destructuredUsage": [],
+  "requiresAgentHints": [
+    {
+      "files": [
+        "components/organisms/app-menu.tsx",
+        "components/organisms/custom-tab-bar.tsx"
+      ],
+      "reason": "inline colorScheme=== ternaries; rewire to useTheme() in requiresAgent pass"
+    },
+    {
+      "files": [
+        "components/atoms/day-cell.tsx",
+        "components/error-boundary.tsx",
+        "components/organisms/custom-tab-bar.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/fab.tsx",
+        "components/organisms/week-strip.tsx"
+      ],
+      "reason": "amb-1/amb-2 resolved as REMOVE/DELETE: strip today-color, fabGlow, and gradient-CTA usages here instead of renaming."
+    }
+  ],
+  "deferred": {
+    "geometryValues": 85,
+    "reason": "width/height/minWidth/minHeight/borderRadius:50(circle)/touch-target 44 dims are component geometry, NOT spacing-scale tokens. Intentionally NOT promoted. Logged so coverage is honest.",
+    "typeBundled": 32,
+    "typeBundledReason": "letterSpacing/lineHeight literals + off-scale font sizes; mostly subsumed when fontSize migrates to tokens.type.* (which bundle lineHeight+tracking). Agent reviews residue per file.",
+    "numericPromotionsDropped": 25,
+    "numericReason": "Numeric snaps dropped: borderRadius on sized buttons is intentional geometry (e.g. 44px button / borderRadius 22 = circle); fontSizes are within 2pt of scale and acceptable. Shim re-skin covers color; numeric literals deferred to optional later pass."
+  }
+}

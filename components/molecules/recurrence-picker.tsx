@@ -1,9 +1,22 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import dayjs from "dayjs";
+import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 
-import DateInput from "@/components/atoms/DateInput";
+import {
+  ChipRail,
+  ChipRow,
+  SelectChip,
+} from "@/components/atoms/select-chip";
+import { CompactCalendar } from "@/components/molecules/compact-calendar";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { Radius, Spacing, Surface, TextColors } from "@/constants/theme";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { tokens, useTheme } from "@/constants/theme";
+import { parseDate, toDisplayDate } from "@/lib/date-utils";
 import type { RecurrenceFrequency } from "@/lib/types";
 
 interface RecurrencePickerProps {
@@ -19,11 +32,10 @@ interface RecurrencePickerProps {
 const RECURRENCE_OPTIONS: {
   value: RecurrenceFrequency;
   label: string;
-  icon: string;
 }[] = [
-  { value: "daily", label: "Daily", icon: "calendar" },
-  { value: "weekly", label: "Weekly", icon: "calendar-today" },
-  { value: "monthly", label: "Monthly", icon: "calendar-month" },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
 ];
 
 const WEEKDAY_OPTIONS: { value: number; label: string }[] = [
@@ -36,6 +48,12 @@ const WEEKDAY_OPTIONS: { value: number; label: string }[] = [
   { value: 0, label: "S" },
 ];
 
+/**
+ * REPEAT control for Add Entry (Todo only). Shares the WhenPicker vocabulary: a
+ * borderless panel, a frequency chip rail, a tint-filled weekday row (no borders),
+ * and a calendar end-date as progressive disclosure. Off by default — "Never" is
+ * the resting state and the whole thing collapses to a single rail.
+ */
 export function RecurrencePicker({
   frequency,
   days,
@@ -45,6 +63,11 @@ export function RecurrencePicker({
   onDaysChange,
   onEndDateChange,
 }: RecurrencePickerProps): React.ReactElement {
+  const { colors } = useTheme();
+  const [endOpen, setEndOpen] = useState(false);
+
+  const endDateValue = parseDate(endDate || null);
+
   const handleFrequencySelect = (freq: RecurrenceFrequency): void => {
     if (frequency === freq) {
       onFrequencyChange(null);
@@ -65,144 +88,153 @@ export function RecurrencePicker({
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <ThemedText type="caption" muted style={styles.label}>
-        REPEAT
-      </ThemedText>
+  function pickEndDate(d: Date): void {
+    onEndDateChange(toDisplayDate(d));
+    setEndOpen(false);
+  }
 
-      <View style={styles.row}>
-        {RECURRENCE_OPTIONS.map((option) => {
-          const isSelected = frequency === option.value;
-          return (
-            <Pressable
-              key={option.value}
-              onPress={() => handleFrequencySelect(option.value)}
-              style={[
-                styles.option,
-                isSelected && {
-                  backgroundColor: accentColor + "20",
-                  borderColor: accentColor,
-                },
-              ]}
-            >
-              <MaterialCommunityIcons
-                name={
-                  option.icon as keyof typeof MaterialCommunityIcons.glyphMap
-                }
-                size={16}
-                color={isSelected ? accentColor : TextColors.tertiary}
-              />
-              <ThemedText
-                type="caption"
-                style={[
-                  styles.optionLabel,
-                  isSelected && { color: accentColor },
-                ]}
-              >
-                {option.label}
-              </ThemedText>
-            </Pressable>
-          );
-        })}
+  function clearEndDate(): void {
+    onEndDateChange("");
+    setEndOpen(false);
+  }
+
+  return (
+    <View style={[styles.panel, { backgroundColor: colors.surface }]}>
+      <View style={styles.header}>
+        <ThemedText type="label" muted style={styles.kicker}>
+          REPEAT
+        </ThemedText>
       </View>
 
+      {/* Frequency chip rail */}
+      <View style={styles.railWrap}>
+        <ChipRail>
+          {RECURRENCE_OPTIONS.map((option) => (
+            <SelectChip
+              key={option.value}
+              label={option.label}
+              selected={frequency === option.value}
+              accentColor={accentColor}
+              onPress={() => handleFrequencySelect(option.value)}
+            />
+          ))}
+        </ChipRail>
+      </View>
+
+      {/* Weekly day picker — equal-width segmented chips */}
       {frequency === "weekly" && (
-        <View style={styles.weekdayRow}>
-          {WEEKDAY_OPTIONS.map((day) => {
-            const isSelected = days.includes(day.value);
-            return (
-              <Pressable
+        <Animated.View
+          entering={FadeIn.duration(180)}
+          exiting={FadeOut.duration(120)}
+          layout={LinearTransition.springify().damping(18).stiffness(220)}
+          style={styles.railWrap}
+        >
+          <ChipRow>
+            {WEEKDAY_OPTIONS.map((day) => (
+              <SelectChip
                 key={day.value}
+                label={day.label}
+                selected={days.includes(day.value)}
+                accentColor={accentColor}
                 onPress={() => handleDayToggle(day.value)}
-                style={[
-                  styles.weekdayChip,
-                  isSelected && {
-                    backgroundColor: accentColor + "20",
-                    borderColor: accentColor,
-                  },
-                ]}
-              >
-                <ThemedText
-                  type="caption"
-                  style={[
-                    styles.weekdayText,
-                    isSelected && { color: accentColor },
-                  ]}
-                >
-                  {day.label}
-                </ThemedText>
-              </Pressable>
-            );
-          })}
-        </View>
+                fill
+              />
+            ))}
+          </ChipRow>
+        </Animated.View>
       )}
 
+      {/* End date — calendar progressive disclosure, only when repeating */}
       {frequency && (
-        <View style={styles.endDateRow}>
-          <DateInput
-            value={endDate}
-            onChange={onEndDateChange}
-            style={styles.dateInput}
-          />
-        </View>
+        <Animated.View
+          entering={FadeIn.duration(180)}
+          exiting={FadeOut.duration(120)}
+          layout={LinearTransition.springify().damping(18).stiffness(220)}
+        >
+          <Pressable
+            onPress={() => setEndOpen((v) => !v)}
+            accessibilityRole="button"
+            accessibilityLabel="Set an end date"
+            accessibilityState={{ expanded: endOpen }}
+            style={({ pressed }) => [
+              styles.endRow,
+              pressed && { backgroundColor: colors.surfaceSubtle },
+            ]}
+          >
+            <ThemedText type="body" muted={!endDateValue}>
+              {endDateValue
+                ? `Until ${dayjs(endDateValue).format("D MMM YYYY")}`
+                : "Ends never"}
+            </ThemedText>
+            {endDateValue ? (
+              <Pressable
+                onPress={clearEndDate}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Clear end date"
+                style={styles.clear}
+              >
+                <IconSymbol name="close" size={16} color={colors.inkMuted} />
+              </Pressable>
+            ) : (
+              <IconSymbol
+                name={endOpen ? "chevron-up" : "chevron-down"}
+                size={18}
+                color={colors.inkMuted}
+              />
+            )}
+          </Pressable>
+
+          {endOpen && (
+            <Animated.View
+              entering={FadeIn.duration(180)}
+              exiting={FadeOut.duration(120)}
+              style={styles.disclosure}
+            >
+              <CompactCalendar
+                value={endDateValue}
+                onSelect={pickEndDate}
+                accentColor={accentColor}
+              />
+            </Animated.View>
+          )}
+        </Animated.View>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    gap: Spacing.sm,
+  panel: {
+    borderRadius: tokens.radius.lg,
+    paddingVertical: tokens.space.md,
+    overflow: "hidden",
   },
-  label: {
-    letterSpacing: 0.5,
+  header: {
+    paddingHorizontal: tokens.space.lg,
   },
-  row: {
+  kicker: {
+    letterSpacing: 0.8,
+  },
+  railWrap: {
+    paddingTop: tokens.space.md,
+  },
+  endRow: {
     flexDirection: "row",
-    gap: Spacing.xs,
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 44,
+    paddingHorizontal: tokens.space.lg,
+    marginTop: tokens.space.md,
   },
-  option: {
-    flex: 1,
-    flexDirection: "row",
+  disclosure: {
+    paddingHorizontal: tokens.space.lg,
+    paddingTop: tokens.space.sm,
+  },
+  clear: {
+    width: 36,
+    height: 36,
     alignItems: "center",
     justifyContent: "center",
-    gap: Spacing.xs,
-    backgroundColor: Surface.containerLow,
-    borderRadius: Radius.md,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.sm,
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-  optionLabel: {
-    color: TextColors.tertiary,
-    fontSize: 11,
-  },
-  weekdayRow: {
-    flexDirection: "row",
-    gap: Spacing.xs,
-  },
-  weekdayChip: {
-    flex: 1,
-    backgroundColor: Surface.containerLow,
-    borderRadius: Radius.sm,
-    paddingVertical: Spacing.xs,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-  weekdayText: {
-    color: TextColors.tertiary,
-    fontWeight: "600",
-    fontSize: 10,
-  },
-  endDateRow: {
-    flexDirection: "row",
-  },
-  dateInput: {
-    flex: 1,
-    backgroundColor: Surface.containerLow,
-    paddingVertical: Spacing.sm,
   },
 });

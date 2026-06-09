@@ -1,7 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { EntryAccent, FontSize, LetterSpacing, LineHeight, Radius, Spacing } from '@/constants/theme';
+import { entryColor, useTheme, tokens } from '@/constants/theme';
 
 type CountdownState = 'pending' | 'overdue' | 'met';
 
@@ -12,20 +12,25 @@ interface CountdownChipProps {
 }
 
 /**
- * Deadline urgency hero chip.
+ * Deadline urgency chip — the loudest line of the deadline's telemetry, NOT a
+ * hero. The screen's hero is the title above it; this is one fact (days left),
+ * so it reads as a compact inline chip that hugs its text, not a centered slab.
  * Displays "DUE IN N DAYS", "DUE TODAY", "OVERDUE", or "MET".
- * Color shifts from coral (pending) → red (overdue) → muted (met).
+ * Color shifts from coral (pending) → red (overdue) → muted (met) — urgency is
+ * carried by hue, not by size.
  */
 export function CountdownChip({ daysRemaining, state }: CountdownChipProps): React.ReactElement {
+  const { colors } = useTheme();
+
   const resolvedState: CountdownState =
     state ?? (daysRemaining < 0 ? 'overdue' : 'met');
 
   const color =
     resolvedState === 'met'
-      ? '#52C87A'                // soft green — met/done
+      ? colors.feedback.success                // soft green — met/done
       : resolvedState === 'overdue'
-        ? '#FF4444'              // bright red — past due
-        : EntryAccent.deadline;  // coral — still pending
+        ? colors.feedback.danger              // bright red — past due
+        : entryColor('deadline');  // coral — still pending
 
   const bgColor = color + '18'; // 9% opacity tint
 
@@ -55,22 +60,28 @@ export function CountdownChip({ daysRemaining, state }: CountdownChipProps): Rea
 }
 
 const styles = StyleSheet.create({
+  // Inline chip that hugs its text — number + label on one row. Sharp corner
+  // (Field Lab signal voice), not the soft card radius that read as standalone.
   chip: {
-    borderRadius: Radius.xl,
-    paddingVertical: Spacing.xl,
-    paddingHorizontal: Spacing.xxl,
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.xs,
+    alignSelf: 'flex-start',
+    borderRadius: tokens.radius.sm,
+    paddingVertical: tokens.space.xs,
+    paddingHorizontal: tokens.space.sm,
+    gap: tokens.space.sm,
   },
+  // One step below the hero title (title scale, not display) — telemetry, not
+  // a second hero. Tabular so the digit aligns with the mono readout beneath.
   number: {
-    fontSize: FontSize.displayLg,
-    lineHeight: LineHeight.displayLg,
-    letterSpacing: LetterSpacing.displayLg,
-    fontFamily: 'Inter_700Bold',
+    fontSize: tokens.type.title.size,
+    lineHeight: tokens.type.title.lineHeight,
+    fontFamily: 'HostGrotesk_700Bold',
+    fontVariant: ['tabular-nums'],
   },
   label: {
-    fontSize: FontSize.labelSm,
-    letterSpacing: LetterSpacing.labelSm,
-    fontFamily: 'Inter_600SemiBold',
+    fontSize: tokens.type.kicker.size,
+    letterSpacing: tokens.type.kicker.tracking,
+    fontFamily: 'HostGrotesk_600SemiBold',
   },
 });

@@ -1,0 +1,292 @@
+{
+  "scope": {
+    "raw": "app (rebrand pseudo-scope)",
+    "kind": "app"
+  },
+  "screens": [
+    {
+      "file": "app/(tabs)/_layout.tsx"
+    },
+    {
+      "file": "app/(tabs)/calendar.tsx"
+    },
+    {
+      "file": "app/(tabs)/index.tsx"
+    },
+    {
+      "file": "app/_layout.tsx"
+    },
+    {
+      "file": "app/detail.tsx"
+    },
+    {
+      "file": "app/list.tsx"
+    },
+    {
+      "file": "app/modal.tsx"
+    },
+    {
+      "file": "app/voice-input.tsx"
+    },
+    {
+      "file": "components/atoms/DateInput.tsx"
+    },
+    {
+      "file": "components/atoms/TimeInput.tsx"
+    },
+    {
+      "file": "components/atoms/countdown-chip.tsx"
+    },
+    {
+      "file": "components/atoms/counter-display.tsx"
+    },
+    {
+      "file": "components/atoms/day-cell.tsx"
+    },
+    {
+      "file": "components/atoms/entry-dot.tsx"
+    },
+    {
+      "file": "components/atoms/month-navigator.tsx"
+    },
+    {
+      "file": "components/atoms/streak-badge.tsx"
+    },
+    {
+      "file": "components/atoms/themed-text.tsx"
+    },
+    {
+      "file": "components/atoms/themed-view.tsx"
+    },
+    {
+      "file": "components/atoms/waveform-bar.tsx"
+    },
+    {
+      "file": "components/error-boundary.tsx"
+    },
+    {
+      "file": "components/haptic-tab.tsx"
+    },
+    {
+      "file": "components/molecules/bento-card-header.tsx"
+    },
+    {
+      "file": "components/molecules/detail-action-bar.tsx"
+    },
+    {
+      "file": "components/molecules/detail-metadata-row.tsx"
+    },
+    {
+      "file": "components/molecules/detail-someday-hero.tsx"
+    },
+    {
+      "file": "components/molecules/empty-state.tsx"
+    },
+    {
+      "file": "components/molecules/entry-row.tsx"
+    },
+    {
+      "file": "components/molecules/field-greeting.tsx"
+    },
+    {
+      "file": "components/molecules/list-item.tsx"
+    },
+    {
+      "file": "components/molecules/recurrence-picker.tsx"
+    },
+    {
+      "file": "components/molecules/someday-item.tsx"
+    },
+    {
+      "file": "components/molecules/today-event-row.tsx"
+    },
+    {
+      "file": "components/molecules/weekday-row.tsx"
+    },
+    {
+      "file": "components/molecules/wrapup-card.tsx"
+    },
+    {
+      "file": "components/organisms/agenda-section.tsx"
+    },
+    {
+      "file": "components/organisms/app-header.tsx"
+    },
+    {
+      "file": "components/organisms/app-menu.tsx"
+    },
+    {
+      "file": "components/organisms/capture-bar.tsx"
+    },
+    {
+      "file": "components/organisms/custom-tab-bar.tsx"
+    },
+    {
+      "file": "components/organisms/day-detail-sheet.tsx"
+    },
+    {
+      "file": "components/organisms/deadlines-card.tsx"
+    },
+    {
+      "file": "components/organisms/fab.tsx"
+    },
+    {
+      "file": "components/organisms/field-tile.tsx"
+    },
+    {
+      "file": "components/organisms/list-progress.tsx"
+    },
+    {
+      "file": "components/organisms/list-screen-header.tsx"
+    },
+    {
+      "file": "components/organisms/month-grid.tsx"
+    },
+    {
+      "file": "components/organisms/next-up-card.tsx"
+    },
+    {
+      "file": "components/organisms/swipeable-row.tsx"
+    },
+    {
+      "file": "components/organisms/today-section.tsx"
+    },
+    {
+      "file": "components/organisms/upcoming-preview-card.tsx"
+    },
+    {
+      "file": "components/organisms/week-strip.tsx"
+    },
+    {
+      "file": "components/organisms/weekly-overview-card.tsx"
+    },
+    {
+      "file": "components/ui/icon-symbol.tsx"
+    },
+    {
+      "file": "constants/theme.ts"
+    },
+    {
+      "file": "contexts/database-context.tsx"
+    },
+    {
+      "file": "contexts/theme-context.tsx"
+    },
+    {
+      "file": "eslint.config.js"
+    },
+    {
+      "file": "expo-env.d.ts"
+    },
+    {
+      "file": "hooks/use-calendar-data.ts"
+    },
+    {
+      "file": "hooks/use-color-scheme.ts"
+    },
+    {
+      "file": "hooks/use-database/use-database.helpers.ts"
+    },
+    {
+      "file": "hooks/use-database/use-database.ts"
+    },
+    {
+      "file": "hooks/use-speech-recognizer.ts"
+    },
+    {
+      "file": "lib/database.ts"
+    },
+    {
+      "file": "lib/date-utils.ts"
+    },
+    {
+      "file": "lib/dev-seed.ts"
+    },
+    {
+      "file": "lib/notifications.ts"
+    },
+    {
+      "file": "lib/recurrence.ts"
+    },
+    {
+      "file": "lib/schema.ts"
+    },
+    {
+      "file": "lib/settings.ts"
+    },
+    {
+      "file": "lib/types.ts"
+    },
+    {
+      "file": "modules/speech-recognizer/index.ts"
+    },
+    {
+      "file": "modules/speech-recognizer/plugin/withSpeechRecognizerPermissions.js"
+    },
+    {
+      "file": "modules/speech-recognizer/src/SpeechRecognizerModule.ts"
+    },
+    {
+      "file": "modules/speech-recognizer/src/SpeechRecognizerModule.web.ts"
+    },
+    {
+      "file": "modules/watch-connectivity/index.ts"
+    },
+    {
+      "file": "scripts/reset-project.js"
+    },
+    {
+      "file": "speech-recognizer/.eslintrc.js"
+    },
+    {
+      "file": "speech-recognizer/example/App.tsx"
+    },
+    {
+      "file": "speech-recognizer/example/babel.config.js"
+    },
+    {
+      "file": "speech-recognizer/example/metro.config.js"
+    },
+    {
+      "file": "speech-recognizer/example/webpack.config.js"
+    },
+    {
+      "file": "speech-recognizer/speech-recognizer-example/App.tsx"
+    },
+    {
+      "file": "speech-recognizer/speech-recognizer-example/index.ts"
+    },
+    {
+      "file": "speech-recognizer/src/SpeechRecognizer.types.ts"
+    },
+    {
+      "file": "speech-recognizer/src/SpeechRecognizerModule.ts"
+    },
+    {
+      "file": "speech-recognizer/src/SpeechRecognizerModule.web.ts"
+    },
+    {
+      "file": "speech-recognizer/src/SpeechRecognizerView.tsx"
+    },
+    {
+      "file": "speech-recognizer/src/SpeechRecognizerView.web.tsx"
+    },
+    {
+      "file": "speech-recognizer/src/index.ts"
+    },
+    {
+      "file": "targets/watch/expo-target.config.js"
+    },
+    {
+      "file": "targets/watch-widget/expo-target.config.js"
+    },
+    {
+      "file": "targets/widget/expo-target.config.js"
+    }
+  ],
+  "components": [],
+  "summary": {
+    "screenCount": 93,
+    "componentCount": 0
+  }
+}

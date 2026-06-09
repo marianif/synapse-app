@@ -1,0 +1,2324 @@
+{
+  "tokens": {
+    "styles.safeArea": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 5,
+      "consumersInScope": [
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "app/(tabs)/_layout.tsx"
+      ],
+      "outOfScopeTotal": 1,
+      "cluster": "cluster-1"
+    },
+    "colors.paper": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 14,
+      "consumersInScope": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "app/(tabs)/_layout.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/capture-bar.tsx",
+        "components/organisms/fab.tsx",
+        "constants/theme.ts"
+      ],
+      "outOfScopeTotal": 8,
+      "cluster": "cluster-2"
+    },
+    "styles.screen": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 6,
+      "consumersInScope": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-3"
+    },
+    "styles.scroll": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 5,
+      "consumersInScope": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-3"
+    },
+    "styles.content": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 12,
+      "consumersInScope": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/atoms/day-cell.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/entry-row.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/today-event-row.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/next-up-card.tsx"
+      ],
+      "outOfScopeTotal": 7,
+      "cluster": "cluster-4"
+    },
+    "styles.bottomSpacer": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/(tabs)/calendar.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-5"
+    },
+    "tokens.space": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 43,
+      "consumersInScope": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/atoms/countdown-chip.tsx",
+        "components/atoms/day-cell.tsx",
+        "components/atoms/month-navigator.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/bento-card-header.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-metadata-row.tsx"
+      ],
+      "outOfScopeTotal": 37,
+      "cluster": "cluster-6"
+    },
+    "t.type": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/(tabs)/index.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-7"
+    },
+    "t.label": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/(tabs)/index.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-7"
+    },
+    "t.items": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/(tabs)/index.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-7"
+    },
+    "t.href": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/(tabs)/index.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-7"
+    },
+    "t.emptyHint": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/(tabs)/index.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-7"
+    },
+    "styles.captureSpacer": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/(tabs)/index.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-7"
+    },
+    "styles.captureDock": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/(tabs)/index.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-7"
+    },
+    "tokens.feedback": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 2,
+      "consumersInScope": [
+        "app/detail.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-8"
+    },
+    "styles.typeChip": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.typeChipText": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "colors.inkMuted": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 35,
+      "consumersInScope": [
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/atoms/day-cell.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/atoms/themed-text.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/bento-card-header.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/field-greeting.tsx"
+      ],
+      "outOfScopeTotal": 31,
+      "cluster": "cluster-6"
+    },
+    "styles.heroBlock": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.statusChip": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.statusLabel": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 3,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/molecules/list-item.tsx",
+        "components/molecules/today-event-row.tsx"
+      ],
+      "outOfScopeTotal": 2,
+      "cluster": "cluster-10"
+    },
+    "styles.metaList": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.sheetOverlay": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.sheet": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 2,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/organisms/day-detail-sheet.tsx"
+      ],
+      "outOfScopeTotal": 1,
+      "cluster": "cluster-9"
+    },
+    "colors.surfaceSubtle": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 23,
+      "consumersInScope": [
+        "app/detail.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/atoms/month-navigator.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/recurrence-picker.tsx",
+        "components/molecules/weekday-row.tsx",
+        "components/molecules/wrapup-card.tsx"
+      ],
+      "outOfScopeTotal": 20,
+      "cluster": "cluster-11"
+    },
+    "styles.sheetTitle": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.sheetOption": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.sheetDivider": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.centered": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.title": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 6,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/error-boundary.tsx",
+        "components/molecules/empty-state.tsx",
+        "components/molecules/weekday-row.tsx",
+        "components/organisms/list-screen-header.tsx",
+        "components/organisms/next-up-card.tsx"
+      ],
+      "outOfScopeTotal": 5,
+      "cluster": "cluster-12"
+    },
+    "styles.notesBlock": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.notesLabel": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.notesText": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.contentSpacer": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "styles.actionBarWrapper": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/detail.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-9"
+    },
+    "tokens.radius": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 33,
+      "consumersInScope": [
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/atoms/countdown-chip.tsx",
+        "components/atoms/day-cell.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/detail-someday-hero.tsx",
+        "components/molecules/empty-state.tsx"
+      ],
+      "outOfScopeTotal": 29,
+      "cluster": "cluster-6"
+    },
+    "tokens.color": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 5,
+      "consumersInScope": [
+        "app/detail.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/organisms/app-menu.tsx",
+        "components/organisms/day-detail-sheet.tsx"
+      ],
+      "outOfScopeTotal": 2,
+      "cluster": "cluster-13"
+    },
+    "styles.emptyWrapper": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/list.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-14"
+    },
+    "styles.section": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 4,
+      "consumersInScope": [
+        "app/list.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/organisms/agenda-section.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/today-section.tsx"
+      ],
+      "outOfScopeTotal": 3,
+      "cluster": "cluster-14"
+    },
+    "styles.sectionHeader": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/list.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-14"
+    },
+    "styles.sectionLabel": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 2,
+      "consumersInScope": [
+        "app/list.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/organisms/app-menu.tsx"
+      ],
+      "outOfScopeTotal": 1,
+      "cluster": "cluster-14"
+    },
+    "styles.countBadge": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 2,
+      "consumersInScope": [
+        "app/list.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/molecules/someday-item.tsx"
+      ],
+      "outOfScopeTotal": 1,
+      "cluster": "cluster-14"
+    },
+    "styles.countBadgeText": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/list.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-14"
+    },
+    "styles.itemList": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/list.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-14"
+    },
+    "styles.fabSpacer": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/list.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-14"
+    },
+    "styles.keyboardView": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.header": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 10,
+      "consumersInScope": [
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/molecules/someday-item.tsx",
+        "components/organisms/agenda-section.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/list-screen-header.tsx",
+        "components/organisms/today-section.tsx",
+        "components/organisms/upcoming-preview-card.tsx",
+        "speech-recognizer/example/App.tsx"
+      ],
+      "outOfScopeTotal": 8,
+      "cluster": "cluster-16"
+    },
+    "styles.headerButton": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 2,
+      "consumersInScope": [
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.headerSaveButton": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "colors.surface": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 12,
+      "consumersInScope": [
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/atoms/day-cell.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/organisms/app-header.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/next-up-card.tsx",
+        "constants/theme.ts"
+      ],
+      "outOfScopeTotal": 10,
+      "cluster": "cluster-17"
+    },
+    "styles.headerSaveButtonDisabled": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.headerSaveButtonPressed": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.headerSaveButtonText": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.field": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.label": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 10,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/atoms/countdown-chip.tsx",
+        "components/atoms/month-navigator.tsx",
+        "components/atoms/streak-badge.tsx",
+        "components/molecules/detail-action-bar.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/recurrence-picker.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/molecules/wrapup-card.tsx",
+        "components/organisms/next-up-card.tsx"
+      ],
+      "outOfScopeTotal": 9,
+      "cluster": "cluster-18"
+    },
+    "styles.input": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.titleInput": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "colors.ink": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 16,
+      "consumersInScope": [
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/atoms/DateInput.tsx",
+        "components/atoms/TimeInput.tsx",
+        "components/atoms/day-cell.tsx",
+        "components/atoms/month-navigator.tsx",
+        "components/atoms/themed-text.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/field-greeting.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/someday-item.tsx",
+        "components/organisms/app-menu.tsx"
+      ],
+      "outOfScopeTotal": 14,
+      "cluster": "cluster-19"
+    },
+    "styles.typeSelector": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.typeOption": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.typeOptionText": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.row": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 8,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/molecules/bento-card-header.tsx",
+        "components/molecules/detail-metadata-row.tsx",
+        "components/molecules/entry-row.tsx",
+        "components/molecules/list-item.tsx",
+        "components/molecules/recurrence-picker.tsx",
+        "components/molecules/today-event-row.tsx",
+        "components/molecules/weekday-row.tsx"
+      ],
+      "outOfScopeTotal": 7,
+      "cluster": "cluster-20"
+    },
+    "styles.halfField": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.notesInput": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/modal.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.headerDoneButton": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.headerDoneButtonPressed": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.headerDoneButtonText": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "colors.accent": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 12,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/atoms/day-cell.tsx",
+        "components/error-boundary.tsx",
+        "components/molecules/wrapup-card.tsx",
+        "components/organisms/agenda-section.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/capture-bar.tsx",
+        "components/organisms/custom-tab-bar.tsx",
+        "components/organisms/day-detail-sheet.tsx",
+        "components/organisms/fab.tsx",
+        "components/organisms/today-section.tsx"
+      ],
+      "outOfScopeTotal": 11,
+      "cluster": "cluster-21"
+    },
+    "styles.transcriptContainer": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.errorBlock": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.errorText": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.settingsButton": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.settingsButtonPressed": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.settingsButtonText": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.transcript": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 2,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/organisms/capture-bar.tsx"
+      ],
+      "outOfScopeTotal": 1,
+      "cluster": "cluster-15"
+    },
+    "styles.transcriptPlaceholder": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.controls": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.recordButtonWrapper": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.pulseRing": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.recordButton": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.recordButtonDisabled": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.recordButtonPressed": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.recordButtonInner": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.recordButtonInnerActive": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "styles.hint": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 1,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [],
+      "outOfScopeTotal": 0,
+      "cluster": "cluster-15"
+    },
+    "tokens.type": {
+      "definedIn": null,
+      "value": null,
+      "consumerCount": 8,
+      "consumersInScope": [
+        "app/voice-input.tsx"
+      ],
+      "consumersOutOfScope": [
+        "components/atoms/countdown-chip.tsx",
+        "components/atoms/counter-display.tsx",
+        "components/atoms/themed-text.tsx",
+        "components/organisms/app-menu.tsx",
+        "components/organisms/list-progress.tsx",
+        "components/organisms/next-up-card.tsx",
+        "components/organisms/upcoming-preview-card.tsx"
+      ],
+      "outOfScopeTotal": 7,
+      "cluster": "cluster-22"
+    }
+  },
+  "clusters": [
+    {
+      "id": "cluster-1",
+      "tokens": [
+        "styles.safeArea"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 4+ files",
+      "topCoOccurringFiles": [
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-2",
+      "tokens": [
+        "colors.paper"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 5+ files",
+      "topCoOccurringFiles": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-3",
+      "tokens": [
+        "styles.screen",
+        "styles.scroll"
+      ],
+      "strength": 0.83,
+      "rationale": "Co-occur in 5+ files",
+      "topCoOccurringFiles": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx"
+      ],
+      "mustMigrateTogether": true
+    },
+    {
+      "id": "cluster-4",
+      "tokens": [
+        "styles.content"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 5+ files",
+      "topCoOccurringFiles": [
+        "app/(tabs)/calendar.tsx",
+        "app/(tabs)/index.tsx",
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-5",
+      "tokens": [
+        "styles.bottomSpacer"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 1+ files",
+      "topCoOccurringFiles": [
+        "app/(tabs)/calendar.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-6",
+      "tokens": [
+        "colors.inkMuted",
+        "tokens.radius",
+        "tokens.space"
+      ],
+      "strength": 0.71,
+      "rationale": "Co-occur in 5+ files",
+      "topCoOccurringFiles": [
+        "app/detail.tsx",
+        "app/list.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx",
+        "app/(tabs)/calendar.tsx"
+      ],
+      "mustMigrateTogether": true
+    },
+    {
+      "id": "cluster-7",
+      "tokens": [
+        "styles.captureDock",
+        "styles.captureSpacer",
+        "t.emptyHint",
+        "t.href",
+        "t.items",
+        "t.label",
+        "t.type"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+      "topCoOccurringFiles": [
+        "app/(tabs)/index.tsx"
+      ],
+      "mustMigrateTogether": true
+    },
+    {
+      "id": "cluster-8",
+      "tokens": [
+        "tokens.feedback"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 2+ files",
+      "topCoOccurringFiles": [
+        "app/detail.tsx",
+        "app/voice-input.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-9",
+      "tokens": [
+        "styles.actionBarWrapper",
+        "styles.centered",
+        "styles.contentSpacer",
+        "styles.heroBlock",
+        "styles.metaList",
+        "styles.notesBlock",
+        "styles.notesLabel",
+        "styles.notesText",
+        "styles.sheet",
+        "styles.sheetDivider",
+        "styles.sheetOption",
+        "styles.sheetOverlay",
+        "styles.sheetTitle",
+        "styles.statusChip",
+        "styles.typeChip",
+        "styles.typeChipText"
+      ],
+      "strength": 0.96,
+      "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+      "topCoOccurringFiles": [
+        "app/detail.tsx"
+      ],
+      "mustMigrateTogether": true
+    },
+    {
+      "id": "cluster-10",
+      "tokens": [
+        "styles.statusLabel"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 1+ files",
+      "topCoOccurringFiles": [
+        "app/detail.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-11",
+      "tokens": [
+        "colors.surfaceSubtle"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 3+ files",
+      "topCoOccurringFiles": [
+        "app/detail.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-12",
+      "tokens": [
+        "styles.title"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 1+ files",
+      "topCoOccurringFiles": [
+        "app/detail.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-13",
+      "tokens": [
+        "tokens.color"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 3+ files",
+      "topCoOccurringFiles": [
+        "app/detail.tsx",
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-14",
+      "tokens": [
+        "styles.countBadge",
+        "styles.countBadgeText",
+        "styles.emptyWrapper",
+        "styles.fabSpacer",
+        "styles.itemList",
+        "styles.section",
+        "styles.sectionHeader",
+        "styles.sectionLabel"
+      ],
+      "strength": 0.64,
+      "rationale": "Co-occur in 1+ files; naming convention pairs detected",
+      "topCoOccurringFiles": [
+        "app/list.tsx"
+      ],
+      "mustMigrateTogether": true
+    },
+    {
+      "id": "cluster-15",
+      "tokens": [
+        "styles.controls",
+        "styles.errorBlock",
+        "styles.errorText",
+        "styles.field",
+        "styles.halfField",
+        "styles.headerButton",
+        "styles.headerDoneButton",
+        "styles.headerDoneButtonPressed",
+        "styles.headerDoneButtonText",
+        "styles.headerSaveButton",
+        "styles.headerSaveButtonDisabled",
+        "styles.headerSaveButtonPressed",
+        "styles.headerSaveButtonText",
+        "styles.hint",
+        "styles.input",
+        "styles.keyboardView",
+        "styles.notesInput",
+        "styles.pulseRing",
+        "styles.recordButton",
+        "styles.recordButtonDisabled",
+        "styles.recordButtonInner",
+        "styles.recordButtonInnerActive",
+        "styles.recordButtonPressed",
+        "styles.recordButtonWrapper",
+        "styles.settingsButton",
+        "styles.settingsButtonPressed",
+        "styles.settingsButtonText",
+        "styles.titleInput",
+        "styles.transcript",
+        "styles.transcriptContainer",
+        "styles.transcriptPlaceholder",
+        "styles.typeOption",
+        "styles.typeOptionText",
+        "styles.typeSelector"
+      ],
+      "strength": 0.5,
+      "rationale": "Co-occur in 2+ files; naming convention pairs detected",
+      "topCoOccurringFiles": [
+        "app/voice-input.tsx",
+        "app/modal.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-16",
+      "tokens": [
+        "styles.header"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 2+ files",
+      "topCoOccurringFiles": [
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-17",
+      "tokens": [
+        "colors.surface"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 2+ files",
+      "topCoOccurringFiles": [
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-18",
+      "tokens": [
+        "styles.label"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 1+ files",
+      "topCoOccurringFiles": [
+        "app/modal.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-19",
+      "tokens": [
+        "colors.ink"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 2+ files",
+      "topCoOccurringFiles": [
+        "app/modal.tsx",
+        "app/voice-input.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-20",
+      "tokens": [
+        "styles.row"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 1+ files",
+      "topCoOccurringFiles": [
+        "app/modal.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-21",
+      "tokens": [
+        "colors.accent"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 1+ files",
+      "topCoOccurringFiles": [
+        "app/voice-input.tsx"
+      ],
+      "mustMigrateTogether": false
+    },
+    {
+      "id": "cluster-22",
+      "tokens": [
+        "tokens.type"
+      ],
+      "strength": 1,
+      "rationale": "Co-occur in 1+ files",
+      "topCoOccurringFiles": [
+        "app/voice-input.tsx"
+      ],
+      "mustMigrateTogether": false
+    }
+  ],
+  "sparseMatrix": [
+    [
+      "tokens.space",
+      "app/detail.tsx",
+      23
+    ],
+    [
+      "tokens.space",
+      "app/modal.tsx",
+      19
+    ],
+    [
+      "tokens.space",
+      "app/voice-input.tsx",
+      11
+    ],
+    [
+      "tokens.space",
+      "app/list.tsx",
+      10
+    ],
+    [
+      "tokens.space",
+      "app/(tabs)/index.tsx",
+      7
+    ],
+    [
+      "colors.surfaceSubtle",
+      "app/detail.tsx",
+      7
+    ],
+    [
+      "colors.surfaceSubtle",
+      "app/modal.tsx",
+      6
+    ],
+    [
+      "styles.sheetOption",
+      "app/detail.tsx",
+      6
+    ],
+    [
+      "colors.paper",
+      "app/detail.tsx",
+      5
+    ],
+    [
+      "tokens.radius",
+      "app/detail.tsx",
+      5
+    ],
+    [
+      "tokens.radius",
+      "app/modal.tsx",
+      5
+    ],
+    [
+      "tokens.radius",
+      "app/voice-input.tsx",
+      5
+    ],
+    [
+      "styles.field",
+      "app/modal.tsx",
+      5
+    ],
+    [
+      "styles.label",
+      "app/modal.tsx",
+      5
+    ],
+    [
+      "tokens.type",
+      "app/voice-input.tsx",
+      5
+    ],
+    [
+      "tokens.feedback",
+      "app/detail.tsx",
+      4
+    ],
+    [
+      "colors.inkMuted",
+      "app/detail.tsx",
+      4
+    ],
+    [
+      "colors.inkMuted",
+      "app/voice-input.tsx",
+      4
+    ],
+    [
+      "styles.sheetDivider",
+      "app/detail.tsx",
+      4
+    ],
+    [
+      "styles.input",
+      "app/modal.tsx",
+      4
+    ],
+    [
+      "colors.ink",
+      "app/modal.tsx",
+      4
+    ],
+    [
+      "styles.safeArea",
+      "app/detail.tsx",
+      3
+    ],
+    [
+      "tokens.space",
+      "app/(tabs)/calendar.tsx",
+      3
+    ],
+    [
+      "colors.inkMuted",
+      "app/modal.tsx",
+      3
+    ],
+    [
+      "colors.surface",
+      "app/voice-input.tsx",
+      3
+    ],
+    [
+      "colors.accent",
+      "app/voice-input.tsx",
+      3
+    ],
+    [
+      "colors.paper",
+      "app/list.tsx",
+      2
+    ],
+    [
+      "t.type",
+      "app/(tabs)/index.tsx",
+      2
+    ],
+    [
+      "tokens.feedback",
+      "app/voice-input.tsx",
+      2
+    ],
+    [
+      "styles.typeChipText",
+      "app/detail.tsx",
+      2
+    ],
+    [
+      "styles.heroBlock",
+      "app/detail.tsx",
+      2
+    ],
+    [
+      "styles.metaList",
+      "app/detail.tsx",
+      2
+    ],
+    [
+      "styles.sheetOverlay",
+      "app/detail.tsx",
+      2
+    ],
+    [
+      "styles.sheet",
+      "app/detail.tsx",
+      2
+    ],
+    [
+      "styles.sheetTitle",
+      "app/detail.tsx",
+      2
+    ],
+    [
+      "styles.centered",
+      "app/detail.tsx",
+      2
+    ],
+    [
+      "styles.halfField",
+      "app/modal.tsx",
+      2
+    ],
+    [
+      "styles.errorText",
+      "app/voice-input.tsx",
+      2
+    ],
+    [
+      "styles.safeArea",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.safeArea",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.safeArea",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "colors.paper",
+      "app/(tabs)/calendar.tsx",
+      1
+    ],
+    [
+      "colors.paper",
+      "app/(tabs)/index.tsx",
+      1
+    ],
+    [
+      "colors.paper",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "colors.paper",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.screen",
+      "app/(tabs)/calendar.tsx",
+      1
+    ],
+    [
+      "styles.screen",
+      "app/(tabs)/index.tsx",
+      1
+    ],
+    [
+      "styles.screen",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "styles.screen",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.screen",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.screen",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.scroll",
+      "app/(tabs)/calendar.tsx",
+      1
+    ],
+    [
+      "styles.scroll",
+      "app/(tabs)/index.tsx",
+      1
+    ],
+    [
+      "styles.scroll",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "styles.scroll",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.scroll",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.content",
+      "app/(tabs)/calendar.tsx",
+      1
+    ],
+    [
+      "styles.content",
+      "app/(tabs)/index.tsx",
+      1
+    ],
+    [
+      "styles.content",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "styles.content",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.content",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.bottomSpacer",
+      "app/(tabs)/calendar.tsx",
+      1
+    ],
+    [
+      "t.label",
+      "app/(tabs)/index.tsx",
+      1
+    ],
+    [
+      "t.items",
+      "app/(tabs)/index.tsx",
+      1
+    ],
+    [
+      "t.href",
+      "app/(tabs)/index.tsx",
+      1
+    ],
+    [
+      "t.emptyHint",
+      "app/(tabs)/index.tsx",
+      1
+    ],
+    [
+      "styles.captureSpacer",
+      "app/(tabs)/index.tsx",
+      1
+    ],
+    [
+      "styles.captureDock",
+      "app/(tabs)/index.tsx",
+      1
+    ],
+    [
+      "styles.typeChip",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "colors.inkMuted",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.statusChip",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "styles.statusLabel",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "colors.surfaceSubtle",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.title",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "styles.notesBlock",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "styles.notesLabel",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "styles.notesText",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "styles.contentSpacer",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "styles.actionBarWrapper",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "tokens.radius",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "tokens.color",
+      "app/detail.tsx",
+      1
+    ],
+    [
+      "tokens.color",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "tokens.color",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.emptyWrapper",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.section",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.sectionHeader",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.sectionLabel",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.countBadge",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.countBadgeText",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.itemList",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.fabSpacer",
+      "app/list.tsx",
+      1
+    ],
+    [
+      "styles.keyboardView",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.header",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.header",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.headerButton",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.headerButton",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.headerSaveButton",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "colors.surface",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.headerSaveButtonDisabled",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.headerSaveButtonPressed",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.headerSaveButtonText",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.titleInput",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "colors.ink",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.typeSelector",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.typeOption",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.typeOptionText",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.row",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.notesInput",
+      "app/modal.tsx",
+      1
+    ],
+    [
+      "styles.headerDoneButton",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.headerDoneButtonPressed",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.headerDoneButtonText",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.transcriptContainer",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.errorBlock",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.settingsButton",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.settingsButtonPressed",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.settingsButtonText",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.transcript",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.transcriptPlaceholder",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.controls",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.recordButtonWrapper",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.pulseRing",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.recordButton",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.recordButtonDisabled",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.recordButtonPressed",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.recordButtonInner",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.recordButtonInnerActive",
+      "app/voice-input.tsx",
+      1
+    ],
+    [
+      "styles.hint",
+      "app/voice-input.tsx",
+      1
+    ]
+  ],
+  "unreferencedInScope": [
+    "styles.container",
+    "colors.feedback",
+    "styles.chip",
+    "styles.number",
+    "styles.counter",
+    "styles.cell",
+    "styles.cellPressed",
+    "styles.cellToday",
+    "styles.cellOutside",
+    "styles.dayNumber",
+    "styles.dayNumberToday",
+    "styles.dayNumberOutside",
+    "styles.dots",
+    "styles.dot",
+    "styles.overflow",
+    "styles.button",
+    "styles.labelWrapper",
+    "styles.todayHint",
+    "styles.badge",
+    "styles.count",
+    "theme.ts",
+    "styles.base",
+    "styles.bar",
+    "styles.card",
+    "styles.body",
+    "styles.buttonPressed",
+    "styles.buttonLabel",
+    "styles.meta",
+    "styles.iconSlot",
+    "styles.pressed",
+    "styles.hero",
+    "styles.iconRow",
+    "styles.oneDayLabel",
+    "styles.quote",
+    "styles.placeholder",
+    "styles.divider",
+    "styles.text",
+    "styles.description",
+    "styles.cta",
+    "styles.ctaText",
+    "styles.dotWrapper",
+    "styles.time",
+    "styles.wrap",
+    "styles.rowPressed",
+    "styles.sparkleSlot",
+    "styles.titleRow",
+    "styles.titleText",
+    "styles.somedaySubtitle",
+    "styles.checkbox",
+    "styles.titleStrike",
+    "styles.statusRow",
+    "styles.recurringBadge",
+    "styles.recurringBadgeText",
+    "styles.statusTextContainer",
+    "styles.statusTime",
+    "styles.timeChip",
+    "styles.timeChipText",
+    "styles.option",
+    "styles.optionLabel",
+    "styles.weekdayRow",
+    "styles.weekdayChip",
+    "styles.weekdayText",
+    "styles.endDateRow",
+    "styles.dateInput",
+    "styles.headerLeft",
+    "styles.countText",
+    "styles.stack",
+    "styles.ideaRow",
+    "styles.ideaRowBorder",
+    "styles.ideaContent",
+    "styles.ideaTitleRow",
+    "styles.ideaTitle",
+    "styles.ideaSubtitle",
+    "styles.ideaInspiration",
+    "styles.moreRow",
+    "styles.leftBorder",
+    "colors.type",
+    "styles.timeRangeRow",
+    "styles.clockDot",
+    "styles.statusBlock",
+    "styles.iconPlaceholder",
+    "styles.day",
+    "styles.emptyLine",
+    "styles.textBlock",
+    "styles.list",
+    "styles.iconBtn",
+    "styles.wordmark",
+    "styles.avatar",
+    "styles.avatarFallback",
+    "styles.backdrop",
+    "styles.blurContainer",
+    "styles.menu",
+    "styles.logo",
+    "styles.segmented",
+    "styles.segment",
+    "styles.segmentLabel",
+    "styles.footer",
+    "styles.version",
+    "styles.menuItem",
+    "styles.menuLabel",
+    "tokens.elevation",
+    "styles.center",
+    "styles.prompt",
+    "styles.waveform",
+    "styles.waveformBar",
+    "styles.tabBar",
+    "styles.tabButton",
+    "styles.tabButtonPressed",
+    "styles.handle",
+    "styles.dateLabel",
+    "styles.addButton",
+    "styles.addButtonText",
+    "styles.rows",
+    "styles.wrapper",
+    "styles.glow",
+    "styles.recordingContainer",
+    "styles.waveformContainer",
+    "styles.recordingButton",
+    "styles.recordingGlow",
+    "tokens.motion",
+    "styles.tile",
+    "styles.edge",
+    "styles.kicker",
+    "styles.empty",
+    "styles.items",
+    "styles.looming",
+    "styles.loomChip",
+    "styles.loomWhen",
+    "styles.near",
+    "styles.nearTitle",
+    "styles.when",
+    "styles.distant",
+    "styles.distantTitle",
+    "styles.more",
+    "styles.counterBlock",
+    "styles.progressLabel",
+    "styles.counterRow",
+    "styles.completedNum",
+    "styles.totalNum",
+    "styles.iconButton",
+    "styles.weekdayCell",
+    "styles.weekdayLabel",
+    "styles.gridWrapper",
+    "styles.weekRow",
+    "styles.left",
+    "styles.right",
+    "styles.nowText",
+    "styles.unitLabel",
+    "styles.deleteAction",
+    "styles.separator",
+    "styles.daysAwayContainer",
+    "styles.daysAwayNumber",
+    "styles.headerMeta",
+    "styles.icon",
+    "styles.entryRow",
+    "styles.entryContent",
+    "styles.entryType",
+    "styles.entryTitle",
+    "styles.entryDate",
+    "styles.emptyState",
+    "styles.strip",
+    "styles.dayItem",
+    "styles.dayLabel",
+    "styles.indicator",
+    "styles.dotsToday",
+    "styles.emptyDot",
+    "styles.countLabel",
+    "tokens.colors",
+    "color.type",
+    "color.typeKicker",
+    "color.typeTint",
+    "color.light",
+    "styles.view",
+    "styles.group",
+    "styles.groupHeader"
+  ],
+  "summary": {
+    "tokenCount": 86,
+    "clusterCount": 22,
+    "megacluster": true,
+    "chosenTau": 0.6
+  }
+}

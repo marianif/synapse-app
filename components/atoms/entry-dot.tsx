@@ -1,6 +1,6 @@
 import { StyleSheet, View } from "react-native";
 
-import { EntryAccent } from "@/constants/theme";
+import { entryColor } from "@/constants/theme";
 import { EntryType } from "@/lib/types";
 
 export type { EntryType };
@@ -26,7 +26,7 @@ export function EntryDot({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: EntryAccent[type],
+          backgroundColor: entryColor(type),
         },
       ]}
     />

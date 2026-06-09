@@ -2,13 +2,13 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 8;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
     id TEXT PRIMARY KEY NOT NULL,
     title TEXT NOT NULL,
-    type TEXT NOT NULL CHECK(type IN ('todo', 'deadline', 'event', 'someday')),
+    type TEXT NOT NULL CHECK(type IN ('todo', 'deadline', 'event', 'someday', 'idea')),
     subtitle TEXT,
     inspiration TEXT,
     scheduled_date TEXT,
@@ -17,6 +17,20 @@ export const CREATE_ENTRIES_TABLE = `
     due_time TEXT,
     notes TEXT,
     status TEXT DEFAULT 'scheduled' CHECK(status IN ('scheduled', 'active', 'completed', 'pending', 'met', 'overdue')),
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+  );
+`;
+
+export const CREATE_DIARY_TABLE = `
+  CREATE TABLE IF NOT EXISTS diary_entries (
+    id TEXT PRIMARY KEY NOT NULL,
+    body TEXT NOT NULL,
+    mood TEXT CHECK(mood IN ('calm', 'low', 'charged', 'tired', 'bright')),
+    -- Optional link to an action-board entry (an 'idea'). When set, this note is
+    -- a reflection ON that idea; when null, it's an autonomous diary note. ON
+    -- DELETE SET NULL so deleting the idea keeps the thought, just unlinks it.
+    linked_entry_id TEXT REFERENCES entries(id) ON DELETE SET NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
   );
@@ -43,5 +57,6 @@ export const CREATE_RECURRENCE_COMPLETIONS_TABLE = `
 
 export const ALL_STATEMENTS = [
   CREATE_ENTRIES_TABLE,
+  CREATE_DIARY_TABLE,
   CREATE_SCHEMA_META_TABLE,
 ];

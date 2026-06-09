@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleProp, TextInput, TextStyle } from 'react-native';
 
-import { Radius, Spacing, Surface, TextColors } from '@/constants/theme';
+import { useTheme, tokens } from '@/constants/theme';
 
 type TimeInputProps = {
   value?: string;
@@ -10,6 +10,7 @@ type TimeInputProps = {
 };
 
 export default function TimeInput({ value, onChange, style }: TimeInputProps): React.JSX.Element {
+  const { colors } = useTheme();
   const [internalValue, setInternalValue] = useState(value ?? '');
 
   useEffect(() => {
@@ -56,15 +57,15 @@ export default function TimeInput({ value, onChange, style }: TimeInputProps): R
       keyboardType="default"
       autoCapitalize="characters"
       placeholder="HH:MM AM"
-      placeholderTextColor={TextColors.disabled}
+      placeholderTextColor={colors.inkMuted}
       maxLength={8}
       style={[
         {
-          backgroundColor: Surface.containerLow,
-          borderRadius: Radius.lg,
-          paddingHorizontal: Spacing.lg,
-          paddingVertical: Spacing.md,
-          color: TextColors.primary,
+          backgroundColor: colors.surfaceSubtle,
+          borderRadius: tokens.radius.md,
+          paddingHorizontal: tokens.space.lg,
+          paddingVertical: tokens.space.md,
+          color: colors.ink,
           fontSize: 16,
         },
         style,

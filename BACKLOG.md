@@ -19,7 +19,7 @@ gates to design and define precisely before building.
       own data hostage.
 - [ ] **Define the AI gate explicitly.** AI is a paid capability. Enumerate
       exactly what counts as "AI" so the line is unambiguous:
-  - Voice → structured entry parsing (the OpenAI flow in *AI Integration* below)
+  - Voice → structured entry parsing (the OpenAI flow in _AI Integration_ below)
   - Natural-language capture resolution (`capture-resolver.tsx`)
   - Any future smart-reminder / summarization features
 - [ ] **Entitlement layer.** A `useEntitlement()` hook + `lib/entitlement.ts`
@@ -41,7 +41,7 @@ onboarding must teach the field metaphor without a tutorial-overlay feel.
 - [ ] Define the 3–4 screen arc: what is "the field", what are the type codes
       (todo / deadline / event / someday / idea + their colors), how capture
       works (tab-bar key vs. home capture bar), the diary.
-- [ ] Permission priming **before** the OS prompt — explain *why* mic /
+- [ ] Permission priming **before** the OS prompt — explain _why_ mic /
       notifications matter, then trigger the real prompt.
 - [ ] Persist completion in `lib/settings.ts`
       (`getOnboardingComplete` / `setOnboardingComplete`); route from
@@ -88,21 +88,6 @@ Editing previously bounced to `/modal`. Now in place.
       bar while editing.
 - [x] `/modal` is now creation-only (`buildEditParams` removed); detail is a
       true view↔edit surface. Type stays a creation-level decision in `/modal`.
-
-### 3. Capture bar as a "half-drop" recording surface
-
-Reconsider whether the capture bar should be **partially dismissed** by default
-and only fully appear when triggered.
-
-- [ ] Evaluate: replace the tab-bar-center "open add modal" action
-      (`custom-tab-bar.tsx` → `router.push("/modal")`) with a flow where tapping
-      the center key **reveals the capture bar in a recording state** — the bar
-      becomes the recording surface, not just a text line.
-- [ ] The bar appears _on_ tapping the center tab button; it is **not** itself
-      the recording trigger when idle. Recording is armed by the tab key; the
-      bar then shows live state + a save affordance.
-- [ ] Reconcile with the home capture bar (`capture-bar.tsx`, the "quick idea
-      line") so the two capture entry points don't conflict conceptually.
 
 ### 4. Incoming / list screen — real filtering & hierarchy ✅ DONE
 
@@ -187,7 +172,7 @@ breathing-dots channel reads from `field-console/orbit-console.tsx`) could host
 
 ## 🔮 Future Features
 
-- Widget support (iOS/Android home-screen widgets) — *iOS in progress*
+- Widget support (iOS/Android home-screen widgets) — _iOS in progress_
 - Smart Watch widget (crucial: allows live recording)
 - Calendar sync (Google Calendar, Apple Calendar)
 - Collaboration features (share lists)

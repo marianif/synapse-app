@@ -1,179 +1,103 @@
-# BACKLOG — Synapse App
+# BACKLOG — Pivot: the agenda that talks
 
-> Ordered roughly by priority. Each item carries enough context to start cold.
-> Aesthetic north star: **"written by hand, agenda-like"** — the field-summary /
-> field-briefing voice is becoming the app's signature. Lean into it everywhere.
+## The pivot in one line
 
----
+The home stops being an instrument panel and becomes an agenda that speaks: events and deadlines stay direct and glanceable; projects, ideas and someday move into a narrative voice. Capture collapses into one thumb trigger. The ontology simplifies around todo + idea + project.
 
-## 🔴 Now — Monetization & First-Run (business-critical)
+## Decisions locked
 
-### Freemium model
+1. **Capture = central tab-bar button.** Tap = text composer, long-press = voice. Pen icon replaces the +. One unambiguous trigger, always in thumb reach.
+2. **Deadlines accept a precise date OR a horizon** ("this week", "this month", "this year"). Precise dates for hard deadlines (pay the bill); horizons for commitments (book the dentist this month).
+3. **The narrative voice may hold you accountable** — "The dentist has been waiting 10 days." Register: observational, warm, never shaming. It states facts about time; it does not scold.
+4. **Events are demoted**: present but compact. The persona does not go out five times a week.
+5. **Two home registers.** Direct zone: events + deadlines, clear tappable items. Narrative zone: projects, ideas, someday, yesterday's diary trace — written in the hand font.
+6. **Ontology**: todo (autonomous or project-linked; deadline and someday are flavors of todo — deadline keeps its strong color identity), idea (autonomous, promotable to project), project (new top-level entity), event, diary note.
+7. **Notes stay diary-only.** Never actionable, never on the field; linkable to an idea or a project, or free. This answers the "second way of adding things" risk: anything actionable resolves to a todo/idea, anything reflective is a note.
 
-The core: **everything is free until a threshold, then we ask for money.** Two
-gates to design and define precisely before building.
+## Pre-phase: docs
 
-- [ ] **Define the entry gate.** Free up to _N_ active entries (propose N, e.g.
-      ~50–100), then a soft paywall on _creating_ new ones. Reading, editing,
-      completing existing entries must stay free forever — never hold a user's
-      own data hostage.
-- [ ] **Define the AI gate explicitly.** AI is a paid capability. Enumerate
-      exactly what counts as "AI" so the line is unambiguous:
-  - Voice → structured entry parsing (the OpenAI flow in _AI Integration_ below)
-  - Natural-language capture resolution (`capture-resolver.tsx`)
-  - Any future smart-reminder / summarization features
-- [ ] **Entitlement layer.** A `useEntitlement()` hook + `lib/entitlement.ts`
-      reading from AsyncStorage (mirror `lib/settings.ts` pattern) and, later,
-      the store receipt. Single source of truth — never gate inline in UI.
-- [ ] **Store integration.** `expo-in-app-purchases` or RevenueCat. Decide
-      one-time unlock vs. subscription (recommend subscription for AI cost
-      pass-through; one-time for the entry cap).
-- [ ] **Paywall surface.** A sheet in the field aesthetic (mono readouts, agenda
-      voice) triggered at the gate — not a generic modal. Count-aware copy:
-      "You're at 47 of 50 stakes."
-- [ ] **Restore purchases** + receipt validation.
+- DESIGN.md still describes the Fraunces/Inter "Field" iteration; the live system is HostGrotesk + JetBrains Mono + Caveat. Refresh DESIGN.md (and the narrative-voice addition to PRODUCT.md) before Phase 4 so the home redesign is built against the real tokens.
 
-### Onboarding (first-run)
+## Phases
 
-High importance — sets the whole tone. The app's voice is editorial/agenda;
-onboarding must teach the field metaphor without a tutorial-overlay feel.
+> Status (10 Jun): **all five phases built** (schema v9, pen-key capture, horizons, narrative home, projects). Remaining follow-ups live in "Open questions" below plus: horizon notification timing, project attribution from the detail screen's inline edit (today it's create-form only), and on-device verification of the new capture flow.
 
-- [ ] Define the 3–4 screen arc: what is "the field", what are the type codes
-      (todo / deadline / event / someday / idea + their colors), how capture
-      works (tab-bar key vs. home capture bar), the diary.
-- [ ] Permission priming **before** the OS prompt — explain _why_ mic /
-      notifications matter, then trigger the real prompt.
-- [ ] Persist completion in `lib/settings.ts`
-      (`getOnboardingComplete` / `setOnboardingComplete`); route from
-      `app/index.tsx`.
-- [ ] Optional: seed one example stake + one diary note so the empty field
-      isn't a cold start, with a one-tap "clear examples".
+### Phase 1 — Data foundation (schema v9)
 
-### Finish Settings
+- `projects` table: `id, title, status ('active' | 'archived'), created_at, updated_at`.
+- `entries.project_id` TEXT NULL → `projects(id)` ON DELETE SET NULL. Unfiled = NULL; nothing is forced into a project.
+- Deadline horizons: `entries.due_range` TEXT NULL (`'week' | 'month' | 'year'`). When set, `due_date` stores the horizon's end date, so existing sorting/heat/notification logic keeps working unchanged.
+- Idea promotion: `entries.promoted_project_id` TEXT NULL — the idea row survives as provenance of the project it became.
+- `diary_entries.linked_project_id` TEXT NULL — a note can point to an idea, a project, or be free.
+- **No type remapping migration.** DB keeps `'todo' | 'deadline' | 'someday' | 'event' | 'idea'`; a new `lib/taxonomy.ts` (`isTodoFamily(type)`, `todoFlavor(type)`) expresses the new ontology as a logic layer. Zero risk to existing data.
+- Touchpoints: `lib/schema.ts`, `lib/database.ts` (runMigrations), `lib/types.ts`, `contexts/database-context.tsx`, verify widget sync payload still valid.
 
-- [ ] Build out the settings screen (only `theme_preference` is wired today).
-      Sections: Appearance (theme toggle — already a component), Capture
-      (default entry type — infra exists), Confirmations (see #1 below),
-      Notifications, Account / Subscription (ties to freemium), About.
-- [ ] Each new preference goes through `lib/settings.ts`, one key each.
+### Phase 2 — Capture unification (central button)
 
----
+- `custom-tab-bar.tsx` center button: pen icon; **tap** opens a docked text composer (reuse DiaryComposer keyboard-avoiding patterns + the existing CaptureResolver); **long-press** starts voice capture immediately (reuse capture-bar recording state + waveform).
+- Resolver unchanged in spirit: thought → todo (optional date/horizon) | idea | diary note (free or linked).
+- Retire the home capture bar's idle state — one trigger, not two. (Revisit on device if the home feels mute without it.)
+- The `/modal` richer-entry flow stays reachable from the resolver ("more options") for events and recurrence.
+- Re-point the widget deep-link `?capture=voice` to the new flow.
 
-## 🟡 Next — UX & Interaction
+### Phase 3 — Deadline horizons in UX
 
-### 1. Custom confirm-alert with "don't ask again" preference ✅ DONE
+- DateInput grows a segmented choice: **Pick a day / This week / This month / This year**.
+- Display copy: "by Sunday", "this month", "by December".
+- Heat model: horizon deadlines warm up as the window closes (week → last 2 days; month → last week; year → last month).
+- Calendar tab: horizon deadlines render as a strip pinned to their period, not faked onto a single day.
 
-Replace ad-hoc `Alert.alert` confirms with a branded sheet whose result can be
-remembered to local storage.
+### Phase 4 — Narrative home (replaces orbit console)
 
-- [x] Reusable confirm sheet in the field aesthetic
-      (`components/molecules/confirm-sheet.tsx`) — replaces the OS `Alert.alert`.
-- [x] **"Don't ask me again"** checkbox; persisted via `lib/settings.ts`
-      (`getConfirmSkip` / `setConfirmSkip`, keyed by `ConfirmKey`).
-- [x] **Adopted:** Home + Diary swipe-to-delete (via `SwipeableRow`, which now
-      owns the sheet through `hooks/use-confirm.ts`) and the detail screen's
-      non-recurring delete. When the pref is set, delete fires immediately.
-- [x] Generic per-key design — diary notes and entries carry independent
-      "don't ask" prefs; future destructive actions add a new `ConfirmKey`.
+- New organism: the narrative agenda block — Caveat hand-font lines generated by a pure `lib/narrative.ts` (deterministic templates, no AI):
+  - Yesterday's trace: "Last night you wrote about …" (from diary).
+  - Accountability: "The dentist has been waiting 10 days." (open deadline, created N days ago).
+  - Stale idea resurface: "A week ago you sketched '…' — worth a second look?" (idea > 7 days old, not promoted).
+- Direct zone below the narrative: deadlines (strong color identity, horizons shown) + todos; events as the existing compact "Coming up" mosaic.
+- Orbit console removed (already headed there per the agenda-console exploration).
 
-### 9. Inline editing in detail screen (no modal) ✅ DONE
+### Phase 5 — Projects
 
-Editing previously bounced to `/modal`. Now in place.
+- Project list + detail (its todos, deadlines, linked notes and ideas).
+- Promote idea → project: one action from idea detail *and* from the narrative resurface line.
+- On the field, projects live in the narrative zone — referenced by name in prose plus a compact row, not another bento tile.
 
-- [x] Detail fields **directly editable in place** — the EDIT action enters an
-      inline edit mode: title becomes a display-scale `TextInput` in the signal
-      rail's title slot; notes become an inline textarea.
-- [x] In-screen metadata editors reuse the existing pickers (`WhenPicker`,
-      `RecurrencePicker`) — no modal route. Save/Cancel pair replaces the action
-      bar while editing.
-- [x] `/modal` is now creation-only (`buildEditParams` removed); detail is a
-      true view↔edit surface. Type stays a creation-level decision in `/modal`.
+## Open questions (decide during build)
 
-### 4. Incoming / list screen — real filtering & hierarchy ✅ DONE
-
-`app/list.tsx` Incoming lane is now genuinely filtered, not a flat dump.
-
-- [x] Grouped by time horizon (This Week → Later) with the type + status lenses
-      composing on top.
-- [x] Persistent filter affordances (`components/molecules/list-filter-bar.tsx`)
-      in the editorial `diary-filter-bar.tsx` voice — label rows with the active
-      one underlined (type underline borrows the type code), no pills. Two
-      lenses: type (All / Todos / Events / Deadlines) and status (All / Live /
-      Done).
-- [x] Section headers already in the agenda voice; filtered-empty state keeps
-      the bar visible with a "Clear filters" CTA so the lens can reopen.
+- Horizon deadline notifications: at window start, midpoint, or only as it closes? (Default: as it closes.)
+- Does completing the last todo of a project prompt anything? (Default: nothing — no celebration, per brand.)
 
 ---
 
-## 🎨 Aesthetic — "agenda, written by hand"
+## Original notes (10 Jun, raw)
 
-### 2. Rethink Stakes Runway in the hand-written agenda voice
+pensala per come serve davvero a te quest'app.
+Bottone centrale tabbar: se clicco aggiungo testo, se long press parte vocale. semplice, con un univoco trigger, si fa sempre col pollice. Magari una penna o un icona più carina del + non sarebbe male.
 
-The field-summary / field-briefing established a beautiful "written like an
-agenda" feel. `stakes-runway.tsx` is already title-first / mono-when-label, but
-should be pushed further toward that hand-written editorial vibe.
+Deadline: a me non interessa sapere necessariamente cosa scade domani, mi interessa sapere cosa voglio/devo chiudere sta settimana, sto mese, perché no quest'anno. Per cui nell'aggiungere la data posso indicar euna data precisa (questo tuile epr dealdine libere tipo pagare bolletta) o posso inserire un range temporale, tipo "sto mese", per obbligarmi a prenotare il dentista.
 
-- [ ] Restyle Stakes Runway to read like a printed/handwritten agenda, matching
-      `field-summary.tsx` and `field-briefing.tsx`.
-- [ ] Keep the established token policy (danger on overdue, sage on done, tonal
-      rule not 1px border — see component header doc). No new token values.
-- [ ] This "agenda feel" is becoming the app's core aesthetic — treat this as a
-      reference implementation other zones follow.
+Nei greeitng/parte narrativa: hai inserito il densista 10 giorni fa, non ci sei ancora andato? --> così mi devo sentire se leggo qualcosa a riguardo di quel tipo di dealdine che sto procrastinando.
 
----
+Eventi: hanno uno spazio minore, l'utente come la mia personas non esce centomila volte alla settimana.
 
-## 🧪 Experimental — explore before committing
+Una home che come agenda (font simil penna) mi parli, parte narrativa:
 
-### 5. An "ideas" orbit in the Diary
+- Ieri hai dedicato la sera a ...
+- Todos - Dovevi prenotare il densita etc.
 
-Very experimental. Brainstorm whether the orbit-console metaphor (the
-breathing-dots channel reads from `field-console/orbit-console.tsx`) could host
-**ideas inside the Diary**.
+Eventi e deadline non fanno parte della home che parla come agebda. sono item li, diretti fruibili e chiari.
 
-- [ ] Prototype: do ideas deserve their own orbit/channel in the diary surface?
-- [ ] Define the interaction — does it read aloud (tap-to-read like the field
-      orbit) or just cluster/visualize idea notes?
-- [ ] Decide keep / kill after a throwaway prototype; don't over-invest early.
+Progetto, idee, someday fanno invece parte del lato più narrativo.
 
----
+A sto punto todos --> autonomo, legato a un progetto.
+Deadline diventa tipo di todo e conserva forte differenziazione cromatica attuale.
 
-## 🤖 AI Integration
+Someday sottocategoria di todo.
 
-### OpenAI API Integration
+Idea ente autonomo che può essere promosso a progetto (ha più logicamente senso)
 
-> **Gated behind the freemium AI tier** — see Monetization above.
+Se un idea non viene promossa a progetto dopo un po', la parte più narrativa descritta sopra la riporta:
 
-- [ ] Connect voice-input results to OpenAI API
-- [ ] Define JSON schema for entry prefilling:
-  ```typescript
-  type ParsedEntry = {
-    type: "task" | "event" | "someday" | "deadline";
-    title: string;
-    description?: string;
-    date?: string; // ISO date
-    time?: string; // HH:mm
-    duration?: number; // minutes
-    recurrence?: "daily" | "weekly" | "monthly" | "yearly";
-    priority?: "high" | "medium" | "low";
-    tags?: string[];
-  };
-  ```
-- [ ] Implement API client with retry/error handling
-- [ ] Add loading state and error feedback in UI
-- [ ] Create streaming response handler for real-time feedback
+- una settimana fa hai abbozzato questa idea, ti va di tornarci?
 
----
-
-## 🧱 Technical Debt
-
-- [ ] Performance optimization (list virtualization)
-
----
-
-## 🔮 Future Features
-
-- Widget support (iOS/Android home-screen widgets) — _iOS in progress_
-- Smart Watch widget (crucial: allows live recording)
-- Calendar sync (Google Calendar, Apple Calendar)
-- Collaboration features (share lists)
-- Smart reminders based on location / context
+CAPIRE: come gestire le note in questo modello dati? Rischia di diventare un secondo modo di aggiungere cose.

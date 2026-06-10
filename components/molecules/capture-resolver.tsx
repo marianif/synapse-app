@@ -16,9 +16,11 @@ import { tokens, useTheme } from "@/constants/theme";
 export type { LinkableIdea };
 
 export type CaptureResolution =
+  | { kind: "todo" }
   | { kind: "idea" }
   | { kind: "note" }
-  | { kind: "note-on"; entryId: string };
+  | { kind: "note-on"; entryId: string }
+  | { kind: "more" };
 
 interface CaptureResolverProps {
   /** The thought just captured — echoed so the user knows what they're filing. */
@@ -123,7 +125,12 @@ export function CaptureResolver({
             ))}
           </ScrollView>
         ) : (
-          <View style={styles.actionRow}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.actionRow}
+          >
             <Pressable
               onPress={() => onResolve({ kind: "idea" })}
               hitSlop={6}
@@ -134,6 +141,18 @@ export function CaptureResolver({
               <SketchIcon type="idea" size={15} />
               <ThemedText type="micro" style={{ color: colors.ink }}>
                 IDEA
+              </ThemedText>
+            </Pressable>
+
+            <Pressable
+              onPress={() => onResolve({ kind: "todo" })}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel="File as to-do"
+              style={[styles.chip, { backgroundColor: colors.type.todo + "24" }]}
+            >
+              <ThemedText type="micro" style={{ color: colors.ink }}>
+                TODO
               </ThemedText>
             </Pressable>
 
@@ -162,7 +181,21 @@ export function CaptureResolver({
                 </ThemedText>
               </Pressable>
             ) : null}
-          </View>
+
+            {/* Escape hatch to the rich entry form (dates, horizons, events,
+                recurrence) with the thought carried over as the title. */}
+            <Pressable
+              onPress={() => onResolve({ kind: "more" })}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel="Open the full entry form"
+              style={[styles.chip, { backgroundColor: colors.surfaceSubtle }]}
+            >
+              <ThemedText type="micro" style={{ color: colors.inkMuted }}>
+                MORE…
+              </ThemedText>
+            </Pressable>
+          </ScrollView>
         )}
       </View>
     </Animated.View>

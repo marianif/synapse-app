@@ -111,6 +111,8 @@ function ThemedNavigationShell(): React.ReactElement | null {
             <Stack.Screen name="list" />
             <Stack.Screen name="calendar" />
             <Stack.Screen name="detail" />
+            <Stack.Screen name="projects" />
+            <Stack.Screen name="project" />
             <Stack.Screen name="modal" options={{ presentation: "modal" }} />
           </Stack>
         </ErrorBoundary>

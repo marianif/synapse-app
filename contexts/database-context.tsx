@@ -4,7 +4,14 @@ import { AppState } from "react-native";
 
 import * as SQLite from "expo-sqlite";
 
-import { generateId, initDatabase } from "@/lib/database";
+import {
+  deleteProject as dbDeleteProject,
+  insertProject as dbInsertProject,
+  updateProject as dbUpdateProject,
+  generateId,
+  getProjects,
+  initDatabase,
+} from "@/lib/database";
 import { seedDevDataIfEmpty } from "@/lib/dev-seed";
 import {
   cancelNotificationForEntry,
@@ -14,7 +21,9 @@ import {
 import { serializeRule } from "@/lib/recurrence";
 import type {
   DbEntry,
+  DbProject,
   DbRecurrenceCompletion,
+  DueRange,
   RecurrenceRule,
 } from "@/lib/types";
 
@@ -41,6 +50,7 @@ function syncEntriesToWidget(entries: DbEntry[]): void {
 
 interface DatabaseContextValue {
   entries: DbEntry[];
+  projects: DbProject[];
   recurrenceCompletions: DbRecurrenceCompletion[];
   isLoading: boolean;
   isCreating: boolean;
@@ -49,6 +59,13 @@ interface DatabaseContextValue {
   updateEntryStatus: (id: string, status: DbEntry["status"]) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
   refetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
+  createProject: (title: string) => Promise<DbProject>;
+  updateProject: (
+    id: string,
+    data: { title?: string; status?: DbProject["status"] },
+  ) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
+  promoteIdeaToProject: (ideaId: string) => Promise<DbProject>;
   completeRecurringInstance: (
     entryId: string,
     instanceDate: string,
@@ -80,6 +97,9 @@ export interface CreateEntryInput {
   notes?: string;
   recurrenceRule?: RecurrenceRule;
   recurrenceEndDate?: string;
+  projectId?: string;
+  /** Horizon window for deadlines; pass `dueDate` = window end alongside it. */
+  dueRange?: DueRange;
 }
 
 export interface UpdateEntryInput {
@@ -93,6 +113,34 @@ export interface UpdateEntryInput {
   notes?: string | null;
   recurrenceRule?: RecurrenceRule | null;
   recurrenceEndDate?: string | null;
+  projectId?: string | null;
+  dueRange?: DueRange | null;
+}
+
+/**
+ * Map an UpdateEntryInput onto DbEntry column fields for the optimistic
+ * in-memory update — the input is camelCase, the row is snake_case, so a
+ * plain spread would leave the row stale until the next refetch.
+ */
+function toEntryPatch(data: UpdateEntryInput, now: number): Partial<DbEntry> {
+  const patch: Partial<DbEntry> = { updated_at: now };
+  if (data.title !== undefined) patch.title = data.title;
+  if (data.subtitle !== undefined) patch.subtitle = data.subtitle;
+  if (data.inspiration !== undefined) patch.inspiration = data.inspiration;
+  if (data.scheduledDate !== undefined) patch.scheduled_date = data.scheduledDate;
+  if (data.scheduledTime !== undefined) patch.scheduled_time = data.scheduledTime;
+  if (data.dueDate !== undefined) patch.due_date = data.dueDate;
+  if (data.dueTime !== undefined) patch.due_time = data.dueTime;
+  if (data.notes !== undefined) patch.notes = data.notes;
+  if (data.recurrenceRule !== undefined)
+    patch.recurrence_rule = data.recurrenceRule
+      ? serializeRule(data.recurrenceRule)
+      : null;
+  if (data.recurrenceEndDate !== undefined)
+    patch.recurrence_end_date = data.recurrenceEndDate;
+  if (data.projectId !== undefined) patch.project_id = data.projectId;
+  if (data.dueRange !== undefined) patch.due_range = data.dueRange;
+  return patch;
 }
 
 let initPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -112,6 +160,7 @@ export function DatabaseProvider({
   children,
 }: DatabaseProviderProps): React.ReactElement {
   const [entries, setEntries] = useState<DbEntry[]>([]);
+  const [projects, setProjects] = useState<DbProject[]>([]);
   const [recurrenceCompletions, setRecurrenceCompletions] = useState<
     DbRecurrenceCompletion[]
   >([]);
@@ -147,6 +196,15 @@ export function DatabaseProvider({
     [],
   );
 
+  const fetchProjects = useCallback(async (): Promise<void> => {
+    try {
+      await getDb(); // ensure initDatabase (and migrations) completed
+      setProjects(await getProjects());
+    } catch (error) {
+      console.error("[DatabaseContext] fetchProjects failed:", error);
+    }
+  }, []);
+
   const fetchRecurrenceCompletions = useCallback(async (): Promise<void> => {
     try {
       const db = await getDb();
@@ -172,9 +230,10 @@ export function DatabaseProvider({
         console.warn("[DatabaseContext] dev seed failed:", err);
       }
       fetchEntries();
+      fetchProjects();
       fetchRecurrenceCompletions();
     })();
-  }, [fetchEntries, fetchRecurrenceCompletions]);
+  }, [fetchEntries, fetchProjects, fetchRecurrenceCompletions]);
 
   // After the initial load, rebuild all scheduled notifications from scratch.
   // This self-heals any stale state from a previous launch.
@@ -198,8 +257,8 @@ export function DatabaseProvider({
 
         await db.runAsync(
           `INSERT INTO entries
-           (id, title, type, subtitle, inspiration, scheduled_date, scheduled_time, due_date, due_time, notes, status, recurrence_rule, recurrence_end_date, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           (id, title, type, subtitle, inspiration, scheduled_date, scheduled_time, due_date, due_time, notes, status, recurrence_rule, recurrence_end_date, project_id, due_range, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           id,
           data.title,
           data.type,
@@ -213,6 +272,8 @@ export function DatabaseProvider({
           status,
           data.recurrenceRule ? serializeRule(data.recurrenceRule) : null,
           data.recurrenceEndDate ?? null,
+          data.projectId ?? null,
+          data.dueRange ?? null,
           now,
           now,
         );
@@ -461,6 +522,22 @@ export function DatabaseProvider({
           updates.push("recurrence_end_date = ?");
           values.push(data.recurrenceEndDate);
         }
+        if (data.subtitle !== undefined) {
+          updates.push("subtitle = ?");
+          values.push(data.subtitle);
+        }
+        if (data.inspiration !== undefined) {
+          updates.push("inspiration = ?");
+          values.push(data.inspiration);
+        }
+        if (data.projectId !== undefined) {
+          updates.push("project_id = ?");
+          values.push(data.projectId);
+        }
+        if (data.dueRange !== undefined) {
+          updates.push("due_range = ?");
+          values.push(data.dueRange);
+        }
 
         if (updates.length === 0) return;
 
@@ -473,11 +550,12 @@ export function DatabaseProvider({
           ...values,
         );
 
+        const patch = toEntryPatch(data, now);
         let updatedEntry: DbEntry | undefined;
         setEntries((prev) => {
           const next = prev.map((e) => {
             if (e.id === id) {
-              updatedEntry = { ...e, ...data, updated_at: now };
+              updatedEntry = { ...e, ...patch };
               return updatedEntry;
             }
             return e;
@@ -675,8 +753,111 @@ export function DatabaseProvider({
     [],
   );
 
+  // ─── Projects ─────────────────────────────────────────────────────────────
+
+  const createProject = useCallback(async (title: string): Promise<DbProject> => {
+    try {
+      await getDb();
+      const project = await dbInsertProject(title);
+      setProjects((prev) => [project, ...prev]);
+      return project;
+    } catch (error) {
+      console.error("[DatabaseContext] createProject failed:", error);
+      throw error;
+    }
+  }, []);
+
+  const updateProject = useCallback(
+    async (
+      id: string,
+      data: { title?: string; status?: DbProject["status"] },
+    ): Promise<void> => {
+      try {
+        await getDb();
+        await dbUpdateProject(id, data);
+        const now = Math.floor(Date.now() / 1000);
+        setProjects((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, ...data, updated_at: now } : p)),
+        );
+      } catch (error) {
+        console.error("[DatabaseContext] updateProject failed:", error);
+        throw error;
+      }
+    },
+    [],
+  );
+
+  const deleteProject = useCallback(async (id: string): Promise<void> => {
+    try {
+      await getDb();
+      // dbDeleteProject unlinks all references first (app-side SET NULL):
+      // entries become unfiled, promoted ideas lose provenance, notes go free.
+      await dbDeleteProject(id);
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      setEntries((prev) =>
+        prev.map((e) => {
+          if (e.project_id !== id && e.promoted_project_id !== id) return e;
+          return {
+            ...e,
+            project_id: e.project_id === id ? null : e.project_id,
+            promoted_project_id:
+              e.promoted_project_id === id ? null : e.promoted_project_id,
+          };
+        }),
+      );
+    } catch (error) {
+      console.error("[DatabaseContext] deleteProject failed:", error);
+      throw error;
+    }
+  }, []);
+
+  /**
+   * Promote an idea into a project. The idea row survives as provenance
+   * (promoted_project_id set) — the narrative layer stops resurfacing it.
+   */
+  const promoteIdeaToProject = useCallback(
+    async (ideaId: string): Promise<DbProject> => {
+      try {
+        const db = await getDb();
+        const idea = await db.getFirstAsync<DbEntry>(
+          "SELECT * FROM entries WHERE id = ?",
+          ideaId,
+        );
+        if (!idea) throw new Error(`Idea ${ideaId} not found`);
+        if (idea.type !== "idea")
+          throw new Error(`Entry ${ideaId} is a '${idea.type}', not an idea`);
+
+        const project = await dbInsertProject(idea.title);
+        const now = Math.floor(Date.now() / 1000);
+        await db.runAsync(
+          "UPDATE entries SET promoted_project_id = ?, updated_at = ? WHERE id = ?",
+          project.id,
+          now,
+          ideaId,
+        );
+
+        setProjects((prev) => [project, ...prev]);
+        setEntries((prev) => {
+          const next = prev.map((e) =>
+            e.id === ideaId
+              ? { ...e, promoted_project_id: project.id, updated_at: now }
+              : e,
+          );
+          syncEntriesToWidget(next);
+          return next;
+        });
+        return project;
+      } catch (error) {
+        console.error("[DatabaseContext] promoteIdeaToProject failed:", error);
+        throw error;
+      }
+    },
+    [],
+  );
+
   const value: DatabaseContextValue = {
     entries,
+    projects,
     recurrenceCompletions,
     isLoading,
     isCreating,
@@ -685,6 +866,10 @@ export function DatabaseProvider({
     updateEntryStatus,
     deleteEntry,
     refetchEntries: fetchEntries,
+    createProject,
+    updateProject,
+    deleteProject,
+    promoteIdeaToProject,
     completeRecurringInstance,
     uncompleteRecurringInstance,
     skipRecurringInstance,

@@ -33,6 +33,10 @@ interface CaptureBarProps {
   transcript?: string;
   onStop?: () => void;
   onCancel?: () => void;
+  /** Composer mode: focus the input (and raise the keyboard) on mount. */
+  autoFocus?: boolean;
+  /** Composer mode: the input lost focus with nothing typed — close the bar. */
+  onDismissEmpty?: () => void;
 }
 
 /**
@@ -55,10 +59,16 @@ export function CaptureBar({
   transcript = "",
   onStop,
   onCancel,
+  autoFocus = false,
+  onDismissEmpty,
 }: CaptureBarProps): React.ReactElement {
   const { scheme, colors } = useTheme();
   const [draft, setDraft] = useState("");
   const hasText = draft.trim().length > 0;
+
+  const handleBlur = (): void => {
+    if (!hasText) onDismissEmpty?.();
+  };
 
   const submit = (): void => {
     if (!hasText) return;
@@ -138,6 +148,8 @@ export function CaptureBar({
           value={draft}
           onChangeText={setDraft}
           onSubmitEditing={submit}
+          onBlur={handleBlur}
+          autoFocus={autoFocus}
           placeholder="Quick capture a thought"
           placeholderTextColor={colors.inkMuted}
           selectionColor={colors.type.ideas}

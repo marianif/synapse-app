@@ -34,14 +34,24 @@ export function CustomTabBar(): React.ReactElement {
           <TabIcon name="view-grid" color={active(isHome)} />
         </Pressable>
 
-        {/* The create-key — richer entries (bills, deadlines, events, dates)
-            live here; the home capture bar stays the quick idea line. The one
-            neutral-accent control in the chrome, so "make something" reads at a
-            glance without clashing with any saturated type code. */}
+        {/* The pen key — THE capture trigger, one thumb gesture from anywhere.
+            Tap opens the text composer on the field; long-press starts voice
+            capture immediately. Both ride the existing ?capture= deep-link the
+            widget already uses, so it works from any tab. Richer entries reach
+            /modal through the resolver's MORE… chip. The one neutral-accent
+            control in the chrome, so "capture" reads at a glance without
+            clashing with any saturated type code. */}
         <Pressable
-          onPress={() => router.push("/modal")}
+          onPress={() =>
+            router.push({ pathname: "/", params: { capture: "text" } })
+          }
+          onLongPress={() =>
+            router.push({ pathname: "/", params: { capture: "voice" } })
+          }
+          delayLongPress={350}
           accessibilityRole="button"
-          accessibilityLabel="Add an entry"
+          accessibilityLabel="Capture a thought"
+          accessibilityHint="Tap to type. Long-press to capture by voice."
           style={({ pressed }) => [
             styles.addButton,
             { backgroundColor: colors.accent.clay },
@@ -49,7 +59,7 @@ export function CustomTabBar(): React.ReactElement {
             pressed && styles.addButtonPressed,
           ]}
         >
-          <IconSymbol name="plus" size={28} color={colors.accent.onClay} />
+          <IconSymbol name="pencil" size={26} color={colors.accent.onClay} />
         </Pressable>
 
         <Pressable

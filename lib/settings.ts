@@ -76,6 +76,7 @@ export async function setConfirmSkip(
 export const ConfirmKey = {
   deleteEntry: "delete_entry",
   deleteNote: "delete_note",
+  deleteProject: "delete_project",
 } as const;
 
 export type ConfirmKeyValue = (typeof ConfirmKey)[keyof typeof ConfirmKey];

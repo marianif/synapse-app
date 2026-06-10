@@ -23,7 +23,8 @@ import {
   useTheme,
 } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
-import type { RecurrenceFrequency } from "@/lib/types";
+import { horizonEndDate, horizonLabel } from "@/lib/horizons";
+import type { DueRange, RecurrenceFrequency } from "@/lib/types";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import dayjs from "dayjs";
@@ -54,6 +55,8 @@ export default function AddEntryModal(): React.ReactElement {
     notes?: string;
     recurrence?: string;
     recurrenceEndDate?: string;
+    dueRange?: DueRange;
+    projectId?: string;
   }>();
 
   const { colors, scheme } = useTheme();
@@ -66,6 +69,11 @@ export default function AddEntryModal(): React.ReactElement {
   );
   // Empty time = "All day". WhenPicker offers explicit presets so blank stays blank.
   const [time, setTime] = useState(searchParams.time ?? "");
+  // Deadline horizon: null = a precise day; otherwise the commitment window.
+  // due_date is computed as the window's END at save time.
+  const [dueRange, setDueRange] = useState<DueRange | null>(
+    searchParams.dueRange ?? null,
+  );
   const [notes, setNotes] = useState(searchParams.notes ?? "");
   const [recurrenceFreq, setRecurrenceFreq] =
     useState<RecurrenceFrequency | null>(null);
@@ -73,7 +81,12 @@ export default function AddEntryModal(): React.ReactElement {
   const [recurrenceEndDate, setRecurrenceEndDate] = useState(
     searchParams.recurrenceEndDate ?? "",
   );
-  const { createEntry, updateEntry, isCreating } = useDatabase();
+  // Owning project (todo family + ideas; events stay free). Null = unfiled.
+  const [projectId, setProjectId] = useState<string | null>(
+    searchParams.projectId ?? null,
+  );
+  const { createEntry, updateEntry, isCreating, projects } = useDatabase();
+  const activeProjects = projects.filter((p) => p.status === "active");
 
   useEffect(() => {
     if (editing && searchParams.recurrence) {
@@ -102,17 +115,26 @@ export default function AddEntryModal(): React.ReactElement {
               days: recurrenceFreq === "weekly" ? recurrenceDays : undefined,
             }
           : undefined;
+        const horizon = type === "deadline" ? dueRange : null;
         await updateEntry(searchParams.entryId, {
           title: title.trim(),
           scheduledDate: type !== "deadline" ? date.trim() || null : null,
           scheduledTime: type !== "deadline" ? time.trim() || null : null,
-          dueDate: type === "deadline" ? date.trim() || null : null,
-          dueTime: type === "deadline" ? time.trim() || null : null,
+          dueDate:
+            type === "deadline"
+              ? horizon
+                ? horizonEndDate(horizon)
+                : date.trim() || null
+              : null,
+          dueTime: type === "deadline" && !horizon ? time.trim() || null : null,
+          dueRange: horizon,
           notes: notes.trim() || null,
           recurrenceRule: recurrenceRule || null,
           recurrenceEndDate: recurrenceEndDate.trim() || null,
+          projectId: type !== "event" ? projectId : null,
         });
       } else {
+        const horizon = type === "deadline" ? dueRange : null;
         await createEntry({
           title: title.trim(),
           type: type as EntryType,
@@ -121,8 +143,14 @@ export default function AddEntryModal(): React.ReactElement {
             type !== "deadline" ? date.trim() || undefined : undefined,
           scheduledTime:
             type !== "deadline" ? time.trim() || undefined : undefined,
-          dueDate: type === "deadline" ? date.trim() : undefined,
-          dueTime: type === "deadline" ? time.trim() : undefined,
+          dueDate:
+            type === "deadline"
+              ? horizon
+                ? horizonEndDate(horizon)
+                : date.trim()
+              : undefined,
+          dueTime: type === "deadline" && !horizon ? time.trim() : undefined,
+          dueRange: horizon ?? undefined,
           notes: notes.trim() || undefined,
           recurrenceRule: recurrenceFreq
             ? {
@@ -131,6 +159,7 @@ export default function AddEntryModal(): React.ReactElement {
               }
             : undefined,
           recurrenceEndDate: recurrenceEndDate.trim() || undefined,
+          projectId: type !== "event" ? (projectId ?? undefined) : undefined,
         });
       }
       router.back();
@@ -304,8 +333,69 @@ export default function AddEntryModal(): React.ReactElement {
               </View>
             </View>
 
-            {/* When — relative-first date + time (hidden for Someday + Idea) */}
-            {showDateTime && (
+            {/* Horizon — deadlines commit to a precise day OR a window
+                ("this week/month/year"). A window hides the date picker; the
+                window's end date is computed at save time. */}
+            {type === "deadline" && (
+              <View style={styles.field}>
+                <ThemedText type="label" muted style={styles.label}>
+                  HORIZON
+                </ThemedText>
+                <View style={styles.horizonRow}>
+                  {(
+                    [
+                      { value: null, label: "Pick a day" },
+                      { value: "week", label: "This week" },
+                      { value: "month", label: "This month" },
+                      { value: "year", label: "This year" },
+                    ] as { value: DueRange | null; label: string }[]
+                  ).map((option) => {
+                    const isSelected = dueRange === option.value;
+                    return (
+                      <Pressable
+                        key={option.label}
+                        onPress={() => setDueRange(option.value)}
+                        accessibilityRole="radio"
+                        accessibilityLabel={option.label}
+                        accessibilityState={{ selected: isSelected }}
+                        style={({ pressed }) => [
+                          styles.horizonOption,
+                          {
+                            backgroundColor: isSelected
+                              ? accentColor
+                              : colors.surface,
+                          },
+                          pressed && { opacity: 0.7 },
+                        ]}
+                      >
+                        <ThemedText
+                          type="caption"
+                          numberOfLines={1}
+                          adjustsFontSizeToFit
+                          style={{
+                            color: isSelected ? colors.paper : colors.inkMuted,
+                            fontWeight: isSelected ? "700" : "600",
+                            textAlign: "center",
+                          }}
+                        >
+                          {option.label}
+                        </ThemedText>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                {dueRange ? (
+                  <ThemedText type="caption" muted>
+                    Close it {horizonLabel(dueRange)} — by{" "}
+                    {horizonEndDate(dueRange)}.
+                  </ThemedText>
+                ) : null}
+              </View>
+            )}
+
+            {/* When — relative-first date + time (hidden for Someday + Idea,
+                and for horizon deadlines, whose date is the window end) */}
+            {showDateTime && !(type === "deadline" && dueRange) && (
               <WhenPicker
                 date={date}
                 time={time}
@@ -331,6 +421,80 @@ export default function AddEntryModal(): React.ReactElement {
                 onDaysChange={setRecurrenceDays}
                 onEndDateChange={setRecurrenceEndDate}
               />
+            )}
+
+            {/* Project — attribution to a macro life area. Events stay free;
+                everything else can be filed (or stay unfiled — nothing is
+                forced into a project). Hidden until a project exists. */}
+            {type !== "event" && activeProjects.length > 0 && (
+              <View style={styles.field}>
+                <ThemedText type="label" muted style={styles.label}>
+                  PROJECT
+                </ThemedText>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={styles.projectRow}
+                >
+                  <Pressable
+                    onPress={() => setProjectId(null)}
+                    accessibilityRole="radio"
+                    accessibilityLabel="No project"
+                    accessibilityState={{ selected: projectId === null }}
+                    style={({ pressed }) => [
+                      styles.projectChip,
+                      {
+                        backgroundColor:
+                          projectId === null ? accentColor : colors.surface,
+                      },
+                      pressed && { opacity: 0.7 },
+                    ]}
+                  >
+                    <ThemedText
+                      type="caption"
+                      style={{
+                        color: projectId === null ? colors.paper : colors.inkMuted,
+                        fontWeight: "600",
+                      }}
+                    >
+                      Unfiled
+                    </ThemedText>
+                  </Pressable>
+                  {activeProjects.map((p) => {
+                    const selected = projectId === p.id;
+                    return (
+                      <Pressable
+                        key={p.id}
+                        onPress={() => setProjectId(selected ? null : p.id)}
+                        accessibilityRole="radio"
+                        accessibilityLabel={`Project ${p.title}`}
+                        accessibilityState={{ selected }}
+                        style={({ pressed }) => [
+                          styles.projectChip,
+                          {
+                            backgroundColor: selected
+                              ? accentColor
+                              : colors.surface,
+                          },
+                          pressed && { opacity: 0.7 },
+                        ]}
+                      >
+                        <ThemedText
+                          type="caption"
+                          numberOfLines={1}
+                          style={{
+                            color: selected ? colors.paper : colors.ink,
+                            fontWeight: "600",
+                          }}
+                        >
+                          {p.title}
+                        </ThemedText>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              </View>
             )}
 
             {/* Notes */}
@@ -450,6 +614,31 @@ const styles = StyleSheet.create({
   typeEdgeBar: {
     height: 3,
     borderRadius: tokens.radius.pill,
+  },
+  horizonRow: {
+    flexDirection: "row",
+    gap: tokens.space.xs,
+  },
+  projectRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+  },
+  projectChip: {
+    minHeight: 44,
+    maxWidth: 180,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: tokens.radius.pill,
+    paddingHorizontal: tokens.space.lg,
+  },
+  horizonOption: {
+    flex: 1,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.space.xs,
   },
   typeOptionText: {
     textAlign: "center",

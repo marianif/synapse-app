@@ -264,6 +264,8 @@ export default function DetailScreen(): React.ReactElement {
     deleteRecurringSeries,
     updateEntry,
     fetchEntries,
+    projects,
+    promoteIdeaToProject,
   } = useDatabase();
 
   // Diary notes filed ON this entry (only ideas carry links today). Read-only
@@ -693,6 +695,64 @@ export default function DetailScreen(): React.ReactElement {
 
               {/* Reflections filed ON this idea — the reverse of the diary link. */}
               <RelatedNotes notes={relatedNotes} />
+
+              {/* Idea → project promotion. An idea that became a project keeps
+                  living here as provenance; otherwise one quiet action grows it
+                  into a top-level life area. */}
+              {type === "idea" ? (
+                entry.promoted_project_id ? (
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/project",
+                        params: { id: entry.promoted_project_id! },
+                      })
+                    }
+                    accessibilityRole="button"
+                    accessibilityLabel="Open the project this idea became"
+                    style={({ pressed }) => [
+                      styles.promoteRow,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <ThemedText type="hand" style={{ color: colors.inkMuted }}>
+                      This idea became “
+                      {projects.find((p) => p.id === entry.promoted_project_id)
+                        ?.title ?? "a project"}
+                      ”.
+                    </ThemedText>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    onPress={() => {
+                      promoteIdeaToProject(entry.id)
+                        .then((project) =>
+                          router.push({
+                            pathname: "/project",
+                            params: { id: project.id },
+                          }),
+                        )
+                        .catch((err) =>
+                          console.error("Failed to promote idea:", err),
+                        );
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Promote this idea to a project"
+                    style={({ pressed }) => [
+                      styles.promoteRow,
+                      { backgroundColor: colors.surface },
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <ThemedText type="bodyBold" style={{ color: colors.ink }}>
+                      Promote to project
+                    </ThemedText>
+                    <ThemedText type="caption" muted>
+                      Make this a life area — file todos and notes under it.
+                    </ThemedText>
+                  </Pressable>
+                )
+              ) : null}
             </>
           )}
         </ScrollView>
@@ -874,6 +934,14 @@ const styles = StyleSheet.create({
     paddingVertical: tokens.space.md,
     minHeight: 44,
     alignItems: "center",
+    justifyContent: "center",
+  },
+  promoteRow: {
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.lg,
+    gap: tokens.space.xs,
+    minHeight: 48,
     justifyContent: "center",
   },
   pressed: {

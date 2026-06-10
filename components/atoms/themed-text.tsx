@@ -14,7 +14,8 @@ export type TextType =
   | "label" // 11pt all-caps mono kicker
   | "micro" // 10pt all-caps mono — sub-kicker dividers / tertiary metadata
   | "mono" // 13pt mono — counts / status / time
-  | "caption"; // 11pt Inter, no transform
+  | "caption" // 11pt Inter, no transform
+  | "hand"; // 20pt Caveat — the narrative / margin-note voice only
 
 interface ThemedTextProps extends TextProps {
   type?: TextType;
@@ -103,5 +104,13 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.kicker.size,
     lineHeight: tokens.type.kicker.lineHeight,
     fontFamily: tokens.type.fontInter.regular,
+  },
+  // Caveat renders ~30% smaller optically than Host Grotesk at equal size, so
+  // the hand step runs 20/26 to sit beside 16pt items at matched weight.
+  // Reserved for the narrative voice — never UI labels, buttons, or data.
+  hand: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontFamily: tokens.type.fontHand.regular,
   },
 });

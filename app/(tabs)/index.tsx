@@ -12,8 +12,9 @@ import {
 
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
-import { OrbitConsole } from "@/components/organisms/field-console/orbit-console";
+import { NarrativeAgenda } from "@/components/organisms/narrative-agenda";
 import { PresentZone } from "@/components/organisms/present/present-zone";
+import { ProjectsStrip } from "@/components/organisms/projects-strip";
 import { StakesRunway } from "@/components/organisms/stakes-runway";
 
 import {
@@ -33,6 +34,8 @@ import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
 import { useDiary } from "@/hooks/use-diary";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 import { splitCapture } from "@/lib/capture";
+import { horizonHeat, horizonLabel, horizonReadout } from "@/lib/horizons";
+import { buildNarrative } from "@/lib/narrative";
 import { toPresentItems } from "@/lib/present";
 
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
@@ -78,6 +81,15 @@ function whenLabel(
   return d.format("MMM YYYY");
 }
 
+/**
+ * Heat for a row, horizon-aware: a window commitment idles warm and turns hot
+ * as the window closes; precise dates keep the distance-based heat.
+ */
+function entryHeat(e: DbEntry): Heat {
+  const days = daysUntil(e.due_date ?? e.scheduled_date ?? null);
+  return e.due_range ? horizonHeat(e.due_range, days) : heatOf(days);
+}
+
 function toRowItem(e: DbEntry): FieldRowItem {
   const dateStr = e.due_date ?? e.scheduled_date ?? null;
   const time = e.scheduled_time ?? e.due_time ?? null;
@@ -86,8 +98,8 @@ function toRowItem(e: DbEntry): FieldRowItem {
     id: e.id,
     type: e.type as EntryType,
     title: e.title,
-    when: whenLabel(dateStr, time, days),
-    heat: heatOf(days),
+    when: e.due_range ? horizonLabel(e.due_range) : whenLabel(dateStr, time, days),
+    heat: entryHeat(e),
   };
 }
 
@@ -107,7 +119,10 @@ function toRunwayItem(e: DbEntry, done = false): RunwayItem {
     id: e.id,
     type: e.type as EntryType,
     title: e.title,
-    readout: runwayReadout(days),
+    // Horizon stakes read as the commitment ("by Sun", "by Dec"), not a countdown.
+    readout: e.due_range
+      ? horizonReadout(e.due_range, e.due_date)
+      : runwayReadout(days),
     overdue: !done && days !== null && days < 0,
     dated,
     done,
@@ -136,10 +151,8 @@ function byRunway(a: DbEntry, b: DbEntry): number {
 const HEAT_RANK: Record<Heat, number> = { hot: 0, warm: 1, cool: 2 };
 
 function byHeatThenDate(a: DbEntry, b: DbEntry): number {
-  const ra =
-    HEAT_RANK[heatOf(daysUntil(a.due_date ?? a.scheduled_date ?? null))];
-  const rb =
-    HEAT_RANK[heatOf(daysUntil(b.due_date ?? b.scheduled_date ?? null))];
+  const ra = HEAT_RANK[entryHeat(a)];
+  const rb = HEAT_RANK[entryHeat(b)];
   if (ra !== rb) return ra - rb;
   const da = a.due_date ?? a.scheduled_date;
   const db = b.due_date ?? b.scheduled_date;
@@ -157,12 +170,13 @@ export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
 
-  // Deep-link param from the home-screen voice widget (synapseapp:///?capture=voice).
-  // Present means "arm voice capture on arrival"; consumed once below.
+  // Capture intent param — set by the widget deep link (synapseapp:///?capture=voice)
+  // and by the tab-bar pen key (tap → text, long-press → voice). Consumed once below.
   const { capture } = useLocalSearchParams<{ capture?: string }>();
 
   const {
     entries,
+    projects,
     recurrenceCompletions,
     fetchEntries,
     createEntry,
@@ -195,6 +209,10 @@ export default function HomeScreen(): React.ReactElement {
 
   const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
   const [isRecording, setIsRecording] = useState(false);
+
+  // The text composer is summoned by the pen key (no always-idle bar — capture
+  // has ONE trigger). It closes itself when the input blurs with nothing typed.
+  const [composerOpen, setComposerOpen] = useState(false);
 
   // The capture bar captures a THOUGHT, not (yet) an idea. A captured thought is
   // held here as "pending" while the CaptureResolver lets the user file it as an
@@ -244,6 +262,13 @@ export default function HomeScreen(): React.ReactElement {
         case "idea":
           fileAsIdea(text);
           break;
+        case "todo": {
+          const { title, notes } = splitCapture(text);
+          createEntry({ title, type: "todo", notes }).catch((err) =>
+            console.error("Failed to capture todo:", err),
+          );
+          break;
+        }
         case "note":
           addDiaryEntry(text, null).catch((err) =>
             console.error("Failed to file diary note:", err),
@@ -254,9 +279,14 @@ export default function HomeScreen(): React.ReactElement {
             console.error("Failed to file linked diary note:", err),
           );
           break;
+        case "more":
+          // Hand the thought to the rich entry form (dates, horizons, events).
+          setComposerOpen(false);
+          router.push({ pathname: "/modal", params: { title: text } });
+          break;
       }
     },
-    [pendingThought, fileAsIdea, addDiaryEntry],
+    [pendingThought, fileAsIdea, addDiaryEntry, createEntry, router],
   );
 
   const handleStartRecording = useCallback(async () => {
@@ -275,16 +305,21 @@ export default function HomeScreen(): React.ReactElement {
     setIsRecording(false);
   }, [stopRecording]);
 
-  // Arm voice capture when launched from the widget deep link. Guard with a ref
-  // so it fires once per link open, not on every re-render, and clear the param
-  // off the URL so re-focusing the tab doesn't re-trigger recording.
+  // Arm capture when summoned — by the widget deep link (voice) or the tab-bar
+  // pen key (text or voice). Guard with a ref so it fires once per intent, not
+  // on every re-render, and clear the param off the URL so re-focusing the tab
+  // doesn't re-trigger.
   const armedFromLink = useRef(false);
   useEffect(() => {
     if (capture === "voice" && !armedFromLink.current && !isRecording) {
       armedFromLink.current = true;
       handleStartRecording();
       router.setParams({ capture: undefined });
-    } else if (capture !== "voice") {
+    } else if (capture === "text" && !armedFromLink.current) {
+      armedFromLink.current = true;
+      setComposerOpen(true);
+      router.setParams({ capture: undefined });
+    } else if (capture !== "voice" && capture !== "text") {
       armedFromLink.current = false;
     }
   }, [capture, isRecording, handleStartRecording, router]);
@@ -391,13 +426,13 @@ export default function HomeScreen(): React.ReactElement {
     doneStakes.length === 0 &&
     presentItems.length === 0;
 
-  // Which orbit channel the companion is reading aloud, lifted here so the
-  // greeting molecule and the orbit ring — now siblings — share one focus.
-  // Tapping a populated dot focuses it; re-tapping the same one clears it.
-  const [focusedType, setFocusedType] = useState<EntryType | null>(null);
-  const handleToggleFocus = useCallback((type: EntryType) => {
-    setFocusedType((cur) => (cur === type ? null : type));
-  }, []);
+  // The agenda voice — deterministic narrative lines built from the board:
+  // yesterday's diary trace, the longest-waiting deadline, the oldest
+  // unpromoted idea. A layer above the zones, never a curtain.
+  const narrativeLines = useMemo(
+    () => buildNarrative(entries, diaryEntries, today.getTime()),
+    [entries, diaryEntries, today],
+  );
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
@@ -410,14 +445,9 @@ export default function HomeScreen(): React.ReactElement {
           greeting={greetingFor(today.getHours())}
           stakes={stakes}
           present={present}
-          focusedType={focusedType}
+          focusedType={null}
         />
-        <OrbitConsole
-          stakes={stakes}
-          present={present}
-          focusedType={focusedType}
-          onToggleFocus={handleToggleFocus}
-        />
+        <NarrativeAgenda lines={narrativeLines} />
         {fieldIsEmpty && <FieldLegend />}
 
         <>
@@ -444,11 +474,18 @@ export default function HomeScreen(): React.ReactElement {
             emptyHint="Catch an idea, a someday, or an event before it's gone."
             index={1}
           />
+
+          {/* Projects live in the narrative side of the field: named, compact,
+              never a tile. Hidden until the first project exists. */}
+          <ProjectsStrip projects={projects} entries={entries} />
         </>
 
         <View style={styles.captureSpacer} />
       </ScrollView>
 
+      {/* The capture dock is summoned, not always-on: the pen key (tab bar)
+          opens the composer or starts voice; the dock vanishes when idle so the
+          field stays clear. The resolver holds a captured thought until filed. */}
       <KeyboardAvoidingView
         style={styles.captureDock}
         pointerEvents="box-none"
@@ -467,14 +504,18 @@ export default function HomeScreen(): React.ReactElement {
             }}
           />
         ) : null}
-        <CaptureBar
-          onSubmit={handleCapture}
-          onVoice={handleStartRecording}
-          isRecording={isRecording}
-          transcript={transcript}
-          onStop={handleStopRecording}
-          onCancel={handleCancelRecording}
-        />
+        {composerOpen || isRecording ? (
+          <CaptureBar
+            onSubmit={handleCapture}
+            onVoice={handleStartRecording}
+            isRecording={isRecording}
+            transcript={transcript}
+            onStop={handleStopRecording}
+            onCancel={handleCancelRecording}
+            autoFocus={composerOpen}
+            onDismissEmpty={() => setComposerOpen(false)}
+          />
+        ) : null}
       </KeyboardAvoidingView>
 
       <DayDetailSheet

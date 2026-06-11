@@ -19,6 +19,7 @@ export interface UseDatabaseReturn {
   updateEntryStatus: (id: string, status: DbEntry["status"]) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
   fetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
+  fetchProjects: () => Promise<void>;
   createProject: (title: string) => Promise<DbProject>;
   updateProject: (
     id: string,
@@ -61,6 +62,7 @@ export function useDatabase(): UseDatabaseReturn {
     updateEntryStatus: context.updateEntryStatus,
     deleteEntry: context.deleteEntry,
     fetchEntries: context.refetchEntries,
+    fetchProjects: context.refetchProjects,
     createProject: context.createProject,
     updateProject: context.updateProject,
     deleteProject: context.deleteProject,

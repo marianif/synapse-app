@@ -450,8 +450,8 @@ export async function unlinkDiaryNotesForEntry(entryId: string): Promise<void> {
 /**
  * Wipes every row from the data tables, leaving the schema (and schema_version)
  * intact. Dev-only convenience for starting from an empty slate. Order respects
- * FK references — diary first (it points at entries), then completions, then
- * the entries themselves.
+ * FK references — diary first (it points at entries/projects), then
+ * completions, then the entries themselves, then projects.
  */
 export async function clearAllData(): Promise<void> {
   const db = getDb();
@@ -459,6 +459,7 @@ export async function clearAllData(): Promise<void> {
     await db.execAsync('DELETE FROM diary_entries');
     await db.execAsync('DELETE FROM recurrence_completions');
     await db.execAsync('DELETE FROM entries');
+    await db.execAsync('DELETE FROM projects');
   });
 }
 

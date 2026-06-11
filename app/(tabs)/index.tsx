@@ -1,6 +1,11 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { Link, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import {
+  Link,
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -14,13 +19,13 @@ import {
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 
+import { EntryDot } from "@/components/atoms/entry-dot";
+import { ThemedText } from "@/components/atoms/themed-text";
 import {
   FieldGreeting,
   greetingFor,
 } from "@/components/molecules/field-greeting";
 import { SomedayBadge } from "@/components/molecules/someday-badge";
-import { ThemedText } from "@/components/atoms/themed-text";
-import { EntryDot } from "@/components/atoms/entry-dot";
 
 import {
   CaptureResolver,
@@ -86,7 +91,9 @@ function toRowItem(e: DbEntry): FieldRowItem {
     id: e.id,
     type: e.type as EntryType,
     title: e.title,
-    when: e.due_range ? horizonLabel(e.due_range) : whenLabel(dateStr, time, days),
+    when: e.due_range
+      ? horizonLabel(e.due_range)
+      : whenLabel(dateStr, time, days),
     heat: heatOf(days),
   };
 }
@@ -276,9 +283,7 @@ export default function HomeScreen(): React.ReactElement {
     return {
       directEntries: direct,
       stakes: direct.map(toRowItem),
-      present: open
-        .filter((e) => e.type === "idea")
-        .map(toRowItem),
+      present: open.filter((e) => e.type === "idea").map(toRowItem),
     };
   }, [entries]);
 
@@ -444,7 +449,10 @@ function DirectOverview({
       {entries.map((e) => (
         <Link
           key={e.id}
-          href={{ pathname: "/detail", params: { id: e.id, entryType: e.type } }}
+          href={{
+            pathname: "/detail",
+            params: { id: e.id, entryType: e.type },
+          }}
           asChild
         >
           <Pressable

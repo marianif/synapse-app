@@ -54,7 +54,7 @@ export function AppMenu({
   const router = useRouter();
   const { colors } = useTheme();
   const { resolvedScheme, setPreference } = useThemeContext();
-  const { fetchEntries } = useDatabase();
+  const { fetchEntries, fetchProjects } = useDatabase();
   const translateX = useSharedValue(MENU_WIDTH);
 
   useEffect(() => {
@@ -81,7 +81,7 @@ export function AppMenu({
   const handleClearDatabase = () => {
     Alert.alert(
       "Clear database?",
-      "This permanently deletes all entries and diary notes. Dev only.",
+      "This permanently deletes all entries, projects, and diary notes. Dev only.",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -91,6 +91,7 @@ export function AppMenu({
             try {
               await clearAllData();
               await fetchEntries();
+              await fetchProjects();
               onClose();
             } catch (error) {
               console.error("[AppMenu] clearAllData failed:", error);

@@ -1,19 +1,23 @@
-import { useState } from "react";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
+  LinearTransition,
   useReducedMotion,
 } from "react-native-reanimated";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { WhenPicker } from "@/components/molecules/when-picker";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { LinkableIdea } from "@/components/organisms/link-sheet";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
 import { horizonEndDate, horizonLabel } from "@/lib/horizons";
 import type { DbProject, DueRange } from "@/lib/types";
+
+dayjs.extend(customParseFormat);
 
 // A recent idea the captured thought can be filed under — same shape the link
 // sheet uses, re-exported so call-sites can import it from either place.
@@ -21,9 +25,9 @@ export type { LinkableIdea };
 
 /**
  * Where a captured thought is filed. `todo`/`deadline` carry the optional detail
- * the writer opened the "+ details" strip to set; `idea`/`note`/`note-on` are
- * bare. There is no longer a "more" escape hatch — the rich modal was retired and
- * capture is the single creation path (PRODUCT.md: one trigger, no second add).
+ * the writer set in the inline panel; `idea`/`note`/`note-on` are bare. There is
+ * no "more" escape hatch — the rich modal was retired and capture is the single
+ * creation path (PRODUCT.md: one trigger, no second add).
  */
 export type CaptureResolution =
   | {
@@ -46,11 +50,11 @@ export type CaptureResolution =
 interface CaptureResolverProps {
   /** The thought just captured — echoed so the user knows what they're filing. */
   text: string;
-  /** Recent ideas offered under "Note on…". Empty hides that affordance. */
+  /** Recent ideas offered under "on an idea". Empty hides that affordance. */
   ideas: LinkableIdea[];
-  /** Active projects offered in the optional detail strip. */
+  /** Active projects offered in the detail panel. */
   projects: DbProject[];
-  /** Whether the "Note on…" idea picker is expanded. */
+  /** Whether the "on an idea" note-on rail is expanded in place. */
   picking: boolean;
   onTogglePicking: () => void;
   /** Commit a destination. */
@@ -59,16 +63,44 @@ interface CaptureResolverProps {
   onDismiss: () => void;
 }
 
-// The dated destinations that can carry detail. Idea/note are always bare.
+// The two destinations that carry detail. Picking one SELECTS it (and opens the
+// detail line); the corner glyph turns into a save-and-close check. The bare
+// destinations file on first tap — they have nothing to configure.
 type DatedKind = "todo" | "deadline";
 
+// One WHEN grammar shared by both dated verbs (todo + deadline). No today /
+// tomorrow — capture is for what's ahead, not what's now. Two flavors:
+//   • concrete — resolves to a single DD/MM/YYYY date (a day → today, weekend →
+//     coming Saturday). "a day" then invites the exact stepper to nudge off today.
+//   • horizon — a DueRange window (this week / month / year); todos store the
+//     window's end date, deadlines additionally keep the range.
+type WhenOption =
+  | { kind: "concrete"; label: string; date: () => string }
+  | { kind: "horizon"; label: string; range: DueRange };
+
+const WHEN_OPTIONS: WhenOption[] = [
+  { kind: "concrete", label: "a day", date: () => dateStr(0) },
+  { kind: "concrete", label: "weekend", date: () => dateStr(daysToWeekend()) },
+  { kind: "horizon", label: "this week", range: "week" },
+  { kind: "horizon", label: "this month", range: "month" },
+  { kind: "horizon", label: "this year", range: "year" },
+];
+
 /**
- * The post-capture destination chooser. The capture bar files nothing on its
- * own — it hands the thought here, and this row lets the writer file it as an
- * idea, a to-do, a deadline, an autonomous diary note, or a note ON a recent
- * idea. The fast path is one tap; a "+ details" strip optionally sets a date,
- * a deadline horizon, and a project at capture time. It stays until the writer
- * picks (no auto-commit) and wears the amber capture identity on its left edge.
+ * The post-capture destination chooser. No bubbles, no buttons: every choice is
+ * a word you READ and tap, in its type color, the active one bold + underlined.
+ * Instrument-panel register (DESIGN.md: tonal weight and edge-bars carry
+ * structure, not capsules).
+ *
+ * Two grammars, kept apart by behavior:
+ *   • Bare verbs — keep (idea) · note · on an idea — file on the first tap.
+ *   • Dated verbs — do it (todo) · by a date (deadline) — first tap underlines
+ *     the verb and opens an inline WHEN/PROJECT readout. The header glyph then
+ *     becomes a type-colored ✓ that saves-and-closes (no separate Save slab).
+ *
+ * The WHEN and PROJECT rows are value-readouts, not chip rails: the options sit
+ * inline as plain tappable words, the chosen one colored. The precise day/time
+ * wheel stays opt-in behind "exact". Amber capture edge on the left.
  */
 export function CaptureResolver({
   text,
@@ -82,48 +114,67 @@ export function CaptureResolver({
   const { colors } = useTheme();
   const reduced = useReducedMotion();
 
-  // The optional detail strip — collapsed by default so the common path stays
-  // one tap. Opening it commits to a dated destination (todo or deadline).
-  const [detailKind, setDetailKind] = useState<DatedKind | null>(null);
+  // The selected dated destination (null = nothing selected, detail closed).
+  const [selected, setSelected] = useState<DatedKind | null>(null);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [dueRange, setDueRange] = useState<DueRange | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [exact, setExact] = useState(false);
 
   const activeProjects = projects.filter((p) => p.status === "active");
+
+  // First tap on a dated verb underlines it + opens detail; tapping the other
+  // dated verb switches kind. The WHEN grammar is shared, so the picked when
+  // carries across the switch. Commit now lives in the corner glyph.
+  function selectDated(kind: DatedKind): void {
+    setSelected(kind);
+  }
 
   function commitDated(kind: DatedKind): void {
     if (kind === "deadline") {
       onResolve({
         kind: "deadline",
-        dueDate: dueRange
-          ? horizonEndDate(dueRange)
-          : date.trim() || undefined,
+        dueDate: dueRange ? horizonEndDate(dueRange) : date.trim() || undefined,
         dueTime: dueRange ? undefined : time.trim() || undefined,
         dueRange: dueRange ?? undefined,
         projectId: projectId ?? undefined,
       });
     } else {
+      // Todos have no dueRange field — a horizon lands them on its end date.
       onResolve({
         kind: "todo",
-        scheduledDate: date.trim() || undefined,
-        scheduledTime: time.trim() || undefined,
+        scheduledDate: dueRange
+          ? horizonEndDate(dueRange)
+          : date.trim() || undefined,
+        scheduledTime: dueRange ? undefined : time.trim() || undefined,
         projectId: projectId ?? undefined,
       });
     }
   }
 
-  const detailAccent = detailKind ? entryColor(detailKind) : colors.type.todo;
+  const accent = selected ? entryColor(selected) : colors.type.todo;
+  const layout = reduced
+    ? undefined
+    : LinearTransition.springify().damping(18).stiffness(220);
+
+  const projectName =
+    projectId === null
+      ? "unfiled"
+      : (activeProjects.find((p) => p.id === projectId)?.title ?? "unfiled");
 
   return (
     <Animated.View
       entering={reduced ? undefined : FadeIn.duration(160)}
       exiting={reduced ? undefined : FadeOut.duration(120)}
+      layout={layout}
       style={[styles.card, { backgroundColor: colors.surface }]}
     >
       <View style={[styles.edge, { backgroundColor: colors.type.ideas }]} />
 
       <View style={styles.body}>
+        {/* Header — what's being filed. The corner glyph is a discard ✕ until a
+            dated verb is selected, then a type-colored ✓ that saves-and-closes. */}
         <View style={styles.headRow}>
           <ThemedText type="micro" style={{ color: colors.inkMuted }}>
             FILE AS
@@ -131,329 +182,587 @@ export function CaptureResolver({
           <ThemedText
             type="body"
             numberOfLines={1}
-            style={[styles.echo, { color: colors.inkMuted }]}
+            style={[styles.echo, { color: colors.ink }]}
           >
             {text}
           </ThemedText>
           <Pressable
-            onPress={onDismiss}
+            onPress={() => (selected ? commitDated(selected) : onDismiss())}
             hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel="Discard this thought"
-            style={styles.dismiss}
+            accessibilityLabel={
+              selected
+                ? selected === "deadline"
+                  ? "Save deadline"
+                  : "Save to-do"
+                : "Discard this thought"
+            }
+            style={({ pressed }) => [
+              styles.corner,
+              pressed && { opacity: 0.5 },
+            ]}
           >
-            <IconSymbol name="close" size={16} color={colors.inkMuted} />
+            <IconSymbol
+              name={selected ? "check" : "close"}
+              size={selected ? 20 : 16}
+              color={selected ? accent : colors.inkMuted}
+            />
           </Pressable>
         </View>
 
+        {/* The verb line — the primary choice, read not tapped-at. Type color on
+            each word; the picked dated verb is bold + underlined. Bare verbs
+            (keep/note/on an idea) file immediately. */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.verbLine}
+        >
+          <Verb
+            label="Keep"
+            color={colors.type.ideas}
+            onPress={() => onResolve({ kind: "idea" })}
+            accessibilityLabel="Keep as idea"
+          />
+          <Sep color={colors.inkMuted} />
+          <Verb
+            label="do it"
+            color={colors.type.todo}
+            selected={selected === "todo"}
+            onPress={() => selectDated("todo")}
+            accessibilityLabel="Make it a to-do"
+            accessibilityState={{ selected: selected === "todo" }}
+          />
+          <Sep color={colors.inkMuted} />
+          <Verb
+            label="by a date"
+            color={colors.type.bills}
+            selected={selected === "deadline"}
+            onPress={() => selectDated("deadline")}
+            accessibilityLabel="Make it a deadline"
+            accessibilityState={{ selected: selected === "deadline" }}
+          />
+          <Sep color={colors.inkMuted} />
+          <Verb
+            label="note"
+            color={colors.inkMuted}
+            muted
+            onPress={() => onResolve({ kind: "note" })}
+            accessibilityLabel="File as diary note"
+          />
+          {ideas.length > 0 ? (
+            <>
+              <Sep color={colors.inkMuted} />
+              <Verb
+                label="on an idea"
+                color={colors.inkMuted}
+                muted
+                selected={picking}
+                onPress={onTogglePicking}
+                accessibilityLabel="File as a note on a recent idea"
+                accessibilityState={{ expanded: picking }}
+              />
+            </>
+          ) : null}
+        </ScrollView>
+
+        {/* Note-on rail — recent ideas, expanded in place under the verb line. */}
         {picking ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.pickerRow}
+          <Animated.View
+            entering={reduced ? undefined : FadeIn.duration(140)}
+            exiting={reduced ? undefined : FadeOut.duration(100)}
+            layout={layout}
           >
-            <Pressable
-              onPress={onTogglePicking}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="Back to destinations"
-              style={[styles.chip, { backgroundColor: colors.surfaceSubtle }]}
-            >
-              <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-                ‹ BACK
-              </ThemedText>
-            </Pressable>
-            {ideas.map((idea) => (
-              <Pressable
-                key={idea.id}
-                onPress={() => onResolve({ kind: "note-on", entryId: idea.id })}
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel={`Note on idea: ${idea.title}`}
-                style={[styles.chip, { backgroundColor: colors.surfaceSubtle }]}
-              >
-                <SketchIcon type="idea" size={14} />
-                <ThemedText
-                  type="body"
-                  numberOfLines={1}
-                  style={[styles.chipIdeaLabel, { color: colors.ink }]}
-                >
-                  {idea.title}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </ScrollView>
-        ) : (
-          <>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
-              contentContainerStyle={styles.actionRow}
+              contentContainerStyle={styles.ideaRail}
             >
-              <Pressable
-                onPress={() => onResolve({ kind: "idea" })}
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel="File as idea"
-                style={[styles.chip, { backgroundColor: colors.type.ideas + "24" }]}
-              >
-                <SketchIcon type="idea" size={15} />
-                <ThemedText type="micro" style={{ color: colors.ink }}>
-                  IDEA
-                </ThemedText>
-              </Pressable>
-
-              <Pressable
-                onPress={() => commitDated("todo")}
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel="File as to-do"
-                style={[styles.chip, { backgroundColor: colors.type.todo + "24" }]}
-              >
-                <ThemedText type="micro" style={{ color: colors.ink }}>
-                  TODO
-                </ThemedText>
-              </Pressable>
-
-              <Pressable
-                onPress={() => commitDated("deadline")}
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel="File as deadline"
-                style={[styles.chip, { backgroundColor: colors.type.bills + "24" }]}
-              >
-                <ThemedText type="micro" style={{ color: colors.ink }}>
-                  DEADLINE
-                </ThemedText>
-              </Pressable>
-
-              <Pressable
-                onPress={() => onResolve({ kind: "note" })}
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel="File as diary note"
-                style={[styles.chip, { backgroundColor: colors.surfaceSubtle }]}
-              >
-                <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-                  NOTE
-                </ThemedText>
-              </Pressable>
-
-              {ideas.length > 0 ? (
+              {ideas.map((idea) => (
                 <Pressable
-                  onPress={onTogglePicking}
-                  hitSlop={6}
+                  key={idea.id}
+                  onPress={() =>
+                    onResolve({ kind: "note-on", entryId: idea.id })
+                  }
+                  hitSlop={8}
                   accessibilityRole="button"
-                  accessibilityLabel="File as note on an idea"
-                  style={[styles.chip, { backgroundColor: colors.surfaceSubtle }]}
+                  accessibilityLabel={`Note on idea: ${idea.title}`}
+                  style={styles.ideaItem}
                 >
-                  <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-                    NOTE ON…
+                  <SketchIcon type="idea" size={13} />
+                  <ThemedText
+                    type="body"
+                    numberOfLines={1}
+                    style={[styles.ideaLabel, { color: colors.ink }]}
+                  >
+                    {idea.title}
                   </ThemedText>
                 </Pressable>
-              ) : null}
-
-              {/* Optional detail: opens the date/horizon/project strip for a
-                  dated destination. Collapsed by default so capture stays fast. */}
-              <Pressable
-                onPress={() =>
-                  setDetailKind((k) => (k ? null : "todo"))
-                }
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel="Add a date or project"
-                style={[styles.chip, { backgroundColor: colors.surfaceSubtle }]}
-              >
-                <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-                  {detailKind ? "− DETAILS" : "+ DETAILS"}
-                </ThemedText>
-              </Pressable>
+              ))}
             </ScrollView>
+          </Animated.View>
+        ) : null}
 
-            {detailKind ? (
-              <View style={styles.detail}>
-                {/* Which dated kind the detail applies to. */}
-                <View style={styles.kindRow}>
-                  {(["todo", "deadline"] as DatedKind[]).map((k) => {
-                    const selected = detailKind === k;
-                    return (
-                      <Pressable
-                        key={k}
-                        onPress={() => setDetailKind(k)}
-                        accessibilityRole="radio"
-                        accessibilityLabel={k === "todo" ? "To-do" : "Deadline"}
-                        accessibilityState={{ selected }}
-                        style={[
-                          styles.kindChip,
-                          {
-                            backgroundColor: selected
-                              ? entryColor(k)
-                              : colors.surfaceSubtle,
-                          },
-                        ]}
-                      >
-                        <ThemedText
-                          type="micro"
-                          style={{
-                            color: selected ? colors.paper : colors.inkMuted,
-                          }}
-                        >
-                          {k === "todo" ? "TODO" : "DEADLINE"}
-                        </ThemedText>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-
-                {/* Deadline horizon — a precise day OR a closing window. */}
-                {detailKind === "deadline" ? (
-                  <View style={styles.horizonRow}>
-                    {(
-                      [
-                        { value: null, label: "Day" },
-                        { value: "week", label: "Week" },
-                        { value: "month", label: "Month" },
-                        { value: "year", label: "Year" },
-                      ] as { value: DueRange | null; label: string }[]
-                    ).map((option) => {
-                      const selected = dueRange === option.value;
-                      return (
-                        <Pressable
-                          key={option.label}
-                          onPress={() => setDueRange(option.value)}
-                          accessibilityRole="radio"
-                          accessibilityLabel={option.label}
-                          accessibilityState={{ selected }}
-                          style={[
-                            styles.horizonOption,
-                            {
-                              backgroundColor: selected
-                                ? detailAccent
-                                : colors.surfaceSubtle,
-                            },
-                          ]}
-                        >
-                          <ThemedText
-                            type="micro"
-                            style={{
-                              color: selected ? colors.paper : colors.inkMuted,
-                            }}
-                          >
-                            {option.label.toUpperCase()}
-                          </ThemedText>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                ) : null}
-
-                {/* Date + time — hidden for a horizon deadline (its date is the
-                    window end). */}
-                {!(detailKind === "deadline" && dueRange) ? (
-                  <WhenPicker
-                    date={date}
-                    time={time}
-                    onDateChange={setDate}
-                    onTimeChange={setTime}
-                    accentColor={detailAccent}
-                    dateLabel={detailKind === "deadline" ? "DUE DATE" : "DATE"}
+        {/* Detail — only for the selected dated verb. Inline value readouts in
+            the same word-not-bubble language as the verb line. */}
+        {selected ? (
+          <Animated.View
+            entering={reduced ? undefined : FadeIn.duration(160)}
+            exiting={reduced ? undefined : FadeOut.duration(100)}
+            layout={layout}
+            style={styles.detail}
+          >
+            {/* WHEN — one shared grammar for todo + deadline: concrete days and
+                closing horizons as inline tappable words. "exact" reveals the
+                precise day/time stepper. */}
+            <ValueRow label="WHEN">
+              {WHEN_OPTIONS.map((o) =>
+                o.kind === "concrete" ? (
+                  <Value
+                    key={o.label}
+                    label={o.label}
+                    color={accent}
+                    selected={!exact && dueRange === null && date === o.date()}
+                    onPress={() => {
+                      setExact(false);
+                      setDueRange(null);
+                      setDate(o.date());
+                      setTime("");
+                    }}
                   />
                 ) : (
-                  <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-                    Close it {horizonLabel(dueRange!)} — by {horizonEndDate(dueRange!)}.
-                  </ThemedText>
-                )}
+                  <Value
+                    key={o.label}
+                    label={o.label}
+                    color={accent}
+                    selected={!exact && dueRange === o.range}
+                    onPress={() => {
+                      setExact(false);
+                      setDueRange(o.range);
+                      setDate("");
+                      setTime("");
+                    }}
+                  />
+                ),
+              )}
+              <Value
+                label="exact"
+                color={accent}
+                selected={exact}
+                onPress={() => {
+                  setExact((v) => !v);
+                  setDueRange(null);
+                }}
+              />
+            </ValueRow>
 
-                {/* Project attribution. */}
-                {activeProjects.length > 0 ? (
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={styles.projectRow}
-                  >
-                    <Pressable
-                      onPress={() => setProjectId(null)}
-                      accessibilityRole="radio"
-                      accessibilityLabel="No project"
-                      accessibilityState={{ selected: projectId === null }}
-                      style={[
-                        styles.chip,
-                        {
-                          backgroundColor:
-                            projectId === null
-                              ? detailAccent
-                              : colors.surfaceSubtle,
-                        },
-                      ]}
-                    >
-                      <ThemedText
-                        type="micro"
-                        style={{
-                          color:
-                            projectId === null ? colors.paper : colors.inkMuted,
-                        }}
-                      >
-                        UNFILED
-                      </ThemedText>
-                    </Pressable>
-                    {activeProjects.map((p) => {
-                      const selected = projectId === p.id;
-                      return (
-                        <Pressable
-                          key={p.id}
-                          onPress={() =>
-                            setProjectId(selected ? null : p.id)
-                          }
-                          accessibilityRole="radio"
-                          accessibilityLabel={`Project ${p.title}`}
-                          accessibilityState={{ selected }}
-                          style={[
-                            styles.chip,
-                            {
-                              backgroundColor: selected
-                                ? detailAccent
-                                : colors.surfaceSubtle,
-                            },
-                          ]}
-                        >
-                          <ThemedText
-                            type="body"
-                            numberOfLines={1}
-                            style={[
-                              styles.chipIdeaLabel,
-                              { color: selected ? colors.paper : colors.ink },
-                            ]}
-                          >
-                            {p.title}
-                          </ThemedText>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                ) : null}
-
-                {/* Commit the dated entry. */}
-                <Pressable
-                  onPress={() => commitDated(detailKind)}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    detailKind === "deadline" ? "Save deadline" : "Save to-do"
-                  }
-                  style={[styles.commit, { backgroundColor: detailAccent }]}
-                >
-                  <ThemedText type="micro" style={{ color: colors.paper }}>
-                    {detailKind === "deadline" ? "SAVE DEADLINE" : "SAVE TODO"}
-                  </ThemedText>
-                </Pressable>
-              </View>
+            {/* The precise day + time — a one-line stepper readout, opt-in. No
+                wheel, no panel, no bubbles: the value IS the control. */}
+            {exact ? (
+              <ExactWhen
+                date={date}
+                time={time}
+                accent={accent}
+                onDateChange={setDate}
+                onTimeChange={setTime}
+              />
+            ) : dueRange ? (
+              <ThemedText type="micro" style={{ color: colors.inkMuted }}>
+                {selected === "deadline" ? "Close it" : "Land it"}{" "}
+                {horizonLabel(dueRange)} — by {horizonEndDate(dueRange)}.
+              </ThemedText>
             ) : null}
-          </>
-        )}
+
+            {/* PROJECT — attribution as inline words. Hidden with no projects. */}
+            {activeProjects.length > 0 ? (
+              <ValueRow label="PROJECT">
+                <Value
+                  label="unfiled"
+                  color={accent}
+                  selected={projectId === null}
+                  onPress={() => setProjectId(null)}
+                />
+                {activeProjects.map((p) => (
+                  <Value
+                    key={p.id}
+                    label={p.title}
+                    color={accent}
+                    selected={projectId === p.id}
+                    onPress={() =>
+                      setProjectId((id) => (id === p.id ? null : p.id))
+                    }
+                  />
+                ))}
+              </ValueRow>
+            ) : null}
+
+            {/* A quiet echo of the resolved attribution — the readout, not a
+                button. The corner ✓ commits. */}
+            <ThemedText type="micro" style={{ color: colors.inkMuted }}>
+              {selected === "deadline" ? "Deadline" : "To-do"} · {projectName}
+            </ThemedText>
+          </Animated.View>
+        ) : null}
       </View>
     </Animated.View>
+  );
+}
+
+// Concrete one-tap dates stored DD/MM/YYYY via the same format the stepper uses,
+// so a quick-pick and an exact pick are interchangeable.
+function dateStr(addDays: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + addDays);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+function daysToWeekend(): number {
+  // The coming Saturday (today if already Sat).
+  const day = new Date().getDay();
+  return (6 - day + 7) % 7;
+}
+
+// ── Exact when — a one-line stepper readout, no wheel ─────────────────────────
+
+const STORE_FMT = "DD/MM/YYYY";
+
+/**
+ * The precise day + time, compacted to a single instrument readout. The date and
+ * time are big mono values; bare chevron steppers nudge them (±1 day, ±15 min),
+ * press-and-hold to repeat. No wheel, no panel, no chips — the value is the
+ * control. The relative quick-picks (today/tomorrow/weekend) live at the top
+ * WHEN level, so they're deliberately absent here.
+ */
+function ExactWhen({
+  date,
+  time,
+  accent,
+  onDateChange,
+  onTimeChange,
+}: {
+  date: string;
+  time: string;
+  accent: string;
+  onDateChange: (value: string) => void;
+  onTimeChange: (value: string) => void;
+}): React.ReactElement {
+  const { colors } = useTheme();
+
+  // Default the date to today the moment exact opens with nothing set.
+  useEffect(() => {
+    if (!date) onDateChange(dayjs().format(STORE_FMT));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const day = date ? dayjs(date, STORE_FMT) : dayjs();
+
+  function nudgeDay(delta: number): void {
+    const today = dayjs().startOf("day");
+    let next = day.add(delta, "day");
+    // Never schedule into the past — a big jump backwards floors at today
+    // rather than no-op'ing, so a held chevron lands on today instead of stalling.
+    if (next.isBefore(today)) {
+      if (day.isSame(today, "day")) return; // already at the floor
+      next = today;
+    }
+    onDateChange(next.format(STORE_FMT));
+  }
+
+  function nudgeTime(delta: number): void {
+    if (!time) {
+      onTimeChange(delta > 0 ? "09:00" : "08:45");
+      return;
+    }
+    const [h, m] = time.split(":").map(Number);
+    let total = (h * 60 + m + delta * 15 + 24 * 60) % (24 * 60);
+    const nh = Math.floor(total / 60);
+    const nm = total % 60;
+    onTimeChange(
+      `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`,
+    );
+  }
+
+  const timeLabel = time
+    ? dayjs()
+        .hour(Number(time.split(":")[0]))
+        .minute(Number(time.split(":")[1]))
+        .format("h:mm A")
+    : "all day";
+
+  return (
+    <View style={styles.exact}>
+      {/* Date stepper — tap nudges ±1 day, hold jumps ±10 days. */}
+      <Stepper
+        accent={accent}
+        onLeft={() => nudgeDay(-1)}
+        onRight={() => nudgeDay(1)}
+        onLeftHold={() => nudgeDay(-10)}
+        onRightHold={() => nudgeDay(10)}
+        accessibilityLabel="Adjust day"
+      >
+        <ThemedText
+          type="mono"
+          style={[styles.exactValue, { color: colors.ink }]}
+        >
+          {day.format("ddd D MMM")}
+        </ThemedText>
+      </Stepper>
+
+      {/* Time stepper — tap nudges ±15 min, hold jumps ±1 hour. Tapping the
+          label clears back to all-day. */}
+      <Stepper
+        accent={accent}
+        onLeft={() => nudgeTime(-1)}
+        onRight={() => nudgeTime(1)}
+        onLeftHold={() => nudgeTime(-4)}
+        onRightHold={() => nudgeTime(4)}
+        accessibilityLabel="Adjust time"
+      >
+        <Pressable
+          onPress={() => time && onTimeChange("")}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={time ? "Clear time, all day" : "Time"}
+        >
+          <ThemedText
+            type="mono"
+            style={[
+              styles.exactValue,
+              { color: time ? colors.ink : colors.inkMuted },
+            ]}
+          >
+            {timeLabel}
+          </ThemedText>
+        </Pressable>
+      </Stepper>
+    </View>
+  );
+}
+
+/**
+ * A value flanked by two press-and-hold chevron steppers. Bare glyphs, no box.
+ * A tap fires the small step (`onLeft`/`onRight`); holding fires the big jump
+ * (`onLeftHold`/`onRightHold`) on repeat.
+ */
+function Stepper({
+  accent,
+  onLeft,
+  onRight,
+  onLeftHold,
+  onRightHold,
+  accessibilityLabel,
+  children,
+}: {
+  accent: string;
+  onLeft: () => void;
+  onRight: () => void;
+  onLeftHold: () => void;
+  onRightHold: () => void;
+  accessibilityLabel: string;
+  children: React.ReactNode;
+}): React.ReactElement {
+  return (
+    <View style={styles.stepper} accessibilityLabel={accessibilityLabel}>
+      <RepeatButton
+        onTrigger={onLeft}
+        onRepeat={onLeftHold}
+        accessibilityLabel="Decrease"
+      >
+        <IconSymbol name="chevron-left" size={22} color={accent} />
+      </RepeatButton>
+      {children}
+      <RepeatButton
+        onTrigger={onRight}
+        onRepeat={onRightHold}
+        accessibilityLabel="Increase"
+      >
+        <IconSymbol name="chevron-right" size={22} color={accent} />
+      </RepeatButton>
+    </View>
+  );
+}
+
+/**
+ * Fires `onTrigger` once on press (a tap = small step). Hold past the delay and
+ * it switches to `onRepeat` (a big jump) on a steady tick — so the user nudges
+ * by ±1 with a tap and travels by ±10 days / ±1 hour by holding, no press-press-press.
+ */
+function RepeatButton({
+  onTrigger,
+  onRepeat,
+  accessibilityLabel,
+  children,
+}: {
+  onTrigger: () => void;
+  onRepeat: () => void;
+  accessibilityLabel: string;
+  children: React.ReactNode;
+}): React.ReactElement {
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const delay = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function start(): void {
+    onTrigger();
+    // Hold: after a short delay, repeat with the big jump at a steady tick.
+    delay.current = setTimeout(() => {
+      timer.current = setInterval(onRepeat, 120);
+    }, 350);
+  }
+
+  function stop(): void {
+    if (delay.current) clearTimeout(delay.current);
+    if (timer.current) clearInterval(timer.current);
+    delay.current = null;
+    timer.current = null;
+  }
+
+  useEffect(() => stop, []);
+
+  return (
+    <Pressable
+      onPressIn={start}
+      onPressOut={stop}
+      hitSlop={{ top: 12, bottom: 12, left: 6, right: 6 }}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={({ pressed }) => [styles.repeat, pressed && { opacity: 0.5 }]}
+    >
+      {children}
+    </Pressable>
+  );
+}
+
+// ── Verbs & values — words, not bubbles ───────────────────────────────────────
+
+/**
+ * A single tappable verb on the destination line. The affordance is the word
+ * itself in its type color — no enclosure. Picked dated verbs go bold with a
+ * 2px underline in their color (the edge-bar pattern, laid flat). Generous
+ * vertical padding + hitSlop keep the tap target ≥44pt though the ink is small.
+ */
+function Verb({
+  label,
+  color,
+  selected = false,
+  muted = false,
+  onPress,
+  accessibilityLabel,
+  accessibilityState,
+}: {
+  label: string;
+  color: string;
+  selected?: boolean;
+  muted?: boolean;
+  onPress: () => void;
+  accessibilityLabel: string;
+  accessibilityState?: { selected?: boolean; expanded?: boolean };
+}): React.ReactElement {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={{ top: 10, bottom: 10, left: 4, right: 4 }}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={accessibilityState}
+      style={({ pressed }) => [styles.verb, pressed && { opacity: 0.5 }]}
+    >
+      <ThemedText
+        type="item"
+        style={[styles.verbText, { color }, selected && styles.verbSelected]}
+      >
+        {label}
+      </ThemedText>
+      <View
+        style={[
+          styles.verbUnderline,
+          { backgroundColor: selected ? color : "transparent" },
+        ]}
+      />
+    </Pressable>
+  );
+}
+
+/**
+ * A row of inline value words behind a mono kicker key — the detail readout that
+ * replaces chip rails. "WHEN  today tomorrow weekend exact". The chosen value is
+ * colored + medium-weight; the rest are muted ink. No capsules.
+ */
+function ValueRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}): React.ReactElement {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.valueRow}>
+      <ThemedText
+        type="micro"
+        style={[styles.valueKey, { color: colors.inkMuted }]}
+      >
+        {label}
+      </ThemedText>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.valueList}
+      >
+        {children}
+      </ScrollView>
+    </View>
+  );
+}
+
+/** A single tappable value word in a ValueRow. Colored when chosen, else muted. */
+function Value({
+  label,
+  color,
+  selected,
+  onPress,
+}: {
+  label: string;
+  color: string;
+  selected: boolean;
+  onPress: () => void;
+}): React.ReactElement {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={{ top: 10, bottom: 10, left: 4, right: 4 }}
+      accessibilityRole="radio"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+      style={({ pressed }) => [styles.value, pressed && { opacity: 0.5 }]}
+    >
+      <ThemedText
+        type="body"
+        numberOfLines={1}
+        style={[
+          styles.valueText,
+          selected
+            ? { color, fontFamily: tokens.type.fontInter.semiBold }
+            : { color: colors.inkMuted },
+        ]}
+      >
+        {label}
+      </ThemedText>
+    </Pressable>
+  );
+}
+
+/** A faint middot separating verbs — punctuation, not chrome. */
+function Sep({ color }: { color: string }): React.ReactElement {
+  return (
+    <ThemedText type="item" style={[styles.sep, { color }]}>
+      ·
+    </ThemedText>
   );
 }
 
@@ -471,7 +780,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: tokens.space.md,
     paddingHorizontal: tokens.space.lg,
-    gap: tokens.space.sm,
+    gap: tokens.space.xs,
   },
   headRow: {
     flexDirection: "row",
@@ -481,33 +790,51 @@ const styles = StyleSheet.create({
   echo: {
     flex: 1,
   },
-  dismiss: {
-    width: 24,
-    height: 24,
+  corner: {
+    width: 28,
+    height: 28,
     alignItems: "center",
     justifyContent: "center",
   },
-  actionRow: {
+  verbLine: {
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
   },
-  pickerRow: {
+  verb: {
+    alignItems: "center",
+    paddingVertical: tokens.space.xs,
+  },
+  verbText: {
+    fontFamily: tokens.type.fontInter.medium,
+  },
+  verbSelected: {
+    fontFamily: tokens.type.fontInter.bold,
+  },
+  verbUnderline: {
+    height: 2,
+    alignSelf: "stretch",
+    marginTop: 2,
+    borderRadius: tokens.radius.pill,
+  },
+  sep: {
+    opacity: 0.5,
+  },
+  ideaRail: {
     flexDirection: "row",
     alignItems: "center",
-    gap: tokens.space.sm,
-    paddingRight: tokens.space.sm,
+    gap: tokens.space.lg,
+    paddingVertical: tokens.space.xs,
   },
-  chip: {
+  ideaItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.xs,
-    minHeight: 32,
     maxWidth: 200,
-    paddingHorizontal: tokens.space.md,
-    borderRadius: tokens.radius.pill,
+    paddingVertical: tokens.space.xs,
   },
-  chipIdeaLabel: {
+  ideaLabel: {
     flexShrink: 1,
     fontFamily: tokens.type.fontHand.medium,
     fontSize: 18,
@@ -515,40 +842,47 @@ const styles = StyleSheet.create({
   },
   detail: {
     gap: tokens.space.sm,
-    paddingTop: tokens.space.xs,
+    paddingTop: tokens.space.sm,
   },
-  kindRow: {
-    flexDirection: "row",
-    gap: tokens.space.sm,
-  },
-  kindChip: {
-    minHeight: 32,
-    paddingHorizontal: tokens.space.md,
-    borderRadius: tokens.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  horizonRow: {
-    flexDirection: "row",
-    gap: tokens.space.xs,
-  },
-  horizonOption: {
-    flex: 1,
-    minHeight: 36,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: tokens.radius.md,
-  },
-  projectRow: {
+  valueRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: tokens.space.sm,
+    gap: tokens.space.md,
+  },
+  valueKey: {
+    width: 52,
+  },
+  valueList: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.lg,
     paddingRight: tokens.space.sm,
   },
-  commit: {
-    minHeight: 44,
-    borderRadius: tokens.radius.md,
+  value: {
+    paddingVertical: tokens.space.xs,
+  },
+  valueText: {
+    maxWidth: 160,
+  },
+  exact: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    rowGap: tokens.space.xs,
+    columnGap: tokens.space.lg,
+    paddingVertical: tokens.space.xs,
+  },
+  stepper: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+  },
+  exactValue: {
+    minWidth: 92,
+    textAlign: "center",
+  },
+  repeat: {
+    paddingVertical: tokens.space.xs,
   },
 });

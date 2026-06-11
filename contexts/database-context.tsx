@@ -59,6 +59,7 @@ interface DatabaseContextValue {
   updateEntryStatus: (id: string, status: DbEntry["status"]) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
   refetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
+  refetchProjects: () => Promise<void>;
   createProject: (title: string) => Promise<DbProject>;
   updateProject: (
     id: string,
@@ -866,6 +867,7 @@ export function DatabaseProvider({
     updateEntryStatus,
     deleteEntry,
     refetchEntries: fetchEntries,
+    refetchProjects: fetchProjects,
     createProject,
     updateProject,
     deleteProject,

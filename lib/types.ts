@@ -1,4 +1,4 @@
-export type EntryType = "todo" | "deadline" | "event" | "someday" | "idea";
+export type EntryType = "todo" | "deadline" | "idea";
 
 /**
  * Horizon window for a deadline: instead of a fake precise date, the user

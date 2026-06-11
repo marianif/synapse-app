@@ -80,3 +80,30 @@ export const ConfirmKey = {
 } as const;
 
 export type ConfirmKeyValue = (typeof ConfirmKey)[keyof typeof ConfirmKey];
+
+// ─── Off-clock deck memory ──────────────────────────────────────────────────
+//
+// The last off-clock card the user reached into. The home deck restores it as
+// the default-focused sheet on mount, so the field reopens where attention
+// last landed — the post-it you were turning over is still face-up.
+
+const LAST_DECK_ID_KEY = "off_clock_last_id";
+
+/** Returns the id of the last-touched off-clock entry, or null. */
+export async function getLastDeckId(): Promise<string | null> {
+  try {
+    return await AsyncStorage.getItem(LAST_DECK_ID_KEY);
+  } catch (error) {
+    console.error("[settings] getLastDeckId failed:", error);
+    return null;
+  }
+}
+
+/** Persists the last-touched off-clock entry id. */
+export async function setLastDeckId(id: string): Promise<void> {
+  try {
+    await AsyncStorage.setItem(LAST_DECK_ID_KEY, id);
+  } catch (error) {
+    console.error("[settings] setLastDeckId failed:", error);
+  }
+}

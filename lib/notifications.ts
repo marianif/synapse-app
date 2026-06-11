@@ -68,8 +68,8 @@ function nextRecurringDate(entry: DbEntry): string | null {
  * receive a notification (wrong type, already done, no date, or in the past).
  */
 function buildTriggerDate(entry: DbEntry): Date | null {
-  // Only schedule for deadlines and events
-  if (entry.type !== "deadline" && entry.type !== "event") return null;
+  // Only deadlines get notifications (todos/ideas are not time-triggered).
+  if (entry.type !== "deadline") return null;
 
   // Skip completed/met entries
   if (entry.status === "completed" || entry.status === "met") return null;
@@ -82,15 +82,10 @@ function buildTriggerDate(entry: DbEntry): Date | null {
     const nextDate = nextRecurringDate(entry);
     if (!nextDate) return null;
     dateStr = nextDate;
-    // Time comes from the entry's scheduled/due time fields
-    timeStr = entry.scheduled_time ?? entry.due_time;
-  } else if (entry.type === "deadline") {
-    dateStr = entry.due_date;
     timeStr = entry.due_time;
   } else {
-    // event
-    dateStr = entry.scheduled_date;
-    timeStr = entry.scheduled_time;
+    dateStr = entry.due_date;
+    timeStr = entry.due_time;
   }
 
   const triggerDate = parseTriggerDate(dateStr, timeStr);
@@ -102,9 +97,9 @@ function buildTriggerDate(entry: DbEntry): Date | null {
   return triggerDate;
 }
 
-/** Human-readable notification body line per entry type. */
-function notificationBody(entry: DbEntry): string {
-  return entry.type === "deadline" ? "Deadline today" : "Starts now";
+/** Human-readable notification body line. */
+function notificationBody(_entry: DbEntry): string {
+  return "Deadline today";
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────

@@ -40,29 +40,7 @@ interface MenuItem {
   route?: RouteString;
   dividerAfter?: boolean;
   accentColor?: string;
-  modalParams?: { type: "todo" | "deadline" | "event" };
 }
-
-const quickActions: MenuItem[] = [
-  {
-    label: "Add Todo",
-    icon: "checkbox-marked-outline",
-    modalParams: { type: "todo" },
-    accentColor: entryColor("todo"),
-  },
-  {
-    label: "Add Event",
-    icon: "calendar-clock",
-    modalParams: { type: "event" },
-    accentColor: entryColor("event"),
-  },
-  {
-    label: "Add Deadline",
-    icon: "clock-alert-outline",
-    modalParams: { type: "deadline" },
-    accentColor: entryColor("deadline"),
-  },
-];
 
 const menuItems: MenuItem[] = [
   { label: "Settings", icon: "cog-outline", route: "/settings" },
@@ -94,10 +72,7 @@ export function AppMenu({
   if (!visible) return null;
 
   const handleItemPress = (item: MenuItem) => {
-    if (item.modalParams) {
-      const params = new URLSearchParams(item.modalParams as any);
-      router.push(`/modal?${params.toString()}`);
-    } else if (item.route) {
+    if (item.route) {
       router.push(item.route as any);
     }
     onClose();

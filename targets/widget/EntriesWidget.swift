@@ -17,7 +17,7 @@ struct EntryData: Codable, Identifiable {
     let id: String
     let title: String
     let status: String
-    let type: String? // "todo", "deadline", "event", "someday", "idea"
+    let type: String? // "todo", "deadline", "idea"
 }
 
 // MARK: - Timeline Provider
@@ -42,9 +42,9 @@ struct EntriesProvider: AppIntentTimelineProvider {
     private var placeholderEntries: [EntryData] {
         [
             EntryData(id: "1", title: "Review project proposal", status: "in-progress", type: "todo"),
-            EntryData(id: "2", title: "Team standup meeting", status: "scheduled", type: "event"),
+            EntryData(id: "2", title: "Reply to the studio", status: "scheduled", type: "todo"),
             EntryData(id: "3", title: "Submit quarterly report", status: "pending", type: "deadline"),
-            EntryData(id: "4", title: "Research competitor analysis", status: "someday", type: "someday"),
+            EntryData(id: "4", title: "Research competitor analysis", status: "scheduled", type: "idea"),
             EntryData(id: "5", title: "Fix navigation bug", status: "done", type: "todo"),
         ]
     }
@@ -276,8 +276,6 @@ struct EntryRow: View {
             switch type {
             case "todo": return .typeTodo
             case "deadline": return .typeBills
-            case "event": return .typeEvent
-            case "someday": return .typeSomeday
             case "idea": return .typeIdea
             default: return .typeTodo
             }
@@ -467,7 +465,7 @@ struct entriesWidget: Widget {
 } timeline: {
     EntriesEntry(date: .now, entries: [
         EntryData(id: "1", title: "Review quarterly report", status: "in-progress", type: "todo"),
-        EntryData(id: "2", title: "Team standup", status: "scheduled", type: "event"),
+        EntryData(id: "2", title: "Reply to the studio", status: "scheduled", type: "todo"),
         EntryData(id: "3", title: "Submit invoices", status: "done", type: "deadline"),
     ], configuration: ConfigurationAppIntent())
 }
@@ -477,9 +475,9 @@ struct entriesWidget: Widget {
 } timeline: {
     EntriesEntry(date: .now, entries: [
         EntryData(id: "1", title: "Review quarterly report", status: "in-progress", type: "todo"),
-        EntryData(id: "2", title: "Team standup", status: "scheduled", type: "event"),
+        EntryData(id: "2", title: "Reply to the studio", status: "scheduled", type: "todo"),
         EntryData(id: "3", title: "Submit invoices", status: "done", type: "deadline"),
-        EntryData(id: "4", title: "Client call", status: "pending", type: "event"),
+        EntryData(id: "4", title: "Renew the lease", status: "pending", type: "deadline"),
         EntryData(id: "5", title: "Update documentation", status: "in-progress", type: "todo"),
     ], configuration: ConfigurationAppIntent())
 }
@@ -489,12 +487,12 @@ struct entriesWidget: Widget {
 } timeline: {
     EntriesEntry(date: .now, entries: [
         EntryData(id: "1", title: "Review quarterly report", status: "in-progress", type: "todo"),
-        EntryData(id: "2", title: "Team standup meeting", status: "scheduled", type: "event"),
+        EntryData(id: "2", title: "Reply to the studio", status: "scheduled", type: "todo"),
         EntryData(id: "3", title: "Submit invoices", status: "done", type: "deadline"),
-        EntryData(id: "4", title: "Client call", status: "pending", type: "event"),
+        EntryData(id: "4", title: "Renew the lease", status: "pending", type: "deadline"),
         EntryData(id: "5", title: "Update documentation", status: "in-progress", type: "todo"),
         EntryData(id: "6", title: "Fix authentication bug", status: "done", type: "todo"),
-        EntryData(id: "7", title: "Design new onboarding flow", status: "someday", type: "someday"),
+        EntryData(id: "7", title: "Design new onboarding flow", status: "scheduled", type: "idea"),
         EntryData(id: "8", title: "Research AI tools", status: "pending", type: "idea"),
         EntryData(id: "9", title: "Archive old projects", status: "done", type: "todo"),
         EntryData(id: "10", title: "Prepare presentation", status: "in-progress", type: "todo"),

@@ -18,7 +18,7 @@ export type Channel = {
   ghost: string;
 };
 
-/** The five channels, in board order (stakes first, then present). */
+/** The three channels, in board order (stakes first, then present). */
 export const CHANNELS: Channel[] = [
   {
     type: "deadline",
@@ -40,20 +40,6 @@ export const CHANNELS: Channel[] = [
     label: "Ideas",
     invite: "Podcast about cities",
     ghost: "Podcast about cities",
-  },
-  {
-    type: "event",
-    lane: "present",
-    label: "Event",
-    invite: "Dentist · Fri 9:00",
-    ghost: "Dentist · Fri 9:00",
-  },
-  {
-    type: "someday",
-    lane: "present",
-    label: "Someday",
-    invite: "Learn to sail someday",
-    ghost: "Learn to sail",
   },
 ];
 

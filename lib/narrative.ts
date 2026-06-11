@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 
 import { isPromotedIdea } from "./taxonomy";
-import type { DbDiaryEntry, DbEntry } from "./types";
+import type { DbEntry, DbProject } from "./types";
 
 /**
  * The narrative engine — the agenda voice, generated deterministically from
@@ -9,42 +9,52 @@ import type { DbDiaryEntry, DbEntry } from "./types";
  * time. The voice may hold you accountable; it may not shame, nag, comfort,
  * or celebrate (PRODUCT.md, principle 5).
  *
- * Narrative is a LAYER, never a curtain (principle 1): these lines reference
- * items that all remain visible and tappable in the zones below.
+ * Scope is deliberately narrow: this layer speaks ONLY about projects and
+ * ideas — the macro things the user was last *working on*. It is a fast hit of
+ * re-recognition for an out-of-sight-out-of-mind brain ("oh right, that"), not
+ * a status board. Deadlines, todos, events and diary traces are NOT its job;
+ * they live in the direct zones below. Narrative is a layer, never a curtain
+ * (principle 1): every line references an item that stays visible and tappable.
  */
 
-export type NarrativeKind = "diary-trace" | "waiting" | "stale-idea";
+export type NarrativeKind = "project" | "idea";
+
+/** A line's accent — the voice is multicolor: projects and ideas glow apart. */
+export type NarrativeAccent = "project" | "idea";
 
 export interface NarrativeLine {
   id: string;
   kind: NarrativeKind;
+  /** Plain narrative text — the connective tissue, rendered in ink. */
   text: string;
-  /** Tap target: an entry to open, or the diary tab for a trace line. */
+  /** The named thing inside the line, lifted in its own accent color. */
+  subject: string;
+  /** Which accent the subject glows in. */
+  accent: NarrativeAccent;
+  /** Tap target: the project or idea this line is about. */
   target:
-    | { kind: "entry"; entryId: string; entryType: DbEntry["type"] }
-    | { kind: "diary" }
-    | null;
+    | { kind: "project"; projectId: string }
+    | { kind: "entry"; entryId: string; entryType: DbEntry["type"] };
 }
 
-/** Days an item must sit untouched before the voice mentions it. Kept high so
- *  the lines stay rare — rarity is what keeps them noticed. */
-const WAITING_THRESHOLD_DAYS = 7;
-const STALE_IDEA_THRESHOLD_DAYS = 7;
-/** Narrative stays a layer: at most this many lines, one per kind. */
+/** At most this many lines — rarity is what keeps them noticed. */
 const MAX_LINES = 3;
 
 function daysSince(epochSeconds: number, now: dayjs.Dayjs): number {
   return now.startOf("day").diff(dayjs(epochSeconds * 1000).startOf("day"), "day");
 }
 
-function agoPhrase(days: number): string {
-  if (days < 14) return "A week ago";
-  if (days < 21) return "Two weeks ago";
+/** "today" / "yesterday" / "N days ago" / "a while back" — soft, factual. */
+function lastTouchedPhrase(days: number): string {
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 14) return "last week";
   if (days < 60) return `${Math.floor(days / 7)} weeks ago`;
-  return `${Math.floor(days / 30)} months ago`;
+  return "a while back";
 }
 
-function snippet(text: string, max = 48): string {
+function snippet(text: string, max = 42): string {
   const oneLine = text.replace(/\s+/g, " ").trim();
   if (oneLine.length <= max) return oneLine;
   return `${oneLine.slice(0, max).trimEnd()}…`;
@@ -53,70 +63,68 @@ function snippet(text: string, max = 48): string {
 const isDone = (e: DbEntry): boolean =>
   e.status === "completed" || e.status === "met";
 
+/** Most recent of an entry's create/update stamps — when it was last *touched*. */
+function lastTouched(e: DbEntry): number {
+  return Math.max(e.created_at, e.updated_at);
+}
+
 /**
- * Build the agenda lines for the home narrative block. Deterministic for a
- * given (entries, diaryEntries, now). Order: yesterday's trace, the
- * longest-waiting deadline, the oldest unpromoted idea.
+ * Build the agenda lines — projects and ideas only, ordered by recency of
+ * work so the things most recently in-hand surface first. Deterministic for a
+ * given (entries, projects, now).
+ *
+ * Projects lead (they're the macro context), then loose ideas you haven't
+ * promoted yet. Each line carries its own accent so the block reads multicolor.
  */
 export function buildNarrative(
   entries: DbEntry[],
-  diaryEntries: DbDiaryEntry[],
+  projects: DbProject[],
   nowMs: number,
 ): NarrativeLine[] {
   const now = dayjs(nowMs);
-  const lines: NarrativeLine[] = [];
 
-  // Yesterday's diary trace — the latest note written yesterday.
-  const yesterdayNote = diaryEntries
-    .filter((n) => daysSince(n.created_at, now) === 1)
-    .sort((a, b) => b.created_at - a.created_at)[0];
-  if (yesterdayNote) {
-    lines.push({
-      id: `trace-${yesterdayNote.id}`,
-      kind: "diary-trace",
-      text: `Yesterday you wrote about “${snippet(yesterdayNote.body)}”.`,
-      target: { kind: "diary" },
-    });
+  // When each project was last worked on = the newest touch across its entries
+  // (falling back to the project's own updated_at if nothing's filed under it).
+  const lastWorkByProject = new Map<string, number>();
+  for (const e of entries) {
+    if (!e.project_id) continue;
+    const prev = lastWorkByProject.get(e.project_id) ?? 0;
+    lastWorkByProject.set(e.project_id, Math.max(prev, lastTouched(e)));
   }
 
-  // The longest-waiting open deadline — a fact about time, not a scolding.
-  const waiting = entries
-    .filter(
-      (e) =>
-        e.type === "deadline" &&
-        !isDone(e) &&
-        daysSince(e.created_at, now) >= WAITING_THRESHOLD_DAYS,
-    )
-    .sort((a, b) => a.created_at - b.created_at)[0];
-  if (waiting) {
-    const days = daysSince(waiting.created_at, now);
-    lines.push({
-      id: `waiting-${waiting.id}`,
-      kind: "waiting",
-      text: `“${snippet(waiting.title)}” has been waiting ${days} days.`,
-      target: { kind: "entry", entryId: waiting.id, entryType: waiting.type },
+  const projectLines: NarrativeLine[] = projects
+    .filter((p) => p.status === "active")
+    .map((p) => ({
+      project: p,
+      touched: lastWorkByProject.get(p.id) ?? p.updated_at,
+    }))
+    .sort((a, b) => b.touched - a.touched)
+    .map(({ project, touched }) => {
+      const phrase = lastTouchedPhrase(daysSince(touched, now));
+      return {
+        id: `project-${project.id}`,
+        kind: "project" as const,
+        text: `You were building __ ${phrase}.`,
+        subject: snippet(project.title),
+        accent: "project" as const,
+        target: { kind: "project" as const, projectId: project.id },
+      };
     });
-  }
 
-  // The oldest idea never promoted to a project — an open door, not a chore.
-  const stale = entries
-    .filter(
-      (e) =>
-        e.type === "idea" &&
-        !isDone(e) &&
-        !isPromotedIdea(e) &&
-        daysSince(e.created_at, now) >= STALE_IDEA_THRESHOLD_DAYS,
-    )
-    .sort((a, b) => a.created_at - b.created_at)[0];
-  if (stale) {
-    const days = daysSince(stale.created_at, now);
-    lines.push({
-      id: `stale-${stale.id}`,
-      kind: "stale-idea",
-      text: `${agoPhrase(days)} you sketched “${snippet(stale.title)}”. Worth a second look?`,
-      target: { kind: "entry", entryId: stale.id, entryType: stale.type },
-    });
-  }
+  // Loose ideas — open, not yet promoted into a project — newest-worked first.
+  // These are the sketches still waiting for a second look.
+  const ideaLines: NarrativeLine[] = entries
+    .filter((e) => e.type === "idea" && !isDone(e) && !isPromotedIdea(e))
+    .sort((a, b) => lastTouched(b) - lastTouched(a))
+    .map((e) => ({
+      id: `idea-${e.id}`,
+      kind: "idea" as const,
+      text: `__ — still worth a look.`,
+      subject: snippet(e.title),
+      accent: "idea" as const,
+      target: { kind: "entry" as const, entryId: e.id, entryType: e.type },
+    }));
 
-  return lines.slice(0, MAX_LINES);
+  // Projects lead, ideas fill the remainder, capped so the layer stays thin.
+  return [...projectLines, ...ideaLines].slice(0, MAX_LINES);
 }

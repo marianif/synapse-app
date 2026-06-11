@@ -37,10 +37,11 @@ export function CustomTabBar(): React.ReactElement {
         {/* The pen key — THE capture trigger, one thumb gesture from anywhere.
             Tap opens the text composer on the field; long-press starts voice
             capture immediately. Both ride the existing ?capture= deep-link the
-            widget already uses, so it works from any tab. Richer entries reach
-            /modal through the resolver's MORE… chip. The one neutral-accent
-            control in the chrome, so "capture" reads at a glance without
-            clashing with any saturated type code. */}
+            widget already uses, so it works from any tab. Dates, horizons, and
+            projects are set inline in the resolver's "+ details" strip — there
+            is no separate add form. The one neutral-accent control in the
+            chrome, so "capture" reads at a glance without clashing with any
+            saturated type code. */}
         <Pressable
           onPress={() =>
             router.push({ pathname: "/", params: { capture: "text" } })

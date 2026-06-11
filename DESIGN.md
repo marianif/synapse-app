@@ -1,6 +1,6 @@
 ---
 name: Synapse — Field Lab
-description: "Cool graphite instrument-panel ground, five electric type-colors at equal volume, Host Grotesk + mono signal layer + Caveat handwritten notes, sharp edges — a charged, living board of your whole brain. Full light/dark parity."
+description: "Cool graphite instrument-panel ground, three electric type-colors (deadline · todo · idea) at equal volume, Host Grotesk + mono signal layer + Caveat handwritten notes, sharp edges — a charged, living second brain. Full light/dark parity."
 ---
 
 # Design System: Field Lab
@@ -9,25 +9,30 @@ description: "Cool graphite instrument-panel ground, five electric type-colors a
 
 **Creative North Star: "Your whole brain as a living instrument panel — switched on, never soothed."**
 
-Field Lab is built for an ADHD-adjacent user who opens the app mid-thought and needs to feel activated, not sedated. The previous system (The Field: warm oat-cream, pastels, Fraunces serif) read as soothing; Field Lab flips everything cool, sharp, and charged. Every entry type glows in its own electric color at **equal volume** — an idea is as alive as an overdue bill, it just glows in a different color and lives in a different zone (STAKES vs PRESENT). Nothing fades, because for this brain, out of sight is gone.
+Field Lab is built for an ADHD-adjacent user who opens the app mid-thought and needs to feel activated, not sedated. The previous system (The Field: warm oat-cream, pastels, Fraunces serif) read as soothing; Field Lab flips everything cool, sharp, and charged. Every entry type glows in its own electric color at **equal volume** — an idea is as alive as a looming deadline, it just glows in a different color and lives in a different zone (a direct zone of projects + deadlines vs the narrative zone). Nothing fades, because for this brain, out of sight is gone.
 
-The system explicitly rejects: corporate productivity tools, gamified habit-trackers (streaks, badges, confetti), pastel-illustration journaling apps, pure white / pure black interfaces, and urgency-only signaling where the board collapses into "only deadlines matter."
+The system explicitly rejects: corporate productivity tools, gamified habit-trackers (streaks, badges, confetti), pastel-illustration journaling apps, pure white / pure black interfaces, and plain checklist task managers with no projects and no memory.
+
+**Core-model note (Jun 11 pivot).** The model is now four board things — **idea · todo · deadline · diary note** — over **projects**. **Events are removed** (the persona doesn't live event-to-event), which frees the ultraviolet code from the palette. **Someday is no longer a type or a color**: an undated todo IS a "someday", marked by a quiet mono **badge**, never a lime downgrade — so lime also leaves the type palette. The palette drops from five electric codes to three (deadline coral, todo cyan, idea amber).
 
 Three voices carry the typography: **Host Grotesk** (display/body — Inter was removed as too neutral), **JetBrains Mono** (the signal layer: counts, status lines, time, kickers — the instrument-panel feel), and **Caveat** (the handwritten layer: agenda margin-notes and the narrative voice — a thing you scrawled to remember it).
 
 **Key characteristics:**
 
 - Cool extremes only — graphite `#171A20` / crisp `#EEF1F5` paper, never `#FFF`/`#000`.
-- Five electric type-colors shared across schemes; scheme-aware tints and kicker shades keep WCAG AA in both.
-- **The Equal Volume Rule.** No dimming non-urgent types. Ideas and somedays glow as hard as bills. Presence, not pressure.
+- Three electric type-colors (deadline coral, todo cyan, idea amber) shared across schemes; scheme-aware tints and kicker shades keep WCAG AA in both.
+- **The Equal Volume Rule.** No dimming non-urgent types. An idea glows as hard as a deadline. Presence, not pressure.
 - **The Green Is Done Rule.** Green appears only as `feedback.success`. Todo is cyan, never green — green on an open todo would lie.
+- **The Someday Is A Badge Rule.** An undated todo keeps the cyan todo code and earns a small mono "SOMEDAY" badge — never a separate color. Datedness is a state, not a type.
 - Accent is a scheme-aware **neutral slab** (slate in light, off-white in dark), not a hue — so the action color can never be confused with a content category.
 - No 1px structural borders — tonal layering, edge-bars, and glow carry structure. Sharp radii (6–14): surgical, not soft.
-- Motion is expressive but earns its place: quick springs on re-flow; the stale-pulse on untouched ideas/somedays is the one sanctioned continuous motion.
+- Motion is expressive but earns its place: quick springs on re-flow; the stale-pulse on untouched ideas is the one sanctioned continuous motion.
 
 ## Tokens
 
 Source of truth: **`constants/theme.ts`** (the `tokens` object + `useTheme()`). The module below mirrors its live shape and values — change values there, not names.
+
+> **Pending code reconciliation (Jun 11 pivot).** This block documents the **target** three-code palette. The live `constants/theme.ts` still carries the legacy `event` (ultraviolet) and `someday` (lime) keys for `type` / `typeKicker` / `typeTint`, plus the `event` branch in `ENTRY_TO_TYPE_KEY`. They are slated for removal in the entity-rework implementation pass (drop the `event` type, dissolve `someday` into an undated-todo badge). Until that lands, the file keeps them so existing call-sites compile.
 
 ```ts
 // tokens.ts — generated by /flow document (mirror of constants/theme.ts)
@@ -48,29 +53,28 @@ const color = {
     inkMuted: "#8A93A3",
   },
   // Entry-type codes — electric, shared across schemes, equal volume by design.
+  // Three codes only after the pivot: deadline, todo, idea. (event/someday removed.)
   type: {
-    bills: "#FB7185",   // coral — STAKES (deadline)
-    todo: "#22D3EE",    // electric cyan — STAKES (cyan, NOT green: green means done)
-    ideas: "#FBBF24",   // amber — PRESENT
-    someday: "#A3E635", // lime — PRESENT
-    event: "#A78BFA",   // ultraviolet — PRESENT
+    bills: "#FB7185",   // coral — deadline (a flavor of todo, keeps its own code)
+    todo: "#22D3EE",    // electric cyan — todo (cyan, NOT green: green means done)
+    ideas: "#FBBF24",   // amber — idea
   },
   // Kicker shades for the 11px all-caps label on its tint — scheme-aware because
   // the tints sit at opposite lightness ends. All pairs verified ≥4.7:1 AA.
   typeKicker: {
-    light: { bills: "#AF3B51", ideas: "#8A6307", todo: "#0B7286", event: "#694CC7", someday: "#4F750F" },
-    dark:  { bills: "#FB7185", ideas: "#FBBF24", todo: "#22D3EE", event: "#A78BFA", someday: "#A3E635" },
+    light: { bills: "#AF3B51", ideas: "#8A6307", todo: "#0B7286" },
+    dark:  { bills: "#FB7185", ideas: "#FBBF24", todo: "#22D3EE" },
   },
   // Charged tile-body tints per type, light + dark-adapted.
   typeTint: {
-    light: { bills: "#FCE0E4", ideas: "#FBEFCF", todo: "#D6F2F7", event: "#E7E0FB", someday: "#E8F5CE" },
-    dark:  { bills: "#2E1C20", ideas: "#2E2611", todo: "#102A30", event: "#241E33", someday: "#222E10" },
+    light: { bills: "#FCE0E4", ideas: "#FBEFCF", todo: "#D6F2F7" },
+    dark:  { bills: "#2E1C20", ideas: "#2E2611", todo: "#102A30" },
   },
   // Field Lab signature — glow opacity scales with row heat; hue applied per-type at runtime.
   glow: {
     faint: "rgba(34,211,238,0.10)",      // sparse / quiet
     strong: "rgba(34,211,238,0.28)",     // full, fresh
-    stalePulse: "rgba(251,191,36,0.45)", // "still here" outline — ideas/someday only
+    stalePulse: "rgba(251,191,36,0.45)", // "still here" outline — stale unpromoted ideas only
   },
   // Accepted non-palette exceptions: overlay scrims + shadow tint.
   scrim: { medium: "rgba(0,0,0,0.5)", strong: "rgba(0,0,0,0.6)", shadow: "#0A0E14" },
@@ -279,6 +283,43 @@ const styles = StyleSheet.create({
 });
 ```
 
+### Someday badge
+
+An undated todo is still a todo — same cyan code, same volume. The undated state is carried by a small mono badge, never by a color change. The badge is a neutral chip (it must not read as another type code), and it ships an accessibility label so the state is not color/visual-only.
+
+```tsx
+import { StyleSheet, Text, View } from "react-native";
+
+import { tokens, useTheme } from "@/constants/theme";
+
+export function SomedayBadge() {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={[styles.badge, { backgroundColor: colors.surfaceSubtle }]}
+      accessibilityLabel="No date — someday"
+    >
+      <Text style={[styles.label, { color: colors.inkMuted }]}>SOMEDAY</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  badge: {
+    paddingHorizontal: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
+    borderRadius: tokens.radius.sm,
+    alignSelf: "flex-start",
+  },
+  label: {
+    fontFamily: tokens.type.fontMono.medium,
+    fontSize: tokens.type.micro.size,
+    lineHeight: tokens.type.micro.lineHeight,
+    letterSpacing: tokens.type.micro.tracking,
+  },
+});
+```
+
 ### Signature organisms (existing, documented for reference)
 
 - **CaptureBar** (`components/organisms/capture-bar.tsx`) — always-on bottom capture; idle amber edge-bar, recording state goes full amber with live waveform; `elevation.capture` lift.
@@ -314,11 +355,13 @@ const styles = StyleSheet.create({
 ### Don't
 
 - **Don't** build anything that reads as a corporate productivity tool (the rejected blue-lavender "Kinetic Equilibrium" direction).
-- **Don't** add streaks, badges, confetti, or any gamified habit-tracker mechanics — no celebration, no dopamine loops.
+- **Don't** add streaks, achievement badges, confetti, or any gamified habit-tracker mechanics — no celebration, no dopamine loops. (The neutral "someday" status badge is informational, not a reward — it is the one sanctioned badge.)
 - **Don't** add pastel-illustration mascots or decorative spot art.
 - **Don't** use pure white or pure black anywhere — cool extremes only.
 - **Don't** use warm tones — no oat-cream, no terracotta, no warm shadows. Field Lab is cool only.
 - **Don't** dim non-urgent types or collapse the board into urgency-only signaling. Equal volume is the brand.
+- **Don't** give an undated todo its own color — "someday" is a badge on the cyan todo code, never a lime (or any) recolor. Datedness is a state, not a type.
+- **Don't** reintroduce an event type or an event color (ultraviolet) — events are out of the model.
 - **Don't** use green for anything but completion.
 - **Don't** use gradients — glow is solid-color opacity, never a gradient ramp.
 - **Don't** add 1px structural borders — tonal layering, edge-bars, and glow carry structure.

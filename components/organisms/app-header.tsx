@@ -30,7 +30,7 @@ export function AppHeader({
       <View style={styles.bar}>
         <View style={styles.brand}>
           <EntryCluster
-            types={["deadline", "event", "todo", "someday", "idea"]}
+            types={["deadline", "todo", "idea"]}
             dotSize={7}
             gap={3}
             width={24}

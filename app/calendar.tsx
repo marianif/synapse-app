@@ -8,7 +8,6 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import { CalendarIcon } from "@/components/atoms/calendar-icon";
 import { HorizonStrip } from "@/components/molecules/horizon-strip";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
-import { Fab } from "@/components/organisms/fab";
 import { MonthGrid } from "@/components/organisms/month-grid";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { UpcomingPreviewCard } from "@/components/organisms/upcoming-preview-card";
@@ -62,24 +61,6 @@ export default function CalendarScreen(): React.ReactElement {
     setTimeout(() => setSelectedDate(null), 200);
   }, []);
 
-  const handleOpenAddModal = useCallback(
-    (preselectedDate?: Date) => {
-      setSheetVisible(false);
-      if (preselectedDate) {
-        const dd = String(preselectedDate.getDate()).padStart(2, "0");
-        const mm = String(preselectedDate.getMonth() + 1).padStart(2, "0");
-        const yyyy = preselectedDate.getFullYear();
-        router.push({
-          pathname: "/modal",
-          params: { date: `${dd}/${mm}/${yyyy}` },
-        });
-      } else {
-        router.push("/modal");
-      }
-    },
-    [router],
-  );
-
   const selectedEntries = useMemo(
     () => (selectedDate ? getEntriesForDay(selectedDate) : []),
     [selectedDate, getEntriesForDay],
@@ -125,9 +106,8 @@ export default function CalendarScreen(): React.ReactElement {
   const upcomingProps = useMemo(
     () => ({
       upcomingEntries,
-      onAdd: handleOpenAddModal,
     }),
-    [upcomingEntries, handleOpenAddModal],
+    [upcomingEntries],
   );
 
   return (
@@ -158,14 +138,12 @@ export default function CalendarScreen(): React.ReactElement {
         <UpcomingPreviewCard {...upcomingProps} />
         <View style={styles.bottomSpacer} />
       </ScrollView>
-      <Fab onPress={() => handleOpenAddModal(today)} />
       <DayDetailSheet
         visible={sheetVisible}
         date={selectedDate}
         entries={selectedEntries}
         today={today}
         onClose={handleCloseSheet}
-        onAdd={handleOpenAddModal}
       />
     </View>
   );

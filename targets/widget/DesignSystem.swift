@@ -34,8 +34,6 @@ extension Color {
     static let typeBills = Color(hex: "D98C6A")   // peach
     static let typeIdea = Color(hex: "5B86A8")    // powder-blue
     static let typeTodo = Color(hex: "6E9466")    // sage
-    static let typeEvent = Color(hex: "8A6FA6")   // lavender
-    static let typeSomeday = Color(hex: "C09A4B") // butter
 
     // Entry-type tile-tints (soft fills). Scheme-aware.
     static let tintBills = Color.dynamic(light: "F7E3D6", dark: "3A2A22")

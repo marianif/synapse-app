@@ -24,8 +24,6 @@ interface SketchIconProps {
  *   · idea     — lightbulb (amber)
  *   · todo     — checkbox with a tick (cyan)
  *   · deadline — alarm clock, bell ears + hands (coral)
- *   · event    — torn-top calendar page (ultraviolet)
- *   · someday  — sprout, two leaves on a stem (lime)
  *
  * Paths are authored on a 24×24 canvas with intentional asymmetry so no two
  * strokes are perfectly straight; `strokeWidth` scales with `size` to keep the
@@ -103,39 +101,5 @@ function renderGlyph(
         </>
       );
 
-    // ── event — calendar page with a torn top edge + a date line. ──────────────
-    case "event":
-      return (
-        <>
-          <Path
-            {...common}
-            d="M5.3 8.2 C5.1 7.3 5.8 6.7 6.7 6.8 L17.2 6.7 C18.2 6.6 18.9 7.3 18.8 8.3 L18.9 17.4 C19 18.4 18.2 19 17.3 18.9 L6.7 19 C5.7 19.1 5.1 18.3 5.2 17.3 Z"
-          />
-          <Path
-            {...common}
-            d="M5.3 10.4 C9 10 15 10.1 18.7 10.3"
-          />
-          <Path {...common} d="M9 4.8 L9.1 8.2" />
-          <Path {...common} d="M15.2 4.7 L15.1 8.1" />
-          <Path {...common} d="M8.4 14.4 L15.4 14.2" />
-        </>
-      );
-
-    // ── someday — sprout. Two leaves on a curved stem in soil. ─────────────────
-    case "someday":
-      return (
-        <>
-          <Path {...common} d="M12 20 C11.9 16.5 12 13.6 12.1 10.4" />
-          <Path
-            {...common}
-            d="M12 13.6 C10.5 13.9 8.2 13.2 7 11.6 C8.8 10.7 11 10.9 12 12.4"
-          />
-          <Path
-            {...common}
-            d="M12 11.4 C12.6 9.5 14.6 7.9 16.8 7.8 C16.7 9.9 14.9 11.7 12.2 11.9"
-          />
-          <Path {...common} d="M8.6 20.2 L15.3 20" />
-        </>
-      );
   }
 }

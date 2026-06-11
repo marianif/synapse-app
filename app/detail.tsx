@@ -26,6 +26,9 @@ import { WhenPicker } from "@/components/molecules/when-picker";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import type { ThemeColors } from "@/constants/theme";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { SomedayBadge } from "@/components/molecules/someday-badge";
+import { isSomeday } from "@/lib/taxonomy";
+import { horizonEndDate, horizonLabel } from "@/lib/horizons";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
@@ -39,6 +42,7 @@ import {
 import type {
   DbEntry,
   DbRecurrenceCompletion,
+  DueRange,
   RecurrenceFrequency,
   RecurrenceRule,
 } from "@/lib/types";
@@ -102,6 +106,9 @@ interface EditDraft {
   title: string;
   date: string;
   time: string;
+  // Deadline horizon: null = a precise day; otherwise the closing window. When
+  // set, due_date is computed as the window's end at save time.
+  dueRange: DueRange | null;
   notes: string;
   recurrenceFreq: RecurrenceFrequency | null;
   recurrenceDays: number[];
@@ -119,6 +126,7 @@ function draftFromEntry(entry: DbEntry): EditDraft {
     title: entry.title,
     date: (isDeadline ? entry.due_date : entry.scheduled_date) ?? "",
     time: (isDeadline ? entry.due_time : entry.scheduled_time) ?? "",
+    dueRange: entry.due_range,
     notes: entry.notes ?? "",
     recurrenceFreq: rule?.freq ?? null,
     recurrenceDays: rule?.days ?? [],
@@ -341,7 +349,10 @@ export default function DetailScreen(): React.ReactElement {
 
   const type = entry.type;
   const accentColor = entryColor(type);
-  const isSomeday = type === "someday" || type === "idea";
+  // An idea has no scheduled action (no primary, inspiration shown instead).
+  const isIdea = type === "idea";
+  // An undated todo IS a "someday" — surfaced by the badge, render-time only.
+  const showSomedayBadge = isSomeday(entry);
 
   // Notes linked to this entry, newest-first (the diary store is already newest
   // -first, so a filter preserves order). Only ideas can be linked targets today.
@@ -458,12 +469,19 @@ export default function DetailScreen(): React.ReactElement {
           }
         : null;
 
+      const horizon = isDeadlineType ? draft.dueRange : null;
       await updateEntry(entry.id, {
         title: trimmedTitle,
         scheduledDate: isDeadlineType ? null : draft.date.trim() || null,
         scheduledTime: isDeadlineType ? null : draft.time.trim() || null,
-        dueDate: isDeadlineType ? draft.date.trim() || null : null,
-        dueTime: isDeadlineType ? draft.time.trim() || null : null,
+        dueDate: isDeadlineType
+          ? horizon
+            ? horizonEndDate(horizon)
+            : draft.date.trim() || null
+          : null,
+        dueTime:
+          isDeadlineType && !horizon ? draft.time.trim() || null : null,
+        dueRange: horizon,
         notes: draft.notes.trim() || null,
         recurrenceRule,
         recurrenceEndDate: draft.recurrenceEndDate.trim() || null,
@@ -482,7 +500,7 @@ export default function DetailScreen(): React.ReactElement {
   // falls back to the quiet Edit / Delete pair. (The old "Promote" tile was a
   // no-op: there's no promote/convert path in the data layer.)
   const primary: PrimaryAction | undefined =
-    type === "todo" || type === "event"
+    type === "todo"
       ? {
           icon: "check-circle-outline",
           label: isCompleted ? "Completed" : "Complete",
@@ -509,7 +527,7 @@ export default function DetailScreen(): React.ReactElement {
   const readoutLines: ReadoutLine[] = [];
 
   const isDeadline = type === "deadline";
-  const isTask = type === "todo" || type === "event";
+  const isTask = type === "todo";
 
   if (isTask) {
     readoutLines.push({
@@ -593,14 +611,21 @@ export default function DetailScreen(): React.ReactElement {
               </View>
             ) : null}
 
+            {/* An undated todo wears the SOMEDAY badge — present, not pressing. */}
+            {!editing && showSomedayBadge ? (
+              <View style={styles.railChild}>
+                <SomedayBadge />
+              </View>
+            ) : null}
+
             {!editing && readoutLines.length > 0 ? (
               <View style={styles.railChild}>
                 <DetailReadout lines={readoutLines} />
               </View>
             ) : null}
 
-            {/* Someday / idea inspiration — the one place a softer voice fits. */}
-            {!editing && isSomeday && entry.inspiration ? (
+            {/* Idea inspiration — the one place a softer voice fits. */}
+            {!editing && isIdea && entry.inspiration ? (
               <ThemedText
                 type="body"
                 style={[
@@ -616,8 +641,55 @@ export default function DetailScreen(): React.ReactElement {
 
           {editing ? (
             <>
-              {/* When — only the scheduled types carry a date/time. */}
-              {!isSomeday ? (
+              {/* Horizon — a deadline commits to a precise day OR a closing
+                  window. A window hides the date picker; its end is the due date. */}
+              {isDeadline ? (
+                <View style={styles.editBlock}>
+                  <View style={styles.horizonRow}>
+                    {(
+                      [
+                        { value: null, label: "Day" },
+                        { value: "week", label: "Week" },
+                        { value: "month", label: "Month" },
+                        { value: "year", label: "Year" },
+                      ] as { value: DueRange | null; label: string }[]
+                    ).map((option) => {
+                      const selected = draft.dueRange === option.value;
+                      return (
+                        <Pressable
+                          key={option.label}
+                          onPress={() => patchDraft({ dueRange: option.value })}
+                          accessibilityRole="radio"
+                          accessibilityLabel={option.label}
+                          accessibilityState={{ selected }}
+                          style={[
+                            styles.horizonOption,
+                            {
+                              backgroundColor: selected
+                                ? accentColor
+                                : colors.surface,
+                            },
+                          ]}
+                        >
+                          <ThemedText
+                            type="caption"
+                            style={{
+                              color: selected ? colors.paper : colors.inkMuted,
+                              fontWeight: selected ? "700" : "600",
+                            }}
+                          >
+                            {option.label}
+                          </ThemedText>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+              ) : null}
+
+              {/* When — scheduled types carry a date/time; ideas do not, and a
+                  horizon deadline's date is its window end (so it's hidden). */}
+              {!isIdea && !(isDeadline && draft.dueRange) ? (
                 <View style={styles.editBlock}>
                   <WhenPicker
                     date={draft.date}
@@ -628,6 +700,14 @@ export default function DetailScreen(): React.ReactElement {
                     dateLabel={isDeadline ? "DUE DATE" : "DATE"}
                   />
                 </View>
+              ) : draft.dueRange ? (
+                <ThemedText
+                  type="caption"
+                  style={[styles.editBlock, { color: colors.inkMuted }]}
+                >
+                  Close it {horizonLabel(draft.dueRange)} — by{" "}
+                  {horizonEndDate(draft.dueRange)}.
+                </ThemedText>
               ) : null}
 
               {/* Recurrence — todos only, mirroring the create form. */}
@@ -907,6 +987,18 @@ const styles = StyleSheet.create({
   editBlock: {
     marginTop: tokens.space.xl,
     gap: tokens.space.xs,
+  },
+  horizonRow: {
+    flexDirection: "row",
+    gap: tokens.space.xs,
+  },
+  horizonOption: {
+    flex: 1,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.space.xs,
   },
   editLabel: {
     letterSpacing: tokens.type.kicker.tracking,

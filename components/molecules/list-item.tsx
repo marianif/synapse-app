@@ -54,13 +54,14 @@ export function ListItem({
   onDelete,
 }: ListItemProps): React.ReactElement {
   const { colors } = useTheme();
-  const isSomeday = entryType === "someday";
+  // Ideas get the soft "sparkle" row — they're undated thoughts, not tasks.
+  const isIdea = entryType === "idea";
   // The row's own type drives the edge-bar, so a mixed "Incoming" list stays
   // color-coded per row instead of collapsing to one screen accent.
   const edgeColor = entryColor(entryType);
 
   const renderContent = (): React.ReactElement => {
-    if (isSomeday) {
+    if (isIdea) {
       return (
         <Pressable
           onPress={onPress}
@@ -77,14 +78,14 @@ export function ListItem({
             <IconSymbol
               name="star-four-points"
               size={18}
-              color={entryColor("someday")}
+              color={entryColor("idea")}
             />
           </View>
 
           {/* Dot + content */}
           <View style={styles.content}>
             <View style={styles.titleRow}>
-              <EntryDot type="someday" size={8} />
+              <EntryDot type="idea" size={8} />
               <ThemedText
                 type="bodyBold"
                 numberOfLines={1}
@@ -104,7 +105,7 @@ export function ListItem({
           <MaterialCommunityIcons
             name="chevron-right"
             size={18}
-            color={entryColor("someday") + "80"}
+            color={entryColor("idea") + "80"}
           />
         </Pressable>
       );

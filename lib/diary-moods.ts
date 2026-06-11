@@ -9,6 +9,10 @@ import type { MoodOption } from "@/components/organisms/mood-sheet";
  * calm affective tag, never a score — each borrows the closest existing entry
  * code so the glyph reads at a glance without inventing a new token. Kept in
  * `lib/` (no React) so the composer, note rows, and screen all share one source.
+ *
+ * NOTE: the type palette is now three codes (ideas/todo/bills), so the five moods
+ * reuse hues. A dedicated mood palette is a possible follow-up if distinct mood
+ * colors matter; for now reuse is acceptable since moods are a quiet tag.
  */
 export const MOODS: {
   value: DiaryMood;
@@ -16,9 +20,9 @@ export const MOODS: {
   code: keyof typeof tokens.color.type;
 }[] = [
   { value: "bright", label: "bright", code: "ideas" },
-  { value: "calm", label: "calm", code: "someday" },
+  { value: "calm", label: "calm", code: "ideas" },
   { value: "charged", label: "charged", code: "todo" },
-  { value: "tired", label: "tired", code: "event" },
+  { value: "tired", label: "tired", code: "bills" },
   { value: "low", label: "low", code: "bills" },
 ];
 

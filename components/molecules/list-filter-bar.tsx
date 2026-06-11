@@ -5,8 +5,8 @@ import { entryColor, tokens, useTheme } from "@/constants/theme";
 
 import type { EntryType } from "@/lib/types";
 
-/** Incoming's type lens — the three temporal types, plus "everything". */
-export type ListTypeFilter = "all" | "todo" | "event" | "deadline";
+/** Incoming's type lens — the temporal types, plus "everything". */
+export type ListTypeFilter = "all" | "todo" | "deadline";
 
 /** Incoming's status lens — live (not yet done) or done, or everything. */
 export type ListStatusFilter = "all" | "live" | "done";
@@ -14,7 +14,6 @@ export type ListStatusFilter = "all" | "live" | "done";
 const TYPE_OPTIONS: { value: ListTypeFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "todo", label: "Todos" },
-  { value: "event", label: "Events" },
   { value: "deadline", label: "Deadlines" },
 ];
 

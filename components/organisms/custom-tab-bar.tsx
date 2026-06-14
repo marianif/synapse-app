@@ -1,9 +1,11 @@
+import * as Haptics from "expo-haptics";
 import { router, usePathname } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import type { IconSymbolName } from "@/components/ui/icon-symbol";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
+import { EntryCluster } from "../atoms/entry-cluster";
 
 function TabIcon({ name, color }: { name: IconSymbolName; color: string }) {
   return <IconSymbol name={name} size={24} color={color} />;
@@ -46,9 +48,11 @@ export function CustomTabBar(): React.ReactElement {
           onPress={() =>
             router.push({ pathname: "/", params: { capture: "text" } })
           }
-          onLongPress={() =>
-            router.push({ pathname: "/", params: { capture: "voice" } })
-          }
+          onLongPress={() => {
+            // Voice capture is a bigger gesture than a tap — confirm it in the hand.
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            router.push({ pathname: "/", params: { capture: "voice" } });
+          }}
           delayLongPress={350}
           accessibilityRole="button"
           accessibilityLabel="Capture a thought"
@@ -60,7 +64,12 @@ export function CustomTabBar(): React.ReactElement {
             pressed && styles.addButtonPressed,
           ]}
         >
-          <IconSymbol name="pencil" size={26} color={colors.accent.onClay} />
+          <EntryCluster
+            types={["deadline", "todo", "idea"]}
+            dotSize={7}
+            gap={3}
+            width={24}
+          />
         </Pressable>
 
         <Pressable

@@ -3,11 +3,14 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
+  Easing,
   FadeIn,
   FadeOut,
   LinearTransition,
+  SlideInDown,
   useReducedMotion,
 } from "react-native-reanimated";
+import Svg, { Path } from "react-native-svg";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -50,11 +53,11 @@ export type CaptureResolution =
 interface CaptureResolverProps {
   /** The thought just captured — echoed so the user knows what they're filing. */
   text: string;
-  /** Recent ideas offered under "on an idea". Empty hides that affordance. */
+  /** Recent ideas a note can be linked onto. Empty → "note" files free. */
   ideas: LinkableIdea[];
   /** Active projects offered in the detail panel. */
   projects: DbProject[];
-  /** Whether the "on an idea" note-on rail is expanded in place. */
+  /** Whether the note rail (free note + linkable ideas) is expanded in place. */
   picking: boolean;
   onTogglePicking: () => void;
   /** Commit a destination. */
@@ -93,7 +96,8 @@ const WHEN_OPTIONS: WhenOption[] = [
  * structure, not capsules).
  *
  * Two grammars, kept apart by behavior:
- *   • Bare verbs — keep (idea) · note · on an idea — file on the first tap.
+ *   • Bare verbs — keep (idea) · note — file on the first tap (note opens a rail
+ *     to pick free-vs-linked when recent ideas exist, else files free).
  *   • Dated verbs — do it (todo) · by a date (deadline) — first tap underlines
  *     the verb and opens an inline WHEN/PROJECT readout. The header glyph then
  *     becomes a type-colored ✓ that saves-and-closes (no separate Save slab).
@@ -126,9 +130,11 @@ export function CaptureResolver({
 
   // First tap on a dated verb underlines it + opens detail; tapping the other
   // dated verb switches kind. The WHEN grammar is shared, so the picked when
-  // carries across the switch. Commit now lives in the corner glyph.
+  // carries across the switch. Commit now lives in the corner glyph. Opening a
+  // dated detail closes the note rail — only one subcomponent open at a time.
   function selectDated(kind: DatedKind): void {
     setSelected(kind);
+    if (picking) onTogglePicking();
   }
 
   function commitDated(kind: DatedKind): void {
@@ -154,9 +160,10 @@ export function CaptureResolver({
   }
 
   const accent = selected ? entryColor(selected) : colors.type.todo;
+  // Immediacy over bounce: a quick eased reflow, no spring overshoot.
   const layout = reduced
     ? undefined
-    : LinearTransition.springify().damping(18).stiffness(220);
+    : LinearTransition.duration(160).easing(Easing.out(Easing.quad));
 
   const projectName =
     projectId === null
@@ -165,8 +172,13 @@ export function CaptureResolver({
 
   return (
     <Animated.View
-      entering={reduced ? undefined : FadeIn.duration(160)}
-      exiting={reduced ? undefined : FadeOut.duration(120)}
+      // The whole resolver rises up from under the tab bar — one decisive slide.
+      entering={
+        reduced
+          ? undefined
+          : SlideInDown.duration(320).easing(Easing.out(Easing.cubic))
+      }
+      exiting={reduced ? undefined : FadeOut.duration(110)}
       layout={layout}
       style={[styles.card, { backgroundColor: colors.surface }]}
     >
@@ -176,9 +188,7 @@ export function CaptureResolver({
         {/* Header — what's being filed. The corner glyph is a discard ✕ until a
             dated verb is selected, then a type-colored ✓ that saves-and-closes. */}
         <View style={styles.headRow}>
-          <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-            FILE AS
-          </ThemedText>
+          <PenLine color={colors.inkMuted} size={18} />
           <ThemedText
             type="body"
             numberOfLines={1}
@@ -212,7 +222,7 @@ export function CaptureResolver({
 
         {/* The verb line — the primary choice, read not tapped-at. Type color on
             each word; the picked dated verb is bold + underlined. Bare verbs
-            (keep/note/on an idea) file immediately. */}
+            (keep/note) file immediately. */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -248,60 +258,76 @@ export function CaptureResolver({
             label="note"
             color={colors.inkMuted}
             muted
-            onPress={() => onResolve({ kind: "note" })}
+            selected={picking}
+            // No recent ideas to link onto → file as a free note immediately.
+            // Otherwise open the note rail to choose free-vs-linked.
+            onPress={() =>
+              ideas.length > 0 ? onTogglePicking() : onResolve({ kind: "note" })
+            }
             accessibilityLabel="File as diary note"
+            accessibilityState={{ expanded: picking }}
           />
-          {ideas.length > 0 ? (
-            <>
-              <Sep color={colors.inkMuted} />
-              <Verb
-                label="on an idea"
-                color={colors.inkMuted}
-                muted
-                selected={picking}
-                onPress={onTogglePicking}
-                accessibilityLabel="File as a note on a recent idea"
-                accessibilityState={{ expanded: picking }}
-              />
-            </>
-          ) : null}
         </ScrollView>
 
-        {/* Note-on rail — recent ideas, expanded in place under the verb line. */}
+        {/* Note destinations — free note (left, fixed) + linkable ideas (right,
+            scrollable). Slides in under the verb line when "note" is picked. */}
         {picking ? (
           <Animated.View
             entering={reduced ? undefined : FadeIn.duration(140)}
-            exiting={reduced ? undefined : FadeOut.duration(100)}
+            exiting={reduced ? undefined : FadeOut.duration(90)}
             layout={layout}
           >
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={styles.ideaRail}
-            >
-              {ideas.map((idea) => (
-                <Pressable
-                  key={idea.id}
-                  onPress={() =>
-                    onResolve({ kind: "note-on", entryId: idea.id })
-                  }
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Note on idea: ${idea.title}`}
-                  style={styles.ideaItem}
+            <View style={styles.noteRail}>
+              {/* Free note — fixed on the left. A note with no idea behind it. */}
+              <Pressable
+                onPress={() => onResolve({ kind: "note" })}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="File as a free note"
+                style={({ pressed }) => [
+                  styles.freeNoteChip,
+                  { backgroundColor: colors.surfaceSubtle },
+                  pressed && { opacity: 0.5 },
+                ]}
+              >
+                <ThemedText
+                  type="micro"
+                  style={[styles.freeNoteLabel, { color: colors.inkMuted }]}
                 >
-                  <SketchIcon type="idea" size={13} />
-                  <ThemedText
-                    type="body"
-                    numberOfLines={1}
-                    style={[styles.ideaLabel, { color: colors.ink }]}
+                  free note
+                </ThemedText>
+              </Pressable>
+
+              {/* Linkable ideas — scrollable on the right. Tap to note onto one. */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={styles.ideaRail}
+              >
+                {ideas.map((idea) => (
+                  <Pressable
+                    key={idea.id}
+                    onPress={() =>
+                      onResolve({ kind: "note-on", entryId: idea.id })
+                    }
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Note on idea: ${idea.title}`}
+                    style={styles.ideaItem}
                   >
-                    {idea.title}
-                  </ThemedText>
-                </Pressable>
-              ))}
-            </ScrollView>
+                    <SketchIcon type="idea" size={13} />
+                    <ThemedText
+                      type="body"
+                      numberOfLines={1}
+                      style={[styles.ideaLabel, { color: colors.ink }]}
+                    >
+                      {idea.title}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
           </Animated.View>
         ) : null}
 
@@ -309,8 +335,8 @@ export function CaptureResolver({
             the same word-not-bubble language as the verb line. */}
         {selected ? (
           <Animated.View
-            entering={reduced ? undefined : FadeIn.duration(160)}
-            exiting={reduced ? undefined : FadeOut.duration(100)}
+            entering={reduced ? undefined : FadeIn.duration(140)}
+            exiting={reduced ? undefined : FadeOut.duration(90)}
             layout={layout}
             style={styles.detail}
           >
@@ -400,9 +426,14 @@ export function CaptureResolver({
 
             {/* A quiet echo of the resolved attribution — the readout, not a
                 button. The corner ✓ commits. */}
-            <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-              {selected === "deadline" ? "Deadline" : "To-do"} · {projectName}
-            </ThemedText>
+            <View style={styles.headRow}>
+              <ThemedText type="mono" style={{ color: colors.inkMuted }}>
+                {selected === "deadline" ? "Deadline" : "To-do"} ·
+              </ThemedText>
+              <ThemedText type="hand" style={{ color: colors.inkMuted }}>
+                {projectName}
+              </ThemedText>
+            </View>
           </Animated.View>
         ) : null}
       </View>
@@ -687,6 +718,42 @@ function Verb({
 }
 
 /**
+ * The "filing" mark — a hand-drawn pen with a written line trailing under its
+ * nib. Replaces the "FILE AS" kicker so the header reads as the narrative,
+ * agenda gesture (writing the thought down) rather than a form label. Matches
+ * the loose single-weight strokes of SketchIcon.
+ */
+function PenLine({
+  color,
+  size = 18,
+}: {
+  color: string;
+  size?: number;
+}): React.ReactElement {
+  const sw = (size / 18) * 1.6;
+  const common = {
+    stroke: color,
+    strokeWidth: sw,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    fill: "none",
+  };
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Pen body, slanted top-right → mid, with a little nib at the bottom. */}
+      <Path d="M20 4.2 L11.4 12.9 L10 16 L13.1 14.6 L21.7 5.9 Z" {...common} />
+      {/* Ink split on the nib. */}
+      <Path d="M11.4 12.9 L13.1 14.6" {...common} />
+      {/* The written line, trailing under the nib with a hand wobble. */}
+      <Path
+        d="M3 19.4 C6 18.6 9 20 12 19.2 C14.4 18.6 16 19.4 18 19"
+        {...common}
+      />
+    </Svg>
+  );
+}
+
+/**
  * A row of inline value words behind a mono kicker key — the detail readout that
  * replaces chip rails. "WHEN  today tomorrow weekend exact". The chosen value is
  * colored + medium-weight; the rest are muted ink. No capsules.
@@ -821,11 +888,26 @@ const styles = StyleSheet.create({
   sep: {
     opacity: 0.5,
   },
+  noteRail: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.md,
+    paddingTop: tokens.space.xs,
+  },
+  freeNoteChip: {
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.xs,
+    borderRadius: tokens.radius.pill,
+  },
+  freeNoteLabel: {
+    letterSpacing: 0.3,
+  },
   ideaRail: {
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.lg,
     paddingVertical: tokens.space.xs,
+    paddingRight: tokens.space.sm,
   },
   ideaItem: {
     flexDirection: "row",

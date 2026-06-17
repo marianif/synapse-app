@@ -18,14 +18,13 @@ import {
 
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
+import { DirectOverview } from "@/components/organisms/direct-overview";
 
-import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import {
   FieldGreeting,
   greetingFor,
 } from "@/components/molecules/field-greeting";
-import { SomedayBadge } from "@/components/molecules/someday-badge";
 
 import {
   CaptureResolver,
@@ -40,7 +39,6 @@ import { useDiary } from "@/hooks/use-diary";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 import { splitCapture } from "@/lib/capture";
 import { horizonLabel } from "@/lib/horizons";
-import { isSomeday } from "@/lib/taxonomy";
 
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
 import type { DbEntry, DbProject, EntryType } from "@/lib/types";
@@ -270,19 +268,24 @@ export default function HomeScreen(): React.ReactElement {
     setTimeout(() => setSelectedDate(null), 200);
   }, []);
 
-  // The direct zone: open deadlines + todos, hottest/soonest first. FieldGreeting
-  // also reads these streams for its summary voice. Ideas feed the greeting's
-  // narrative line but are not a direct row on the home.
+  // The direct zone: deadlines + todos. DirectOverview owns the full set (open
+  // AND done — it sinks completed lines to the bottom and strikes them through),
+  // so it gets every status. FieldGreeting's summary voice reads only the OPEN
+  // streams (stakes + present); ideas feed the greeting's narrative line but are
+  // not a direct row on the home.
   const { directEntries, stakes, present } = useMemo(() => {
     const isDone = (e: DbEntry): boolean =>
       e.status === "completed" || e.status === "met";
+    const direct = entries.filter((e) =>
+      DIRECT_TYPES.includes(e.type as EntryType),
+    );
     const open = entries.filter((e) => !isDone(e));
-    const direct = open
-      .filter((e) => DIRECT_TYPES.includes(e.type as EntryType))
-      .sort(byRunway);
     return {
       directEntries: direct,
-      stakes: direct.map(toRowItem),
+      stakes: open
+        .filter((e) => DIRECT_TYPES.includes(e.type as EntryType))
+        .sort(byRunway)
+        .map(toRowItem),
       present: open.filter((e) => e.type === "idea").map(toRowItem),
     };
   }, [entries]);
@@ -421,57 +424,6 @@ function ProjectsOverview({
             <ThemedText type="mono" style={{ color: colors.inkMuted }}>
               {openCount(p.id)}
             </ThemedText>
-          </Pressable>
-        </Link>
-      ))}
-    </View>
-  );
-}
-
-/**
- * Direct overview — open deadlines + todos, the consequence zone. An undated
- * todo wears the SOMEDAY badge (it stays cyan, present not pressing). Each row
- * opens the entry's detail. (Minimal: visual design deferred.)
- */
-function DirectOverview({
-  entries,
-}: {
-  entries: DbEntry[];
-}): React.ReactElement | null {
-  const { colors } = useTheme();
-  if (entries.length === 0) return null;
-
-  return (
-    <View style={styles.section}>
-      <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-        DEADLINES & TODOS
-      </ThemedText>
-      {entries.map((e) => (
-        <Link
-          key={e.id}
-          href={{
-            pathname: "/detail",
-            params: { id: e.id, entryType: e.type },
-          }}
-          asChild
-        >
-          <Pressable
-            style={StyleSheet.flatten([
-              styles.row,
-              { backgroundColor: colors.surface },
-            ])}
-            accessibilityRole="button"
-            accessibilityLabel={e.title}
-          >
-            <EntryDot type={e.type} />
-            <ThemedText
-              type="body"
-              numberOfLines={1}
-              style={[styles.rowTitle, { color: colors.ink }]}
-            >
-              {e.title}
-            </ThemedText>
-            {isSomeday(e) ? <SomedayBadge /> : null}
           </Pressable>
         </Link>
       ))}

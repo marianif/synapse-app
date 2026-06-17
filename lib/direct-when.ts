@@ -16,13 +16,17 @@ export function daysUntil(dateStr: string | null): number | null {
   return dayjs(dateStr, "DD/MM/YYYY").startOf("day").diff(TODAY_START(), "day");
 }
 
-/** Absolute when-label sized to distance: time today, weekday this week, else date. */
+/**
+ * Absolute when-label sized to distance: "Someday" when undated, time today,
+ * weekday this week, else date. An undated entry is a "someday" — surfaced as a
+ * plain when-label like any other, not a separate badge.
+ */
 export function whenLabel(
   dateStr: string | null,
   time: string | null,
   days: number | null,
-): string | undefined {
-  if (days === null) return undefined;
+): string {
+  if (days === null) return "Someday";
   const d = dayjs(dateStr!, "DD/MM/YYYY");
   if (days < 0) return `${Math.abs(days)}d over`;
   if (days === 0) return time ?? "Today";

@@ -6,11 +6,9 @@ import { RectButton, Swipeable } from "react-native-gesture-handler";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { SomedayBadge } from "@/components/molecules/someday-badge";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
 import { horizonLabel } from "@/lib/horizons";
 import { daysUntil, isDone, isWhenCharged, whenLabel } from "@/lib/direct-when";
-import { isSomeday } from "@/lib/taxonomy";
 
 import type { DbEntry, EntryType } from "@/lib/types";
 
@@ -28,9 +26,10 @@ interface DirectRowProps {
 
 /**
  * One direct-zone row: a minimal 6px type dot, the title, and a mono when-label
- * readout on the right (or SOMEDAY badge when undated). The when-label runs in
- * the entry's type color when the date is approaching or expired, and in muted
- * ink when it's comfortably out — date pressure shows as color, not position.
+ * readout on the right ("Someday" when undated — treated as a plain when-label,
+ * not a separate badge). The when-label runs in the entry's type color when the
+ * date is approaching or expired, and in muted ink when it's comfortably out or
+ * undated — date pressure shows as color, not position.
  * Swiping reveals actions — an open row can be marked done OR deleted; a done
  * row can only be deleted (it's already crossed off, completing it again is
  * meaningless). A done row reads like a struck-through agenda line: muted ink,
@@ -112,9 +111,7 @@ export function DirectRow({
         }
         accessibilityRole="button"
         accessibilityState={{ checked: done }}
-        accessibilityLabel={`${entry.title}${when ? `, ${when}` : ""}${
-          done ? ", done" : ""
-        }`}
+        accessibilityLabel={`${entry.title}, ${when}${done ? ", done" : ""}`}
         style={({ pressed }) => [
           styles.row,
           { backgroundColor: colors.surface },
@@ -140,13 +137,9 @@ export function DirectRow({
           {entry.title}
         </ThemedText>
 
-        {isSomeday(entry) ? (
-          <SomedayBadge />
-        ) : when ? (
-          <ThemedText type="mono" style={[styles.when, { color: whenColor }]}>
-            {when}
-          </ThemedText>
-        ) : null}
+        <ThemedText type="mono" style={[styles.when, { color: whenColor }]}>
+          {when}
+        </ThemedText>
       </Pressable>
     </Swipeable>
   );

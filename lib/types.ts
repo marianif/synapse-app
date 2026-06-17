@@ -48,6 +48,10 @@ export interface DbProject {
   id: string;
   title: string;
   status: "active" | "archived";
+  /** Single-character emoji carrying the project's visual identity. Null
+   * until the user picks one — the screen surfaces a quiet picker affordance
+   * and falls back to a neutral folder glyph in the meantime. */
+  emoji: string | null;
   created_at: number;
   updated_at: number;
 }

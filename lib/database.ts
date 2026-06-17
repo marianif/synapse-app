@@ -305,23 +305,45 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 11) {
+    // Migration 10: project emoji — a single-character visual identity that
+    // surfaces in the header, on home rows, and anywhere the project is
+    // referenced. Nullable so existing projects survive the upgrade without
+    // a forced choice; the UI offers a quiet picker affordance.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync('ALTER TABLE projects ADD COLUMN emoji TEXT');
+      } catch {
+        // column already exists (fresh installs got it from CREATE_PROJECTS_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────
 
-/** Insert a project, returning the persisted row. */
-export async function insertProject(title: string): Promise<DbProject> {
+/** Insert a project, returning the persisted row. Emoji is optional. */
+export async function insertProject(
+  title: string,
+  emoji: string | null = null,
+): Promise<DbProject> {
   const db = getDb();
   const id = generateId();
   const now = Math.floor(Date.now() / 1000);
   await db.runAsync(
-    "INSERT INTO projects (id, title, status, created_at, updated_at) VALUES (?, ?, 'active', ?, ?)",
+    "INSERT INTO projects (id, title, status, emoji, created_at, updated_at) VALUES (?, ?, 'active', ?, ?, ?)",
     id,
     title,
+    emoji,
     now,
     now,
   );
-  return { id, title, status: 'active', created_at: now, updated_at: now };
+  return { id, title, status: 'active', emoji, created_at: now, updated_at: now };
 }
 
 /** All projects, active first, newest first within each status. */
@@ -332,14 +354,18 @@ export async function getProjects(): Promise<DbProject[]> {
   );
 }
 
-/** Update a project's title and/or status. */
+/** Update a project's title, status, and/or emoji. Pass `emoji: null` to clear. */
 export async function updateProject(
   id: string,
-  data: { title?: string; status?: DbProject['status'] },
+  data: {
+    title?: string;
+    status?: DbProject['status'];
+    emoji?: string | null;
+  },
 ): Promise<void> {
   const db = getDb();
   const updates: string[] = [];
-  const values: (string | number)[] = [];
+  const values: (string | number | null)[] = [];
   if (data.title !== undefined) {
     updates.push('title = ?');
     values.push(data.title);
@@ -347,6 +373,10 @@ export async function updateProject(
   if (data.status !== undefined) {
     updates.push('status = ?');
     values.push(data.status);
+  }
+  if (data.emoji !== undefined) {
+    updates.push('emoji = ?');
+    values.push(data.emoji);
   }
   if (updates.length === 0) return;
   updates.push('updated_at = ?');

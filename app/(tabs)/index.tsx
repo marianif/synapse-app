@@ -496,6 +496,15 @@ function ProjectsOverview({
             accessibilityRole="button"
             accessibilityLabel={`Project ${p.title}`}
           >
+            {/* Project emoji = visual identity. Falls back to a small folder
+                ink-dot when the user hasn't picked one yet — never an empty
+                slot, so the row layout is stable across projects. */}
+            <ThemedText
+              type="body"
+              style={[styles.projectGlyph, !p.emoji && { color: colors.inkMuted }]}
+            >
+              {p.emoji ?? "·"}
+            </ThemedText>
             <ThemedText
               type="body"
               numberOfLines={1}
@@ -539,6 +548,12 @@ const styles = StyleSheet.create({
   },
   rowTitle: {
     flex: 1,
+  },
+  projectGlyph: {
+    width: 22,
+    textAlign: "center",
+    fontSize: 18,
+    lineHeight: 22,
   },
   captureSpacer: {
     height: 72,

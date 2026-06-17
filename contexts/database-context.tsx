@@ -60,10 +60,14 @@ interface DatabaseContextValue {
   deleteEntry: (id: string) => Promise<void>;
   refetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
   refetchProjects: () => Promise<void>;
-  createProject: (title: string) => Promise<DbProject>;
+  createProject: (title: string, emoji?: string | null) => Promise<DbProject>;
   updateProject: (
     id: string,
-    data: { title?: string; status?: DbProject["status"] },
+    data: {
+      title?: string;
+      status?: DbProject["status"];
+      emoji?: string | null;
+    },
   ) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   promoteIdeaToProject: (ideaId: string) => Promise<DbProject>;
@@ -756,22 +760,29 @@ export function DatabaseProvider({
 
   // ─── Projects ─────────────────────────────────────────────────────────────
 
-  const createProject = useCallback(async (title: string): Promise<DbProject> => {
-    try {
-      await getDb();
-      const project = await dbInsertProject(title);
-      setProjects((prev) => [project, ...prev]);
-      return project;
-    } catch (error) {
-      console.error("[DatabaseContext] createProject failed:", error);
-      throw error;
-    }
-  }, []);
+  const createProject = useCallback(
+    async (title: string, emoji: string | null = null): Promise<DbProject> => {
+      try {
+        await getDb();
+        const project = await dbInsertProject(title, emoji);
+        setProjects((prev) => [project, ...prev]);
+        return project;
+      } catch (error) {
+        console.error("[DatabaseContext] createProject failed:", error);
+        throw error;
+      }
+    },
+    [],
+  );
 
   const updateProject = useCallback(
     async (
       id: string,
-      data: { title?: string; status?: DbProject["status"] },
+      data: {
+        title?: string;
+        status?: DbProject["status"];
+        emoji?: string | null;
+      },
     ): Promise<void> => {
       try {
         await getDb();

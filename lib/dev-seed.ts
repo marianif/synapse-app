@@ -31,12 +31,14 @@ type ProjectSeed = {
   key: string;
   title: string;
   status?: "active" | "archived";
+  /** Visual identity glyph. Optional — projects can exist without one. */
+  emoji?: string;
 };
 
 const PROJECT_SEEDS: ProjectSeed[] = [
-  { key: "studio", title: "Studio rebrand" },
-  { key: "collective", title: "Art collective" },
-  { key: "synapse", title: "Synapse app" },
+  { key: "studio", title: "Studio rebrand", emoji: "🪩" },
+  { key: "collective", title: "Art collective", emoji: "🎭" },
+  { key: "synapse", title: "Synapse app", emoji: "🧠" },
 ];
 
 // ─── Entries ───────────────────────────────────────────────────────────────────
@@ -150,11 +152,12 @@ export async function seedDevDataIfEmpty(
     const id = generateId();
     projectId[p.key] = id;
     await db.runAsync(
-      `INSERT INTO projects (id, title, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO projects (id, title, status, emoji, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
       id,
       p.title,
       p.status ?? "active",
+      p.emoji ?? null,
       now,
       now,
     );

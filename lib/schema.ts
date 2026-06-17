@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 10;
+export const SCHEMA_VERSION = 11;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -35,6 +35,10 @@ export const CREATE_PROJECTS_TABLE = `
     id TEXT PRIMARY KEY NOT NULL,
     title TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'archived')),
+    -- A single emoji that carries the project's visual identity (header glyph,
+    -- home-row leading icon). Null = no emoji picked yet; the UI offers a quiet
+    -- "pick one" affordance and falls back to a neutral folder glyph.
+    emoji TEXT,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
   );

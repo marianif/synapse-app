@@ -20,10 +20,14 @@ export interface UseDatabaseReturn {
   deleteEntry: (id: string) => Promise<void>;
   fetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
   fetchProjects: () => Promise<void>;
-  createProject: (title: string) => Promise<DbProject>;
+  createProject: (title: string, emoji?: string | null) => Promise<DbProject>;
   updateProject: (
     id: string,
-    data: { title?: string; status?: DbProject["status"] },
+    data: {
+      title?: string;
+      status?: DbProject["status"];
+      emoji?: string | null;
+    },
   ) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   promoteIdeaToProject: (ideaId: string) => Promise<DbProject>;

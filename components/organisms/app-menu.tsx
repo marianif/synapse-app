@@ -116,6 +116,7 @@ export function AppMenu({
               const inserted = await seedDevDataIfEmpty(getDb());
               if (inserted) {
                 await fetchEntries();
+                await fetchProjects();
                 onClose();
               } else {
                 Alert.alert("Nothing seeded", "Clear the database first.");

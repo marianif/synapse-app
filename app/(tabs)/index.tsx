@@ -8,17 +8,24 @@ import {
 } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  KeyboardAvoidingView,
+  Keyboard,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { DirectOverview } from "@/components/organisms/direct-overview";
+import { ManualBar } from "@/components/organisms/manual-bar";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import {
@@ -125,6 +132,7 @@ export default function HomeScreen(): React.ReactElement {
     recurrenceCompletions,
     fetchEntries,
     createEntry,
+    createProject,
   } = useDatabase();
 
   const { addEntry: addDiaryEntry, refresh: refreshDiary } = useDiary();
@@ -141,6 +149,25 @@ export default function HomeScreen(): React.ReactElement {
   // The text composer is summoned by the pen key (no always-idle bar — capture
   // has ONE trigger). It closes itself when the input blurs with nothing typed.
   const [composerOpen, setComposerOpen] = useState(false);
+
+  // The manual bar — the pen key's TAP register (long-press is voice). Deliberate
+  // creation that capture can't reach: today, opening a project. Mutually
+  // exclusive with the composer / recorder / resolver in the dock below.
+  const [manualOpen, setManualOpen] = useState(false);
+
+  // Create a project from the manual bar, then go straight into it — a project
+  // is a place you open, so creating one lands you there.
+  const handleCreateProject = useCallback(
+    (title: string) => {
+      setManualOpen(false);
+      createProject(title)
+        .then((project) =>
+          router.push({ pathname: "/project", params: { id: project.id } }),
+        )
+        .catch((err) => console.error("Failed to create project:", err));
+    },
+    [createProject, router],
+  );
 
   // The capture bar captures a THOUGHT, not (yet) a filed entry. A captured
   // thought is held here as "pending" while the CaptureResolver lets the user
@@ -234,19 +261,30 @@ export default function HomeScreen(): React.ReactElement {
     setIsRecording(false);
   }, [stopRecording]);
 
-  // Arm capture when summoned — by the widget deep link (voice) or the tab-bar
-  // pen key (text or voice). Guard with a ref so it fires once per intent.
+  // Arm the dock when summoned — by the widget deep link (voice / text) or the
+  // tab-bar pen key (tap → manual, long-press → voice). Guard with a ref so it
+  // fires once per intent. Each register opens its own bar and closes the others.
   const armedFromLink = useRef(false);
   useEffect(() => {
+    const known =
+      capture === "voice" || capture === "text" || capture === "manual";
     if (capture === "voice" && !armedFromLink.current && !isRecording) {
       armedFromLink.current = true;
+      setManualOpen(false);
+      setComposerOpen(false);
       handleStartRecording();
       router.setParams({ capture: undefined });
     } else if (capture === "text" && !armedFromLink.current) {
       armedFromLink.current = true;
+      setManualOpen(false);
       setComposerOpen(true);
       router.setParams({ capture: undefined });
-    } else if (capture !== "voice" && capture !== "text") {
+    } else if (capture === "manual" && !armedFromLink.current) {
+      armedFromLink.current = true;
+      setComposerOpen(false);
+      setManualOpen(true);
+      router.setParams({ capture: undefined });
+    } else if (!known) {
       armedFromLink.current = false;
     }
   }, [capture, isRecording, handleStartRecording, router]);
@@ -301,6 +339,44 @@ export default function HomeScreen(): React.ReactElement {
     [projects],
   );
 
+  // The dock is an absolute overlay; it doesn't rest at the screen bottom — it
+  // floats `space.lg` above the custom tab bar. So translating it up by the full
+  // keyboard height double-counts that resting offset and overshoots, leaving a
+  // big gap. We lift by (keyboard height − the dock's resting distance from the
+  // screen bottom) so its lower edge lands just on top of the keyboard.
+  //
+  // Resting distance ≈ tab-bar height (its paddingTop + add-button + paddingBottom)
+  // + the dock's own `bottom: space.lg`. Mirrors custom-tab-bar.tsx's constants.
+  const dockRestOffset = 8 + 52 + 20 + tokens.space.lg; // tab bar + dock bottom gap
+  const keyboardLift = useSharedValue(0);
+  useEffect(() => {
+    // iOS reports willShow/willHide with a duration we can match; Android only
+    // fires didShow/didHide, so we fall back to a quick eased timing.
+    const showEvt = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const show = Keyboard.addListener(showEvt, (e) => {
+      const lift = Math.max(0, e.endCoordinates.height - dockRestOffset);
+      keyboardLift.value = withTiming(lift, {
+        duration: e.duration || 220,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    const hide = Keyboard.addListener(hideEvt, (e) => {
+      keyboardLift.value = withTiming(0, {
+        duration: e?.duration || 200,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [dockRestOffset, keyboardLift]);
+
+  const dockStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -keyboardLift.value }],
+  }));
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <ScrollView
@@ -327,12 +403,18 @@ export default function HomeScreen(): React.ReactElement {
 
       {/* The capture dock is summoned, not always-on: the pen key (tab bar)
           opens the composer or starts voice; the dock vanishes when idle so the
-          field stays clear. The resolver holds a captured thought until filed. */}
-      <KeyboardAvoidingView
-        style={styles.captureDock}
+          field stays clear. The resolver holds a captured thought until filed.
+          It rides above the keyboard via a UI-thread translate (see dockStyle). */}
+      <Animated.View
+        style={[styles.captureDock, dockStyle]}
         pointerEvents="box-none"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
+        {manualOpen && pendingThought === null && !isRecording ? (
+          <ManualBar
+            onCreateProject={handleCreateProject}
+            onDismissEmpty={() => setManualOpen(false)}
+          />
+        ) : null}
         {pendingThought !== null ? (
           <CaptureResolver
             text={pendingThought}
@@ -359,7 +441,7 @@ export default function HomeScreen(): React.ReactElement {
             onDismissEmpty={() => setComposerOpen(false)}
           />
         ) : null}
-      </KeyboardAvoidingView>
+      </Animated.View>
 
       <DayDetailSheet
         visible={sheetVisible}

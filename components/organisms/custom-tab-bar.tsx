@@ -36,17 +36,16 @@ export function CustomTabBar(): React.ReactElement {
           <TabIcon name="view-grid" color={active(isHome)} />
         </Pressable>
 
-        {/* The pen key — THE capture trigger, one thumb gesture from anywhere.
-            Tap opens the text composer on the field; long-press starts voice
-            capture immediately. Both ride the existing ?capture= deep-link the
-            widget already uses, so it works from any tab. Dates, horizons, and
-            projects are set inline in the resolver's "+ details" strip — there
-            is no separate add form. The one neutral-accent control in the
-            chrome, so "capture" reads at a glance without clashing with any
-            saturated type code. */}
+        {/* The pen key — one thumb gesture from anywhere, two registers. TAP
+            opens the MANUAL bar (deliberate creation that has no capture path —
+            today, opening a project). LONG-PRESS arms VOICE capture: catch a
+            thought now, resolve it later. Both ride the existing ?capture=
+            deep-link the widget already uses, so it works from any tab. The one
+            neutral-accent control in the chrome, so it reads at a glance without
+            clashing with any saturated type code. */}
         <Pressable
           onPress={() =>
-            router.push({ pathname: "/", params: { capture: "text" } })
+            router.push({ pathname: "/", params: { capture: "manual" } })
           }
           onLongPress={() => {
             // Voice capture is a bigger gesture than a tap — confirm it in the hand.
@@ -56,7 +55,7 @@ export function CustomTabBar(): React.ReactElement {
           delayLongPress={350}
           accessibilityRole="button"
           accessibilityLabel="Capture a thought"
-          accessibilityHint="Tap to type. Long-press to capture by voice."
+          accessibilityHint="Tap for manual actions. Long-press to capture by voice."
           style={({ pressed }) => [
             styles.addButton,
             { backgroundColor: colors.accent.clay },

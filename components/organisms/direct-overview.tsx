@@ -6,31 +6,39 @@ import {
   type DirectCounts,
   type DirectFilter,
 } from "@/components/molecules/direct-filter-bar";
+import { DirectPager } from "@/components/molecules/direct-pager";
 import { DirectRow } from "@/components/molecules/direct-row";
 import { tokens } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
-import { byRunway, doneStatus, isDone } from "@/lib/direct-when";
+import { doneStatus, sortDirect } from "@/lib/direct-when";
 
 import type { DbEntry, EntryType } from "@/lib/types";
 
+// Rows shown per page — the home holds a fixed, predictable height no matter how
+// large the backlog grows; the mono pager flips through the rest.
+const PAGE_SIZE = 6;
+
 interface DirectOverviewProps {
-  /** Deadlines + todos in any status — the component sorts and filters. */
+  /** Deadlines + todos in any status — the component sorts and paginates. */
   entries: DbEntry[];
 }
 
 /**
- * Direct overview — the consequence zone: open deadlines + todos at the top in
- * runway order (overdue → soonest → undated), with completed lines settled
- * below, struck through like a crossed-off agenda. The header (DirectFilterBar)
- * doubles as a filter and a live count readout; each DirectRow swipes to reveal
- * mark-done (open rows) and delete. This organism only orchestrates: it sorts,
- * filters, and owns the DB mutations; the row and header are autonomous.
+ * Direct overview — the consequence zone as a paged register. The full set is
+ * ordered charged-first (overdue → soonest → calm → done), then windowed into
+ * fixed-height pages so a growing backlog never lengthens the home: page 1 is
+ * always the most pressing work, and the mono pager (‹ 1 / N ›) flips to the
+ * rest. Nothing is hidden — the header (DirectFilterBar) reports the true total
+ * and every item is at most a page-flip away. This organism only orchestrates:
+ * it sorts, paginates, and owns the DB mutations; the row, header, and pager
+ * are autonomous.
  */
 export function DirectOverview({
   entries,
 }: DirectOverviewProps): React.ReactElement | null {
   const { updateEntryStatus, deleteEntry } = useDatabase();
   const [filter, setFilter] = useState<DirectFilter>("all");
+  const [page, setPage] = useState(0);
 
   // Live counts off the unfiltered set so the header reads the true field, not
   // the current cut. Counts are the whole direct zone (open + done together).
@@ -44,18 +52,26 @@ export function DirectOverview({
     return { all: deadline + todo, deadline, todo };
   }, [entries]);
 
-  // Apply the filter, then sort: open items first in runway order, done lines
-  // sunk to the bottom (also runway-ordered among themselves).
-  const visible = useMemo(() => {
+  // Filter, then order charged-first. Pagination slices this ordered list.
+  const ordered = useMemo(() => {
     const cut =
       filter === "all" ? entries : entries.filter((e) => e.type === filter);
-    return [...cut].sort((a, b) => {
-      const ad = isDone(a);
-      const bd = isDone(b);
-      if (ad !== bd) return ad ? 1 : -1; // done sinks
-      return byRunway(a, b);
-    });
+    return sortDirect(cut);
   }, [entries, filter]);
+
+  const pageCount = Math.max(1, Math.ceil(ordered.length / PAGE_SIZE));
+  // Clamp during render so a deletion on the last page (or a filter change)
+  // can't strand us on a page that no longer exists.
+  const safePage = Math.min(page, pageCount - 1);
+  const pageItems = ordered.slice(
+    safePage * PAGE_SIZE,
+    safePage * PAGE_SIZE + PAGE_SIZE,
+  );
+
+  const changeFilter = (next: DirectFilter): void => {
+    setFilter(next);
+    setPage(0); // a new cut always opens on its most pressing page
+  };
 
   const handleMarkDone = (entry: DbEntry): void => {
     void updateEntryStatus(entry.id, doneStatus(entry.type as EntryType)).catch(
@@ -73,10 +89,10 @@ export function DirectOverview({
 
   return (
     <View style={styles.section}>
-      <DirectFilterBar value={filter} counts={counts} onChange={setFilter} />
+      <DirectFilterBar value={filter} counts={counts} onChange={changeFilter} />
 
       <View style={styles.rows}>
-        {visible.map((entry) => (
+        {pageItems.map((entry) => (
           <DirectRow
             key={entry.id}
             entry={entry}
@@ -85,6 +101,8 @@ export function DirectOverview({
           />
         ))}
       </View>
+
+      <DirectPager page={safePage} pageCount={pageCount} onChange={setPage} />
     </View>
   );
 }

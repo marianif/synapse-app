@@ -62,3 +62,29 @@ export function isDone(e: DbEntry): boolean {
 export function doneStatus(type: EntryType): DbEntry["status"] {
   return type === "deadline" ? "met" : "completed";
 }
+
+/**
+ * One ordered sequence for the paged direct zone: charged items first (overdue
+ * → soonest), then the calm remainder, with done lines last. Page 1 therefore
+ * always opens on the most pressing work; later pages drift toward calm and
+ * done — "deadlines first" without a separately pinned band.
+ */
+export function sortDirect(entries: DbEntry[]): DbEntry[] {
+  return [...entries].sort((a, b) => {
+    // 1. done sinks below everything open
+    const ad = isDone(a);
+    const bd = isDone(b);
+    if (ad !== bd) return ad ? 1 : -1;
+
+    // 2. among open, charged (approaching/expired) rises above calm
+    if (!ad) {
+      const ac = isWhenCharged(daysUntil(a.due_date ?? a.scheduled_date ?? null));
+      const bc = isWhenCharged(daysUntil(b.due_date ?? b.scheduled_date ?? null));
+      if (ac !== bc) return ac ? -1 : 1;
+    }
+
+    // 3. within a band, runway order (overdue → soonest → undated)
+    return byRunway(a, b);
+  });
+}
+

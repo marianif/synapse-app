@@ -1,26 +1,62 @@
-import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
-  FadeIn,
   FadeOut,
   LinearTransition,
   SlideInDown,
+  useAnimatedStyle,
   useReducedMotion,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
-import Svg, { Path } from "react-native-svg";
 
+import { ResolverSep } from "@/components/atoms/resolver-sep";
+import { ResolverValue } from "@/components/atoms/resolver-value";
+import { ResolverVerb } from "@/components/atoms/resolver-verb";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { ExactWhen } from "@/components/molecules/exact-when";
+import { PenLine } from "@/components/molecules/pen-line";
+import { ValueRow } from "@/components/molecules/value-row";
 import { LinkableIdea } from "@/components/organisms/link-sheet";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
+import type { Scheme } from "@/constants/theme";
 import { horizonEndDate, horizonLabel } from "@/lib/horizons";
-import type { DbProject, DueRange } from "@/lib/types";
+import type { DbProject, DueRange, EntryType } from "@/lib/types";
 
-dayjs.extend(customParseFormat);
+// The resolver bar is the one surface in Field Lab that means "interface
+// affordance, not content": it lifts the resolver off the field as the doorway
+// it is, and can never be mistaken for a single type the way the old amber chrome
+// was (amber = idea everywhere else). The bar now follows the active scheme — a
+// light slab in light mode, a graphite slab in dark mode — so its inks track the
+// SAME scheme as the bar surface (otherwise an off-scheme ink would vanish on it).
+type BarPalette = {
+  bar: string; // chooser bar surface
+  ink: string; // primary on-bar text
+  inkMuted: string; // recessive on-bar text
+  panel: string; // recessed workbench well
+  chip: string; // raised pill on the workbench well
+};
+
+function barPalette(scheme: Scheme): BarPalette {
+  const c = tokens.color[scheme];
+  return {
+    bar: c.paper,
+    ink: c.ink,
+    inkMuted: c.inkMuted,
+    panel: c.surfaceSubtle,
+    chip: c.surface,
+  };
+}
+
+// Verb type-color on the bar — the bright electric codes clear AA on the graphite
+// dark surface; on the light paper surface the scheme-tuned kicker shades keep
+// the same legibility, so the verb color tracks the active scheme too.
+function verbColor(type: EntryType): string {
+  return entryColor(type);
+}
 
 // A recent idea the captured thought can be filed under — same shape the link
 // sheet uses, re-exported so call-sites can import it from either place.
@@ -104,7 +140,9 @@ const WHEN_OPTIONS: WhenOption[] = [
  *
  * The WHEN and PROJECT rows are value-readouts, not chip rails: the options sit
  * inline as plain tappable words, the chosen one colored. The precise day/time
- * wheel stays opt-in behind "exact". Amber capture edge on the left.
+ * wheel stays opt-in behind "exact". The whole resolver is one neutral interface
+ * slab that follows the active scheme — light paper in light mode, graphite in
+ * dark mode — the interface object, never a type tint.
  */
 export function CaptureResolver({
   text,
@@ -115,8 +153,19 @@ export function CaptureResolver({
   onResolve,
   onDismiss,
 }: CaptureResolverProps): React.ReactElement {
-  const { colors } = useTheme();
   const reduced = useReducedMotion();
+  const { scheme } = useTheme();
+
+  // The bar surface + on-bar inks track the active scheme: a light paper slab in
+  // light mode, a graphite slab in dark mode. Resolved here so every readout on
+  // the bar stays legible against whichever surface the scheme picks.
+  const {
+    bar: BAR,
+    ink: BAR_INK,
+    inkMuted: BAR_INK_MUTED,
+    panel: BAR_PANEL,
+    chip: BAR_CHIP,
+  } = barPalette(scheme);
 
   // The selected dated destination (null = nothing selected, detail closed).
   const [selected, setSelected] = useState<DatedKind | null>(null);
@@ -128,12 +177,64 @@ export function CaptureResolver({
 
   const activeProjects = projects.filter((p) => p.status === "active");
 
-  // First tap on a dated verb underlines it + opens detail; tapping the other
-  // dated verb switches kind. The WHEN grammar is shared, so the picked when
-  // carries across the switch. Commit now lives in the corner glyph. Opening a
-  // dated detail closes the note rail — only one subcomponent open at a time.
+  // The resolver is a two-step horizontal CAROUSEL, not a panel that grows
+  // downward. Step 1 is the chooser (echoed thought + the four doors); step 2 is
+  // the workbench (the dated WHEN/PROJECT detail, or the note rail). Picking a
+  // door slides the whole strip left to step 2; the back chevron slides it home.
+  // The strip never gets taller from a choice — the choice REPLACES, never stacks.
+  const atDetail = selected !== null || picking;
+
+  // The slide is a transform on a 2-wide track, driven by the measured strip
+  // width (RN can't translate by % reliably, so we measure once via onLayout).
+  // `stripWidthPx` (React state) sizes each step's layout; `stripWidth` (shared
+  // value) feeds the UI-thread translate. Both updated from the same onLayout.
+  const [stripWidthPx, setStripWidthPx] = useState(0);
+  const stripWidth = useSharedValue(0);
+  const progress = useSharedValue(0); // 0 = chooser, 1 = detail
+
+  // Both steps are absolutely positioned (so neither reserves the other's
+  // height); the viewport height is animated between the two measured step
+  // heights as the strip slides, so it grows/shrinks with the active step.
+  const chooserH = useSharedValue(0);
+  const workbenchH = useSharedValue(0);
+
+  useEffect(() => {
+    const to = atDetail ? 1 : 0;
+    progress.value = reduced
+      ? to
+      : withTiming(to, {
+          duration: 280,
+          easing: Easing.out(Easing.cubic),
+        });
+  }, [atDetail, reduced, progress]);
+
+  const trackStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: -progress.value * stripWidth.value }],
+  }));
+
+  // Viewport height tracks the slide: chooser height at p=0, workbench at p=1.
+  // Falls back to whichever is known until both have measured.
+  const viewportStyle = useAnimatedStyle(() => {
+    const a = chooserH.value;
+    const b = workbenchH.value;
+    if (!a && !b) return {};
+    const h = a + (b - a) * progress.value;
+    return { height: h || a || b };
+  });
+
+  // First tap on a dated verb slides to the workbench; tapping the other dated
+  // verb switches kind in place (the WHEN grammar is shared, so the picked when
+  // carries across). Commit lives in the corner glyph. Choosing a dated door
+  // closes the note rail — only one workbench occupies step 2 at a time.
   function selectDated(kind: DatedKind): void {
     setSelected(kind);
+    if (picking) onTogglePicking();
+  }
+
+  // The back chevron — slide home to the chooser, abandoning the in-progress
+  // workbench without filing. Clears whichever step-2 occupant was open.
+  function back(): void {
+    if (selected) setSelected(null);
     if (picking) onTogglePicking();
   }
 
@@ -159,7 +260,8 @@ export function CaptureResolver({
     }
   }
 
-  const accent = selected ? entryColor(selected) : colors.type.todo;
+  // Detail-panel accent — the selected type's bright code (reads on the bar).
+  const accent = verbColor(selected ?? "todo");
   // Immediacy over bounce: a quick eased reflow, no spring overshoot.
   const layout = reduced
     ? undefined
@@ -180,263 +282,348 @@ export function CaptureResolver({
       }
       exiting={reduced ? undefined : FadeOut.duration(110)}
       layout={layout}
-      style={[styles.card, { backgroundColor: colors.surface }]}
+      // The scheme-aware interface slab — the one surface that reads as INTERFACE,
+      // lifted off the field. Light paper in light mode, graphite in dark; no type
+      // tint: nothing here belongs to one type.
+      style={[styles.card, { backgroundColor: BAR }, tokens.elevation.capture]}
     >
-      <View style={[styles.edge, { backgroundColor: colors.type.ideas }]} />
-
-      <View style={styles.body}>
-        {/* Header — what's being filed. The corner glyph is a discard ✕ until a
-            dated verb is selected, then a type-colored ✓ that saves-and-closes. */}
-        <View style={styles.headRow}>
-          <PenLine color={colors.inkMuted} size={18} />
-          <ThemedText
-            type="body"
-            numberOfLines={1}
-            style={[styles.echo, { color: colors.ink }]}
+      {/* The viewport — clips the 2-wide track so only one step shows. Its width
+          is measured to drive the slide distance; its height is animated to the
+          active step. */}
+      <Animated.View
+        style={[styles.viewport, viewportStyle]}
+        onLayout={(e) => {
+          const w = e.nativeEvent.layout.width;
+          stripWidth.value = w;
+          setStripWidthPx(w);
+        }}
+      >
+        <Animated.View style={[styles.track, trackStyle]}>
+          {/* ── Step 1 · CHOOSER — the captured thought + the four doors. ── */}
+          <View
+            style={[styles.step, { width: stripWidthPx, left: 0 }]}
+            onLayout={(e) => {
+              chooserH.value = e.nativeEvent.layout.height;
+            }}
           >
-            {text}
-          </ThemedText>
-          <Pressable
-            onPress={() => (selected ? commitDated(selected) : onDismiss())}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel={
-              selected
-                ? selected === "deadline"
-                  ? "Save deadline"
-                  : "Save to-do"
-                : "Discard this thought"
-            }
-            style={({ pressed }) => [
-              styles.corner,
-              pressed && { opacity: 0.5 },
-            ]}
-          >
-            <IconSymbol
-              name={selected ? "check" : "close"}
-              size={selected ? 20 : 16}
-              color={selected ? accent : colors.inkMuted}
-            />
-          </Pressable>
-        </View>
-
-        {/* The verb line — the primary choice, read not tapped-at. Type color on
-            each word; the picked dated verb is bold + underlined. Bare verbs
-            (keep/note) file immediately. */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.verbLine}
-        >
-          <Verb
-            label="Keep"
-            color={colors.type.ideas}
-            onPress={() => onResolve({ kind: "idea" })}
-            accessibilityLabel="Keep as idea"
-          />
-          <Sep color={colors.inkMuted} />
-          <Verb
-            label="do it"
-            color={colors.type.todo}
-            selected={selected === "todo"}
-            onPress={() => selectDated("todo")}
-            accessibilityLabel="Make it a to-do"
-            accessibilityState={{ selected: selected === "todo" }}
-          />
-          <Sep color={colors.inkMuted} />
-          <Verb
-            label="by a date"
-            color={colors.type.bills}
-            selected={selected === "deadline"}
-            onPress={() => selectDated("deadline")}
-            accessibilityLabel="Make it a deadline"
-            accessibilityState={{ selected: selected === "deadline" }}
-          />
-          <Sep color={colors.inkMuted} />
-          <Verb
-            label="note"
-            color={colors.inkMuted}
-            muted
-            selected={picking}
-            // No recent ideas to link onto → file as a free note immediately.
-            // Otherwise open the note rail to choose free-vs-linked.
-            onPress={() =>
-              ideas.length > 0 ? onTogglePicking() : onResolve({ kind: "note" })
-            }
-            accessibilityLabel="File as diary note"
-            accessibilityState={{ expanded: picking }}
-          />
-        </ScrollView>
-
-        {/* Note destinations — free note (left, fixed) + linkable ideas (right,
-            scrollable). Slides in under the verb line when "note" is picked. */}
-        {picking ? (
-          <Animated.View
-            entering={reduced ? undefined : FadeIn.duration(140)}
-            exiting={reduced ? undefined : FadeOut.duration(90)}
-            layout={layout}
-          >
-            <View style={styles.noteRail}>
-              {/* Free note — fixed on the left. A note with no idea behind it. */}
-              <Pressable
-                onPress={() => onResolve({ kind: "note" })}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel="File as a free note"
-                style={({ pressed }) => [
-                  styles.freeNoteChip,
-                  { backgroundColor: colors.surfaceSubtle },
-                  pressed && { opacity: 0.5 },
-                ]}
-              >
+            <View style={styles.body}>
+              {/* The pen-mark + echo are the quiet subject line; the verbs are
+                  the decision. The corner glyph here is always the discard ✕ —
+                  commit moves to the workbench step. */}
+              <View style={styles.echoRow}>
+                <PenLine color={BAR_INK_MUTED} size={16} />
                 <ThemedText
-                  type="micro"
-                  style={[styles.freeNoteLabel, { color: colors.inkMuted }]}
+                  type="body"
+                  numberOfLines={1}
+                  style={[styles.echo, { color: BAR_INK_MUTED }]}
                 >
-                  free note
+                  {text}
                 </ThemedText>
-              </Pressable>
+                <Pressable
+                  onPress={onDismiss}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel="Discard this thought"
+                  style={({ pressed }) => [
+                    styles.corner,
+                    pressed && { opacity: 0.5 },
+                  ]}
+                >
+                  <IconSymbol name="close" size={16} color={BAR_INK_MUTED} />
+                </Pressable>
+              </View>
 
-              {/* Linkable ideas — scrollable on the right. Tap to note onto one. */}
+              {/* The verb line — the primary choice, read not tapped-at. Each
+                  word in its bright type code on the bar; the picked dated
+                  verb is bold + underlined. The four doors stand equal: the color
+                  belongs to the choice, never to the chrome. */}
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
-                contentContainerStyle={styles.ideaRail}
+                contentContainerStyle={styles.verbLine}
               >
-                {ideas.map((idea) => (
-                  <Pressable
-                    key={idea.id}
-                    onPress={() =>
-                      onResolve({ kind: "note-on", entryId: idea.id })
-                    }
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Note on idea: ${idea.title}`}
-                    style={styles.ideaItem}
-                  >
-                    <SketchIcon type="idea" size={13} />
-                    <ThemedText
-                      type="body"
-                      numberOfLines={1}
-                      style={[styles.ideaLabel, { color: colors.ink }]}
-                    >
-                      {idea.title}
-                    </ThemedText>
-                  </Pressable>
-                ))}
+                <ResolverVerb
+                  label="Keep"
+                  color={verbColor("idea")}
+                  onPress={() => onResolve({ kind: "idea" })}
+                  accessibilityLabel="Keep as idea"
+                />
+                <ResolverSep color={BAR_INK_MUTED} />
+                <ResolverVerb
+                  label="do it"
+                  color={verbColor("todo")}
+                  selected={selected === "todo"}
+                  onPress={() => selectDated("todo")}
+                  accessibilityLabel="Make it a to-do"
+                  accessibilityState={{ selected: selected === "todo" }}
+                />
+                <ResolverSep color={BAR_INK_MUTED} />
+                <ResolverVerb
+                  label="by a date"
+                  color={verbColor("deadline")}
+                  selected={selected === "deadline"}
+                  onPress={() => selectDated("deadline")}
+                  accessibilityLabel="Make it a deadline"
+                  accessibilityState={{ selected: selected === "deadline" }}
+                />
+                <ResolverSep color={BAR_INK_MUTED} />
+                <ResolverVerb
+                  label="note"
+                  color={BAR_INK_MUTED}
+                  selected={picking}
+                  // No recent ideas to link onto → file as a free note
+                  // immediately. Otherwise slide to the note rail.
+                  onPress={() =>
+                    ideas.length > 0
+                      ? onTogglePicking()
+                      : onResolve({ kind: "note" })
+                  }
+                  accessibilityLabel="File as diary note"
+                  accessibilityState={{ expanded: picking }}
+                />
               </ScrollView>
             </View>
-          </Animated.View>
-        ) : null}
+          </View>
 
-        {/* Detail — only for the selected dated verb. Inline value readouts in
-            the same word-not-bubble language as the verb line. */}
-        {selected ? (
-          <Animated.View
-            entering={reduced ? undefined : FadeIn.duration(140)}
-            exiting={reduced ? undefined : FadeOut.duration(90)}
-            layout={layout}
-            style={styles.detail}
+          {/* ── Step 2 · WORKBENCH — slides in from the right when a door is
+              picked. A recessed well INSIDE the bar (one consistent slab in the
+              active scheme), so configuring reads as a different register from
+              choosing. Its header is the back chevron + the same echoed thought;
+              the corner ✓ commits (dated only — note taps file immediately). ── */}
+          <View
+            style={[
+              styles.step,
+              styles.workbench,
+              {
+                width: stripWidthPx,
+                left: stripWidthPx,
+                backgroundColor: BAR_PANEL,
+              },
+            ]}
+            onLayout={(e) => {
+              workbenchH.value = e.nativeEvent.layout.height;
+            }}
+            // Keep step 2 out of the a11y tree while it's off-screen, so the back
+            // chevron and value words aren't reachable from the chooser.
+            accessibilityElementsHidden={!atDetail}
+            importantForAccessibility={
+              atDetail ? "auto" : "no-hide-descendants"
+            }
+            pointerEvents={atDetail ? "auto" : "none"}
           >
-            {/* WHEN — one shared grammar for todo + deadline: concrete days and
-                closing horizons as inline tappable words. "exact" reveals the
-                precise day/time stepper. */}
-            <ValueRow label="WHEN">
-              {WHEN_OPTIONS.map((o) =>
-                o.kind === "concrete" ? (
-                  <Value
-                    key={o.label}
-                    label={o.label}
-                    color={accent}
-                    selected={!exact && dueRange === null && date === o.date()}
-                    onPress={() => {
-                      setExact(false);
-                      setDueRange(null);
-                      setDate(o.date());
-                      setTime("");
-                    }}
-                  />
-                ) : (
-                  <Value
-                    key={o.label}
-                    label={o.label}
-                    color={accent}
-                    selected={!exact && dueRange === o.range}
-                    onPress={() => {
-                      setExact(false);
-                      setDueRange(o.range);
-                      setDate("");
-                      setTime("");
-                    }}
-                  />
-                ),
-              )}
-              <Value
-                label="exact"
-                color={accent}
-                selected={exact}
-                onPress={() => {
-                  setExact((v) => !v);
-                  setDueRange(null);
-                }}
-              />
-            </ValueRow>
-
-            {/* The precise day + time — a one-line stepper readout, opt-in. No
-                wheel, no panel, no bubbles: the value IS the control. */}
-            {exact ? (
-              <ExactWhen
-                date={date}
-                time={time}
-                accent={accent}
-                onDateChange={setDate}
-                onTimeChange={setTime}
-              />
-            ) : dueRange ? (
-              <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-                {selected === "deadline" ? "Close it" : "Land it"}{" "}
-                {horizonLabel(dueRange)} — by {horizonEndDate(dueRange)}.
-              </ThemedText>
-            ) : null}
-
-            {/* PROJECT — attribution as inline words. Hidden with no projects. */}
-            {activeProjects.length > 0 ? (
-              <ValueRow label="PROJECT">
-                <Value
-                  label="unfiled"
-                  color={accent}
-                  selected={projectId === null}
-                  onPress={() => setProjectId(null)}
+            <View style={styles.echoRow}>
+              <Pressable
+                onPress={back}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel="Back to choices"
+                style={({ pressed }) => [
+                  styles.corner,
+                  pressed && { opacity: 0.5 },
+                ]}
+              >
+                <IconSymbol
+                  name="chevron-left"
+                  size={20}
+                  color={BAR_INK_MUTED}
                 />
-                {activeProjects.map((p) => (
-                  <Value
-                    key={p.id}
-                    label={p.title}
-                    color={accent}
-                    selected={projectId === p.id}
-                    onPress={() =>
-                      setProjectId((id) => (id === p.id ? null : p.id))
-                    }
-                  />
-                ))}
-              </ValueRow>
+              </Pressable>
+              <ThemedText
+                type="body"
+                numberOfLines={1}
+                style={[styles.echo, { color: BAR_INK_MUTED }]}
+              >
+                {text}
+              </ThemedText>
+              {selected ? (
+                <Pressable
+                  onPress={() => commitDated(selected)}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    selected === "deadline" ? "Save deadline" : "Save to-do"
+                  }
+                  style={({ pressed }) => [
+                    styles.corner,
+                    pressed && { opacity: 0.5 },
+                  ]}
+                >
+                  <IconSymbol name="check" size={20} color={accent} />
+                </Pressable>
+              ) : (
+                <View style={styles.corner} />
+              )}
+            </View>
+
+            {/* Note rail — free note (left) + linkable ideas (right). Shown when
+                "note" opened the workbench. */}
+            {picking ? (
+              <View style={styles.noteRail}>
+                {/* Free note — fixed on the left. A note with no idea behind it. */}
+                <Pressable
+                  onPress={() => onResolve({ kind: "note" })}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="File as a free note"
+                  style={({ pressed }) => [
+                    styles.freeNoteChip,
+                    { backgroundColor: BAR_CHIP },
+                    pressed && { opacity: 0.5 },
+                  ]}
+                >
+                  <ThemedText
+                    type="micro"
+                    style={[styles.freeNoteLabel, { color: BAR_INK_MUTED }]}
+                  >
+                    free note
+                  </ThemedText>
+                </Pressable>
+
+                {/* Linkable ideas — scrollable on the right. */}
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={styles.ideaRail}
+                >
+                  {ideas.map((idea) => (
+                    <Pressable
+                      key={idea.id}
+                      onPress={() =>
+                        onResolve({ kind: "note-on", entryId: idea.id })
+                      }
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Note on idea: ${idea.title}`}
+                      style={styles.ideaItem}
+                    >
+                      <SketchIcon type="idea" size={13} />
+                      <ThemedText
+                        type="body"
+                        numberOfLines={1}
+                        style={[styles.ideaLabel, { color: BAR_INK }]}
+                      >
+                        {idea.title}
+                      </ThemedText>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
             ) : null}
 
-            {/* A quiet echo of the resolved attribution — the readout, not a
+            {/* Dated detail — WHEN / PROJECT readouts for the selected dated
+                verb. Inline value words, same language as the chooser. */}
+            {selected ? (
+              <View style={styles.detail}>
+                {/* WHEN — one shared grammar for todo + deadline: concrete days
+                    and closing horizons as inline tappable words. "exact"
+                    reveals the precise day/time stepper. */}
+                <ValueRow label="WHEN" keyColor={BAR_INK_MUTED}>
+                  {WHEN_OPTIONS.map((o) =>
+                    o.kind === "concrete" ? (
+                      <ResolverValue
+                        key={o.label}
+                        label={o.label}
+                        color={accent}
+                        mutedColor={BAR_INK_MUTED}
+                        selected={
+                          !exact && dueRange === null && date === o.date()
+                        }
+                        onPress={() => {
+                          setExact(false);
+                          setDueRange(null);
+                          setDate(o.date());
+                          setTime("");
+                        }}
+                      />
+                    ) : (
+                      <ResolverValue
+                        key={o.label}
+                        label={o.label}
+                        color={accent}
+                        mutedColor={BAR_INK_MUTED}
+                        selected={!exact && dueRange === o.range}
+                        onPress={() => {
+                          setExact(false);
+                          setDueRange(o.range);
+                          setDate("");
+                          setTime("");
+                        }}
+                      />
+                    ),
+                  )}
+                  <ResolverValue
+                    label="exact"
+                    color={accent}
+                    mutedColor={BAR_INK_MUTED}
+                    selected={exact}
+                    onPress={() => {
+                      setExact((v) => !v);
+                      setDueRange(null);
+                    }}
+                  />
+                </ValueRow>
+
+                {/* The precise day + time — a one-line stepper readout, opt-in. No
+                wheel, no panel, no bubbles: the value IS the control. */}
+                {exact ? (
+                  <ExactWhen
+                    date={date}
+                    time={time}
+                    accent={accent}
+                    inkColor={BAR_INK}
+                    mutedColor={BAR_INK_MUTED}
+                    onDateChange={setDate}
+                    onTimeChange={setTime}
+                  />
+                ) : dueRange ? (
+                  <ThemedText type="micro" style={{ color: BAR_INK_MUTED }}>
+                    {selected === "deadline" ? "Close it" : "Land it"}{" "}
+                    {horizonLabel(dueRange)} — by {horizonEndDate(dueRange)}.
+                  </ThemedText>
+                ) : null}
+
+                {/* PROJECT — attribution as inline words. Hidden with no projects. */}
+                {activeProjects.length > 0 ? (
+                  <ValueRow label="PROJECT" keyColor={BAR_INK_MUTED}>
+                    <ResolverValue
+                      label="unfiled"
+                      color={accent}
+                      mutedColor={BAR_INK_MUTED}
+                      selected={projectId === null}
+                      onPress={() => setProjectId(null)}
+                    />
+                    {activeProjects.map((p) => (
+                      <ResolverValue
+                        key={p.id}
+                        label={p.title}
+                        color={accent}
+                        mutedColor={BAR_INK_MUTED}
+                        selected={projectId === p.id}
+                        onPress={() =>
+                          setProjectId((id) => (id === p.id ? null : p.id))
+                        }
+                      />
+                    ))}
+                  </ValueRow>
+                ) : null}
+
+                {/* A quiet echo of the resolved attribution — the readout, not a
                 button. The corner ✓ commits. */}
-            <View style={styles.headRow}>
-              <ThemedText type="mono" style={{ color: colors.inkMuted }}>
-                {selected === "deadline" ? "Deadline" : "To-do"} ·
-              </ThemedText>
-              <ThemedText type="hand" style={{ color: colors.inkMuted }}>
-                {projectName}
-              </ThemedText>
-            </View>
-          </Animated.View>
-        ) : null}
-      </View>
+                <View style={styles.headRow}>
+                  <ThemedText type="mono" style={{ color: BAR_INK_MUTED }}>
+                    {selected === "deadline" ? "Deadline" : "To-do"} ·
+                  </ThemedText>
+                  <ThemedText type="hand" style={{ color: BAR_INK_MUTED }}>
+                    {projectName}
+                  </ThemedText>
+                </View>
+              </View>
+            ) : null}
+          </View>
+        </Animated.View>
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -457,397 +644,26 @@ function daysToWeekend(): number {
   return (6 - day + 7) % 7;
 }
 
-// ── Exact when — a one-line stepper readout, no wheel ─────────────────────────
-
-const STORE_FMT = "DD/MM/YYYY";
-
-/**
- * The precise day + time, compacted to a single instrument readout. The date and
- * time are big mono values; bare chevron steppers nudge them (±1 day, ±15 min),
- * press-and-hold to repeat. No wheel, no panel, no chips — the value is the
- * control. The relative quick-picks (today/tomorrow/weekend) live at the top
- * WHEN level, so they're deliberately absent here.
- */
-function ExactWhen({
-  date,
-  time,
-  accent,
-  onDateChange,
-  onTimeChange,
-}: {
-  date: string;
-  time: string;
-  accent: string;
-  onDateChange: (value: string) => void;
-  onTimeChange: (value: string) => void;
-}): React.ReactElement {
-  const { colors } = useTheme();
-
-  // Default the date to today the moment exact opens with nothing set.
-  useEffect(() => {
-    if (!date) onDateChange(dayjs().format(STORE_FMT));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const day = date ? dayjs(date, STORE_FMT) : dayjs();
-
-  function nudgeDay(delta: number): void {
-    const today = dayjs().startOf("day");
-    let next = day.add(delta, "day");
-    // Never schedule into the past — a big jump backwards floors at today
-    // rather than no-op'ing, so a held chevron lands on today instead of stalling.
-    if (next.isBefore(today)) {
-      if (day.isSame(today, "day")) return; // already at the floor
-      next = today;
-    }
-    onDateChange(next.format(STORE_FMT));
-  }
-
-  function nudgeTime(delta: number): void {
-    if (!time) {
-      onTimeChange(delta > 0 ? "09:00" : "08:45");
-      return;
-    }
-    const [h, m] = time.split(":").map(Number);
-    let total = (h * 60 + m + delta * 15 + 24 * 60) % (24 * 60);
-    const nh = Math.floor(total / 60);
-    const nm = total % 60;
-    onTimeChange(
-      `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`,
-    );
-  }
-
-  const timeLabel = time
-    ? dayjs()
-        .hour(Number(time.split(":")[0]))
-        .minute(Number(time.split(":")[1]))
-        .format("h:mm A")
-    : "all day";
-
-  return (
-    <View style={styles.exact}>
-      {/* Date stepper — tap nudges ±1 day, hold jumps ±10 days. */}
-      <Stepper
-        accent={accent}
-        onLeft={() => nudgeDay(-1)}
-        onRight={() => nudgeDay(1)}
-        onLeftHold={() => nudgeDay(-10)}
-        onRightHold={() => nudgeDay(10)}
-        accessibilityLabel="Adjust day"
-      >
-        <ThemedText
-          type="mono"
-          style={[styles.exactValue, { color: colors.ink }]}
-        >
-          {day.format("ddd D MMM")}
-        </ThemedText>
-      </Stepper>
-
-      {/* Time stepper — tap nudges ±15 min, hold jumps ±1 hour. Tapping the
-          label clears back to all-day. */}
-      <Stepper
-        accent={accent}
-        onLeft={() => nudgeTime(-1)}
-        onRight={() => nudgeTime(1)}
-        onLeftHold={() => nudgeTime(-4)}
-        onRightHold={() => nudgeTime(4)}
-        accessibilityLabel="Adjust time"
-      >
-        <Pressable
-          onPress={() => time && onTimeChange("")}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={time ? "Clear time, all day" : "Time"}
-        >
-          <ThemedText
-            type="mono"
-            style={[
-              styles.exactValue,
-              { color: time ? colors.ink : colors.inkMuted },
-            ]}
-          >
-            {timeLabel}
-          </ThemedText>
-        </Pressable>
-      </Stepper>
-    </View>
-  );
-}
-
-/**
- * A value flanked by two press-and-hold chevron steppers. Bare glyphs, no box.
- * A tap fires the small step (`onLeft`/`onRight`); holding fires the big jump
- * (`onLeftHold`/`onRightHold`) on repeat.
- */
-function Stepper({
-  accent,
-  onLeft,
-  onRight,
-  onLeftHold,
-  onRightHold,
-  accessibilityLabel,
-  children,
-}: {
-  accent: string;
-  onLeft: () => void;
-  onRight: () => void;
-  onLeftHold: () => void;
-  onRightHold: () => void;
-  accessibilityLabel: string;
-  children: React.ReactNode;
-}): React.ReactElement {
-  return (
-    <View style={styles.stepper} accessibilityLabel={accessibilityLabel}>
-      <RepeatButton
-        onTrigger={onLeft}
-        onRepeat={onLeftHold}
-        accessibilityLabel="Decrease"
-      >
-        <IconSymbol name="chevron-left" size={22} color={accent} />
-      </RepeatButton>
-      {children}
-      <RepeatButton
-        onTrigger={onRight}
-        onRepeat={onRightHold}
-        accessibilityLabel="Increase"
-      >
-        <IconSymbol name="chevron-right" size={22} color={accent} />
-      </RepeatButton>
-    </View>
-  );
-}
-
-/**
- * Fires `onTrigger` once on press (a tap = small step). Hold past the delay and
- * it switches to `onRepeat` (a big jump) on a steady tick — so the user nudges
- * by ±1 with a tap and travels by ±10 days / ±1 hour by holding, no press-press-press.
- */
-function RepeatButton({
-  onTrigger,
-  onRepeat,
-  accessibilityLabel,
-  children,
-}: {
-  onTrigger: () => void;
-  onRepeat: () => void;
-  accessibilityLabel: string;
-  children: React.ReactNode;
-}): React.ReactElement {
-  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const delay = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  function start(): void {
-    onTrigger();
-    // Hold: after a short delay, repeat with the big jump at a steady tick.
-    delay.current = setTimeout(() => {
-      timer.current = setInterval(onRepeat, 120);
-    }, 350);
-  }
-
-  function stop(): void {
-    if (delay.current) clearTimeout(delay.current);
-    if (timer.current) clearInterval(timer.current);
-    delay.current = null;
-    timer.current = null;
-  }
-
-  useEffect(() => stop, []);
-
-  return (
-    <Pressable
-      onPressIn={start}
-      onPressOut={stop}
-      hitSlop={{ top: 12, bottom: 12, left: 6, right: 6 }}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      style={({ pressed }) => [styles.repeat, pressed && { opacity: 0.5 }]}
-    >
-      {children}
-    </Pressable>
-  );
-}
-
-// ── Verbs & values — words, not bubbles ───────────────────────────────────────
-
-/**
- * A single tappable verb on the destination line. The affordance is the word
- * itself in its type color — no enclosure. Picked dated verbs go bold with a
- * 2px underline in their color (the edge-bar pattern, laid flat). Generous
- * vertical padding + hitSlop keep the tap target ≥44pt though the ink is small.
- */
-function Verb({
-  label,
-  color,
-  selected = false,
-  muted = false,
-  onPress,
-  accessibilityLabel,
-  accessibilityState,
-}: {
-  label: string;
-  color: string;
-  selected?: boolean;
-  muted?: boolean;
-  onPress: () => void;
-  accessibilityLabel: string;
-  accessibilityState?: { selected?: boolean; expanded?: boolean };
-}): React.ReactElement {
-  return (
-    <Pressable
-      onPress={onPress}
-      hitSlop={{ top: 10, bottom: 10, left: 4, right: 4 }}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={accessibilityState}
-      style={({ pressed }) => [styles.verb, pressed && { opacity: 0.5 }]}
-    >
-      <ThemedText
-        type="item"
-        style={[styles.verbText, { color }, selected && styles.verbSelected]}
-      >
-        {label}
-      </ThemedText>
-      <View
-        style={[
-          styles.verbUnderline,
-          { backgroundColor: selected ? color : "transparent" },
-        ]}
-      />
-    </Pressable>
-  );
-}
-
-/**
- * The "filing" mark — a hand-drawn pen with a written line trailing under its
- * nib. Replaces the "FILE AS" kicker so the header reads as the narrative,
- * agenda gesture (writing the thought down) rather than a form label. Matches
- * the loose single-weight strokes of SketchIcon.
- */
-function PenLine({
-  color,
-  size = 18,
-}: {
-  color: string;
-  size?: number;
-}): React.ReactElement {
-  const sw = (size / 18) * 1.6;
-  const common = {
-    stroke: color,
-    strokeWidth: sw,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    fill: "none",
-  };
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      {/* Pen body, slanted top-right → mid, with a little nib at the bottom. */}
-      <Path d="M20 4.2 L11.4 12.9 L10 16 L13.1 14.6 L21.7 5.9 Z" {...common} />
-      {/* Ink split on the nib. */}
-      <Path d="M11.4 12.9 L13.1 14.6" {...common} />
-      {/* The written line, trailing under the nib with a hand wobble. */}
-      <Path
-        d="M3 19.4 C6 18.6 9 20 12 19.2 C14.4 18.6 16 19.4 18 19"
-        {...common}
-      />
-    </Svg>
-  );
-}
-
-/**
- * A row of inline value words behind a mono kicker key — the detail readout that
- * replaces chip rails. "WHEN  today tomorrow weekend exact". The chosen value is
- * colored + medium-weight; the rest are muted ink. No capsules.
- */
-function ValueRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}): React.ReactElement {
-  const { colors } = useTheme();
-  return (
-    <View style={styles.valueRow}>
-      <ThemedText
-        type="micro"
-        style={[styles.valueKey, { color: colors.inkMuted }]}
-      >
-        {label}
-      </ThemedText>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.valueList}
-      >
-        {children}
-      </ScrollView>
-    </View>
-  );
-}
-
-/** A single tappable value word in a ValueRow. Colored when chosen, else muted. */
-function Value({
-  label,
-  color,
-  selected,
-  onPress,
-}: {
-  label: string;
-  color: string;
-  selected: boolean;
-  onPress: () => void;
-}): React.ReactElement {
-  const { colors } = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      hitSlop={{ top: 10, bottom: 10, left: 4, right: 4 }}
-      accessibilityRole="radio"
-      accessibilityLabel={label}
-      accessibilityState={{ selected }}
-      style={({ pressed }) => [styles.value, pressed && { opacity: 0.5 }]}
-    >
-      <ThemedText
-        type="body"
-        numberOfLines={1}
-        style={[
-          styles.valueText,
-          selected
-            ? { color, fontFamily: tokens.type.fontInter.semiBold }
-            : { color: colors.inkMuted },
-        ]}
-      >
-        {label}
-      </ThemedText>
-    </Pressable>
-  );
-}
-
-/** A faint middot separating verbs — punctuation, not chrome. */
-function Sep({ color }: { color: string }): React.ReactElement {
-  return (
-    <ThemedText type="item" style={[styles.sep, { color }]}>
-      ·
-    </ThemedText>
-  );
-}
-
 const styles = StyleSheet.create({
+  // The interface bar — one neutral object lifted off the field, scheme-aware
+  // (surface set at runtime). Sharp instrument corner, no type-tinted edge:
+  // nothing here belongs to one type.
   card: {
-    flexDirection: "row",
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.lg,
     overflow: "hidden",
     marginBottom: tokens.space.sm,
   },
-  edge: {
-    width: 4,
-  },
   body: {
-    flex: 1,
-    paddingVertical: tokens.space.md,
+    paddingVertical: tokens.space.sm,
     paddingHorizontal: tokens.space.lg,
     gap: tokens.space.xs,
+  },
+  // The subject line: pen-mark · echoed thought · corner glyph. Quiet, recessive
+  // — it's what you're filing, not the decision. The verbs below are the decision.
+  echoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
   },
   headRow: {
     flexDirection: "row",
@@ -856,6 +672,32 @@ const styles = StyleSheet.create({
   },
   echo: {
     flex: 1,
+  },
+  // The carousel viewport — clips the 2-wide track to one step. Its height is
+  // animated to the active step (see `viewportStyle`) so the strip never reserves
+  // the taller workbench's height while the chooser is showing.
+  viewport: {
+    overflow: "hidden",
+  },
+  // The 2-wide track holding both steps side by side; translated to slide.
+  track: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  // Each carousel step. Step 2 is positioned absolutely just past step 1 so only
+  // step 1 contributes to the in-flow height; the viewport height is animated
+  // between the two measured step heights.
+  step: {
+    position: "absolute",
+    top: 0,
+  },
+  // The workbench — step 2. A recessed well inside the bar, so configuring reads
+  // as a different register from choosing while staying one consistent slab in
+  // the active scheme.
+  workbench: {
+    paddingVertical: tokens.space.md,
+    paddingHorizontal: tokens.space.lg,
+    gap: tokens.space.sm,
   },
   corner: {
     width: 28,
@@ -869,30 +711,10 @@ const styles = StyleSheet.create({
     gap: tokens.space.sm,
     paddingVertical: tokens.space.xs,
   },
-  verb: {
-    alignItems: "center",
-    paddingVertical: tokens.space.xs,
-  },
-  verbText: {
-    fontFamily: tokens.type.fontInter.medium,
-  },
-  verbSelected: {
-    fontFamily: tokens.type.fontInter.bold,
-  },
-  verbUnderline: {
-    height: 2,
-    alignSelf: "stretch",
-    marginTop: 2,
-    borderRadius: tokens.radius.pill,
-  },
-  sep: {
-    opacity: 0.5,
-  },
   noteRail: {
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.md,
-    paddingTop: tokens.space.xs,
   },
   freeNoteChip: {
     paddingHorizontal: tokens.space.md,
@@ -924,47 +746,5 @@ const styles = StyleSheet.create({
   },
   detail: {
     gap: tokens.space.sm,
-    paddingTop: tokens.space.sm,
-  },
-  valueRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.md,
-  },
-  valueKey: {
-    width: 52,
-  },
-  valueList: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.lg,
-    paddingRight: tokens.space.sm,
-  },
-  value: {
-    paddingVertical: tokens.space.xs,
-  },
-  valueText: {
-    maxWidth: 160,
-  },
-  exact: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    rowGap: tokens.space.xs,
-    columnGap: tokens.space.lg,
-    paddingVertical: tokens.space.xs,
-  },
-  stepper: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.sm,
-  },
-  exactValue: {
-    minWidth: 92,
-    textAlign: "center",
-  },
-  repeat: {
-    paddingVertical: tokens.space.xs,
   },
 });

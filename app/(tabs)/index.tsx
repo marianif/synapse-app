@@ -38,6 +38,11 @@ import {
   type CaptureResolution,
   type LinkableIdea,
 } from "@/components/molecules/capture-resolver";
+import { SectionHeader } from "@/components/molecules/section-header";
+import {
+  SectionLayoutMenu,
+  type SectionLayoutOption,
+} from "@/components/molecules/section-layout-menu";
 import { tokens, useTheme } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
@@ -459,6 +464,13 @@ export default function HomeScreen(): React.ReactElement {
  * open-item count. Hidden until the first project exists. Each row opens the
  * project. (Minimal: visual design deferred.)
  */
+type ProjectsLayout = "list" | "grid";
+
+const PROJECTS_LAYOUT_OPTIONS: SectionLayoutOption<ProjectsLayout>[] = [
+  { key: "list", label: "List", icon: "view-list" },
+  { key: "grid", label: "Grid", icon: "view-grid" },
+];
+
 function ProjectsOverview({
   projects,
   entries,
@@ -467,6 +479,7 @@ function ProjectsOverview({
   entries: DbEntry[];
 }): React.ReactElement | null {
   const { colors } = useTheme();
+  const [layout, setLayout] = useState<ProjectsLayout>("list");
   if (projects.length === 0) return null;
 
   const openCount = (projectId: string): number =>
@@ -479,45 +492,96 @@ function ProjectsOverview({
 
   return (
     <View style={styles.section}>
-      <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-        PROJECTS
-      </ThemedText>
-      {projects.map((p) => (
-        <Link
-          key={p.id}
-          href={{ pathname: "/project", params: { id: p.id } }}
-          asChild
-        >
-          <Pressable
-            style={StyleSheet.flatten([
-              styles.row,
-              { backgroundColor: colors.surface },
-            ])}
-            accessibilityRole="button"
-            accessibilityLabel={`Project ${p.title}`}
+      <SectionHeader
+        title="PROJECTS"
+        seeMoreHref="/projects"
+        seeMoreLabel="See all projects"
+        controls={
+          <SectionLayoutMenu
+            options={PROJECTS_LAYOUT_OPTIONS}
+            value={layout}
+            onChange={setLayout}
+            accessibilityLabel="Change projects layout"
+          />
+        }
+      />
+      {layout === "list" ? (
+        projects.map((p) => (
+          <Link
+            key={p.id}
+            href={{ pathname: "/project", params: { id: p.id } }}
+            asChild
           >
-            {/* Project emoji = visual identity. Falls back to a small folder
-                ink-dot when the user hasn't picked one yet — never an empty
-                slot, so the row layout is stable across projects. */}
-            <ThemedText
-              type="body"
-              style={[styles.projectGlyph, !p.emoji && { color: colors.inkMuted }]}
+            <Pressable
+              style={StyleSheet.flatten([
+                styles.row,
+                { backgroundColor: colors.surface },
+              ])}
+              accessibilityRole="button"
+              accessibilityLabel={`Project ${p.title}`}
             >
-              {p.emoji ?? "·"}
-            </ThemedText>
-            <ThemedText
-              type="body"
-              numberOfLines={1}
-              style={[styles.rowTitle, { color: colors.ink }]}
+              {/* Project emoji = visual identity. Falls back to a small folder
+                  ink-dot when the user hasn't picked one yet — never an empty
+                  slot, so the row layout is stable across projects. */}
+              <ThemedText
+                type="body"
+                style={[styles.projectGlyph, !p.emoji && { color: colors.inkMuted }]}
+              >
+                {p.emoji ?? "·"}
+              </ThemedText>
+              <ThemedText
+                type="body"
+                numberOfLines={1}
+                style={[styles.rowTitle, { color: colors.ink }]}
+              >
+                {p.title}
+              </ThemedText>
+              <ThemedText type="mono" style={{ color: colors.inkMuted }}>
+                {openCount(p.id)}
+              </ThemedText>
+            </Pressable>
+          </Link>
+        ))
+      ) : (
+        <View style={styles.grid}>
+          {projects.map((p) => (
+            <Link
+              key={p.id}
+              href={{ pathname: "/project", params: { id: p.id } }}
+              asChild
             >
-              {p.title}
-            </ThemedText>
-            <ThemedText type="mono" style={{ color: colors.inkMuted }}>
-              {openCount(p.id)}
-            </ThemedText>
-          </Pressable>
-        </Link>
-      ))}
+              <Pressable
+                style={StyleSheet.flatten([
+                  styles.card,
+                  { backgroundColor: colors.surface },
+                ])}
+                accessibilityRole="button"
+                accessibilityLabel={`Project ${p.title}`}
+              >
+                <ThemedText
+                  type="body"
+                  style={[
+                    styles.cardGlyph,
+                    !p.emoji && { color: colors.inkMuted },
+                  ]}
+                >
+                  {p.emoji ?? "·"}
+                </ThemedText>
+                <ThemedText
+                  type="body"
+                  numberOfLines={2}
+                  style={[styles.cardTitle, { color: colors.ink }]}
+                >
+                  {p.title}
+                </ThemedText>
+                <ThemedText type="mono" style={{ color: colors.inkMuted }}>
+                  {openCount(p.id)}
+                </ThemedText>
+              </Pressable>
+            </Link>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -537,6 +601,26 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: tokens.space.sm,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: tokens.space.sm,
+  },
+  card: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minHeight: 96,
+    borderRadius: tokens.radius.md,
+    padding: tokens.space.md,
+    gap: tokens.space.xs,
+  },
+  cardGlyph: {
+    fontSize: 22,
+    lineHeight: 26,
+  },
+  cardTitle: {
+    flex: 1,
   },
   row: {
     flexDirection: "row",

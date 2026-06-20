@@ -1,7 +1,9 @@
+import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useUiPreference } from "@/hooks/use-ui-preference";
 
@@ -40,18 +42,20 @@ function summaryLine(counts: {
 }
 
 /**
- * A grid card with two complementary readouts the user toggles between by
- * tapping the card body:
+ * A grid card with two interaction modes that depend on whether the project
+ * has open items:
  *
- *   numeric (default): typed summary line — "2 ideas · 4 todos · 1 deadline".
- *                      Fast-glance instrument readout.
- *   preview          : named entity lines (dot + title), most-pressing-first.
- *                      The deeper read, sized like a miniature of the spine.
+ *   Quiet (total = 0): the whole card navigates straight to the project — no
+ *                      preview to expand, so a tap has only one meaning.
  *
- * Mode is persisted per project via useUiPreference, so flipping a card sticks
- * across launches. The footer becomes the call-to-action — "OPEN PROJECT →" —
- * and is the only element that navigates. Tapping the card body never opens
- * the project; it flips the readout. (Without this split, a tap is ambiguous.)
+ *   Non-quiet:
+ *     numeric (default): tapping anywhere expands to preview.
+ *     preview          : the title row collapses back to numeric (a chevron
+ *                        affords this); tapping the items area navigates to
+ *                        the project detail.
+ *
+ * Mode is persisted per project via useUiPreference, so an expanded card stays
+ * expanded across launches.
  */
 export function ProjectCard({
   project,
@@ -61,31 +65,46 @@ export function ProjectCard({
   rollup: ProjectRollup;
 }): React.ReactElement {
   const { colors } = useTheme();
+  const router = useRouter();
   const [mode, setMode] = useUiPreference<ProjectCardMode>(
     `projects.card.${project.id}`,
     "numeric",
     isCardMode,
   );
   const { items, total, counts } = rollup;
-  const flip = (): void => setMode(mode === "numeric" ? "preview" : "numeric");
+  const isQuiet = total === 0;
+  const isExpanded = mode === "preview";
 
-  // A11y label rolls the count up so screen-reader users get the summary
-  // regardless of which view the card is currently showing.
-  const a11yBody =
-    total === 0
-      ? `${project.title}, nothing on the line`
-      : `${project.title}, ${summaryLine(counts)}`;
+  const openProject = (): void => {
+    router.push({ pathname: "/project", params: { id: project.id } });
+  };
+  const expand = (): void => setMode("preview");
+  const collapse = (): void => setMode("numeric");
+
+  // Header tap: quiet cards open the project; collapsed cards expand; expanded
+  // cards collapse. Items area: only meaningful when expanded, opens project.
+  const onHeaderPress = isQuiet
+    ? openProject
+    : isExpanded
+      ? collapse
+      : expand;
+  const headerA11yHint = isQuiet
+    ? "Opens project"
+    : isExpanded
+      ? "Collapses preview"
+      : "Expands preview";
+  const a11yBody = isQuiet
+    ? `${project.title}, nothing on the line`
+    : `${project.title}, ${summaryLine(counts)}`;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface }]}>
-      {/* The card body — tapping it flips the readout. Not a Link: navigation
-          lives in the footer, so a tap on the body can never be misread as
-          "open the project". */}
       <Pressable
-        onPress={flip}
+        onPress={onHeaderPress}
         accessibilityRole="button"
-        accessibilityLabel={`${a11yBody}. Tap to switch view.`}
-        style={({ pressed }) => [styles.cardBody, pressed && styles.pressed]}
+        accessibilityLabel={a11yBody}
+        accessibilityHint={headerA11yHint}
+        style={({ pressed }) => [styles.cardHeader, pressed && styles.pressed]}
       >
         <View style={styles.cardHead}>
           <ThemedText
@@ -104,42 +123,52 @@ export function ProjectCard({
           >
             {project.title}
           </ThemedText>
+          {/* Toggle affordance: a chevron on non-quiet cards signals the
+              title row is a control. Down = "more to reveal" (collapsed);
+              up = "tap to close" (expanded). Quiet cards drop it — the whole
+              card is just a link, no toggle to signal. */}
+          {!isQuiet ? (
+            <IconSymbol
+              name={isExpanded ? "chevron-up" : "chevron-down"}
+              size={16}
+              color={colors.inkMuted}
+            />
+          ) : null}
         </View>
 
-        <View style={styles.cardLines}>
-          {total === 0 ? (
-            <ThemedText
-              type="hand"
-              style={[styles.cardSummary, { color: colors.inkMuted }]}
-            >
-              Quiet right now.
-            </ThemedText>
-          ) : mode === "numeric" ? (
-            // Numeric: typed summary in body weight — fast scan, no clutter.
-            <ThemedText
-              type="hand"
-              style={[styles.cardSummary, { color: colors.inkMuted }]}
-            >
-              {summaryLine(counts)}
-            </ThemedText>
-          ) : (
-            // Preview: named lines, dialect of DirectRow so it reads as a
-            // miniature of the spine inside the project.
-            items.map((e) => (
-              <View key={e.id} style={styles.cardLine}>
-                <EntryDot type={e.type as EntryType} />
-                <ThemedText
-                  type="body"
-                  numberOfLines={1}
-                  style={[styles.cardLineTitle, { color: colors.ink }]}
-                >
-                  {e.title}
-                </ThemedText>
-              </View>
-            ))
-          )}
-        </View>
+        {!isExpanded || isQuiet ? (
+          <ThemedText
+            type="hand"
+            style={[styles.cardSummary, { color: colors.inkMuted }]}
+          >
+            {isQuiet ? "Quiet right now." : summaryLine(counts)}
+          </ThemedText>
+        ) : null}
       </Pressable>
+
+      {isExpanded && !isQuiet ? (
+        // Items area only exists when expanded. Tapping it navigates — the
+        // collapse action lives in the title row's chevron above.
+        <Pressable
+          onPress={openProject}
+          accessibilityRole="button"
+          accessibilityLabel={`Open ${project.title}`}
+          style={({ pressed }) => [styles.cardItems, pressed && styles.pressed]}
+        >
+          {items.map((e) => (
+            <View key={e.id} style={styles.cardLine}>
+              <EntryDot type={e.type as EntryType} />
+              <ThemedText
+                type="body"
+                numberOfLines={1}
+                style={[styles.cardLineTitle, { color: colors.ink }]}
+              >
+                {e.title}
+              </ThemedText>
+            </View>
+          ))}
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -150,15 +179,20 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
     overflow: "hidden",
   },
-  cardBody: {
-    flex: 0,
+  cardHeader: {
     padding: tokens.space.md,
     paddingBottom: tokens.space.sm,
     gap: tokens.space.sm,
   },
+  cardItems: {
+    paddingHorizontal: tokens.space.md,
+    paddingBottom: tokens.space.md,
+    paddingTop: tokens.space.xs,
+    gap: tokens.space.xs,
+  },
   cardHead: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: tokens.space.sm,
   },
   cardGlyph: {
@@ -167,10 +201,6 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     flex: 1,
-  },
-  cardLines: {
-    flex: 0,
-    gap: tokens.space.xs,
   },
   cardLine: {
     flexDirection: "row",

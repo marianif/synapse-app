@@ -117,7 +117,6 @@ export async function setLastDeckId(id: string): Promise<void> {
 //
 // Keep keys hierarchical and dotted so namespaces stay legible:
 //   "projects.card.<id>"   → "numeric" | "preview"
-//   "section.layout.<id>"  → "list" | "grid"
 //
 // Always use this through `useUiPreference` in components — never read
 // AsyncStorage directly.

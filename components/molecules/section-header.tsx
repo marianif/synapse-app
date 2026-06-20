@@ -3,29 +3,34 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { tokens, useTheme } from "@/constants/theme";
+import { useTheme } from "@/constants/theme";
 
 export interface SectionHeaderProps {
   /** All-caps section kicker — e.g. "PROJECTS". */
   title: string;
-  /** When set, renders a "see more ›" affordance routing to this href. */
+  /** When set, renders an inline "see more" link routing to this href. */
   seeMoreHref?: Href;
+  /**
+   * Visible text for the see-more link — the count carries the information
+   * ("8 projects"), the chevron just signals "tappable". When omitted, falls
+   * back to the bare word "see more".
+   */
+  seeMoreText?: string;
   /** Voice-over label for the see-more link. Defaults to `See all ${title}`. */
-  seeMoreLabel?: string;
-  /** Layout-control menu (or any other right-side affordance) for the section. */
-  controls?: React.ReactNode;
+  seeMoreA11yLabel?: string;
 }
 
 /**
- * Section header — kicker on the left, optional "see more ›" link + optional
- * controls slot on the right. The see-more link uses a softer voice (body /
- * lowercase) than the kicker so the two never read as the same affordance.
+ * Section header — kicker on the left, optional inline see-more on the right.
+ * The see-more reads as plain text + chevron (no pill, no border) so it stays
+ * a tier-2 affordance under the kicker. Pass a count-bearing string like
+ * "8 projects" via `seeMoreText` to make the count itself the link.
  */
 export function SectionHeader({
   title,
   seeMoreHref,
-  seeMoreLabel,
-  controls,
+  seeMoreText,
+  seeMoreA11yLabel,
 }: SectionHeaderProps): React.ReactElement {
   const { colors } = useTheme();
 
@@ -35,31 +40,30 @@ export function SectionHeader({
         {title}
       </ThemedText>
 
-      <View style={styles.right}>
-        {seeMoreHref ? (
-          <Link href={seeMoreHref} asChild>
-            <Pressable
-              accessibilityRole="link"
-              accessibilityLabel={seeMoreLabel ?? `See all ${title}`}
-              hitSlop={8}
-              style={({ pressed }) => [
-                styles.seeMore,
-                pressed && styles.pressed,
-              ]}
+      {seeMoreHref ? (
+        <Link href={seeMoreHref} asChild>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={seeMoreA11yLabel ?? `See all ${title}`}
+            hitSlop={8}
+            style={({ pressed }) => [styles.seeMore, pressed && styles.pressed]}
+          >
+            <ThemedText
+              type="body"
+              style={{
+                color: colors.inkMuted,
+              }}
             >
-              <ThemedText type="body" style={{ color: colors.inkMuted }}>
-                see more
-              </ThemedText>
+              {seeMoreText ?? "see more"}
               <IconSymbol
                 name="chevron-right"
-                size={16}
+                size={14}
                 color={colors.inkMuted}
               />
-            </Pressable>
-          </Link>
-        ) : null}
-        {controls}
-      </View>
+            </ThemedText>
+          </Pressable>
+        </Link>
+      ) : null}
     </View>
   );
 }
@@ -69,17 +73,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    minHeight: 28,
-  },
-  right: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.sm,
   },
   seeMore: {
     flexDirection: "row",
     alignItems: "center",
     gap: 2,
+    backgroundColor: "red",
   },
   pressed: {
     opacity: 0.6,

@@ -107,3 +107,39 @@ export async function setLastDeckId(id: string): Promise<void> {
     console.error("[settings] setLastDeckId failed:", error);
   }
 }
+
+// ─── Generic UI preferences ─────────────────────────────────────────────────
+//
+// A small kv slot for arbitrary UI-state-as-preference: which card mode the
+// user picked for a given project, which layout a section was last left in,
+// etc. Anything that's a string scalar tied to a surface choice. Validators
+// at the hook boundary keep values type-safe even though storage is loose.
+//
+// Keep keys hierarchical and dotted so namespaces stay legible:
+//   "projects.card.<id>"   → "numeric" | "preview"
+//   "section.layout.<id>"  → "list" | "grid"
+//
+// Always use this through `useUiPreference` in components — never read
+// AsyncStorage directly.
+
+const UI_PREF_PREFIX = "ui_pref:";
+
+export async function getUiPreference(key: string): Promise<string | null> {
+  try {
+    return await AsyncStorage.getItem(UI_PREF_PREFIX + key);
+  } catch (error) {
+    console.error("[settings] getUiPreference failed:", error);
+    return null;
+  }
+}
+
+export async function setUiPreference(
+  key: string,
+  value: string,
+): Promise<void> {
+  try {
+    await AsyncStorage.setItem(UI_PREF_PREFIX + key, value);
+  } catch (error) {
+    console.error("[settings] setUiPreference failed:", error);
+  }
+}

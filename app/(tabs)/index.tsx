@@ -470,6 +470,10 @@ export default function HomeScreen(): React.ReactElement {
  */
 type ProjectsLayout = "list" | "grid";
 
+function isProjectsLayout(value: string | null): value is ProjectsLayout {
+  return value === "list" || value === "grid";
+}
+
 const PROJECTS_LAYOUT_OPTIONS: SectionLayoutOption<ProjectsLayout>[] = [
   { key: "list", label: "List", icon: "view-list" },
   { key: "grid", label: "Grid", icon: "view-grid" },
@@ -483,7 +487,11 @@ function ProjectsOverview({
   entries: DbEntry[];
 }): React.ReactElement | null {
   const { colors } = useTheme();
-  const [layout, setLayout] = useState<ProjectsLayout>("list");
+  const [layout, setLayout] = useUiPreference<ProjectsLayout>(
+    "section.layout.projects",
+    "list",
+    isProjectsLayout,
+  );
   if (projects.length === 0) return null;
 
   const openCount = (projectId: string): number =>

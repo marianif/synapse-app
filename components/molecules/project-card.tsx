@@ -99,7 +99,7 @@ export function ProjectCard({
           </ThemedText>
           <ThemedText
             type="body"
-            numberOfLines={2}
+            numberOfLines={1}
             style={[styles.cardTitle, { color: colors.ink }]}
           >
             {project.title}
@@ -146,9 +146,7 @@ export function ProjectCard({
 
 const styles = StyleSheet.create({
   card: {
-    flexBasis: "48%",
-    flexGrow: 0,
-    alignSelf: "flex-start",
+    alignSelf: "stretch",
     borderRadius: tokens.radius.md,
     overflow: "hidden",
   },

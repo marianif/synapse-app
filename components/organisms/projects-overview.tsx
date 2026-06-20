@@ -101,15 +101,18 @@ export function ProjectsOverview({
     return { items, total: open.length, counts };
   };
 
-  // A1: the grid is two columns at flexBasis 48%. An odd visible count leaves
-  // a trailing empty slot the layout is already drawing — fill it with the
-  // add-tile so the empty cell stops reading as accidental whitespace. When
-  // the cap is hit we suppress it so the grid lands clean and the user knows
-  // to use "see more →" / /projects for further creation.
-  const showAddTile =
-    layout === "grid" &&
-    visible.length % 2 === 1 &&
-    visible.length < MAX_VISIBLE;
+  // Masonry split: alternate projects into two independent columns so each
+  // column packs vertically on its own. A flex-wrap grid would force both
+  // cards in a row-pair to the tallest sibling's height, so flipping one
+  // card to "preview" mode stretched its row-mate with dead whitespace
+  // instead of letting the next card flow up. Independent columns fix that.
+  const leftColumn = visible.filter((_, i) => i % 2 === 0);
+  const rightColumn = visible.filter((_, i) => i % 2 === 1);
+  // Drop the add-tile into the shorter column so the grid stays balanced.
+  // Suppress at the cap — further creation belongs on /projects.
+  const showAddTile = layout === "grid" && visible.length < MAX_VISIBLE;
+  const addTileSide: "left" | "right" =
+    rightColumn.length < leftColumn.length ? "right" : "left";
 
   if (projects.length === 0) {
     // A2: first-run home. Returning null hid the entire concept of projects
@@ -231,29 +234,64 @@ export function ProjectsOverview({
         </>
       ) : (
         <View style={styles.grid}>
-          {visible.map((p) => (
-            <ProjectCard key={p.id} project={p} rollup={projectRollup(p.id)} />
-          ))}
-          {showAddTile ? (
-            <Pressable
-              onPress={onAddProject}
-              accessibilityRole="button"
-              accessibilityLabel="New project"
-              style={({ pressed }) => [
-                styles.addTile,
-                { backgroundColor: colors.surfaceSubtle },
-                pressed && styles.pressed,
-              ]}
-            >
-              <IconSymbol name="plus" size={22} color={colors.inkMuted} />
-              <ThemedText
-                type="body"
-                style={[styles.addTileLabel, { color: colors.inkMuted }]}
+          <View style={styles.gridColumn}>
+            {leftColumn.map((p) => (
+              <ProjectCard
+                key={p.id}
+                project={p}
+                rollup={projectRollup(p.id)}
+              />
+            ))}
+            {showAddTile && addTileSide === "left" ? (
+              <Pressable
+                onPress={onAddProject}
+                accessibilityRole="button"
+                accessibilityLabel="New project"
+                style={({ pressed }) => [
+                  styles.addTile,
+                  { backgroundColor: colors.surfaceSubtle },
+                  pressed && styles.pressed,
+                ]}
               >
-                New project
-              </ThemedText>
-            </Pressable>
-          ) : null}
+                <IconSymbol name="plus" size={22} color={colors.inkMuted} />
+                <ThemedText
+                  type="body"
+                  style={[styles.addTileLabel, { color: colors.inkMuted }]}
+                >
+                  New project
+                </ThemedText>
+              </Pressable>
+            ) : null}
+          </View>
+          <View style={styles.gridColumn}>
+            {rightColumn.map((p) => (
+              <ProjectCard
+                key={p.id}
+                project={p}
+                rollup={projectRollup(p.id)}
+              />
+            ))}
+            {showAddTile && addTileSide === "right" ? (
+              <Pressable
+                onPress={onAddProject}
+                accessibilityRole="button"
+                accessibilityLabel="New project"
+                style={({ pressed }) => [
+                  styles.addTile,
+                  { backgroundColor: colors.surfaceSubtle },
+                  pressed && styles.pressed,
+                ]}
+              >
+                <IconSymbol name="plus" size={22} color={colors.inkMuted} />
+                <ThemedText
+                  type="body"
+                  style={[styles.addTileLabel, { color: colors.inkMuted }]}
+                >
+                  New project
+                </ThemedText>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
       )}
     </View>
@@ -264,9 +302,16 @@ const styles = StyleSheet.create({
   section: {
     gap: tokens.space.sm,
   },
+  // Masonry: two independent vertical columns side-by-side. Each column packs
+  // its cards top-down, so a tall card on the left no longer stretches its
+  // right-hand neighbor — the next card just flows up.
   grid: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    alignItems: "flex-start",
+    gap: tokens.space.sm,
+  },
+  gridColumn: {
+    flex: 1,
     gap: tokens.space.sm,
   },
   row: {
@@ -293,19 +338,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.md,
-    minHeight: 48,
+
     paddingHorizontal: tokens.space.lg,
     borderRadius: tokens.radius.md,
   },
-  addRowLabel: {
-    flex: 1,
-  },
-  // Grid-mode add tile: shares ProjectCard's flex sizing (48% basis) so it
-  // claims the trailing empty cell instead of breaking the rhythm.
+  addRowLabel: {},
+  // Grid-mode add tile: fills its column slot end-to-end since columns now
+  // own width allocation.
   addTile: {
-    flexBasis: "48%",
-    flexGrow: 1,
-    minHeight: 96,
     borderRadius: tokens.radius.md,
     alignItems: "center",
     justifyContent: "center",

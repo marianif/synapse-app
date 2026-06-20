@@ -7,8 +7,8 @@ import { RectButton, Swipeable } from "react-native-gesture-handler";
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
-import { horizonLabel } from "@/lib/horizons";
 import { daysUntil, isDone, isWhenCharged, whenLabel } from "@/lib/direct-when";
+import { horizonLabel } from "@/lib/horizons";
 
 import type { DbEntry, EntryType } from "@/lib/types";
 
@@ -115,7 +115,6 @@ export function DirectRow({
         style={({ pressed }) => [
           styles.row,
           { backgroundColor: colors.surface },
-          pressed && styles.pressed,
         ]}
       >
         {/* minimal 6px type dot — color is categorization, dimmed on a done line */}
@@ -154,9 +153,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space.lg,
     borderRadius: tokens.radius.md,
   },
-  pressed: {
-    opacity: 0.7,
-  },
+
   // a done line's dot quiets down — settled, not pressing
   dotDone: {
     opacity: 0.35,
@@ -175,8 +172,8 @@ const styles = StyleSheet.create({
   action: {
     justifyContent: "center",
     alignItems: "center",
-    width: 64,
-    borderRadius: tokens.radius.md,
+    width: 50,
+    borderRadius: tokens.radius.pill,
     marginLeft: tokens.space.sm,
   },
 });

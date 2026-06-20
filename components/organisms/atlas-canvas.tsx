@@ -1,5 +1,6 @@
+import * as Haptics from "expo-haptics";
 import { Link } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   LayoutChangeEvent,
   Pressable,
@@ -117,7 +118,7 @@ function AtlasTile({
   // Persisted position as "x,y" floats in [0,1]. The validator narrows the
   // raw string from storage; an invalid value falls back to the auto-layout
   // coordinate so the tile is never invisible.
-  const [storedPos, setStoredPos] = useUiPreference<string>(
+  const [storedPos, setStoredPos, loaded] = useUiPreference<string>(
     `projects.atlas.${project.id}`,
     `${fallback.x},${fallback.y}`,
     isNormPosString,
@@ -133,10 +134,19 @@ function AtlasTile({
   const tx = useSharedValue(persisted.x * maxX);
   const ty = useSharedValue(persisted.y * maxY);
 
+  // useUiPreference resolves async — the first render returns the fallback,
+  // and the stored value arrives a tick later. Re-seed the shared values when
+  // the persisted coords or canvas size change so a remount lands the tile
+  // where the user left it, not on the auto-grid fallback.
+  useEffect(() => {
+    tx.value = persisted.x * maxX;
+    ty.value = persisted.y * maxY;
+  }, [loaded, persisted.x, persisted.y, maxX, maxY, tx, ty]);
+
   // Origin captured at gesture start so finger-relative motion works even
   // after multiple drags.
   const originX = useSharedValue(tx.value);
-  const originY = useSharedValue(tx.value);
+  const originY = useSharedValue(ty.value);
 
   const commit = useCallback(
     (xPx: number, yPx: number): void => {
@@ -162,6 +172,7 @@ function AtlasTile({
       originX.value = tx.value;
       originY.value = ty.value;
       runOnJS(setMoved)(moved, false);
+      runOnJS(liftHaptic)();
     })
     .onUpdate((e) => {
       const nextX = originX.value + e.translationX;
@@ -249,6 +260,10 @@ function AtlasTile({
 
 function setMoved(ref: React.MutableRefObject<boolean>, v: boolean): void {
   ref.current = v;
+}
+
+function liftHaptic(): void {
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
 }
 
 function isNormPosString(value: string | null): value is string {

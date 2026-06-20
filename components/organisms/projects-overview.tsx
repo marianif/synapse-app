@@ -11,6 +11,7 @@ import {
   SectionLayoutMenu,
   type SectionLayoutOption,
 } from "@/components/molecules/section-layout-menu";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useUiPreference } from "@/hooks/use-ui-preference";
 import { byRunway } from "@/lib/direct-when";
@@ -19,8 +20,16 @@ import type { DbEntry, DbProject } from "@/lib/types";
 
 /**
  * Projects overview — the macro life areas, present at a glance with a live
- * open-item count. Hidden until the first project exists. Each row opens the
- * project.
+ * open-item count. The home cut shows at most MAX_VISIBLE projects; the rest
+ * live behind the section header's "see more →" link to /projects. Each row
+ * or card opens the project (which already owns rename, emoji, archive and
+ * every other secondary action) — no separate sheet competes with the tap.
+ *
+ * In grid mode, the trailing empty cell becomes an "Add project" tile so
+ * creation is reachable from the glance surface instead of requiring a trip
+ * to /projects. On a zero-project home, the section shows a single invitation
+ * tile rather than vanishing — PRODUCT.md principle 2 is "show projects
+ * first", even when there are none yet.
  */
 type ProjectsLayout = "list" | "grid";
 
@@ -36,20 +45,33 @@ const PROJECTS_LAYOUT_OPTIONS: SectionLayoutOption<ProjectsLayout>[] = [
 // GRID card readouts cap: how many named lines a card preview shows.
 const PREVIEW_MAX = 3;
 
+// Home only ever surfaces this many projects; everything past it lives behind
+// the section header's "see more →" link to /projects.
+const MAX_VISIBLE = 8;
+
 export function ProjectsOverview({
   projects,
   entries,
+  onAddProject,
 }: {
   projects: DbProject[];
   entries: DbEntry[];
-}): React.ReactElement | null {
+  /**
+   * Summoned by the trailing empty-cell tile (grid), the list-mode terminator
+   * row, and the zero-state tile. Home wires this to the manual bar so
+   * creating from here uses the same path as the tab-bar pen key's TAP
+   * register — one project-creation flow, not two.
+   */
+  onAddProject: () => void;
+}): React.ReactElement {
   const { colors } = useTheme();
   const [layout, setLayout] = useUiPreference<ProjectsLayout>(
     "section.layout.projects",
     "list",
     isProjectsLayout,
   );
-  if (projects.length === 0) return null;
+
+  const visible = projects.slice(0, MAX_VISIBLE);
 
   const openCount = (projectId: string): number =>
     entries.filter(
@@ -79,6 +101,53 @@ export function ProjectsOverview({
     return { items, total: open.length, counts };
   };
 
+  // A1: the grid is two columns at flexBasis 48%. An odd visible count leaves
+  // a trailing empty slot the layout is already drawing — fill it with the
+  // add-tile so the empty cell stops reading as accidental whitespace. When
+  // the cap is hit we suppress it so the grid lands clean and the user knows
+  // to use "see more →" / /projects for further creation.
+  const showAddTile =
+    layout === "grid" &&
+    visible.length % 2 === 1 &&
+    visible.length < MAX_VISIBLE;
+
+  if (projects.length === 0) {
+    // A2: first-run home. Returning null hid the entire concept of projects
+    // until the user stumbled into /projects. One invitation tile preserves
+    // PRODUCT.md principle 2 without competing with the tab-bar pen.
+    return (
+      <View style={styles.section}>
+        <SectionHeader title="PROJECTS" />
+        <Pressable
+          onPress={onAddProject}
+          accessibilityRole="button"
+          accessibilityLabel="Name your first project"
+          style={({ pressed }) => [
+            styles.firstRunTile,
+            { backgroundColor: colors.surface },
+            pressed && styles.pressed,
+          ]}
+        >
+          <IconSymbol name="plus" size={20} color={colors.ink} />
+          <View style={styles.firstRunCopy}>
+            <ThemedText
+              type="body"
+              style={[styles.firstRunTitle, { color: colors.ink }]}
+            >
+              Name a project
+            </ThemedText>
+            <ThemedText
+              type="hand"
+              style={[styles.firstRunHint, { color: colors.inkMuted }]}
+            >
+              your first life area
+            </ThemedText>
+          </View>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.section}>
       <SectionHeader
@@ -95,50 +164,96 @@ export function ProjectsOverview({
         }
       />
       {layout === "list" ? (
-        projects.map((p) => (
-          <Link
-            key={p.id}
-            href={{ pathname: "/project", params: { id: p.id } }}
-            asChild
-          >
-            <Pressable
-              style={StyleSheet.flatten([
-                styles.row,
-                { backgroundColor: colors.surface },
-              ])}
-              accessibilityRole="button"
-              accessibilityLabel={`Project ${p.title}`}
+        <>
+          {visible.map((p) => (
+            <Link
+              key={p.id}
+              href={{ pathname: "/project", params: { id: p.id } }}
+              asChild
             >
-              {/* Project emoji = visual identity. Falls back to a small folder
-                  ink-dot when the user hasn't picked one yet — never an empty
-                  slot, so the row layout is stable across projects. */}
+              <Pressable
+                style={StyleSheet.flatten([
+                  styles.row,
+                  { backgroundColor: colors.surface },
+                ])}
+                accessibilityRole="button"
+                accessibilityLabel={`Project ${p.title}`}
+              >
+                {/* Project emoji = visual identity. Falls back to a small folder
+                    ink-dot when the user hasn't picked one yet — never an empty
+                    slot, so the row layout is stable across projects. */}
+                <ThemedText
+                  type="body"
+                  style={[
+                    styles.projectGlyph,
+                    !p.emoji && { color: colors.inkMuted },
+                  ]}
+                >
+                  {p.emoji ?? "·"}
+                </ThemedText>
+                <ThemedText
+                  type="body"
+                  numberOfLines={1}
+                  style={[styles.rowTitle, { color: colors.ink }]}
+                >
+                  {p.title}
+                </ThemedText>
+                <ThemedText type="mono" style={{ color: colors.inkMuted }}>
+                  {openCount(p.id)}
+                </ThemedText>
+              </Pressable>
+            </Link>
+          ))}
+          {/* List-mode add affordance: a quieter row at the bottom — the list
+              has no "empty cell" the way the grid does, but the closing
+              whitespace is just as deserving of a verb. Hidden once the cap
+              is hit; further creation belongs on /projects. */}
+          {visible.length < MAX_VISIBLE ? (
+            <Pressable
+              onPress={onAddProject}
+              accessibilityRole="button"
+              accessibilityLabel="New project"
+              style={({ pressed }) => [
+                styles.addRow,
+                { backgroundColor: colors.surfaceSubtle },
+                pressed && styles.pressed,
+              ]}
+            >
+              <IconSymbol name="plus" size={18} color={colors.inkMuted} />
               <ThemedText
                 type="body"
-                style={[
-                  styles.projectGlyph,
-                  !p.emoji && { color: colors.inkMuted },
-                ]}
+                style={[styles.addRowLabel, { color: colors.inkMuted }]}
               >
-                {p.emoji ?? "·"}
-              </ThemedText>
-              <ThemedText
-                type="body"
-                numberOfLines={1}
-                style={[styles.rowTitle, { color: colors.ink }]}
-              >
-                {p.title}
-              </ThemedText>
-              <ThemedText type="mono" style={{ color: colors.inkMuted }}>
-                {openCount(p.id)}
+                New project
               </ThemedText>
             </Pressable>
-          </Link>
-        ))
+          ) : null}
+        </>
       ) : (
         <View style={styles.grid}>
-          {projects.map((p) => (
+          {visible.map((p) => (
             <ProjectCard key={p.id} project={p} rollup={projectRollup(p.id)} />
           ))}
+          {showAddTile ? (
+            <Pressable
+              onPress={onAddProject}
+              accessibilityRole="button"
+              accessibilityLabel="New project"
+              style={({ pressed }) => [
+                styles.addTile,
+                { backgroundColor: colors.surfaceSubtle },
+                pressed && styles.pressed,
+              ]}
+            >
+              <IconSymbol name="plus" size={22} color={colors.inkMuted} />
+              <ThemedText
+                type="body"
+                style={[styles.addTileLabel, { color: colors.inkMuted }]}
+              >
+                New project
+              </ThemedText>
+            </Pressable>
+          ) : null}
         </View>
       )}
     </View>
@@ -170,5 +285,56 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 18,
     lineHeight: 22,
+  },
+  // List-mode add affordance: a tonal-subtle row with a muted plus + label.
+  // Deliberately quieter than the saturated project rows so it reads as the
+  // section's terminator, not a peer item.
+  addRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.md,
+    minHeight: 48,
+    paddingHorizontal: tokens.space.lg,
+    borderRadius: tokens.radius.md,
+  },
+  addRowLabel: {
+    flex: 1,
+  },
+  // Grid-mode add tile: shares ProjectCard's flex sizing (48% basis) so it
+  // claims the trailing empty cell instead of breaking the rhythm.
+  addTile: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minHeight: 96,
+    borderRadius: tokens.radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: tokens.space.xs,
+    padding: tokens.space.md,
+  },
+  addTileLabel: {},
+  // Zero-state tile: full-width row that introduces the project concept
+  // without competing with the tab-bar pen for tier-1 weight.
+  firstRunTile: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.md,
+    minHeight: 64,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.md,
+    borderRadius: tokens.radius.md,
+  },
+  firstRunCopy: {
+    flex: 1,
+  },
+  firstRunTitle: {
+    fontFamily: tokens.type.fontInter.semiBold,
+  },
+  firstRunHint: {
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });

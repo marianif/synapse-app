@@ -110,14 +110,14 @@ export function ProjectCard({
           {total === 0 ? (
             <ThemedText
               type="hand"
-              style={[styles.cardQuiet, { color: colors.inkMuted }]}
+              style={[styles.cardSummary, { color: colors.inkMuted }]}
             >
               Quiet right now.
             </ThemedText>
           ) : mode === "numeric" ? (
             // Numeric: typed summary in body weight — fast scan, no clutter.
             <ThemedText
-              type="body"
+              type="hand"
               style={[styles.cardSummary, { color: colors.inkMuted }]}
             >
               {summaryLine(counts)}
@@ -147,12 +147,13 @@ export function ProjectCard({
 const styles = StyleSheet.create({
   card: {
     flexBasis: "48%",
-    flexGrow: 1,
+    flexGrow: 0,
+    alignSelf: "flex-start",
     borderRadius: tokens.radius.md,
     overflow: "hidden",
   },
   cardBody: {
-    flex: 1,
+    flex: 0,
     padding: tokens.space.md,
     paddingBottom: tokens.space.sm,
     gap: tokens.space.sm,
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardLines: {
-    flex: 1,
+    flex: 0,
     gap: tokens.space.xs,
   },
   cardLine: {
@@ -183,13 +184,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
   },
-  cardQuiet: {
-    fontSize: 16,
-    lineHeight: 20,
-  },
+
   cardSummary: {
     lineHeight: 20,
-    fontSize: 12,
+    fontSize: 16,
   },
   pressed: {
     opacity: 0.7,

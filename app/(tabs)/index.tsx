@@ -380,7 +380,14 @@ export default function HomeScreen(): React.ReactElement {
             deadlines overview that surfaces the core glanceable affordance
             (PRODUCT.md principle 2). Layout/visual design is deferred to a
             later /flow shape|craft pass. */}
-        <ProjectsOverview projects={activeProjects} entries={entries} />
+        <ProjectsOverview
+          projects={activeProjects}
+          entries={entries}
+          onAddProject={() => {
+            setComposerOpen(false);
+            setManualOpen(true);
+          }}
+        />
         <DirectOverview entries={directEntries} />
 
         <View style={styles.captureSpacer} />

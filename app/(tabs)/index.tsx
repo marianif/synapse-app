@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import {
-  Link,
   useFocusEffect,
   useLocalSearchParams,
   useRouter,
@@ -10,7 +9,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -26,9 +24,8 @@ import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { DirectOverview } from "@/components/organisms/direct-overview";
 import { ManualBar } from "@/components/organisms/manual-bar";
+import { ProjectsOverview } from "@/components/organisms/projects-overview";
 
-import { EntryDot } from "@/components/atoms/entry-dot";
-import { ThemedText } from "@/components/atoms/themed-text";
 import {
   FieldGreeting,
   greetingFor,
@@ -39,33 +36,22 @@ import {
   type CaptureResolution,
   type LinkableIdea,
 } from "@/components/molecules/capture-resolver";
-import { SectionHeader } from "@/components/molecules/section-header";
-import {
-  SectionLayoutMenu,
-  type SectionLayoutOption,
-} from "@/components/molecules/section-layout-menu";
 import { tokens, useTheme } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
 import { useDiary } from "@/hooks/use-diary";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
-import { useUiPreference } from "@/hooks/use-ui-preference";
 import { splitCapture } from "@/lib/capture";
+import { byRunway, daysUntil } from "@/lib/direct-when";
 import { horizonLabel } from "@/lib/horizons";
 
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
-import type { DbEntry, DbProject, EntryType } from "@/lib/types";
+import type { DbEntry, EntryType } from "@/lib/types";
 
 dayjs.extend(customParseFormat);
 
 const TODAY_START = () => dayjs().startOf("day");
-
-/** Days from today until an entry's date; null if undated. Negative = overdue. */
-function daysUntil(dateStr: string | null): number | null {
-  if (!dateStr) return null;
-  return dayjs(dateStr, "DD/MM/YYYY").startOf("day").diff(TODAY_START(), "day");
-}
 
 /**
  * Heat is aliveness, NOT urgency-rank. A dated thing close in time runs hot; a
@@ -108,16 +94,6 @@ function toRowItem(e: DbEntry): FieldRowItem {
       : whenLabel(dateStr, time, days),
     heat: heatOf(days),
   };
-}
-
-/** Order: most burnt-down first (overdue → soonest), undated last. */
-function byRunway(a: DbEntry, b: DbEntry): number {
-  const da = daysUntil(a.due_date ?? a.scheduled_date ?? null);
-  const db = daysUntil(b.due_date ?? b.scheduled_date ?? null);
-  if (da === null && db === null) return 0;
-  if (da === null) return 1;
-  if (db === null) return -1;
-  return da - db;
 }
 
 // The direct zone the home surfaces at a glance: deadlines + todos (PRODUCT.md
@@ -463,278 +439,6 @@ export default function HomeScreen(): React.ReactElement {
   );
 }
 
-/**
- * Projects overview — the macro life areas, present at a glance with a live
- * open-item count. Hidden until the first project exists. Each row opens the
- * project. (Minimal: visual design deferred.)
- */
-type ProjectsLayout = "list" | "grid";
-
-function isProjectsLayout(value: string | null): value is ProjectsLayout {
-  return value === "list" || value === "grid";
-}
-
-const PROJECTS_LAYOUT_OPTIONS: SectionLayoutOption<ProjectsLayout>[] = [
-  { key: "list", label: "List", icon: "view-list" },
-  { key: "grid", label: "Grid", icon: "view-grid" },
-];
-
-function ProjectsOverview({
-  projects,
-  entries,
-}: {
-  projects: DbProject[];
-  entries: DbEntry[];
-}): React.ReactElement | null {
-  const { colors } = useTheme();
-  const [layout, setLayout] = useUiPreference<ProjectsLayout>(
-    "section.layout.projects",
-    "list",
-    isProjectsLayout,
-  );
-  if (projects.length === 0) return null;
-
-  const openCount = (projectId: string): number =>
-    entries.filter(
-      (e) =>
-        e.project_id === projectId &&
-        e.status !== "completed" &&
-        e.status !== "met",
-    ).length;
-
-  // GRID card readouts: every project rolls up into two complementary views.
-  // - "numeric": a typed summary like "2 ideas · 4 todos · 1 deadline".
-  //   The fast-glance instrument readout; default state.
-  // - "preview": named lines — what's actually pressing, by title. The deeper
-  //   read; flipped to per-card on tap, persisted via useUiPreference.
-  // Both views read off the same filtered+sorted slice of `entries`.
-  const PREVIEW_MAX = 3;
-  const projectRollup = (
-    projectId: string,
-  ): {
-    items: DbEntry[]; // most-pressing-first slice for the named preview
-    total: number;
-    counts: { deadline: number; todo: number; idea: number };
-  } => {
-    const open = entries.filter(
-      (e) =>
-        e.project_id === projectId &&
-        e.status !== "completed" &&
-        e.status !== "met",
-    );
-    const counts = { deadline: 0, todo: 0, idea: 0 };
-    for (const e of open) {
-      if (e.type === "deadline") counts.deadline += 1;
-      else if (e.type === "todo") counts.todo += 1;
-      else if (e.type === "idea") counts.idea += 1;
-    }
-    const items = [...open].sort(byRunway).slice(0, PREVIEW_MAX);
-    return { items, total: open.length, counts };
-  };
-
-  return (
-    <View style={styles.section}>
-      <SectionHeader
-        title="PROJECTS"
-        seeMoreHref="/projects"
-        seeMoreLabel="See all projects"
-        controls={
-          <SectionLayoutMenu
-            options={PROJECTS_LAYOUT_OPTIONS}
-            value={layout}
-            onChange={setLayout}
-            accessibilityLabel="Change projects layout"
-          />
-        }
-      />
-      {layout === "list" ? (
-        projects.map((p) => (
-          <Link
-            key={p.id}
-            href={{ pathname: "/project", params: { id: p.id } }}
-            asChild
-          >
-            <Pressable
-              style={StyleSheet.flatten([
-                styles.row,
-                { backgroundColor: colors.surface },
-              ])}
-              accessibilityRole="button"
-              accessibilityLabel={`Project ${p.title}`}
-            >
-              {/* Project emoji = visual identity. Falls back to a small folder
-                  ink-dot when the user hasn't picked one yet — never an empty
-                  slot, so the row layout is stable across projects. */}
-              <ThemedText
-                type="body"
-                style={[
-                  styles.projectGlyph,
-                  !p.emoji && { color: colors.inkMuted },
-                ]}
-              >
-                {p.emoji ?? "·"}
-              </ThemedText>
-              <ThemedText
-                type="body"
-                numberOfLines={1}
-                style={[styles.rowTitle, { color: colors.ink }]}
-              >
-                {p.title}
-              </ThemedText>
-              <ThemedText type="mono" style={{ color: colors.inkMuted }}>
-                {openCount(p.id)}
-              </ThemedText>
-            </Pressable>
-          </Link>
-        ))
-      ) : (
-        <View style={styles.grid}>
-          {projects.map((p) => (
-            <ProjectCard key={p.id} project={p} rollup={projectRollup(p.id)} />
-          ))}
-        </View>
-      )}
-    </View>
-  );
-}
-
-// ─── ProjectCard ──────────────────────────────────────────────────────────────
-
-type ProjectCardMode = "numeric" | "preview";
-
-function isCardMode(value: string | null): value is ProjectCardMode {
-  return value === "numeric" || value === "preview";
-}
-
-/** Pluralized "N x" summary line: "2 ideas · 4 todos · 1 deadline". Empty
- *  buckets are dropped so the line stays terse; an all-zero rollup is handled
- *  by the caller as the "QUIET" empty state. */
-function summaryLine(counts: {
-  deadline: number;
-  todo: number;
-  idea: number;
-}): string {
-  const parts: string[] = [];
-  if (counts.deadline)
-    parts.push(
-      `${counts.deadline} ${counts.deadline === 1 ? "deadline" : "deadlines"}`,
-    );
-  if (counts.todo)
-    parts.push(`${counts.todo} ${counts.todo === 1 ? "todo" : "todos"}`);
-  if (counts.idea)
-    parts.push(`${counts.idea} ${counts.idea === 1 ? "idea" : "ideas"}`);
-  return parts.join(" · ");
-}
-
-/**
- * A grid card with two complementary readouts the user toggles between by
- * tapping the card body:
- *
- *   numeric (default): typed summary line — "2 ideas · 4 todos · 1 deadline".
- *                      Fast-glance instrument readout.
- *   preview          : named entity lines (dot + title), most-pressing-first.
- *                      The deeper read, sized like a miniature of the spine.
- *
- * Mode is persisted per project via useUiPreference, so flipping a card sticks
- * across launches. The footer becomes the call-to-action — "OPEN PROJECT →" —
- * and is the only element that navigates. Tapping the card body never opens
- * the project; it flips the readout. (Without this split, a tap is ambiguous.)
- */
-function ProjectCard({
-  project,
-  rollup,
-}: {
-  project: DbProject;
-  rollup: {
-    items: DbEntry[];
-    total: number;
-    counts: { deadline: number; todo: number; idea: number };
-  };
-}): React.ReactElement {
-  const { colors } = useTheme();
-  const [mode, setMode] = useUiPreference<ProjectCardMode>(
-    `projects.card.${project.id}`,
-    "numeric",
-    isCardMode,
-  );
-  const { items, total, counts } = rollup;
-  const flip = (): void => setMode(mode === "numeric" ? "preview" : "numeric");
-
-  // A11y label rolls the count up so screen-reader users get the summary
-  // regardless of which view the card is currently showing.
-  const a11yBody =
-    total === 0
-      ? `${project.title}, nothing on the line`
-      : `${project.title}, ${summaryLine(counts)}`;
-
-  return (
-    <View style={[styles.card, { backgroundColor: colors.surface }]}>
-      {/* The card body — tapping it flips the readout. Not a Link: navigation
-          lives in the footer, so a tap on the body can never be misread as
-          "open the project". */}
-      <Pressable
-        onPress={flip}
-        accessibilityRole="button"
-        accessibilityLabel={`${a11yBody}. Tap to switch view.`}
-        style={({ pressed }) => [styles.cardBody, pressed && styles.pressed]}
-      >
-        <View style={styles.cardHead}>
-          <ThemedText
-            type="body"
-            style={[
-              styles.cardGlyph,
-              !project.emoji && { color: colors.inkMuted },
-            ]}
-          >
-            {project.emoji ?? "·"}
-          </ThemedText>
-          <ThemedText
-            type="body"
-            numberOfLines={2}
-            style={[styles.cardTitle, { color: colors.ink }]}
-          >
-            {project.title}
-          </ThemedText>
-        </View>
-
-        <View style={styles.cardLines}>
-          {total === 0 ? (
-            <ThemedText
-              type="hand"
-              style={[styles.cardQuiet, { color: colors.inkMuted }]}
-            >
-              Quiet right now.
-            </ThemedText>
-          ) : mode === "numeric" ? (
-            // Numeric: typed summary in body weight — fast scan, no clutter.
-            <ThemedText
-              type="body"
-              style={[styles.cardSummary, { color: colors.inkMuted }]}
-            >
-              {summaryLine(counts)}
-            </ThemedText>
-          ) : (
-            // Preview: named lines, dialect of DirectRow so it reads as a
-            // miniature of the spine inside the project.
-            items.map((e) => (
-              <View key={e.id} style={styles.cardLine}>
-                <EntryDot type={e.type as EntryType} />
-                <ThemedText
-                  type="body"
-                  numberOfLines={1}
-                  style={[styles.cardLineTitle, { color: colors.ink }]}
-                >
-                  {e.title}
-                </ThemedText>
-              </View>
-            ))
-          )}
-        </View>
-      </Pressable>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -747,91 +451,6 @@ const styles = StyleSheet.create({
     gap: tokens.space.xl,
     paddingTop: tokens.space.sm,
     paddingBottom: tokens.space.xl,
-  },
-  section: {
-    gap: tokens.space.sm,
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: tokens.space.sm,
-  },
-  card: {
-    flexBasis: "48%",
-    flexGrow: 1,
-    borderRadius: tokens.radius.md,
-    overflow: "hidden",
-  },
-  cardBody: {
-    flex: 1,
-    padding: tokens.space.md,
-    paddingBottom: tokens.space.sm,
-    gap: tokens.space.sm,
-  },
-  cardHead: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: tokens.space.sm,
-  },
-  cardGlyph: {
-    fontSize: 22,
-    lineHeight: 26,
-  },
-  cardTitle: {
-    flex: 1,
-  },
-  cardLines: {
-    flex: 1,
-    gap: tokens.space.xs,
-  },
-  cardLine: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.sm,
-  },
-  cardLineTitle: {
-    flex: 1,
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  cardQuiet: {
-    fontSize: 16,
-    lineHeight: 20,
-  },
-  cardSummary: {
-    lineHeight: 20,
-    fontSize: 12,
-  },
-  cardFooterBtn: {
-    paddingHorizontal: tokens.space.md,
-    paddingVertical: tokens.space.sm,
-    minHeight: 36,
-    justifyContent: "center",
-  },
-  cardFooter: {
-    letterSpacing: tokens.type.micro.tracking,
-    fontSize: tokens.type.micro.size,
-    lineHeight: tokens.type.micro.lineHeight,
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.md,
-    minHeight: 48,
-    paddingHorizontal: tokens.space.lg,
-    borderRadius: tokens.radius.md,
-  },
-  rowTitle: {
-    flex: 1,
-  },
-  projectGlyph: {
-    width: 22,
-    textAlign: "center",
-    fontSize: 18,
-    lineHeight: 22,
   },
   captureSpacer: {
     height: 72,

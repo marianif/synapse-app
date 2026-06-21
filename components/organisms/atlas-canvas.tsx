@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { Link } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   LayoutChangeEvent,
   Pressable,
@@ -14,6 +14,7 @@ import Animated, {
   useReducedMotion,
   useSharedValue,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -23,17 +24,23 @@ import { useUiPreference } from "@/hooks/use-ui-preference";
 import type { DbProject } from "@/lib/types";
 
 /**
- * Atlas — a free-form 2D canvas of project tiles. Spatial memory, not
- * alphabetical scanning. Each tile remembers a normalized (x, y) in [0, 1]
- * so the layout survives device rotation and screen-size changes.
+ * Atlas — a two-axis priority surface for active projects.
  *
- * Why: the persona builds spatial mental maps faster than alphabetical ones.
- * "Dev project lives top-left, art collective bottom-right." That's the
- * literal product framing — a second brain, not a list.
+ *   X (left → right):  light energy  →  heavy energy
+ *   Y (top  → bottom): now / soon    →  later
+ *
+ * Where a project sits IS information. The narrative voice can read it back
+ * ("'Album art' has sat in heavy · later for three weeks"). Position is no
+ * longer just spatial memory — it's the user's own answer to "when do I have
+ * the right window for this, and what does it cost me?"
  *
  * Persistence: useUiPreference per project, key `projects.atlas.<id>`,
- * value `"x,y"` floats. Archived projects keep their position (fade in
- * place) so the spatial memory survives archival.
+ * value `"x,y"` floats in [0,1]. Storage shape is unchanged from the prior
+ * "remember where I parked it" model — old positions stay valid, they just
+ * mean something now.
+ *
+ * Archived projects do NOT appear on the field. Position only carries meaning
+ * for active work.
  */
 
 const CANVAS_HEIGHT = 360;
@@ -47,6 +54,11 @@ export function AtlasCanvas({
 }): React.ReactElement {
   const { colors } = useTheme();
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+
+  const active = useMemo(
+    () => projects.filter((p) => p.status !== "archived"),
+    [projects],
+  );
 
   const onLayout = useCallback((e: LayoutChangeEvent): void => {
     const { width, height } = e.nativeEvent.layout;
@@ -62,7 +74,6 @@ export function AtlasCanvas({
     const rows = Math.ceil(total / cols);
     const col = index % cols;
     const row = Math.floor(index / cols);
-    // Add a small inset so tiles don't kiss the canvas edges.
     return {
       x: (col + 0.5) / cols,
       y: (row + 0.5) / rows,
@@ -74,12 +85,14 @@ export function AtlasCanvas({
       onLayout={onLayout}
       style={[styles.canvas, { backgroundColor: colors.paper }]}
     >
+      <QuadrantAxes />
+      <QuadrantLabels />
       {size
-        ? projects.map((p, i) => (
+        ? active.map((p, i) => (
             <AtlasTile
               key={p.id}
               project={p}
-              fallback={fallbackPos(i, projects.length)}
+              fallback={fallbackPos(i, active.length)}
               canvas={size}
             />
           ))
@@ -88,19 +101,63 @@ export function AtlasCanvas({
   );
 }
 
+// ─── Axes & labels ─────────────────────────────────────────────────────────
+
+/**
+ * Tonal cross-hair at 50/50 — no 1px structural borders (Field Lab rule).
+ * The lines are 1pt slabs in `surfaceSubtle`, sitting on `paper`. They read
+ * as a divider, not a frame.
+ */
+function QuadrantAxes(): React.ReactElement {
+  const { colors } = useTheme();
+  return (
+    <>
+      <View
+        pointerEvents="none"
+        style={[styles.axisVertical, { backgroundColor: colors.surfaceSubtle }]}
+      />
+      <View
+        pointerEvents="none"
+        style={[styles.axisHorizontal, { backgroundColor: colors.surfaceSubtle }]}
+      />
+    </>
+  );
+}
+
+/**
+ * Four mono kicker corner labels — the legend that explains the gesture.
+ * Low contrast (`inkMuted`) so they sit under the tiles, not over them.
+ */
+function QuadrantLabels(): React.ReactElement {
+  const { colors } = useTheme();
+  const labelStyle = [styles.quadrantLabel, { color: colors.inkMuted }];
+  return (
+    <>
+      <ThemedText style={[labelStyle, styles.quadrantTopLeft]}>
+        NOW · LIGHT
+      </ThemedText>
+      <ThemedText style={[labelStyle, styles.quadrantTopRight]}>
+        NOW · HEAVY
+      </ThemedText>
+      <ThemedText style={[labelStyle, styles.quadrantBottomLeft]}>
+        LATER · LIGHT
+      </ThemedText>
+      <ThemedText style={[labelStyle, styles.quadrantBottomRight]}>
+        LATER · HEAVY
+      </ThemedText>
+    </>
+  );
+}
+
 // ─── Tile ──────────────────────────────────────────────────────────────────
 
 /**
- * One draggable project tile. Long-press lifts it; dragging moves it; release
- * springs it to the nearest in-bounds position and commits the normalized
- * (x, y) to storage. A short tap (no drag) navigates to the project.
+ * One draggable project tile. Long-press lifts it (scale + shadow); dragging
+ * places it on the energy × urgency field; release springs it to the nearest
+ * in-bounds position and commits the normalized (x, y) to storage. A short
+ * tap navigates to the project.
  *
- * Two ways the tile can be in motion:
- *   • Active drag — translateX/Y follow the gesture from a captured origin.
- *   • Settle — withSpring to the committed coordinates after release.
- *
- * Reduced-motion: spring is replaced by an instant set (motion is presence,
- * not pulse — but vestibular safety wins over expression).
+ * Reduced-motion: scale-lift becomes instant; spring settle becomes instant.
  */
 function AtlasTile({
   project,
@@ -113,11 +170,7 @@ function AtlasTile({
 }): React.ReactElement {
   const { colors } = useTheme();
   const reducedMotion = useReducedMotion();
-  const archived = project.status === "archived";
 
-  // Persisted position as "x,y" floats in [0,1]. The validator narrows the
-  // raw string from storage; an invalid value falls back to the auto-layout
-  // coordinate so the tile is never invisible.
   const [storedPos, setStoredPos, loaded] = useUiPreference<string>(
     `projects.atlas.${project.id}`,
     `${fallback.x},${fallback.y}`,
@@ -125,33 +178,23 @@ function AtlasTile({
   );
   const persisted = parseNormPos(storedPos) ?? fallback;
 
-  // Maximum (x, y) in pixels that keeps the tile fully inside the canvas.
   const maxX = Math.max(0, canvas.w - TILE_W);
   const maxY = Math.max(0, canvas.h - TILE_H);
 
-  // Pixel position drives the visual transform. We seed it from the stored
-  // normalized coords and keep it in sync via the gesture below.
   const tx = useSharedValue(persisted.x * maxX);
   const ty = useSharedValue(persisted.y * maxY);
+  const lift = useSharedValue(0); // 0 = at rest, 1 = lifted
 
-  // useUiPreference resolves async — the first render returns the fallback,
-  // and the stored value arrives a tick later. Re-seed the shared values when
-  // the persisted coords or canvas size change so a remount lands the tile
-  // where the user left it, not on the auto-grid fallback.
   useEffect(() => {
     tx.value = persisted.x * maxX;
     ty.value = persisted.y * maxY;
   }, [loaded, persisted.x, persisted.y, maxX, maxY, tx, ty]);
 
-  // Origin captured at gesture start so finger-relative motion works even
-  // after multiple drags.
   const originX = useSharedValue(tx.value);
   const originY = useSharedValue(ty.value);
 
   const commit = useCallback(
     (xPx: number, yPx: number): void => {
-      // Clamp into bounds, then normalize. The clamp also defends against
-      // a canvas resize mid-drag.
       const cx = Math.min(Math.max(0, xPx), maxX);
       const cy = Math.min(Math.max(0, yPx), maxY);
       const nx = maxX === 0 ? 0 : cx / maxX;
@@ -161,16 +204,14 @@ function AtlasTile({
     [maxX, maxY, setStoredPos],
   );
 
-  // Track "did the user actually drag, or just tap?" — short displacements
-  // are treated as taps so the underlying <Link> wins. The threshold is a
-  // few pixels of slop; below that, even a slightly imperfect tap navigates.
   const moved = useRef(false);
 
   const pan = Gesture.Pan()
-    .activateAfterLongPress(180) // long-press to lift — tap stays for navigation
+    .activateAfterLongPress(180)
     .onStart(() => {
       originX.value = tx.value;
       originY.value = ty.value;
+      lift.value = reducedMotion ? 1 : withTiming(1, { duration: 140 });
       runOnJS(setMoved)(moved, false);
       runOnJS(liftHaptic)();
     })
@@ -184,59 +225,58 @@ function AtlasTile({
       }
     })
     .onEnd(() => {
-      // Settle into the clamped position.
       const settledX = Math.min(Math.max(0, tx.value), maxX);
       const settledY = Math.min(Math.max(0, ty.value), maxY);
       if (reducedMotion) {
         tx.value = settledX;
         ty.value = settledY;
+        lift.value = 0;
       } else {
         tx.value = withSpring(settledX, { damping: 18, stiffness: 220 });
         ty.value = withSpring(settledY, { damping: 18, stiffness: 220 });
+        lift.value = withTiming(0, { duration: 180 });
       }
       runOnJS(commit)(settledX, settledY);
     });
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: tx.value }, { translateY: ty.value }],
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = 1 + lift.value * 0.06;
+    return {
+      transform: [
+        { translateX: tx.value },
+        { translateY: ty.value },
+        { scale },
+      ],
+      shadowOpacity: 0.4 + lift.value * 0.25,
+      shadowRadius: 10 + lift.value * 8,
+      elevation: 2 + lift.value * 6,
+    };
+  });
 
-  // The tile itself is a Link (tap = open). The GestureDetector wraps it to
-  // catch the long-press-drag without stealing the short tap.
   return (
     <GestureDetector gesture={pan}>
-      <Animated.View style={[styles.tileWrap, animatedStyle]}>
+      <Animated.View
+        style={[styles.tileWrap, tokens.elevation.tile, animatedStyle]}
+      >
         <Link
           href={{ pathname: "/project", params: { id: project.id } }}
           asChild
         >
           <Pressable
             onPress={(e) => {
-              // If the user dragged, the press still fires on some platforms;
-              // suppress navigation in that case so a drag never feels like a
-              // mis-open.
               if (moved.current) e.preventDefault?.();
             }}
             accessibilityRole="button"
-            accessibilityLabel={
-              archived
-                ? `Archived project ${project.title}. Long-press to move.`
-                : `Project ${project.title}. Long-press to move.`
-            }
+            accessibilityLabel={`Project ${project.title}. Long-press to move on the energy and urgency field.`}
             style={StyleSheet.flatten([
               styles.tile,
-              {
-                backgroundColor: archived
-                  ? colors.surfaceSubtle
-                  : colors.surface,
-              },
-              tokens.elevation.tile,
+              { backgroundColor: colors.surface },
             ])}
           >
             <ThemedText
               style={[
                 styles.tileGlyph,
-                (!project.emoji || archived) && { color: colors.inkMuted },
+                !project.emoji && { color: colors.inkMuted },
               ]}
             >
               {project.emoji ?? "·"}
@@ -244,10 +284,7 @@ function AtlasTile({
             <ThemedText
               type="mono"
               numberOfLines={1}
-              style={[
-                styles.tileTitle,
-                { color: archived ? colors.inkMuted : colors.ink },
-              ]}
+              style={[styles.tileTitle, { color: colors.ink }]}
             >
               {project.title}
             </ThemedText>
@@ -281,12 +318,67 @@ function parseNormPos(s: string): { x: number; y: number } | null {
   return { x, y };
 }
 
+/**
+ * Quadrant readout for a normalized (x, y) on the Atlas.
+ * X: light (≤0.5) | heavy (>0.5). Y: now (≤0.5) | later (>0.5).
+ * The narrative voice uses this to read positions back to the user.
+ */
+export type AtlasQuadrant = "now·light" | "now·heavy" | "later·light" | "later·heavy";
+
+export function quadrantFor(x: number, y: number): AtlasQuadrant {
+  const heavy = x > 0.5;
+  const later = y > 0.5;
+  if (!later && !heavy) return "now·light";
+  if (!later && heavy) return "now·heavy";
+  if (later && !heavy) return "later·light";
+  return "later·heavy";
+}
+
+const QUADRANT_INSET = tokens.space.sm;
+
 const styles = StyleSheet.create({
   canvas: {
     height: CANVAS_HEIGHT,
     borderRadius: tokens.radius.lg,
     overflow: "hidden",
     position: "relative",
+  },
+  axisVertical: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: "50%",
+    width: 1,
+  },
+  axisHorizontal: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: "50%",
+    height: 1,
+  },
+  quadrantLabel: {
+    position: "absolute",
+    fontFamily: tokens.type.fontMono.medium,
+    fontSize: tokens.type.micro.size,
+    lineHeight: tokens.type.micro.lineHeight,
+    letterSpacing: tokens.type.micro.tracking,
+  },
+  quadrantTopLeft: {
+    top: QUADRANT_INSET,
+    left: QUADRANT_INSET,
+  },
+  quadrantTopRight: {
+    top: QUADRANT_INSET,
+    right: QUADRANT_INSET,
+  },
+  quadrantBottomLeft: {
+    bottom: QUADRANT_INSET,
+    left: QUADRANT_INSET,
+  },
+  quadrantBottomRight: {
+    bottom: QUADRANT_INSET,
+    right: QUADRANT_INSET,
   },
   tileWrap: {
     position: "absolute",

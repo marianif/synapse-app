@@ -5,6 +5,7 @@ import {
   Alert,
   Dimensions,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -22,7 +23,7 @@ import { entryColor, type Scheme, tokens, useTheme } from "@/constants/theme";
 import { useThemeContext } from "@/contexts/theme-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { clearAllData, getDb } from "@/lib/database";
-import { seedDevDataIfEmpty } from "@/lib/dev-seed";
+import { SCENARIOS, seedScenario, type ScenarioKey } from "@/lib/dev-seed";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const MENU_WIDTH = SCREEN_WIDTH * 0.75;
@@ -103,26 +104,22 @@ export function AppMenu({
     );
   };
 
-  const handleSeedDatabase = () => {
+  const handleSeedScenario = (key: ScenarioKey, label: string) => {
     Alert.alert(
-      "Seed database?",
-      "Inserts mock entries across all types. Only runs when the database is empty. Dev only.",
+      `Seed "${label}"?`,
+      "This wipes the database, then inserts the scenario's fixture. Dev only.",
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Seed",
+          text: "Apply",
           onPress: async () => {
             try {
-              const inserted = await seedDevDataIfEmpty(getDb());
-              if (inserted) {
-                await fetchEntries();
-                await fetchProjects();
-                onClose();
-              } else {
-                Alert.alert("Nothing seeded", "Clear the database first.");
-              }
+              await seedScenario(getDb(), key);
+              await fetchEntries();
+              await fetchProjects();
+              onClose();
             } catch (error) {
-              console.error("[AppMenu] seedDevData failed:", error);
+              console.error("[AppMenu] seedScenario failed:", error);
               Alert.alert("Couldn't seed the database.");
             }
           },
@@ -135,7 +132,11 @@ export function AppMenu({
     <View style={StyleSheet.absoluteFill}>
       <Pressable style={styles.backdrop} onPress={onClose} />
       <Animated.View style={[styles.blurContainer, animatedStyle]}>
-        <View style={[styles.menu, { backgroundColor: colors.surfaceSubtle }]}>
+        <ScrollView
+          style={[styles.menu, { backgroundColor: colors.surfaceSubtle }]}
+          contentContainerStyle={styles.menuContent}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.header}>
             <Text style={[styles.logo, { color: colors.ink }]}>Settings</Text>
             <Pressable onPress={onClose} hitSlop={8}>
@@ -172,29 +173,49 @@ export function AppMenu({
 
           <View style={styles.footer}>
             {__DEV__ && (
-              <Pressable
-                onPress={handleSeedDatabase}
-                style={({ pressed }) => [
-                  styles.devButton,
-                  {
-                    backgroundColor: colors.surface,
-                    opacity: pressed ? 0.7 : 1,
-                  },
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel="Seed database (dev only)"
-              >
-                <MaterialCommunityIcons
-                  name="database-plus-outline"
-                  size={18}
-                  color={entryColor("idea")}
-                />
-                <Text
-                  style={[styles.devButtonLabel, { color: entryColor("idea") }]}
-                >
-                  Seed Database
+              <View style={styles.devScenarios}>
+                <Text style={[styles.devSectionLabel, { color: colors.inkMuted }]}>
+                  Dev · Seed Scenario
                 </Text>
-              </Pressable>
+                {SCENARIOS.map((scenario) => (
+                  <Pressable
+                    key={scenario.key}
+                    onPress={() => handleSeedScenario(scenario.key, scenario.label)}
+                    style={({ pressed }) => [
+                      styles.scenarioRow,
+                      {
+                        backgroundColor: colors.surface,
+                        opacity: pressed ? 0.7 : 1,
+                      },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Seed scenario ${scenario.label}`}
+                    accessibilityHint={scenario.description}
+                  >
+                    <MaterialCommunityIcons
+                      name="database-plus-outline"
+                      size={16}
+                      color={entryColor("idea")}
+                    />
+                    <View style={styles.scenarioCopy}>
+                      <Text
+                        style={[styles.scenarioLabel, { color: colors.ink }]}
+                      >
+                        {scenario.label}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.scenarioDescription,
+                          { color: colors.inkMuted },
+                        ]}
+                        numberOfLines={2}
+                      >
+                        {scenario.description}
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
             )}
             {__DEV__ && (
               <Pressable
@@ -228,7 +249,7 @@ export function AppMenu({
               v1.0.0
             </Text>
           </View>
-        </View>
+        </ScrollView>
       </Animated.View>
     </View>
   );
@@ -357,8 +378,11 @@ const styles = StyleSheet.create({
   },
   menu: {
     flex: 1,
+  },
+  menuContent: {
     paddingTop: tokens.space.xxxl + tokens.space.lg,
     paddingHorizontal: tokens.space.lg,
+    paddingBottom: tokens.space.xxl,
   },
   header: {
     flexDirection: "row",
@@ -440,10 +464,38 @@ const styles = StyleSheet.create({
     marginLeft: tokens.space.md,
   },
   footer: {
-    position: "absolute",
-    bottom: tokens.space.xxl,
-    left: tokens.space.lg,
-    right: tokens.space.lg,
+    marginTop: tokens.space.xl,
+  },
+  devScenarios: {
+    marginBottom: tokens.space.lg,
+  },
+  devSectionLabel: {
+    fontSize: tokens.type.kicker.size,
+    textTransform: "uppercase",
+    letterSpacing: 0.55,
+    marginBottom: tokens.space.sm,
+    marginLeft: tokens.space.xs,
+  },
+  scenarioRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: tokens.space.sm,
+    paddingVertical: tokens.space.sm,
+    paddingHorizontal: tokens.space.md,
+    borderRadius: tokens.radius.md,
+    marginBottom: tokens.space.xs,
+  },
+  scenarioCopy: {
+    flex: 1,
+  },
+  scenarioLabel: {
+    fontSize: tokens.type.body.size,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  scenarioDescription: {
+    fontSize: tokens.type.kicker.size,
+    lineHeight: tokens.type.kicker.size * 1.35,
   },
   version: {
     fontSize: tokens.type.kicker.size,

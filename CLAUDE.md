@@ -14,8 +14,12 @@ Expo-managed React Native app (iOS / Android / Web) using file-based routing via
 `expo-router`. Key flags: React 19 Compiler (auto-memoization), New Architecture,
 and typed routes.
 
-See **DESIGN.md** for design guidelines (Dark Sanctuary aesthetic, tonal depth,
-no-line borders, glassmorphism).
+### Sources of truth
+
+- **PRODUCT.md** — strategy: users, purpose, brand personality, design principles, anti-references. Read before any UX decision.
+- **DESIGN.md** — the "Field Lab" visual system: tokens (mirrors `constants/theme.ts`), component patterns, do's and don'ts. Read before any UI work.
+- **BACKLOG.md** — the current product pivot ("the agenda that talks") with locked decisions and build phases.
+- **`.impeccable/brand.md`** — the Field Lab brand brief the rebrand was built from (historical reference; DESIGN.md documents the as-built drift).
 
 **Tech stack:** TypeScript · React 19 · Expo SDK 55 · expo-router v5 ·
 React Navigation v7 · react-native-reanimated v4 · expo-sqlite · `@bacons/apple-targets`
@@ -88,13 +92,15 @@ npx jest -t "test name"        # Run tests by name
 
 ### Entry Types & Schema
 
-Four entry types live in `lib/types.ts`: `todo`, `deadline`, `event`, `someday`, `idea`. Each maps to a `DbEntry` row with these key fields:
+Five entry types live in `lib/types.ts`: `todo`, `deadline`, `event`, `someday`, `idea`. Each maps to a `DbEntry` row with these key fields:
 - `scheduled_date` / `scheduled_time` — when to do it
 - `due_date` / `due_time` — when it's due (deadlines)
 - `status` — `"scheduled" | "active" | "completed" | "pending" | "met" | "overdue"`
 - `recurrence_rule` — JSON-serialized `RecurrenceRule` (see `lib/recurrence.ts`)
 
 Recurring entries use a separate `recurrence_completions` table. Never mutate a recurring entry's base row for a single instance — use `completeRecurringInstance` / `skipRecurringInstance`.
+
+Reflective notes live in a separate `diary_entries` table (body, optional mood, optional `linked_entry_id` FK to entries) — deliberately isolated from the action board. Notes are never actionable and never appear on the home field.
 
 ### Database Layer
 
@@ -128,15 +134,14 @@ A second custom Expo native module (`modules/watch-connectivity/`, depended on v
 synapse-app/
 ├── app/                        # Routes (expo-router file-based routing)
 │   ├── _layout.tsx             # Root layout — Stack navigator + ThemeProvider
-│   ├── index.tsx               # Redirects to /(tabs)
-│   ├── modal.tsx               # Generic modal overlay
-│   ├── voice-input.tsx         # Voice input modal (speech-to-text)
-│   ├── detail.tsx              # Task/entry detail view
+│   ├── modal.tsx               # Rich add/edit entry modal
+│   ├── calendar.tsx            # Calendar view (monthly)
+│   ├── detail.tsx              # Task/entry detail view (inline editing)
 │   ├── list.tsx                # Full list view (all entries)
 │   └── (tabs)/                 # Tab group (expo-router convention)
-│       ├── _layout.tsx         # Tab navigator (BottomTabNavigator)
-│       ├── index.tsx           # Home tab (today's view)
-│       └── calendar.tsx        # Calendar tab (monthly view)
+│       ├── _layout.tsx         # Tab navigator (custom tab bar, native bar hidden)
+│       ├── index.tsx           # Home tab — the Field (STAKES + PRESENT zones)
+│       └── diary.tsx           # Diary tab (notes feed + composer)
 │
 ├── components/                 # Shared UI components (Atomic Design)
 │   ├── atoms/                  # Smallest building blocks
@@ -277,8 +282,11 @@ VSCode auto-organizes imports on save (`source.organizeImports`).
 - All components are **functional** — no class components.
 - Every `app/` route and layout must have an `export default`.
 - Styles in `StyleSheet.create({})` at the **bottom** of the file.
-- Light/dark theming via `useColorScheme()` + React Navigation's
-  `ThemeProvider`. Access palette: `Colors[colorScheme ?? 'light']`.
+- Light/dark theming via **`useTheme()`** from `@/constants/theme` (returns
+  `{ scheme, colors }`), backed by `contexts/theme-context.tsx` (persisted
+  System / Light / Dark preference). Entry-type colors via the typed accessors
+  `entryColor`, `useEntryKicker`, `useEntryTint`. Never branch on
+  `useColorScheme()` inside a component.
 - Use Atomic Design: `components/atoms/`, `molecules/`, `organisms/`.
 - React Compiler handles memoization — do **not** add manual
   `useMemo`/`useCallback` unless measured.
@@ -305,12 +313,14 @@ VSCode auto-organizes imports on save (`source.organizeImports`).
 
 ## Design System
 
-Check `constants/theme.ts` for color tokens and spacing. Key principles:
+**"Field Lab"** — your whole brain as a living instrument panel. Source of truth: `constants/theme.ts` (the `tokens` object + `useTheme()`); full spec in `DESIGN.md`. Key principles:
 
-- **No 1px borders** — use background color shifts for sectioning.
-- **Glassmorphism** for floating elements (FAB, top navigation).
-- **Tonal depth** — depth via stacked surfaces, not shadows.
-- See `DESIGN.md` for full "Digital Sanctuary" design philosophy.
+- **Cool extremes only** — never `#FFF`/`#000`; graphite/crisp paper surfaces.
+- **Equal volume** — five electric entry-type colors at equal intensity; never dim non-urgent types.
+- **Green is completion-only** — todo is cyan, never green.
+- **No 1px structural borders** — tonal layering, edge-bars, and glow carry structure.
+- **Three type voices** — Host Grotesk (display/body), JetBrains Mono (counts/kickers/status), Caveat (handwritten narrative layer only).
+- **No FAB, no gamification, no gradients, no "today" curation** — see DESIGN.md Do's and Don'ts.
 
 ---
 

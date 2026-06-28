@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
-import { ALL_STATEMENTS, CREATE_DIARY_TABLE, CREATE_ENTRIES_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, SCHEMA_VERSION } from './schema';
-import type { DbDiaryEntry, DiaryMood } from './types';
+import { ALL_STATEMENTS, CREATE_DIARY_TABLE, CREATE_PROJECTS_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, SCHEMA_VERSION } from './schema';
+import type { DbDiaryEntry, DbProject, DiaryMood } from './types';
 
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 let isInitialized = false;
@@ -268,10 +268,148 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       }
       await db.runAsync(
         "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        "8",
+      );
+    });
+  }
+
+  if (currentVersion < 9) {
+    // Migration 9 (pivot "the agenda that talks"): projects as top-level
+    // organizing entities + deadline horizons.
+    //   - projects table (macro life areas; not entries, never board items)
+    //   - entries.project_id        — owning project, null = unfiled
+    //   - entries.due_range         — 'week'|'month'|'year' horizon; due_date
+    //                                 stores the window END so heat/sort logic
+    //                                 keeps working unchanged
+    //   - entries.promoted_project_id — idea → project provenance
+    //   - diary_entries.linked_project_id — a note can point to a project
+    // ADD COLUMN can't carry FK/CHECK clauses; SET-NULL-on-project-delete is
+    // enforced in app code (unlinkProjectReferences), same pattern as
+    // migration 8's linked_entry_id.
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(CREATE_PROJECTS_TABLE);
+      const addColumn = async (sql: string) => {
+        try {
+          await db.execAsync(sql);
+        } catch {
+          // column already exists (fresh installs get it from the CREATE statement)
+        }
+      };
+      await addColumn('ALTER TABLE entries ADD COLUMN project_id TEXT');
+      await addColumn('ALTER TABLE entries ADD COLUMN due_range TEXT');
+      await addColumn('ALTER TABLE entries ADD COLUMN promoted_project_id TEXT');
+      await addColumn('ALTER TABLE diary_entries ADD COLUMN linked_project_id TEXT');
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
         String(SCHEMA_VERSION),
       );
     });
   }
+
+  if (currentVersion < 11) {
+    // Migration 10: project emoji — a single-character visual identity that
+    // surfaces in the header, on home rows, and anywhere the project is
+    // referenced. Nullable so existing projects survive the upgrade without
+    // a forced choice; the UI offers a quiet picker affordance.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync('ALTER TABLE projects ADD COLUMN emoji TEXT');
+      } catch {
+        // column already exists (fresh installs got it from CREATE_PROJECTS_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
+}
+
+// ─── Project helpers ────────────────────────────────────────────────────────────
+
+/** Insert a project, returning the persisted row. Emoji is optional. */
+export async function insertProject(
+  title: string,
+  emoji: string | null = null,
+): Promise<DbProject> {
+  const db = getDb();
+  const id = generateId();
+  const now = Math.floor(Date.now() / 1000);
+  await db.runAsync(
+    "INSERT INTO projects (id, title, status, emoji, created_at, updated_at) VALUES (?, ?, 'active', ?, ?, ?)",
+    id,
+    title,
+    emoji,
+    now,
+    now,
+  );
+  return { id, title, status: 'active', emoji, created_at: now, updated_at: now };
+}
+
+/** All projects, active first, newest first within each status. */
+export async function getProjects(): Promise<DbProject[]> {
+  const db = getDb();
+  return db.getAllAsync<DbProject>(
+    "SELECT * FROM projects ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END, created_at DESC",
+  );
+}
+
+/** Update a project's title, status, and/or emoji. Pass `emoji: null` to clear. */
+export async function updateProject(
+  id: string,
+  data: {
+    title?: string;
+    status?: DbProject['status'];
+    emoji?: string | null;
+  },
+): Promise<void> {
+  const db = getDb();
+  const updates: string[] = [];
+  const values: (string | number | null)[] = [];
+  if (data.title !== undefined) {
+    updates.push('title = ?');
+    values.push(data.title);
+  }
+  if (data.status !== undefined) {
+    updates.push('status = ?');
+    values.push(data.status);
+  }
+  if (data.emoji !== undefined) {
+    updates.push('emoji = ?');
+    values.push(data.emoji);
+  }
+  if (updates.length === 0) return;
+  updates.push('updated_at = ?');
+  values.push(Math.floor(Date.now() / 1000));
+  values.push(id);
+  await db.runAsync(`UPDATE projects SET ${updates.join(', ')} WHERE id = ?`, ...values);
+}
+
+/**
+ * App-side SET NULL for everything pointing at a project (ADD COLUMN can't
+ * carry FK clauses). Entries become unfiled; promoted ideas lose provenance;
+ * linked notes survive as free notes. Call before deleting a project.
+ */
+export async function unlinkProjectReferences(projectId: string): Promise<void> {
+  const db = getDb();
+  await db.runAsync('UPDATE entries SET project_id = NULL WHERE project_id = ?', projectId);
+  await db.runAsync(
+    'UPDATE entries SET promoted_project_id = NULL WHERE promoted_project_id = ?',
+    projectId,
+  );
+  await db.runAsync(
+    'UPDATE diary_entries SET linked_project_id = NULL WHERE linked_project_id = ?',
+    projectId,
+  );
+}
+
+/** Delete a project, unlinking all references first. Its entries survive unfiled. */
+export async function deleteProject(id: string): Promise<void> {
+  const db = getDb();
+  await db.withTransactionAsync(async () => {
+    await unlinkProjectReferences(id);
+    await db.runAsync('DELETE FROM projects WHERE id = ?', id);
+  });
 }
 
 // ─── Diary helpers ──────────────────────────────────────────────────────────────
@@ -285,16 +423,18 @@ export async function insertDiaryEntry(
   body: string,
   mood: DiaryMood | null,
   linkedEntryId: string | null = null,
+  linkedProjectId: string | null = null,
 ): Promise<DbDiaryEntry> {
   const db = getDb();
   const id = generateId();
   const now = Math.floor(Date.now() / 1000);
   await db.runAsync(
-    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, linked_project_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
     id,
     body,
     mood,
     linkedEntryId,
+    linkedProjectId,
     now,
     now,
   );
@@ -303,6 +443,7 @@ export async function insertDiaryEntry(
     body,
     mood,
     linked_entry_id: linkedEntryId,
+    linked_project_id: linkedProjectId,
     created_at: now,
     updated_at: now,
   };
@@ -339,8 +480,8 @@ export async function unlinkDiaryNotesForEntry(entryId: string): Promise<void> {
 /**
  * Wipes every row from the data tables, leaving the schema (and schema_version)
  * intact. Dev-only convenience for starting from an empty slate. Order respects
- * FK references — diary first (it points at entries), then completions, then
- * the entries themselves.
+ * FK references — diary first (it points at entries/projects), then
+ * completions, then the entries themselves, then projects.
  */
 export async function clearAllData(): Promise<void> {
   const db = getDb();
@@ -348,6 +489,7 @@ export async function clearAllData(): Promise<void> {
     await db.execAsync('DELETE FROM diary_entries');
     await db.execAsync('DELETE FROM recurrence_completions');
     await db.execAsync('DELETE FROM entries');
+    await db.execAsync('DELETE FROM projects');
   });
 }
 

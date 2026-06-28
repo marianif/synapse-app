@@ -1,9 +1,11 @@
+import * as Haptics from "expo-haptics";
 import { router, usePathname } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import type { IconSymbolName } from "@/components/ui/icon-symbol";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
+import { EntryCluster } from "../atoms/entry-cluster";
 
 function TabIcon({ name, color }: { name: IconSymbolName; color: string }) {
   return <IconSymbol name={name} size={24} color={color} />;
@@ -34,14 +36,26 @@ export function CustomTabBar(): React.ReactElement {
           <TabIcon name="view-grid" color={active(isHome)} />
         </Pressable>
 
-        {/* The create-key — richer entries (bills, deadlines, events, dates)
-            live here; the home capture bar stays the quick idea line. The one
-            neutral-accent control in the chrome, so "make something" reads at a
-            glance without clashing with any saturated type code. */}
+        {/* The pen key — one thumb gesture from anywhere, two registers. TAP
+            opens the MANUAL bar (deliberate creation that has no capture path —
+            today, opening a project). LONG-PRESS arms VOICE capture: catch a
+            thought now, resolve it later. Both ride the existing ?capture=
+            deep-link the widget already uses, so it works from any tab. The one
+            neutral-accent control in the chrome, so it reads at a glance without
+            clashing with any saturated type code. */}
         <Pressable
-          onPress={() => router.push("/modal")}
+          onPress={() =>
+            router.push({ pathname: "/", params: { capture: "manual" } })
+          }
+          onLongPress={() => {
+            // Voice capture is a bigger gesture than a tap — confirm it in the hand.
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            router.push({ pathname: "/", params: { capture: "voice" } });
+          }}
+          delayLongPress={350}
           accessibilityRole="button"
-          accessibilityLabel="Add an entry"
+          accessibilityLabel="Capture a thought"
+          accessibilityHint="Tap for manual actions. Long-press to capture by voice."
           style={({ pressed }) => [
             styles.addButton,
             { backgroundColor: colors.accent.clay },
@@ -49,7 +63,12 @@ export function CustomTabBar(): React.ReactElement {
             pressed && styles.addButtonPressed,
           ]}
         >
-          <IconSymbol name="plus" size={28} color={colors.accent.onClay} />
+          <EntryCluster
+            types={["deadline", "todo", "idea"]}
+            dotSize={7}
+            gap={3}
+            width={24}
+          />
         </Pressable>
 
         <Pressable

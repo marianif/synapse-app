@@ -9,15 +9,15 @@ import type { FieldRowItem } from "@/components/molecules/field-row";
 interface FieldSummaryProps {
   /** STAKES rows (deadlines + todos). */
   stakes: FieldRowItem[];
-  /** PRESENT rows (events + ideas + somedays). */
+  /** PRESENT rows (ideas). */
   present: FieldRowItem[];
 }
 
 /**
  * The companion's read of the field, spoken as one conversational sentence with
  * the real per-type counts inlined and colored. Stakes (deadlines, to-dos) "need
- * you this week"; present things (events, ideas, somedays) are "still here" — so
- * the voice stays observational, never a flat imperative list.
+ * you this week"; present things (ideas) are "still here" — so the voice stays
+ * observational, never a flat imperative list.
  */
 export function FieldSummary({
   stakes,
@@ -26,7 +26,7 @@ export function FieldSummary({
   const { scheme, colors } = useTheme();
 
   const stakeSpans = spansFor(stakes, ["deadline", "todo"]);
-  const presentSpans = spansFor(present, ["event", "idea", "someday"]);
+  const presentSpans = spansFor(present, ["idea"]);
 
   // Subject-verb agreement: one stake "needs you", several "need you".
   const stakeCount = stakeSpans.reduce((sum, s) => sum + s.n, 0);

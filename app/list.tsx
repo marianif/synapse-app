@@ -12,7 +12,6 @@ import { EmptyState } from "@/components/molecules/empty-state";
 import { ListFilterBar } from "@/components/molecules/list-filter-bar";
 import { ListItem } from "@/components/molecules/list-item";
 import { WrapupCard } from "@/components/molecules/wrapup-card";
-import { Fab } from "@/components/organisms/fab";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import {
   entryColor,
@@ -95,23 +94,18 @@ function entryToListEntry(e: DbEntry): ListEntry {
   };
 }
 
-function somedayEntryToListEntry(entry: DbEntry): ListEntry {
+function ideaEntryToListEntry(entry: DbEntry): ListEntry {
   return {
     id: entry.id,
     title: entry.title,
     subtitle: entry.subtitle ?? undefined,
-    // keep the real type (someday vs idea) so the edge-bar codes correctly
     entryType: entry.type,
     status: "scheduled",
   };
 }
 
 /** Temporal types Incoming surfaces — the time-driven lanes only. */
-const INCOMING_TYPES: ReadonlySet<EntryType> = new Set([
-  "deadline",
-  "event",
-  "todo",
-]);
+const INCOMING_TYPES: ReadonlySet<EntryType> = new Set(["deadline", "todo"]);
 
 /** True when an entry is finished (completed task/event or a met deadline). */
 function isDoneEntry(e: DbEntry): boolean {
@@ -225,18 +219,14 @@ export default function ListScreen(): React.ReactElement {
   const resolvedType: EntryType | null =
     entryType === "deadline"
       ? "deadline"
-      : entryType === "someday"
-        ? "someday"
-        : entryType === "idea"
-          ? "idea"
-          : entryType === "event"
-            ? "event"
-            : entryType === "todo"
-              ? "todo"
-              : null;
+      : entryType === "idea"
+        ? "idea"
+        : entryType === "todo"
+          ? "todo"
+          : null;
 
   const isIncoming = resolvedType === null;
-  const isSomedayLane = resolvedType === "someday" || resolvedType === "idea";
+  const isIdeaLane = resolvedType === "idea";
 
   // Accent + tint follow the lane's type; Incoming has no single owner, so it
   // borrows neutral ink and a faint surface tint.
@@ -249,8 +239,8 @@ export default function ListScreen(): React.ReactElement {
     ? "Incoming"
     : resolvedType === "deadline"
       ? "Deadlines"
-      : isSomedayLane
-        ? "One Day"
+      : isIdeaLane
+        ? "Ideas"
         : "Weekly Todos";
 
   const { entries, updateEntryStatus, deleteEntry, fetchEntries } =
@@ -270,18 +260,16 @@ export default function ListScreen(): React.ReactElement {
 
   // ── Build sections ────────────────────────────────────────────────────────────
 
-  const somedayEntries = entries.filter(
-    (e) => e.type === "someday" || e.type === "idea",
-  );
+  const ideaEntries = entries.filter((e) => e.type === "idea");
 
   const sections: Section[] = isIncoming
     ? buildIncomingSections(entries, typeFilter, statusFilter)
-    : isSomedayLane
-      ? somedayEntries.length > 0
+    : isIdeaLane
+      ? ideaEntries.length > 0
         ? [
             {
               label: "Ideas",
-              entries: somedayEntries.map(somedayEntryToListEntry),
+              entries: ideaEntries.map(ideaEntryToListEntry),
             },
           ]
         : []
@@ -295,17 +283,15 @@ export default function ListScreen(): React.ReactElement {
   const liveCount = allItems.filter((e) => e.status !== "completed").length;
   const doneCount = allItems.filter((e) => e.status === "completed").length;
 
-  const showTelemetry = !isSomedayLane && sections.length > 0;
+  const showTelemetry = !isIdeaLane && sections.length > 0;
 
   const kicker = isIncoming
     ? "INCOMING"
     : resolvedType === "deadline"
       ? "DEADLINES"
-      : isSomedayLane
+      : isIdeaLane
         ? "IDEAS"
-        : resolvedType === "event"
-          ? "EVENTS"
-          : "TODOS";
+        : "TODOS";
 
   // ── Toggle handler ────────────────────────────────────────────────────────────
 
@@ -339,37 +325,29 @@ export default function ListScreen(): React.ReactElement {
       ? "Nothing incoming"
       : resolvedType === "deadline"
         ? "No deadlines tracked"
-        : isSomedayLane
+        : isIdeaLane
           ? "Your ideas list is empty"
           : "No todos yet";
 
   const emptyDescription = isFilteredEmpty
     ? "No entries fit this filter. Widen the lens above."
     : isIncoming
-      ? "Anything you schedule will land here, soonest first."
+      ? "Anything you capture lands here, soonest first."
       : resolvedType === "deadline"
-        ? "Add a deadline to stay ahead of critical dates."
-        : isSomedayLane
+        ? "Capture a deadline to stay ahead of critical dates."
+        : isIdeaLane
           ? "Capture things you want to explore someday."
-          : "Add todos to build your weekly focus.";
+          : "Capture todos to build your weekly focus.";
 
-  const emptyCtaLabel = isFilteredEmpty
-    ? "Clear filters"
-    : isIncoming
-      ? "+ Capture"
-      : resolvedType === "deadline"
-        ? "+ Add Deadline"
-        : isSomedayLane
-          ? "+ Capture Idea"
-          : "+ Add Todo";
+  // Capture (the tab-bar pen) is the only creation path, so the empty state
+  // only offers a "clear filters" action when a filter hid everything.
+  const emptyCtaLabel = isFilteredEmpty ? "Clear filters" : undefined;
 
   function handleEmptyCta(): void {
-    if (isFilteredEmpty) {
-      setTypeFilter("all");
-      setStatusFilter("all");
-    } else {
-      router.push("/modal");
-    }
+    // Capture (the tab-bar pen) is the only creation path now, so the empty CTA
+    // only resets filters; there is no add affordance from the list.
+    setTypeFilter("all");
+    setStatusFilter("all");
   }
 
   return (
@@ -436,7 +414,7 @@ export default function ListScreen(): React.ReactElement {
                 title={emptyTitle}
                 description={emptyDescription}
                 ctaLabel={emptyCtaLabel}
-                onCta={handleEmptyCta}
+                onCta={emptyCtaLabel ? handleEmptyCta : undefined}
                 accentColor={accentColor}
               />
             </View>
@@ -486,7 +464,6 @@ export default function ListScreen(): React.ReactElement {
                       accentColor={accentColor}
                       isRecurring={entry.isRecurring}
                       onToggle={
-                        entry.entryType === "someday" ||
                         entry.entryType === "idea"
                           ? undefined
                           : () => toggleItem(entry.id)
@@ -504,15 +481,13 @@ export default function ListScreen(): React.ReactElement {
             ))
           )}
 
-          {!isSomedayLane && !isIncoming && sections.length > 0 ? (
+          {!isIdeaLane && !isIncoming && sections.length > 0 ? (
             <WrapupCard />
           ) : null}
 
-          {/* Bottom padding so FAB never overlaps the last entry */}
+          {/* Bottom padding for comfortable scroll end */}
           <View style={styles.fabSpacer} />
         </ScrollView>
-
-      <Fab onPress={() => router.push("/modal")} />
     </View>
   );
 }

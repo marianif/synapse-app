@@ -16,7 +16,9 @@ interface DayDetailSheetProps {
   entries: CalendarEntry[];
   today: Date;
   onClose: () => void;
-  onAdd: (date: Date) => void;
+  /** Optional. When omitted the sheet is read-only (no add affordance) — capture
+   *  is the single creation path, so most callers no longer pass this. */
+  onAdd?: (date: Date) => void;
 }
 
 function formatDateLabel(date: Date): string {
@@ -38,7 +40,7 @@ export function DayDetailSheet({
   const { colors } = useTheme();
   const hasEntries = entries.length > 0;
   const isPastDay = date && date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const canAdd = !isPastDay;
+  const canAdd = !isPastDay && !!onAdd;
 
   return (
     <Modal
@@ -84,7 +86,7 @@ export function DayDetailSheet({
                 title="Nothing here"
                 description="No entries scheduled for this day."
                 ctaLabel="+ Add Entry"
-                onCta={() => date && onAdd(date)}
+                onCta={() => date && onAdd?.(date)}
                 accentColor={colors.accent.clay}
               />
             ) : (
@@ -98,7 +100,7 @@ export function DayDetailSheet({
 
           {hasEntries && date && canAdd && (
             <Pressable
-              onPress={() => onAdd(date)}
+              onPress={() => onAdd?.(date)}
               style={[styles.addButton, { backgroundColor: colors.accent.clay }]}
               accessibilityRole="button"
             >

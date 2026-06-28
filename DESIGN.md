@@ -1,144 +1,371 @@
 ---
-name: The Field
-description: "Warm oat-cream / soot-brown paper, soft pastel type-tints with saturated edge-codes, Fraunces serif + Inter, large soft radii — an editorial bento board of your whole brain, full light/dark parity."
+name: Synapse — Field Lab
+description: "Cool graphite instrument-panel ground, three electric type-colors (deadline · todo · idea) at equal volume, Host Grotesk + mono signal layer + Caveat handwritten notes, sharp edges — a charged, living second brain. Full light/dark parity."
 ---
 
-# Design System: The Field
+# Design System: Field Lab
 
 ## Overview
 
-**Creative North Star: "The New Yorker organizing your life."**
+**Creative North Star: "Your whole brain as a living instrument panel — switched on, never soothed."**
 
-The Field is a bento board of everything you are carrying. Each entry type lives in its own soft-tinted tile, color-coded and packed with real, tappable items — never a dead count. A warm Fraunces serif headline greets you like a person. Capture is an always-on clay bar pinned to the bottom. Bold through confident type and a disciplined pastel system, calm through restraint — never gradients, badges, or decoration.
+Field Lab is built for an ADHD-adjacent user who opens the app mid-thought and needs to feel activated, not sedated. The previous system (The Field: warm oat-cream, pastels, Fraunces serif) read as soothing; Field Lab flips everything cool, sharp, and charged. Every entry type glows in its own electric color at **equal volume** — an idea is as alive as a looming deadline, it just glows in a different color and lives in a different zone (a direct zone of projects + deadlines vs the narrative zone). Nothing fades, because for this brain, out of sight is gone.
 
-Source of truth for token values: `constants/theme.ts` (the `tokens` object + `useTheme()`).
+The system explicitly rejects: corporate productivity tools, gamified habit-trackers (streaks, badges, confetti), pastel-illustration journaling apps, pure white / pure black interfaces, and plain checklist task managers with no projects and no memory.
+
+**Core-model note (Jun 11 pivot).** The model is now four board things — **idea · todo · deadline · diary note** — over **projects**. **Events are removed** (the persona doesn't live event-to-event), which frees the ultraviolet code from the palette. **Someday is no longer a type or a color**: an undated todo IS a "someday", marked by a quiet mono **badge**, never a lime downgrade — so lime also leaves the type palette. The palette drops from five electric codes to three (deadline coral, todo cyan, idea amber).
+
+Three voices carry the typography: **Host Grotesk** (display/body — Inter was removed as too neutral), **JetBrains Mono** (the signal layer: counts, status lines, time, kickers — the instrument-panel feel), and **Caveat** (the handwritten layer: agenda margin-notes and the narrative voice — a thing you scrawled to remember it).
 
 **Key characteristics:**
 
-- Full light + dark parity is a first-class goal. Each type has a soft light tile-tint and a dark-adapted tint of the same hue, so pastels survive both schemes. Resolve via a single `useTheme()` hook, not scattered `colorScheme` ternaries.
-- No pure white, no pure black — warm oat-cream paper (light) and warm soot-brown (dark).
-- No 1px structural borders — tonal layering + saturated edge-bars carry structure.
-- Fraunces (serif) for display/headline/kicker; Inter (sans) for body/UI. Hierarchy = serif-vs-sans + size, so color stays calm.
-- One action color: clay terracotta, used sparingly (capture bar, active states).
-- Color categorizes; it never alarms or decorates.
+- Cool extremes only — graphite `#171A20` / crisp `#EEF1F5` paper, never `#FFF`/`#000`.
+- Three electric type-colors (deadline coral, todo cyan, idea amber) shared across schemes; scheme-aware tints and kicker shades keep WCAG AA in both.
+- **The Equal Volume Rule.** No dimming non-urgent types. An idea glows as hard as a deadline. Presence, not pressure.
+- **The Green Is Done Rule.** Green appears only as `feedback.success`. Todo is cyan, never green — green on an open todo would lie.
+- **The Someday Is A Badge Rule.** An undated todo keeps the cyan todo code and earns a small mono "SOMEDAY" badge — never a separate color. Datedness is a state, not a type.
+- Accent is a scheme-aware **neutral slab** (slate in light, off-white in dark), not a hue — so the action color can never be confused with a content category.
+- No 1px structural borders — tonal layering, edge-bars, and glow carry structure. Sharp radii (6–14): surgical, not soft.
+- Motion is expressive but earns its place: quick springs on re-flow; the stale-pulse on untouched ideas is the one sanctioned continuous motion.
 
----
+## Tokens
 
-## Color
+Source of truth: **`constants/theme.ts`** (the `tokens` object + `useTheme()`). The module below mirrors its live shape and values — change values there, not names.
 
-Warm extremes, never `#FFF`/`#000`. Light and dark are both first-class.
+> **Pending code reconciliation (Jun 11 pivot).** This block documents the **target** three-code palette. The live `constants/theme.ts` still carries the legacy `event` (ultraviolet) and `someday` (lime) keys for `type` / `typeKicker` / `typeTint`, plus the `event` branch in `ENTRY_TO_TYPE_KEY`. They are slated for removal in the entity-rework implementation pass (drop the `event` type, dissolve `someday` into an undated-todo badge). Until that lands, the file keeps them so existing call-sites compile.
 
-### Surfaces
+```ts
+// tokens.ts — generated by /flow document (mirror of constants/theme.ts)
 
-| Token | Light | Dark | Why |
-|---|---|---|---|
-| `color.{scheme}.paper` | `#F4EFE6` | `#16140F` | Root background. Warm oat-cream / warm soot-brown — never pure. |
-| `color.{scheme}.surface` | `#FBF7F0` | `#211E18` | Tile body. Soft so 5 tiles never read busy; color lives in kicker + edge-bar. |
-| `color.{scheme}.surfaceSubtle` | `#EFE8DB` | `#1C1A14` | Recessed / gutter. Seats tiles tonally without borders. |
+const color = {
+  light: {
+    paper: "#EEF1F5",        // root background — cool crisp paper, never #FFF
+    surface: "#F8FAFC",      // tile body
+    surfaceSubtle: "#E4E8EE", // recessed / gutter — tonal seating, no borders
+    ink: "#1A1E25",          // primary text — cool near-black, never #000
+    inkMuted: "#5A6473",     // secondary / metadata — cool grey-blue
+  },
+  dark: {
+    paper: "#171A20",        // cool graphite, never #000
+    surface: "#1F242C",
+    surfaceSubtle: "#15181D",
+    ink: "#E9EDF3",          // cool near-white, never #FFF
+    inkMuted: "#8A93A3",
+  },
+  // Entry-type codes — electric, shared across schemes, equal volume by design.
+  // Three codes only after the pivot: deadline, todo, idea. (event/someday removed.)
+  type: {
+    bills: "#FB7185",   // coral — deadline (a flavor of todo, keeps its own code)
+    todo: "#22D3EE",    // electric cyan — todo (cyan, NOT green: green means done)
+    ideas: "#FBBF24",   // amber — idea
+  },
+  // Kicker shades for the 11px all-caps label on its tint — scheme-aware because
+  // the tints sit at opposite lightness ends. All pairs verified ≥4.7:1 AA.
+  typeKicker: {
+    light: { bills: "#AF3B51", ideas: "#8A6307", todo: "#0B7286" },
+    dark:  { bills: "#FB7185", ideas: "#FBBF24", todo: "#22D3EE" },
+  },
+  // Charged tile-body tints per type, light + dark-adapted.
+  typeTint: {
+    light: { bills: "#FCE0E4", ideas: "#FBEFCF", todo: "#D6F2F7" },
+    dark:  { bills: "#2E1C20", ideas: "#2E2611", todo: "#102A30" },
+  },
+  // Field Lab signature — glow opacity scales with row heat; hue applied per-type at runtime.
+  glow: {
+    faint: "rgba(34,211,238,0.10)",      // sparse / quiet
+    strong: "rgba(34,211,238,0.28)",     // full, fresh
+    stalePulse: "rgba(251,191,36,0.45)", // "still here" outline — stale unpromoted ideas only
+  },
+  // Accepted non-palette exceptions: overlay scrims + shadow tint.
+  scrim: { medium: "rgba(0,0,0,0.5)", strong: "rgba(0,0,0,0.6)", shadow: "#0A0E14" },
+} as const;
 
-### Text
+// Primary action color — a scheme-aware NEUTRAL slab, not a hue. The old cyan
+// accent was identical to type.todo and collided with a content category.
+// Keys stay `clay*` for historical call-site compatibility.
+const accent = {
+  light: { clay: "#3A4250", clayPressed: "#2B313C", onClay: "#EEF1F5" }, // slate slab, light ink on it (8.9:1)
+  dark:  { clay: "#E9EDF3", clayPressed: "#CDD5E0", onClay: "#171A20" }, // off-white slab, dark ink (14.8:1)
+} as const;
 
-| Token | Light | Dark | Why |
-|---|---|---|---|
-| `color.{scheme}.ink` | `#2A2622` | `#F0EAE0` | Primary text. Warm near-black brown / warm cream. |
-| `color.{scheme}.inkMuted` | `#6B6358` | `#A39B8C` | Secondary / metadata. Warm taupe / warm sand. |
+const feedback = {
+  success: "#34D399", // cool emerald — the ONLY green (completion means done)
+  warning: "#FBBF24", // amber — cool-charged caution
+  danger: "#F43F5E",  // hot cool-red — stakes at full intensity
+} as const;
 
-### Entry-type system
+const type = {
+  // fontFraunces / fontInter are legacy KEYS repointed at Host Grotesk; the fonts are gone.
+  fontFraunces: { regular: "HostGrotesk_500Medium", medium: "HostGrotesk_600SemiBold", semiBold: "HostGrotesk_700Bold" },
+  fontInter: { regular: "HostGrotesk_400Regular", medium: "HostGrotesk_500Medium", semiBold: "HostGrotesk_600SemiBold", bold: "HostGrotesk_700Bold" },
+  // Handwritten layer — agenda margin-notes / narrative voice. Caveat renders ~30%
+  // larger than Host Grotesk at the same size; bump size at call-sites accordingly.
+  fontHand: { regular: "Caveat_500Medium", medium: "Caveat_600SemiBold", bold: "Caveat_700Bold" },
+  // Mono signal layer — counts, status line, time, kickers. Instrument-panel feel.
+  fontMono: { regular: "JetBrainsMono_400Regular", medium: "JetBrainsMono_500Medium", bold: "JetBrainsMono_700Bold" },
 
-Each type has a soft tile-tint (body), a saturated code (dots / edge-bars / fills), and a darker kicker shade (the 11px all-caps label, for WCAG AA on the tint).
+  display: { size: 28, lineHeight: 34, weight: "700" as const, tracking: -0.2 }, // greeting / companion voice
+  title:   { size: 20, lineHeight: 26, weight: "700" as const, tracking: -0.2 }, // tile / section headers
+  item:    { size: 16, lineHeight: 22, weight: "500" as const, tracking: 0 },    // entry titles
+  body:    { size: 14, lineHeight: 20, weight: "400" as const, tracking: 0 },    // detail / supporting
+  kicker:  { size: 11, lineHeight: 14, weight: "600" as const, tracking: 0.8 },  // mono all-caps — the only all-caps
+  micro:   { size: 10, lineHeight: 13, weight: "600" as const, tracking: 1 },    // mono all-caps — sub-dividers / tertiary
+  mono:    { size: 13, lineHeight: 18, weight: "500" as const, tracking: 0 },    // counts / status / time, tabular
+} as const;
 
-| Type | code `color.type.*` | kicker `color.typeKicker.*` | tint light | tint dark |
-|---|---|---|---|---|
-| bills (deadline) | `#D98C6A` peach | `#8A5943` | `#F7E3D6` | `#3A2A22` |
-| ideas (idea) | `#5B86A8` powder-blue | `#486B86` | `#DDE7F0` | `#22303A` |
-| todo | `#6E9466` sage | `#516D4B` | `#DCE7D6` | `#26331F` |
-| event | `#8A6FA6` lavender | `#6E5884` | `#E6DCEC` | `#2E2638` |
-| someday | `#C09A4B` butter | `#7A622F` | `#F2E6C9` | `#352B14` |
+const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24, xxxl: 32 } as const; // 4pt base
 
-**Why two code shades:** the saturated `type.*` color fails AA at 11px on the pale tint (bills 2.14, someday 2.13, …). `typeKicker.*` is the same hue, darker, and clears 4.5:1 on its tint — verified by audit. Kicker/label text uses `typeKicker`; dots/edge-bars/fills use `type`.
+const radius = { sm: 6, md: 10, lg: 14, pill: 999 } as const; // sharp — crisp instrument-panel edges
 
-### Accent & feedback
+const motion = {
+  duration: { fast: 140, base: 220, slow: 340 },
+  spring: { damping: 18, stiffness: 220 }, // withSpring — expressive, alive on ProMotion
+  bezier: [0.22, 1, 0.36, 1] as const,     // Easing.bezier for timing; transform + opacity only
+} as const;
 
-| Token | Value | Why |
-|---|---|---|
-| `accent.clay` | `#D86B3C` | The one action color — capture bar, active states. Used sparingly. |
-| `accent.clayPressed` | `#BE5730` | Pressed feedback. |
-| `feedback.success` | `#6E9466` | Reuses sage — completion is calm, not celebratory. |
-| `feedback.warning` | `#C09A4B` | Butter-ochre, warm not alarming. |
-| `feedback.danger` | `#C8553D` | Deep terracotta-red — warm even when signalling. |
+const elevation = {
+  // cool-tinted lift — depth encodes content; no pure-black shadow
+  tile: {
+    ios: { shadowColor: "#28384f", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10 },
+    android: { elevation: 2 },
+  },
+  capture: {
+    ios: { shadowColor: "#28384f", shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.5, shadowRadius: 10 },
+    android: { elevation: 8 },
+  },
+} as const;
 
-### Scrim (accepted exceptions)
+export const tokens = { color, accent, feedback, type, space, radius, motion, elevation };
+export type ColorScheme = "light" | "dark";
+```
 
-`color.scrim.medium` `rgba(0,0,0,0.5)`, `color.scrim.strong` `rgba(0,0,0,0.6)`, `color.scrim.shadow` `#000` — legitimately non-palette overlays (modal/menu backdrops, shadow base).
+**The Equal Volume Rule.** Every entry type glows in its own electric color at the same intensity. Dimming a "non-urgent" type is forbidden — presence, not pressure.
 
----
+**The Green Is Done Rule.** `#34D399` appears only on completion. No type, accent, or decoration may be green.
 
-## Typography
+**The Neutral Slab Rule.** The action color is a scheme-aware neutral, never a hue. If a button color could be mistaken for a type code, it is wrong.
 
-**Fraunces (display/headline/kicker) + Inter (body/UI).** Hierarchy reads as serif-vs-sans plus size, so color can stay calm. The kicker is the only all-caps element.
+## Components
 
-| Step | Size / line | Weight | Use |
-|---|---|---|---|
-| `type.display` | 30 / 36 | 600 | Home greeting headline (Fraunces) |
-| `type.title` | 22 / 28 | 600 | Tile / section headers (Fraunces) |
-| `type.item` | 17 / 23 | 500 | Entry titles inside tiles (Inter) |
-| `type.body` | 14 / 20 | 400 | Entry detail / supporting (Inter) |
-| `type.kicker` | 11 / 14 | 600 | All-caps type label, +0.6 tracking (Inter) |
+All components read color through **`useTheme()`** (returns `{ scheme, colors }`); scheme-independent values come from `tokens.*` directly. Typed accessors map the entry domain onto the palette: `entryColor(type)` (electric code), `useEntryKicker(type)` (AA-safe kicker shade), `useEntryTint(type)` (tile tint), `chipInk()` (text on saturated chip fills), `useSurfaceColor(layer)`. Never branch on `useColorScheme()` inside a component.
 
-Load Fraunces via `expo-font` before the splash clears. Inter carries the dense tile content.
+### Kicker label
 
----
+The instrument-panel voice: mono, all-caps, tracked wide, AA-safe on its tint. The only all-caps text in the system.
 
-## Spacing
+```tsx
+import { StyleSheet, Text } from "react-native";
 
-4pt base. Rhythm: `space.{xs:4, sm:8, md:12, lg:16, xl:20, xxl:24, xxxl:32}`.
-**Why:** the codebase was already 4pt-based; enforcing the rhythm fixes the off-beat 3px/14px values the forensics flagged. Vary by zone — tighter inside tiles, generous between sections.
+import { tokens, useEntryKicker } from "@/constants/theme";
+import type { EntryType } from "@/lib/types";
 
-## Radius
+export function EntryKickerLabel({ type, label }: { type: EntryType; label: string }) {
+  const kicker = useEntryKicker(type); // scheme-aware: dark shade on light tint, electric on dark
+  return <Text style={[styles.kicker, { color: kicker }]}>{label.toUpperCase()}</Text>;
+}
 
-Large soft: `radius.{sm:10, md:14, lg:18, pill:999}`.
-**Why:** large radii make tiles feel like cards you could pick up — graphic and tactile. Replaces the old sharp 4/6px corners.
+const styles = StyleSheet.create({
+  kicker: {
+    fontFamily: tokens.type.fontMono.medium,
+    fontSize: tokens.type.kicker.size,
+    lineHeight: tokens.type.kicker.lineHeight,
+    letterSpacing: tokens.type.kicker.tracking,
+  },
+});
+```
 
-## Motion
+### Edge-bar row
 
-Expressive: `motion.duration.{fast:160, base:240, slow:360}`, spring `{damping:16, stiffness:180}`, bezier `(0.22, 1, 0.36, 1)`.
-**Why:** tiles spring in subtly on open to feel alive on ProMotion. Transform + opacity only; respect `useReducedMotion()`. Banned: gradient-glow pulses, bounce/elastic on navigation, continuous looping motion, confetti.
+Structure without borders: a saturated 3pt edge-bar carries the type identity; the row body sits on `surface` or the type tint. The pattern behind entry rows and tiles (see `components/molecules/entry-row.tsx`).
 
-## Elevation
+```tsx
+import { StyleSheet, Pressable, Text, View } from "react-native";
 
-Layered, warm-tinted: `elevation.tile` (warm soft shadow `rgba(80,50,30,0.10)`, y8, blur20 / elevation 2) and `elevation.capture` (`rgba(80,50,30,0.16)`, y-2, blur16 / elevation 8).
-**Why:** gentle warm lift per tile gives the bento depth without borders. No pure-black shadows.
+import { entryColor, tokens, useTheme } from "@/constants/theme";
+import type { EntryType } from "@/lib/types";
 
----
+export function EdgeBarRow({ type, title, onPress }: { type: EntryType; title: string; onPress: () => void }) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.row, { backgroundColor: colors.surface }]}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+    >
+      <View style={[styles.edgeBar, { backgroundColor: entryColor(type) }]} />
+      <Text style={[styles.title, { color: colors.ink }]} numberOfLines={1}>{title}</Text>
+    </Pressable>
+  );
+}
 
-## Ruled out
+const styles = StyleSheet.create({
+  row: {
+    minHeight: 48, // meets iOS 44pt and Android 48dp
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: tokens.radius.md,
+    overflow: "hidden",
+  },
+  edgeBar: { width: 3, alignSelf: "stretch" },
+  title: {
+    flex: 1,
+    paddingHorizontal: tokens.space.md,
+    fontFamily: tokens.type.fontInter.medium,
+    fontSize: tokens.type.item.size,
+    lineHeight: tokens.type.item.lineHeight,
+  },
+});
+```
 
-- No FAB — capture is an always-on bottom bar.
-- No gradients anywhere (no LinearGradient buttons or glows).
-- No pure white (`#FFFFFF`) or pure black (`#000000`) — warm extremes only.
-- No 1px structural borders — tonal layering + edge-bars only.
-- No streaks, badges, confetti, or any gamification.
-- No dead count-only tiles — every tile shows real, tappable items.
-- No curating the home down to "today" — everything stays present and visible.
-- No pastel-illustration mascots or decorative spot art.
-- Kicker is the only all-caps text; no all-caps body or buttons.
+### Accent slab action
 
----
+The primary action (tab-bar Add key, capture send): a neutral slab with `onClay` ink. Pressed state swaps to `clayPressed` — no opacity fades on actions.
 
-## Theming API
+```tsx
+import { StyleSheet, Pressable, Text } from "react-native";
 
-The whole app reads color through **`useTheme()`** (returns `{ scheme, colors }` for the
-active scheme) and the typed accessors **`entryColor(type)`** (shared entry-type code) and
-**`useSurfaceColor(layer)`**. Scheme-independent values (`tokens.space/radius/type`) are
-read directly from `tokens`. The old compat shim (`Surface`/`TextColors`/`EntryAccent`/… )
-has been **deleted** — there is one token API.
+import { tokens, useTheme } from "@/constants/theme";
 
-**Light/dark switching is live and first-class.** A `ThemeProvider` (`contexts/theme-context.tsx`)
-holds a persisted **System / Light / Dark** preference (AsyncStorage), resolves "system"
-against the device, and feeds `useColorScheme()` — so every `useTheme()` consumer reacts.
-The switcher is the Appearance control in the app menu. Cold start is splash-gated on the
-preference load to avoid a flash. Entry-type codes are shared across schemes by design;
-the soft tile-tints differ per scheme.
+export function SlabButton({ label, onPress }: { label: string; onPress: () => void }) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.slab,
+        { backgroundColor: pressed ? colors.accent.clayPressed : colors.accent.clay },
+      ]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <Text style={[styles.label, { color: colors.accent.onClay }]}>{label}</Text>
+    </Pressable>
+  );
+}
 
-**Out of scope (future):** structural redesign from the brief — bento home, always-on
-capture bar (replacing the FAB), `EntryTile`, loading Fraunces via expo-font.
+const styles = StyleSheet.create({
+  slab: {
+    minHeight: 48,
+    paddingHorizontal: tokens.space.xxl,
+    borderRadius: tokens.radius.lg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  label: {
+    fontFamily: tokens.type.fontInter.semiBold,
+    fontSize: tokens.type.item.size,
+    lineHeight: tokens.type.item.lineHeight,
+  },
+});
+```
+
+### Handwritten margin note
+
+The narrative voice (greeting margin-notes, the agenda-that-talks layer). Caveat runs optically small — size up ~30% versus the Host Grotesk step it sits beside.
+
+```tsx
+import { StyleSheet, Text } from "react-native";
+
+import { tokens, useTheme } from "@/constants/theme";
+
+export function MarginNote({ children }: { children: string }) {
+  const { colors } = useTheme();
+  return <Text style={[styles.note, { color: colors.inkMuted }]}>{children}</Text>;
+}
+
+const styles = StyleSheet.create({
+  note: {
+    fontFamily: tokens.type.fontHand.regular,
+    fontSize: 18, // body step (14) bumped for Caveat's small optical size
+    lineHeight: 24,
+  },
+});
+```
+
+### Someday badge
+
+An undated todo is still a todo — same cyan code, same volume. The undated state is carried by a small mono badge, never by a color change. The badge is a neutral chip (it must not read as another type code), and it ships an accessibility label so the state is not color/visual-only.
+
+```tsx
+import { StyleSheet, Text, View } from "react-native";
+
+import { tokens, useTheme } from "@/constants/theme";
+
+export function SomedayBadge() {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={[styles.badge, { backgroundColor: colors.surfaceSubtle }]}
+      accessibilityLabel="No date — someday"
+    >
+      <Text style={[styles.label, { color: colors.inkMuted }]}>SOMEDAY</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  badge: {
+    paddingHorizontal: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
+    borderRadius: tokens.radius.sm,
+    alignSelf: "flex-start",
+  },
+  label: {
+    fontFamily: tokens.type.fontMono.medium,
+    fontSize: tokens.type.micro.size,
+    lineHeight: tokens.type.micro.lineHeight,
+    letterSpacing: tokens.type.micro.tracking,
+  },
+});
+```
+
+### Signature organisms (existing, documented for reference)
+
+- **CaptureBar** (`components/organisms/capture-bar.tsx`) — always-on bottom capture; idle amber edge-bar, recording state goes full amber with live waveform; `elevation.capture` lift.
+- **FieldGreeting** (`components/molecules/field-greeting.tsx`) — display-step companion voice plus a mono instrument readout ("3 pressing · 12 in field").
+- **Custom tab bar** (`components/organisms/custom-tab-bar.tsx`) — replaces the native bar; center slab action key.
+
+## Platform Notes
+
+**Shadow.** iOS uses `shadow*` props, Android uses `elevation`; `tokens.elevation.*` in `constants/theme.ts` is wrapped in `Platform.select` so consumers spread it directly. Shadows are cool-tinted (`#28384f`), never pure black.
+
+**Font family.** All three families load via `@expo-google-fonts` (`HostGrotesk`, `JetBrainsMono`, `Caveat`) in `app/_layout.tsx` before the splash clears. Never fall back to platform defaults silently — a flash of SF Pro/Roboto breaks the instrument-panel identity. Legacy keys `fontFraunces`/`fontInter` exist for compatibility but resolve to Host Grotesk.
+
+**Safe areas.** `useSafeAreaInsets()` everywhere; the capture bar and custom tab bar compose `insets.bottom + tokens.space.*`. Tab bar height is measured at runtime via `TabBarHeightContext`, never hardcoded — keyboard-avoiding offsets depend on it.
+
+**Dynamic Type / font scaling.** Font scaling stays on; layouts must survive 2x. No fixed-height tiles or rows — `minHeight` only.
+
+**Platform fidelity stance.** `custom-cross-platform (distinct)`: one Field Lab language on both platforms. iOS system tint and Android Material You dynamic color are both overridden — the five-type electric palette is the product's information system and cannot be re-seeded by the OS.
+
+**Theming.** A `ThemeProvider` (`contexts/theme-context.tsx`) holds a persisted System / Light / Dark preference (AsyncStorage), resolves "system" against the device, and feeds `useColorScheme()`. Cold start is splash-gated on the preference load. Every consumer goes through `useTheme()`.
+
+## Do's and Don'ts
+
+### Do
+
+- **Do** route every color through `useTheme()` or the typed accessors (`entryColor`, `useEntryKicker`, `useEntryTint`, `chipInk`, `useSurfaceColor`). Components never branch on scheme.
+- **Do** keep every style in `StyleSheet.create`, including `renderItem` styles.
+- **Do** animate `transform` and `opacity` only; springs at `{damping:18, stiffness:220}`, timing on the `(0.22, 1, 0.36, 1)` bezier.
+- **Do** check `useReducedMotion()`: resizing becomes instant, the stale-pulse becomes a static outline ring.
+- **Do** use `typeKicker` shades for any type-colored text on a tint; the electric codes are for dots, edge-bars, and fills.
+- **Do** keep the mono layer for numbers, time, counts, and kickers — that contrast is the instrument-panel signature.
+- **Do** reserve Caveat for the narrative/margin voice; it never carries UI labels, buttons, or data.
+
+### Don't
+
+- **Don't** build anything that reads as a corporate productivity tool (the rejected blue-lavender "Kinetic Equilibrium" direction).
+- **Don't** add streaks, achievement badges, confetti, or any gamified habit-tracker mechanics — no celebration, no dopamine loops. (The neutral "someday" status badge is informational, not a reward — it is the one sanctioned badge.)
+- **Don't** add pastel-illustration mascots or decorative spot art.
+- **Don't** use pure white or pure black anywhere — cool extremes only.
+- **Don't** use warm tones — no oat-cream, no terracotta, no warm shadows. Field Lab is cool only.
+- **Don't** dim non-urgent types or collapse the board into urgency-only signaling. Equal volume is the brand.
+- **Don't** give an undated todo its own color — "someday" is a badge on the cyan todo code, never a lime (or any) recolor. Datedness is a state, not a type.
+- **Don't** reintroduce an event type or an event color (ultraviolet) — events are out of the model.
+- **Don't** use green for anything but completion.
+- **Don't** use gradients — glow is solid-color opacity, never a gradient ramp.
+- **Don't** add 1px structural borders — tonal layering, edge-bars, and glow carry structure.
+- **Don't** curate the home down to "today" or hide items behind filters — the whole field stays present.
+- **Don't** show dead count-only tiles — every tile shows real, tappable items.
+- **Don't** add a FAB — capture is the always-on bar / center tab key.
+- **Don't** set anything in all-caps except the mono kicker and micro steps.

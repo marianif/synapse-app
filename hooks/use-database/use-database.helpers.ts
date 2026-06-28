@@ -112,29 +112,6 @@ export function getDeadlines(entries: DbEntry[]): DeadlineItem[] {
     }));
 }
 
-// ─── Today events ─────────────────────────────────────────────────────────────
-
-export interface TodayEventItem {
-  id: string;
-  title: string;
-  timeRange?: string;
-  isActive: boolean;
-}
-
-export function getTodayEvents(
-  entries: DbEntry[],
-  today: Date,
-): TodayEventItem[] {
-  return entries
-    .filter((e) => e.type === "event" && isSameDay(e.scheduled_date, today))
-    .map((e) => ({
-      id: e.id,
-      title: e.title,
-      timeRange: e.scheduled_time ?? undefined,
-      isActive: e.status === "active",
-    }));
-}
-
 // ─── Today agenda ─────────────────────────────────────────────────────────────
 
 export interface TodayAgendaItem {

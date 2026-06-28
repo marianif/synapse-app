@@ -7,13 +7,7 @@ import type { EntryType } from "@/lib/types";
 export type { EntryType };
 
 /** The whole field as a cluster — every type, by default, in board order. */
-export const ALL_TYPES: EntryType[] = [
-  "deadline",
-  "todo",
-  "idea",
-  "event",
-  "someday",
-];
+export const ALL_TYPES: EntryType[] = ["deadline", "todo", "idea"];
 
 interface EntryClusterProps {
   /** Types to plot as dots. Defaults to the full field. */

@@ -2,10 +2,13 @@ import { StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { FieldSummary } from "@/components/molecules/field-summary";
-import { useTheme, tokens } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 
 import { CHANNELS } from "@/components/organisms/field-console/channels";
-import { FocusLine, segmentsFor } from "@/components/organisms/field-console/focus-line";
+import {
+  FocusLine,
+  segmentsFor,
+} from "@/components/organisms/field-console/focus-line";
 
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
 import type { EntryType } from "@/lib/types";
@@ -92,7 +95,9 @@ export function FieldGreeting({
 
   // Live instrument readout: how many types carry pressing (hot) signal, and the
   // total in the field — replacing the idle "5 in orbit · 0 landed".
-  const pressing = signals.filter((s) => s.heat === "hot" && s.count > 0).length;
+  const pressing = signals.filter(
+    (s) => s.heat === "hot" && s.count > 0,
+  ).length;
   const inField = rows.length;
 
   // The focused channel's rows, if any. Focus only "takes" when the channel
@@ -120,7 +125,10 @@ export function FieldGreeting({
             ? `${focusedType} · tap again to clear`
             : `${pressing} pressing · ${inField} in field`}
       </ThemedText>
-      <ThemedText type="display" style={{ color: colors.ink }}>
+      <ThemedText
+        type="display"
+        style={[styles.greeting, { color: colors.ink }]}
+      >
         {greeting}
       </ThemedText>
       {empty ? (
@@ -154,6 +162,13 @@ const styles = StyleSheet.create({
   },
   kicker: {
     marginBottom: -tokens.space.xs,
+  },
+  // The greeting is the home's loudest word — sized a step above the display
+  // token so it lands before the narrative voice and the zones below it.
+  greeting: {
+    fontSize: 34,
+    lineHeight: 40,
+    letterSpacing: -0.4,
   },
   thesis: {
     marginTop: -tokens.space.xs,

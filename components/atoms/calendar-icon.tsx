@@ -16,12 +16,12 @@ interface CalendarIconProps {
 }
 
 /** Brand order — mirrors EntryCluster's default so the palettes line up. */
-const DAY_TYPES: EntryType[] = ["deadline", "todo", "idea", "event", "someday"];
+const DAY_TYPES: EntryType[] = ["deadline", "todo", "idea"];
 
 /**
  * A simple calendar glyph — a rounded frame with two binding tabs and a grid of
  * small day squares inside. The days aren't generic ink: each cell is tinted
- * with an entry-type color (deadline / todo / idea / event / someday), so the
+ * with an entry-type color (deadline / todo / idea), so the
  * icon carries the brand palette instead of a flat Material glyph. Color =
  * categorization, matching EntryDot / EntryCluster.
  *

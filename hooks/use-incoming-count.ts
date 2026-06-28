@@ -4,11 +4,7 @@ import { isWithinThisWeek } from "@/lib/date-utils";
 import type { DbEntry, EntryType } from "@/lib/types";
 
 /** Temporal types that surface in the "Incoming" lane / header badge. */
-const TEMPORAL_TYPES: ReadonlySet<EntryType> = new Set([
-  "deadline",
-  "event",
-  "todo",
-]);
+const TEMPORAL_TYPES: ReadonlySet<EntryType> = new Set(["deadline", "todo"]);
 
 function isOpenTemporalEntry(e: DbEntry, now: Date): boolean {
   if (!TEMPORAL_TYPES.has(e.type)) return false;

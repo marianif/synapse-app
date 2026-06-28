@@ -10,7 +10,7 @@ import { entryColor, tokens, useTheme } from "@/constants/theme";
 import type { EntryType } from "@/lib/types";
 
 /** Types shown as the small cluster in the all-types "Incoming" header. */
-const INCOMING_CLUSTER: EntryType[] = ["deadline", "event", "todo", "someday"];
+const INCOMING_CLUSTER: EntryType[] = ["deadline", "todo", "idea"];
 
 interface ScreenHeaderProps {
   title: string;

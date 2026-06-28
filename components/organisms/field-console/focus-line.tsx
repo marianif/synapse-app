@@ -16,12 +16,12 @@ import type { EntryType } from "@/lib/types";
  *
  * Two voices, by what the channel carries:
  *
- *  • ROLL-CALL — deadline, todo, event. Time-bound, so the line names real items
+ *  • ROLL-CALL — deadline, todo. Time-bound, so the line names real items
  *    with their own when-labels. The scaffolding ("then", "leads", "behind")
  *    varies by how the channel is shaped — one thing, a pair, or a stack — so it
  *    never reads as a filled-in template.
  *
- *  • SHAPE SENTENCE — idea, someday. No clock, so it characterizes the pile
+ *  • SHAPE SENTENCE — idea. No clock, so it characterizes the pile
  *    (light/heavy, drifting/stirring) and pins the newest by name.
  *
  * The phrasing is pure (segmentsFor → a list of text/colored-item segments); the
@@ -34,11 +34,7 @@ const HEAT_RANK: Record<Heat, number> = { hot: 3, warm: 2, cool: 1 };
 /** How many real items a roll-call names before the rest collapse to "+N". */
 const ROLL_CALL_MAX = 3;
 
-const ROLL_CALL_TYPES: ReadonlySet<EntryType> = new Set([
-  "deadline",
-  "todo",
-  "event",
-]);
+const ROLL_CALL_TYPES: ReadonlySet<EntryType> = new Set(["deadline", "todo"]);
 
 /**
  * One piece of the spoken line. A bare `text` segment is muted scaffolding; a

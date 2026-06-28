@@ -1,20 +1,30 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
-import { OrbitConsole } from "@/components/organisms/field-console/orbit-console";
-import { PresentZone } from "@/components/organisms/present/present-zone";
-import { StakesRunway } from "@/components/organisms/stakes-runway";
+import { DirectOverview } from "@/components/organisms/direct-overview";
+import { ManualBar } from "@/components/organisms/manual-bar";
+import { ProjectsOverview } from "@/components/organisms/projects-overview";
 
 import {
   FieldGreeting,
@@ -33,30 +43,23 @@ import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
 import { useDiary } from "@/hooks/use-diary";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 import { splitCapture } from "@/lib/capture";
-import { toPresentItems } from "@/lib/present";
+import { byRunway, daysUntil } from "@/lib/direct-when";
+import { horizonLabel } from "@/lib/horizons";
 
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
-import type { RunwayItem } from "@/components/molecules/stake-row";
-import { FieldLegend } from "@/components/organisms/field-console/legend";
 import type { DbEntry, EntryType } from "@/lib/types";
 
 dayjs.extend(customParseFormat);
 
 const TODAY_START = () => dayjs().startOf("day");
 
-/** Days from today until an entry's date; null if undated. Negative = overdue. */
-function daysUntil(dateStr: string | null): number | null {
-  if (!dateStr) return null;
-  return dayjs(dateStr, "DD/MM/YYYY").startOf("day").diff(TODAY_START(), "day");
-}
-
 /**
  * Heat is aliveness, NOT urgency-rank. A dated thing close in time runs hot; a
- * thing further out runs warm; an undated idea or someday runs cool — but cool
+ * thing further out runs warm; an undated todo or idea runs cool — but cool
  * still glows. Nothing goes dark for lacking a deadline (the brief's core rule).
  */
 function heatOf(days: number | null): Heat {
-  if (days === null) return "cool"; // undated idea / someday — present, not pressing
+  if (days === null) return "cool"; // undated — present, not pressing
   if (days <= 1) return "hot"; // overdue, today, tomorrow
   if (days < 7) return "warm";
   return "cool";
@@ -86,106 +89,36 @@ function toRowItem(e: DbEntry): FieldRowItem {
     id: e.id,
     type: e.type as EntryType,
     title: e.title,
-    when: whenLabel(dateStr, time, days),
+    when: e.due_range
+      ? horizonLabel(e.due_range)
+      : whenLabel(dateStr, time, days),
     heat: heatOf(days),
   };
 }
 
-/** Trailing mono when-label for a stake: "2d over", "now", "tomorrow", "5d". */
-function runwayReadout(days: number | null): string {
-  if (days === null) return "";
-  if (days < 0) return `${Math.abs(days)}d over`;
-  if (days === 0) return "now";
-  if (days === 1) return "tomorrow";
-  return `${days}d`;
-}
-
-function toRunwayItem(e: DbEntry, done = false): RunwayItem {
-  const days = daysUntil(e.due_date ?? e.scheduled_date ?? null);
-  const dated = days !== null;
-  return {
-    id: e.id,
-    type: e.type as EntryType,
-    title: e.title,
-    readout: runwayReadout(days),
-    overdue: !done && days !== null && days < 0,
-    dated,
-    done,
-  };
-}
-
-/** A stake stays in the "recently cleared" run this many days after being done. */
-const DONE_WINDOW_DAYS = 7;
-
-/** Most-recently-cleared first, so the freshest win sits at the top of the run. */
-function byRecentlyDone(a: DbEntry, b: DbEntry): number {
-  return b.updated_at - a.updated_at;
-}
-
-/** Runway order: most burnt-down first (overdue → soonest), undated last. */
-function byRunway(a: DbEntry, b: DbEntry): number {
-  const da = daysUntil(a.due_date ?? a.scheduled_date ?? null);
-  const db = daysUntil(b.due_date ?? b.scheduled_date ?? null);
-  if (da === null && db === null) return 0;
-  if (da === null) return 1;
-  if (db === null) return -1;
-  return da - db;
-}
-
-/** Order within a zone: hottest first, then soonest date, undated last. */
-const HEAT_RANK: Record<Heat, number> = { hot: 0, warm: 1, cool: 2 };
-
-function byHeatThenDate(a: DbEntry, b: DbEntry): number {
-  const ra =
-    HEAT_RANK[heatOf(daysUntil(a.due_date ?? a.scheduled_date ?? null))];
-  const rb =
-    HEAT_RANK[heatOf(daysUntil(b.due_date ?? b.scheduled_date ?? null))];
-  if (ra !== rb) return ra - rb;
-  const da = a.due_date ?? a.scheduled_date;
-  const db = b.due_date ?? b.scheduled_date;
-  if (!da && !db) return 0;
-  if (!da) return 1;
-  if (!db) return -1;
-  return dayjs(da, "DD/MM/YYYY").unix() - dayjs(db, "DD/MM/YYYY").unix();
-}
-
-// STAKES = things with consequences. PRESENT = things that must stay visible.
-const STAKES_TYPES: EntryType[] = ["deadline", "todo"];
-const PRESENT_TYPES: EntryType[] = ["idea", "event", "someday"];
+// The direct zone the home surfaces at a glance: deadlines + todos (PRODUCT.md
+// principle 2 — show projects and deadlines first). Ideas live in the narrative
+// voice (FieldGreeting's summary), not as a direct row here.
+const DIRECT_TYPES: EntryType[] = ["deadline", "todo"];
 
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
 
-  // Deep-link param from the home-screen voice widget (synapseapp:///?capture=voice).
-  // Present means "arm voice capture on arrival"; consumed once below.
+  // Capture intent param — set by the widget deep link (synapseapp:///?capture=voice)
+  // and by the tab-bar pen key (tap → text, long-press → voice). Consumed once below.
   const { capture } = useLocalSearchParams<{ capture?: string }>();
 
   const {
     entries,
+    projects,
     recurrenceCompletions,
     fetchEntries,
     createEntry,
-    deleteEntry,
+    createProject,
   } = useDatabase();
 
-  const {
-    entries: diaryEntries,
-    addEntry: addDiaryEntry,
-    refresh: refreshDiary,
-  } = useDiary();
-
-  // entryId → count of diary notes filed on it, for the idea-chip "N notes"
-  // readout. Built once per diary change; ideas with no notes simply omit it.
-  const noteCounts = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const n of diaryEntries) {
-      if (n.linked_entry_id) {
-        map[n.linked_entry_id] = (map[n.linked_entry_id] ?? 0) + 1;
-      }
-    }
-    return map;
-  }, [diaryEntries]);
+  const { addEntry: addDiaryEntry, refresh: refreshDiary } = useDiary();
 
   const { today: calendarToday } = useCalendarData(
     entries,
@@ -196,10 +129,33 @@ export default function HomeScreen(): React.ReactElement {
   const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
   const [isRecording, setIsRecording] = useState(false);
 
-  // The capture bar captures a THOUGHT, not (yet) an idea. A captured thought is
-  // held here as "pending" while the CaptureResolver lets the user file it as an
-  // idea (the default), an autonomous diary note, or a note ON a recent idea.
-  // Doing nothing auto-files an idea — old muscle memory (↵ then ignore) holds.
+  // The text composer is summoned by the pen key (no always-idle bar — capture
+  // has ONE trigger). It closes itself when the input blurs with nothing typed.
+  const [composerOpen, setComposerOpen] = useState(false);
+
+  // The manual bar — the pen key's TAP register (long-press is voice). Deliberate
+  // creation that capture can't reach: today, opening a project. Mutually
+  // exclusive with the composer / recorder / resolver in the dock below.
+  const [manualOpen, setManualOpen] = useState(false);
+
+  // Create a project from the manual bar, then go straight into it — a project
+  // is a place you open, so creating one lands you there.
+  const handleCreateProject = useCallback(
+    (title: string) => {
+      setManualOpen(false);
+      createProject(title)
+        .then((project) =>
+          router.push({ pathname: "/project", params: { id: project.id } }),
+        )
+        .catch((err) => console.error("Failed to create project:", err));
+    },
+    [createProject, router],
+  );
+
+  // The capture bar captures a THOUGHT, not (yet) a filed entry. A captured
+  // thought is held here as "pending" while the CaptureResolver lets the user
+  // file it as an idea (default), a todo, a deadline, an autonomous diary note,
+  // or a note ON a recent idea.
   const [pendingThought, setPendingThought] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
 
@@ -215,8 +171,7 @@ export default function HomeScreen(): React.ReactElement {
   );
 
   // A thought arrives from the bar (typed or spoken): stash it and surface the
-  // resolver. Replacing a still-pending thought just swaps it (the resolver
-  // re-arms its countdown on text change), so nothing is silently dropped.
+  // resolver. Replacing a still-pending thought just swaps it.
   const handleCapture = useCallback((text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
@@ -224,25 +179,39 @@ export default function HomeScreen(): React.ReactElement {
     setPendingThought(trimmed);
   }, []);
 
-  const fileAsIdea = useCallback(
-    (text: string) => {
-      const { title, notes } = splitCapture(text);
-      createEntry({ title, type: "idea", notes }).catch((err) =>
-        console.error("Failed to capture idea:", err),
-      );
-    },
-    [createEntry],
-  );
-
   const resolveCapture = useCallback(
     (resolution: CaptureResolution) => {
       const text = pendingThought;
       setPendingThought(null);
       setPicking(false);
       if (!text) return;
+      const { title, notes } = splitCapture(text);
       switch (resolution.kind) {
         case "idea":
-          fileAsIdea(text);
+          createEntry({ title, type: "idea", notes }).catch((err) =>
+            console.error("Failed to capture idea:", err),
+          );
+          break;
+        case "todo":
+          createEntry({
+            title,
+            type: "todo",
+            notes,
+            scheduledDate: resolution.scheduledDate,
+            scheduledTime: resolution.scheduledTime,
+            projectId: resolution.projectId,
+          }).catch((err) => console.error("Failed to capture todo:", err));
+          break;
+        case "deadline":
+          createEntry({
+            title,
+            type: "deadline",
+            notes,
+            dueDate: resolution.dueDate,
+            dueTime: resolution.dueTime,
+            dueRange: resolution.dueRange,
+            projectId: resolution.projectId,
+          }).catch((err) => console.error("Failed to capture deadline:", err));
           break;
         case "note":
           addDiaryEntry(text, null).catch((err) =>
@@ -256,7 +225,7 @@ export default function HomeScreen(): React.ReactElement {
           break;
       }
     },
-    [pendingThought, fileAsIdea, addDiaryEntry],
+    [pendingThought, addDiaryEntry, createEntry],
   );
 
   const handleStartRecording = useCallback(async () => {
@@ -275,16 +244,30 @@ export default function HomeScreen(): React.ReactElement {
     setIsRecording(false);
   }, [stopRecording]);
 
-  // Arm voice capture when launched from the widget deep link. Guard with a ref
-  // so it fires once per link open, not on every re-render, and clear the param
-  // off the URL so re-focusing the tab doesn't re-trigger recording.
+  // Arm the dock when summoned — by the widget deep link (voice / text) or the
+  // tab-bar pen key (tap → manual, long-press → voice). Guard with a ref so it
+  // fires once per intent. Each register opens its own bar and closes the others.
   const armedFromLink = useRef(false);
   useEffect(() => {
+    const known =
+      capture === "voice" || capture === "text" || capture === "manual";
     if (capture === "voice" && !armedFromLink.current && !isRecording) {
       armedFromLink.current = true;
+      setManualOpen(false);
+      setComposerOpen(false);
       handleStartRecording();
       router.setParams({ capture: undefined });
-    } else if (capture !== "voice") {
+    } else if (capture === "text" && !armedFromLink.current) {
+      armedFromLink.current = true;
+      setManualOpen(false);
+      setComposerOpen(true);
+      router.setParams({ capture: undefined });
+    } else if (capture === "manual" && !armedFromLink.current) {
+      armedFromLink.current = true;
+      setComposerOpen(false);
+      setManualOpen(true);
+      router.setParams({ capture: undefined });
+    } else if (!known) {
       armedFromLink.current = false;
     }
   }, [capture, isRecording, handleStartRecording, router]);
@@ -306,76 +289,27 @@ export default function HomeScreen(): React.ReactElement {
     setTimeout(() => setSelectedDate(null), 200);
   }, []);
 
-  const handleOpenAddModal = useCallback(
-    (preselectedDate?: Date) => {
-      setSheetVisible(false);
-      if (preselectedDate) {
-        const dd = String(preselectedDate.getDate()).padStart(2, "0");
-        const mm = String(preselectedDate.getMonth() + 1).padStart(2, "0");
-        const yyyy = preselectedDate.getFullYear();
-        router.push({
-          pathname: "/modal",
-          params: { date: `${dd}/${mm}/${yyyy}` },
-        });
-      } else {
-        router.push("/modal");
-      }
-    },
-    [router],
-  );
-
-  // The field, split into the two zones the brief names: STAKES (consequence)
-  // and PRESENT (must-not-fade). Each zone is sorted hottest-first, but heat is
-  // aliveness not rank — a cool idea still glows beside a hot bill.
-  const { stakes, stakeGauges, doneStakes, present, presentItems } =
-    useMemo(() => {
-      const isDone = (e: DbEntry): boolean =>
-        e.status === "completed" || e.status === "met";
-      const open = entries.filter((e) => !isDone(e));
-      const pick = (types: EntryType[]): FieldRowItem[] =>
-        open
-          .filter((e) => types.includes(e.type as EntryType))
-          .sort(byHeatThenDate)
-          .map(toRowItem);
-      const stakeEntries = open
-        .filter((e) => STAKES_TYPES.includes(e.type as EntryType))
-        .sort(byRunway);
-      // Stakes cleared recently — the activating "crossed off" run. Keyed off
-      // updated_at (WHEN it was marked done), not the due date: a deadline a year
-      // out, finished early, still earns a spot. updated_at is stored in SECONDS
-      // (see database-context updateEntryStatus), so the window is in seconds too.
-      const doneSince = today.getTime() / 1000 - DONE_WINDOW_DAYS * 86_400;
-      const doneStakeEntries = entries
-        .filter(
-          (e) =>
-            isDone(e) &&
-            STAKES_TYPES.includes(e.type as EntryType) &&
-            e.updated_at >= doneSince,
-        )
-        .sort(byRecentlyDone);
-      const presentEntries = open.filter((e) =>
-        PRESENT_TYPES.includes(e.type as EntryType),
-      );
-      return {
-        stakes: pick(STAKES_TYPES),
-        stakeGauges: stakeEntries.map((e) => toRunwayItem(e)),
-        doneStakes: doneStakeEntries.map((e) => toRunwayItem(e, true)),
-        present: pick(PRESENT_TYPES),
-        presentItems: toPresentItems(
-          presentEntries,
-          today.getTime(),
-          noteCounts,
-        ),
-      };
-    }, [entries, today, noteCounts]);
-
-  // Wipe the whole recently-cleared run. These are completed entries; clearing
-  // deletes them for good (the organism gates this behind a confirm).
-  const handleClearDoneStakes = useCallback(() => {
-    Promise.all(doneStakes.map((s) => deleteEntry(s.id))).catch((err) =>
-      console.error("Failed to clear done stakes:", err),
+  // The direct zone: deadlines + todos. DirectOverview owns the full set (open
+  // AND done — it sinks completed lines to the bottom and strikes them through),
+  // so it gets every status. FieldGreeting's summary voice reads only the OPEN
+  // streams (stakes + present); ideas feed the greeting's narrative line but are
+  // not a direct row on the home.
+  const { directEntries, stakes, present } = useMemo(() => {
+    const isDone = (e: DbEntry): boolean =>
+      e.status === "completed" || e.status === "met";
+    const direct = entries.filter((e) =>
+      DIRECT_TYPES.includes(e.type as EntryType),
     );
-  }, [doneStakes, deleteEntry]);
+    const open = entries.filter((e) => !isDone(e));
+    return {
+      directEntries: direct,
+      stakes: open
+        .filter((e) => DIRECT_TYPES.includes(e.type as EntryType))
+        .sort(byRunway)
+        .map(toRowItem),
+      present: open.filter((e) => e.type === "idea").map(toRowItem),
+    };
+  }, [entries]);
 
   const entriesForSheet = useMemo(
     () =>
@@ -383,21 +317,50 @@ export default function HomeScreen(): React.ReactElement {
     [entries, recurrenceCompletions, selectedDate, today],
   );
 
-  // A truly clear field — no live stakes, nothing recently cleared, no present
-  // things. This is the brand's first statement, so it gets the powered-on
-  // console instead of three separate "·0" placeholders.
-  const fieldIsEmpty =
-    stakeGauges.length === 0 &&
-    doneStakes.length === 0 &&
-    presentItems.length === 0;
+  const activeProjects = useMemo(
+    () => projects.filter((p) => p.status === "active"),
+    [projects],
+  );
 
-  // Which orbit channel the companion is reading aloud, lifted here so the
-  // greeting molecule and the orbit ring — now siblings — share one focus.
-  // Tapping a populated dot focuses it; re-tapping the same one clears it.
-  const [focusedType, setFocusedType] = useState<EntryType | null>(null);
-  const handleToggleFocus = useCallback((type: EntryType) => {
-    setFocusedType((cur) => (cur === type ? null : type));
-  }, []);
+  // The dock is an absolute overlay; it doesn't rest at the screen bottom — it
+  // floats `space.lg` above the custom tab bar. So translating it up by the full
+  // keyboard height double-counts that resting offset and overshoots, leaving a
+  // big gap. We lift by (keyboard height − the dock's resting distance from the
+  // screen bottom) so its lower edge lands just on top of the keyboard.
+  //
+  // Resting distance ≈ tab-bar height (its paddingTop + add-button + paddingBottom)
+  // + the dock's own `bottom: space.lg`. Mirrors custom-tab-bar.tsx's constants.
+  const dockRestOffset = 8 + 52 + 20 + tokens.space.lg; // tab bar + dock bottom gap
+  const keyboardLift = useSharedValue(0);
+  useEffect(() => {
+    // iOS reports willShow/willHide with a duration we can match; Android only
+    // fires didShow/didHide, so we fall back to a quick eased timing.
+    const showEvt =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const show = Keyboard.addListener(showEvt, (e) => {
+      const lift = Math.max(0, e.endCoordinates.height - dockRestOffset);
+      keyboardLift.value = withTiming(lift, {
+        duration: e.duration || 220,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    const hide = Keyboard.addListener(hideEvt, (e) => {
+      keyboardLift.value = withTiming(0, {
+        duration: e?.duration || 200,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [dockRestOffset, keyboardLift]);
+
+  const dockStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -keyboardLift.value }],
+  }));
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
@@ -410,54 +373,45 @@ export default function HomeScreen(): React.ReactElement {
           greeting={greetingFor(today.getHours())}
           stakes={stakes}
           present={present}
-          focusedType={focusedType}
+          focusedType={null}
         />
-        <OrbitConsole
-          stakes={stakes}
-          present={present}
-          focusedType={focusedType}
-          onToggleFocus={handleToggleFocus}
+
+        {/* TODO(flow): visual shaping pass — this is a minimal projects +
+            deadlines overview that surfaces the core glanceable affordance
+            (PRODUCT.md principle 2). Layout/visual design is deferred to a
+            later /flow shape|craft pass. */}
+        <ProjectsOverview
+          projects={activeProjects}
+          entries={entries}
+          onAddProject={() => {
+            setComposerOpen(false);
+            setManualOpen(true);
+          }}
         />
-        {fieldIsEmpty && <FieldLegend />}
-
-        <>
-          <StakesRunway
-            items={stakeGauges}
-            done={doneStakes}
-            onClearDone={handleClearDoneStakes}
-            itemHref={(item) => ({
-              pathname: "/detail",
-              params: { id: item.id, entryType: item.type },
-            })}
-            zoneHref="/list?entryType=deadline"
-            emptyHint="Nothing's on the line. Add a bill, deadline, or to-do."
-            index={0}
-          />
-
-          <PresentZone
-            items={presentItems}
-            itemHref={(item) => ({
-              pathname: "/detail",
-              params: { id: item.id, entryType: item.type },
-            })}
-            zoneHref="/list?entryType=idea"
-            emptyHint="Catch an idea, a someday, or an event before it's gone."
-            index={1}
-          />
-        </>
+        <DirectOverview entries={directEntries} />
 
         <View style={styles.captureSpacer} />
       </ScrollView>
 
-      <KeyboardAvoidingView
-        style={styles.captureDock}
+      {/* The capture dock is summoned, not always-on: the pen key (tab bar)
+          opens the composer or starts voice; the dock vanishes when idle so the
+          field stays clear. The resolver holds a captured thought until filed.
+          It rides above the keyboard via a UI-thread translate (see dockStyle). */}
+      <Animated.View
+        style={[styles.captureDock, dockStyle]}
         pointerEvents="box-none"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
+        {manualOpen && pendingThought === null && !isRecording ? (
+          <ManualBar
+            onCreateProject={handleCreateProject}
+            onDismissEmpty={() => setManualOpen(false)}
+          />
+        ) : null}
         {pendingThought !== null ? (
           <CaptureResolver
             text={pendingThought}
             ideas={recentIdeas}
+            projects={projects}
             picking={picking}
             onTogglePicking={() => setPicking((p) => !p)}
             onResolve={resolveCapture}
@@ -467,15 +421,19 @@ export default function HomeScreen(): React.ReactElement {
             }}
           />
         ) : null}
-        <CaptureBar
-          onSubmit={handleCapture}
-          onVoice={handleStartRecording}
-          isRecording={isRecording}
-          transcript={transcript}
-          onStop={handleStopRecording}
-          onCancel={handleCancelRecording}
-        />
-      </KeyboardAvoidingView>
+        {composerOpen || isRecording ? (
+          <CaptureBar
+            onSubmit={handleCapture}
+            onVoice={handleStartRecording}
+            isRecording={isRecording}
+            transcript={transcript}
+            onStop={handleStopRecording}
+            onCancel={handleCancelRecording}
+            autoFocus={composerOpen}
+            onDismissEmpty={() => setComposerOpen(false)}
+          />
+        ) : null}
+      </Animated.View>
 
       <DayDetailSheet
         visible={sheetVisible}
@@ -483,7 +441,6 @@ export default function HomeScreen(): React.ReactElement {
         entries={entriesForSheet}
         today={calendarToday}
         onClose={handleCloseSheet}
-        onAdd={handleOpenAddModal}
       />
     </View>
   );

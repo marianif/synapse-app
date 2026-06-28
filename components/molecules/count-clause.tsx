@@ -14,9 +14,7 @@ export type CountSpan = { type: EntryType; n: number; noun: string };
 const NOUNS: Record<EntryType, [string, string]> = {
   deadline: ["deadline", "deadlines"],
   todo: ["to-do", "to-dos"],
-  event: ["event", "events"],
   idea: ["idea", "ideas"],
-  someday: ["someday", "somedays"],
 };
 
 /** Count each type in `order`, dropping the zeros — yields the colored spans in

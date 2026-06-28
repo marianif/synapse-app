@@ -76,6 +76,69 @@ export async function setConfirmSkip(
 export const ConfirmKey = {
   deleteEntry: "delete_entry",
   deleteNote: "delete_note",
+  deleteProject: "delete_project",
 } as const;
 
 export type ConfirmKeyValue = (typeof ConfirmKey)[keyof typeof ConfirmKey];
+
+// ─── Off-clock deck memory ──────────────────────────────────────────────────
+//
+// The last off-clock card the user reached into. The home deck restores it as
+// the default-focused sheet on mount, so the field reopens where attention
+// last landed — the post-it you were turning over is still face-up.
+
+const LAST_DECK_ID_KEY = "off_clock_last_id";
+
+/** Returns the id of the last-touched off-clock entry, or null. */
+export async function getLastDeckId(): Promise<string | null> {
+  try {
+    return await AsyncStorage.getItem(LAST_DECK_ID_KEY);
+  } catch (error) {
+    console.error("[settings] getLastDeckId failed:", error);
+    return null;
+  }
+}
+
+/** Persists the last-touched off-clock entry id. */
+export async function setLastDeckId(id: string): Promise<void> {
+  try {
+    await AsyncStorage.setItem(LAST_DECK_ID_KEY, id);
+  } catch (error) {
+    console.error("[settings] setLastDeckId failed:", error);
+  }
+}
+
+// ─── Generic UI preferences ─────────────────────────────────────────────────
+//
+// A small kv slot for arbitrary UI-state-as-preference: which card mode the
+// user picked for a given project, which layout a section was last left in,
+// etc. Anything that's a string scalar tied to a surface choice. Validators
+// at the hook boundary keep values type-safe even though storage is loose.
+//
+// Keep keys hierarchical and dotted so namespaces stay legible:
+//   "projects.card.<id>"   → "numeric" | "preview"
+//
+// Always use this through `useUiPreference` in components — never read
+// AsyncStorage directly.
+
+const UI_PREF_PREFIX = "ui_pref:";
+
+export async function getUiPreference(key: string): Promise<string | null> {
+  try {
+    return await AsyncStorage.getItem(UI_PREF_PREFIX + key);
+  } catch (error) {
+    console.error("[settings] getUiPreference failed:", error);
+    return null;
+  }
+}
+
+export async function setUiPreference(
+  key: string,
+  value: string,
+): Promise<void> {
+  try {
+    await AsyncStorage.setItem(UI_PREF_PREFIX + key, value);
+  } catch (error) {
+    console.error("[settings] setUiPreference failed:", error);
+  }
+}

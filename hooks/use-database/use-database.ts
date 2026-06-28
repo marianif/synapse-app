@@ -6,10 +6,11 @@ import {
   type CreateEntryInput,
   type UpdateEntryInput,
 } from "@/contexts/database-context";
-import type { DbEntry, DbRecurrenceCompletion } from "@/lib/types";
+import type { DbEntry, DbProject, DbRecurrenceCompletion } from "@/lib/types";
 
 export interface UseDatabaseReturn {
   entries: DbEntry[];
+  projects: DbProject[];
   recurrenceCompletions: DbRecurrenceCompletion[];
   isLoading: boolean;
   isCreating: boolean;
@@ -18,6 +19,18 @@ export interface UseDatabaseReturn {
   updateEntryStatus: (id: string, status: DbEntry["status"]) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
   fetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
+  fetchProjects: () => Promise<void>;
+  createProject: (title: string, emoji?: string | null) => Promise<DbProject>;
+  updateProject: (
+    id: string,
+    data: {
+      title?: string;
+      status?: DbProject["status"];
+      emoji?: string | null;
+    },
+  ) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
+  promoteIdeaToProject: (ideaId: string) => Promise<DbProject>;
   completeRecurringInstance: (
     entryId: string,
     instanceDate: string,
@@ -44,6 +57,7 @@ export function useDatabase(): UseDatabaseReturn {
 
   return {
     entries: context.entries,
+    projects: context.projects,
     recurrenceCompletions: context.recurrenceCompletions,
     isLoading: context.isLoading,
     isCreating: context.isCreating,
@@ -52,6 +66,11 @@ export function useDatabase(): UseDatabaseReturn {
     updateEntryStatus: context.updateEntryStatus,
     deleteEntry: context.deleteEntry,
     fetchEntries: context.refetchEntries,
+    fetchProjects: context.refetchProjects,
+    createProject: context.createProject,
+    updateProject: context.updateProject,
+    deleteProject: context.deleteProject,
+    promoteIdeaToProject: context.promoteIdeaToProject,
     completeRecurringInstance: context.completeRecurringInstance,
     uncompleteRecurringInstance: context.uncompleteRecurringInstance,
     skipRecurringInstance: context.skipRecurringInstance,

@@ -13,8 +13,6 @@ import type { EntryType } from "@/lib/types";
 const TYPE_LABELS: Record<EntryType, string> = {
   todo: "TODO",
   deadline: "DEADLINE",
-  event: "EVENT",
-  someday: "ONE DAY",
   idea: "IDEA",
 };
 

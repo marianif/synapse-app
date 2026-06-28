@@ -2,15 +2,20 @@ import { Stack, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
 import { CalendarIcon } from "@/components/atoms/calendar-icon";
+import { HorizonStrip } from "@/components/molecules/horizon-strip";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
-import { Fab } from "@/components/organisms/fab";
 import { MonthGrid } from "@/components/organisms/month-grid";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { UpcomingPreviewCard } from "@/components/organisms/upcoming-preview-card";
 import { useTheme, tokens } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
+
+dayjs.extend(customParseFormat);
 
 export default function CalendarScreen(): React.ReactElement {
   const router = useRouter();
@@ -56,28 +61,22 @@ export default function CalendarScreen(): React.ReactElement {
     setTimeout(() => setSelectedDate(null), 200);
   }, []);
 
-  const handleOpenAddModal = useCallback(
-    (preselectedDate?: Date) => {
-      setSheetVisible(false);
-      if (preselectedDate) {
-        const dd = String(preselectedDate.getDate()).padStart(2, "0");
-        const mm = String(preselectedDate.getMonth() + 1).padStart(2, "0");
-        const yyyy = preselectedDate.getFullYear();
-        router.push({
-          pathname: "/modal",
-          params: { date: `${dd}/${mm}/${yyyy}` },
-        });
-      } else {
-        router.push("/modal");
-      }
-    },
-    [router],
-  );
-
   const selectedEntries = useMemo(
     () => (selectedDate ? getEntriesForDay(selectedDate) : []),
     [selectedDate, getEntriesForDay],
   );
+
+  // Horizon deadlines pinned to their period: open window commitments whose
+  // window END falls inside the visible month. They live in the strip above
+  // the grid, not faked onto a single day cell.
+  const horizonEntries = useMemo(() => {
+    const month = dayjs(currentMonth);
+    return entries.filter((e) => {
+      if (!e.due_range || !e.due_date) return false;
+      if (e.status === "completed" || e.status === "met") return false;
+      return dayjs(e.due_date, "DD/MM/YYYY").isSame(month, "month");
+    });
+  }, [entries, currentMonth]);
 
   const monthGridProps = useMemo(
     () => ({
@@ -107,9 +106,8 @@ export default function CalendarScreen(): React.ReactElement {
   const upcomingProps = useMemo(
     () => ({
       upcomingEntries,
-      onAdd: handleOpenAddModal,
     }),
-    [upcomingEntries, handleOpenAddModal],
+    [upcomingEntries],
   );
 
   return (
@@ -135,18 +133,17 @@ export default function CalendarScreen(): React.ReactElement {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        <HorizonStrip entries={horizonEntries} />
         <MonthGrid {...monthGridProps} />
         <UpcomingPreviewCard {...upcomingProps} />
         <View style={styles.bottomSpacer} />
       </ScrollView>
-      <Fab onPress={() => handleOpenAddModal(today)} />
       <DayDetailSheet
         visible={sheetVisible}
         date={selectedDate}
         entries={selectedEntries}
         today={today}
         onClose={handleCloseSheet}
-        onAdd={handleOpenAddModal}
       />
     </View>
   );

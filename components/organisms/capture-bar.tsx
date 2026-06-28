@@ -13,7 +13,7 @@ import Animated, {
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { tokens, useTheme } from "@/constants/theme";
+import { entryKicker, tokens, useTheme } from "@/constants/theme";
 
 const WAVEFORM_BARS = 9;
 
@@ -33,6 +33,10 @@ interface CaptureBarProps {
   transcript?: string;
   onStop?: () => void;
   onCancel?: () => void;
+  /** Composer mode: focus the input (and raise the keyboard) on mount. */
+  autoFocus?: boolean;
+  /** Composer mode: the input lost focus with nothing typed — close the bar. */
+  onDismissEmpty?: () => void;
 }
 
 /**
@@ -44,9 +48,11 @@ interface CaptureBarProps {
  * TextInput, and a first-class mic. Typing + ↵ (or the send key) saves the note
  * straight as an idea into the Present cloud — no navigation. The mic arms voice
  * (also an idea). Richer entries (bills, deadlines, events, dates) live in the
- * Add tab, not here. Recording it goes full amber — the one moment the code goes
- * full-bleed — with a live waveform, the streaming transcript, and inline
- * discard / keep. The color shift IS the "listening" signal.
+ * Add tab, not here. Recording it rides the app's NEUTRAL action slab (the same
+ * interface object as the capture resolver — `accent.clay`, never a type tint)
+ * with a live waveform, the streaming transcript, and inline discard / keep. The
+ * "listening" signal lives in the amber waveform — capture's identity kept as a
+ * charged SIGNAL on the panel, not as CHROME drowning the whole bar.
  */
 export function CaptureBar({
   onSubmit,
@@ -55,10 +61,16 @@ export function CaptureBar({
   transcript = "",
   onStop,
   onCancel,
+  autoFocus = false,
+  onDismissEmpty,
 }: CaptureBarProps): React.ReactElement {
   const { scheme, colors } = useTheme();
   const [draft, setDraft] = useState("");
   const hasText = draft.trim().length > 0;
+
+  const handleBlur = (): void => {
+    if (!hasText) onDismissEmpty?.();
+  };
 
   const submit = (): void => {
     if (!hasText) return;
@@ -73,12 +85,28 @@ export function CaptureBar({
   const signal = scheme === "dark" ? colors.type.ideas : colors.inkMuted;
 
   if (isRecording) {
+    // The recorder rides the same NEUTRAL action slab as the capture resolver
+    // (`accent.clay` — slate in light, off-white in dark), never the amber chrome
+    // it used to wear. Capture is the app's core affordance: dressing it in a type
+    // color made the instrument look like it was exclusively about ideas (the bug
+    // we just fixed on the resolver). The slab is the one surface that means
+    // "interface, not content", so recorder and resolver now read as one object.
+    const onSlab = colors.accent.onClay;
+    // The "listening" life now lives ONLY in the moving waveform, as a SIGNAL on
+    // the panel rather than CHROME drowning it. Amber stays capture's identity, but
+    // as a charged instrument readout: picked FOR THE SLAB, not the scheme, like
+    // the resolver's verbs. On the light scheme's dark slate slab the bright code
+    // reads (#FBBF24 ≈ 6:1); on the dark scheme's light off-white slab it washes to
+    // ~1.4:1, so the darkened kicker shade (#8A6307 ≈ 4.6:1 on off-white) carries.
+    const waveTint =
+      scheme === "light" ? colors.type.ideas : entryKicker("idea", "light");
+
     return (
       <View
         style={[
           styles.bar,
           styles.recording,
-          { backgroundColor: colors.type.ideas },
+          { backgroundColor: colors.accent.clay },
           tokens.elevation.capture,
         ]}
       >
@@ -89,7 +117,7 @@ export function CaptureBar({
           accessibilityLabel="Discard recording"
           style={styles.iconBtn}
         >
-          <MaterialCommunityIcons name="close" size={22} color={ON_AMBER} />
+          <MaterialCommunityIcons name="close" size={22} color={onSlab} />
         </Pressable>
 
         <View style={styles.center}>
@@ -97,12 +125,12 @@ export function CaptureBar({
             <ThemedText
               type="item"
               numberOfLines={1}
-              style={[styles.transcript, { color: ON_AMBER }]}
+              style={[styles.transcript, { color: onSlab }]}
             >
               {transcript}
             </ThemedText>
           ) : (
-            <Waveform tint={ON_AMBER} />
+            <Waveform tint={waveTint} />
           )}
         </View>
 
@@ -113,7 +141,7 @@ export function CaptureBar({
           accessibilityLabel="Save capture"
           style={styles.iconBtn}
         >
-          <MaterialCommunityIcons name="check" size={24} color={ON_AMBER} />
+          <MaterialCommunityIcons name="check" size={24} color={onSlab} />
         </Pressable>
       </View>
     );
@@ -138,6 +166,8 @@ export function CaptureBar({
           value={draft}
           onChangeText={setDraft}
           onSubmitEditing={submit}
+          onBlur={handleBlur}
+          autoFocus={autoFocus}
           placeholder="Quick capture a thought"
           placeholderTextColor={colors.inkMuted}
           selectionColor={colors.type.ideas}
@@ -271,7 +301,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     minHeight: 56,
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.pill,
     overflow: "hidden",
   },
   // Idle: a command line — left edge-bar, prompt, mic. Sharp instrument corner.
@@ -279,7 +309,8 @@ const styles = StyleSheet.create({
     paddingLeft: tokens.space.lg,
     paddingRight: tokens.space.xs,
   },
-  // Recording: the one full-clay moment — symmetric, controls inline.
+  // Recording: the neutral action slab, symmetric, controls inline — the same
+  // interface object as the resolver. Amber rides only the live waveform signal.
   recording: {
     gap: tokens.space.md,
     paddingHorizontal: tokens.space.lg,

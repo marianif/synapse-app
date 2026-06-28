@@ -27,14 +27,13 @@ const color = {
     inkMuted: "#8A93A3", // secondary / metadata — cool slate-grey
   },
   // Entry-type codes — electric colors for dots, edge-bars, fills. Shared across schemes.
-  // Equal volume by design: ideas/someday glow as hard as bills. todo is CYAN not green
-  // (green reads "done" and would lie on an open todo — green is completion-only below).
+  // Three codes: deadline (coral), idea (amber), todo (cyan). Equal volume by design:
+  // an idea glows as hard as a deadline. todo is CYAN not green (green reads "done" and
+  // would lie on an open todo — green is completion-only below).
   type: {
-    bills: "#FB7185", // coral — STAKES
-    ideas: "#FBBF24", // amber — PRESENT
-    todo: "#22D3EE", // electric cyan — STAKES
-    event: "#A78BFA", // ultraviolet — PRESENT
-    someday: "#A3E635", // lime — PRESENT
+    bills: "#FB7185", // coral — deadline
+    ideas: "#FBBF24", // amber — idea
+    todo: "#22D3EE", // electric cyan — todo
   },
   // Type codes for the 11px all-caps KICKER text sitting on its tint — scheme-aware,
   // because the tints sit at opposite lightness ends. On the DARK tile, the bright
@@ -46,15 +45,11 @@ const color = {
       bills: "#AF3B51", // 4.74:1 on billsTint.light
       ideas: "#8A6307", // 4.74:1 on ideasTint.light
       todo: "#0B7286", // 4.75:1 on todoTint.light
-      event: "#694CC7", // 4.76:1 on eventTint.light
-      someday: "#4F750F", // 4.73:1 on somedayTint.light
     },
     dark: {
       bills: "#FB7185", // 5.99:1 on billsTint.dark — the electric code, bright-on-dark
       ideas: "#FBBF24", // 8.98:1 on ideasTint.dark
       todo: "#22D3EE", // 8.32:1 on todoTint.dark
-      event: "#A78BFA", // 5.90:1 on eventTint.dark
-      someday: "#A3E635", // 9.50:1 on somedayTint.dark
     },
   },
   // Charged tile-body tints per type — light + dark-adapted so the electric codes
@@ -64,15 +59,11 @@ const color = {
       bills: "#FCE0E4",
       ideas: "#FBEFCF",
       todo: "#D6F2F7",
-      event: "#E7E0FB",
-      someday: "#E8F5CE",
     },
     dark: {
       bills: "#2E1C20",
       ideas: "#2E2611",
       todo: "#102A30",
-      event: "#241E33",
-      someday: "#222E10",
     },
   },
   // Field Lab signature — glow opacity scales with row heat (freshness + urgency);
@@ -81,7 +72,7 @@ const color = {
   glow: {
     faint: "rgba(34,211,238,0.10)", // sparse / quiet tile
     strong: "rgba(34,211,238,0.28)", // full, fresh tile
-    stalePulse: "rgba(251,191,36,0.45)", // "still here" outline — ideas/someday only
+    stalePulse: "rgba(251,191,36,0.45)", // "still here" outline — stale ideas only
   },
   // Accepted exceptions: overlay scrims + shadow tint. Legitimately non-palette
   // (a modal backdrop and a drop-shadow color are not brand hues).
@@ -280,8 +271,6 @@ export function useTheme(): { scheme: Scheme; colors: ThemeColors } {
 const ENTRY_TO_TYPE_KEY: Record<EntryType, keyof typeof color.type> = {
   todo: "todo",
   deadline: "bills",
-  event: "event",
-  someday: "someday",
   idea: "ideas",
 };
 

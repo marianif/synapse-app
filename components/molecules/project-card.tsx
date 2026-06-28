@@ -5,6 +5,7 @@ import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
+import { useDatabase } from "@/hooks/use-database/use-database";
 import { useUiPreference } from "@/hooks/use-ui-preference";
 
 import type { DbEntry, DbProject, EntryType } from "@/lib/types";
@@ -66,6 +67,7 @@ export function ProjectCard({
 }): React.ReactElement {
   const { colors } = useTheme();
   const router = useRouter();
+  const { touchProject } = useDatabase();
   const [mode, setMode] = useUiPreference<ProjectCardMode>(
     `projects.card.${project.id}`,
     "numeric",
@@ -76,6 +78,9 @@ export function ProjectCard({
   const isExpanded = mode === "preview";
 
   const openProject = (): void => {
+    // Side effect: bump last_opened_at so the Project Shelf's RECENT sort
+    // reflects the navigation. Fire-and-forget — never block the route.
+    void touchProject(project.id);
     router.push({ pathname: "/project", params: { id: project.id } });
   };
   const expand = (): void => setMode("preview");

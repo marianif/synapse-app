@@ -30,6 +30,8 @@ export interface UseDatabaseReturn {
     },
   ) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
+  setProjectFeatured: (id: string, value: boolean) => Promise<void>;
+  touchProject: (id: string) => Promise<void>;
   promoteIdeaToProject: (ideaId: string) => Promise<DbProject>;
   completeRecurringInstance: (
     entryId: string,
@@ -70,6 +72,8 @@ export function useDatabase(): UseDatabaseReturn {
     createProject: context.createProject,
     updateProject: context.updateProject,
     deleteProject: context.deleteProject,
+    setProjectFeatured: context.setProjectFeatured,
+    touchProject: context.touchProject,
     promoteIdeaToProject: context.promoteIdeaToProject,
     completeRecurringInstance: context.completeRecurringInstance,
     uncompleteRecurringInstance: context.uncompleteRecurringInstance,

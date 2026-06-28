@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -14,26 +15,24 @@ import type { DbEntry, DbProject } from "@/lib/types";
 
 /**
  * Projects overview — the macro life areas, present at a glance with a live
- * open-item count. The home cut shows at most MAX_VISIBLE projects; the rest
- * live behind the section header's see-more link to /projects. Each card
- * opens the project (which already owns rename, emoji, archive and every
- * other secondary action) — no separate sheet competes with the tap.
+ * open-item count. The home surfaces only the projects the user has marked
+ * `is_featured` on the Project Shelf (app/projects.tsx) — the home is the
+ * map, the shelf is where you choose what to keep on it. Each card opens the
+ * project; no separate sheet competes with the tap.
  *
  * The grid is a true masonry — two independent vertical columns — so
  * expanding a card on one side never strands its row-mate with dead
- * whitespace; the next card in that column simply flows up. An "Add project"
- * tile lives in the shorter column so creation stays reachable from the
- * glance surface. On a zero-project home, the section shows a single
- * invitation tile rather than vanishing — PRODUCT.md principle 2 is "show
- * projects first", even when there are none yet.
+ * whitespace; the next card in that column simply flows up.
+ *
+ * Three empty states, each honoring PRODUCT.md principle 2 (show projects
+ * first, even when there are none):
+ *   - No projects at all → first-run invitation tile (creation)
+ *   - Projects exist, none featured → Caveat invitation tile (curation)
+ *   - Featured projects exist → the grid
  */
 
 // GRID card readouts cap: how many named lines a card preview shows.
 const PREVIEW_MAX = 3;
-
-// Home only ever surfaces this many projects; everything past it lives behind
-// the section header's see-more link to /projects.
-const MAX_VISIBLE = 8;
 
 export function ProjectsOverview({
   projects,
@@ -43,15 +42,16 @@ export function ProjectsOverview({
   projects: DbProject[];
   entries: DbEntry[];
   /**
-   * Summoned by the trailing add-tile and the zero-state tile. Home wires
-   * this to the manual bar so creating from here uses the same path as the
-   * tab-bar pen key's TAP register — one project-creation flow, not two.
+   * Summoned by the first-run invitation tile. Home wires this to the manual
+   * bar so creating from here uses the same path as the tab-bar pen key's
+   * TAP register — one project-creation flow, not two.
    */
   onAddProject: () => void;
 }): React.ReactElement {
   const { colors } = useTheme();
+  const router = useRouter();
 
-  const visible = projects.slice(0, MAX_VISIBLE);
+  const featured = projects.filter((p) => p.is_featured === 1);
 
   // Every project rolls up into two complementary views: a typed numeric
   // summary and a named, most-pressing-first preview slice. Both read off the
@@ -78,11 +78,11 @@ export function ProjectsOverview({
   // cards in a row-pair to the tallest sibling's height, so expanding one
   // card stranded its row-mate with dead whitespace instead of letting the
   // next card flow up. Independent columns fix that.
-  const leftColumn = visible.filter((_, i) => i % 2 === 0);
-  const rightColumn = visible.filter((_, i) => i % 2 === 1);
-  // Drop the add-tile into the shorter column so the grid stays balanced.
-  // Suppress at the cap — further creation belongs on /projects.
-  const showAddTile = visible.length < MAX_VISIBLE;
+  const leftColumn = featured.filter((_, i) => i % 2 === 0);
+  const rightColumn = featured.filter((_, i) => i % 2 === 1);
+  // The add-tile keeps creation reachable from the glance surface (the home
+  // is principle 2's first stop). Drop it into the shorter column so the
+  // grid stays balanced and an odd featured count never strands whitespace.
   const addTileSide: "left" | "right" =
     rightColumn.length < leftColumn.length ? "right" : "left";
 
@@ -123,18 +123,59 @@ export function ProjectsOverview({
     );
   }
 
-  // Count line on the section header doubles as the see-more affordance:
-  // "8 projects ›" — the count is the link. When the home cut isn't
-  // truncating anything, the link is still useful as a way into /projects
-  // for rename / archive / reorder, which the home grid doesn't expose.
-  const projectsLabel = `${projects.length} ${projects.length === 1 ? "project" : "projects"}`;
+  // Count line on the section header doubles as the see-more affordance.
+  // The shelf is where the user picks WHAT to feature here; the link reads
+  // "all projects" so the relationship is honest.
+  const allLabel = `${projects.length} ${projects.length === 1 ? "project" : "all"}`;
+
+  // Projects exist but none are featured. Don't vanish the section — show a
+  // single Caveat invitation that points the user at the shelf where they
+  // pick what to surface. Same energy as the first-run tile, different ask.
+  if (featured.length === 0) {
+    return (
+      <View style={styles.section}>
+        <SectionHeader
+          title="PROJECTS"
+          seeMoreHref="/projects"
+          seeMoreText={allLabel}
+          seeMoreA11yLabel="Open the project shelf"
+        />
+        <Pressable
+          onPress={() => router.push("/projects")}
+          accessibilityRole="button"
+          accessibilityLabel="Pick projects to feature on home"
+          style={({ pressed }) => [
+            styles.firstRunTile,
+            { backgroundColor: colors.surface },
+            pressed && styles.pressed,
+          ]}
+        >
+          <IconSymbol name="star-outline" size={20} color={colors.inkMuted} />
+          <View style={styles.firstRunCopy}>
+            <ThemedText
+              type="body"
+              style={[styles.firstRunTitle, { color: colors.ink }]}
+            >
+              Pick a few to keep close
+            </ThemedText>
+            <ThemedText
+              type="hand"
+              style={[styles.firstRunHint, { color: colors.inkMuted }]}
+            >
+              your home will glow with them
+            </ThemedText>
+          </View>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.section}>
       <SectionHeader
         title="PROJECTS"
         seeMoreHref="/projects"
-        seeMoreText={projectsLabel}
+        seeMoreText={allLabel}
         seeMoreA11yLabel="See all projects"
       />
       <View style={styles.grid}>
@@ -142,48 +183,46 @@ export function ProjectsOverview({
           {leftColumn.map((p) => (
             <ProjectCard key={p.id} project={p} rollup={projectRollup(p.id)} />
           ))}
-          {showAddTile && addTileSide === "left" ? (
-            <Pressable
-              onPress={onAddProject}
-              accessibilityRole="button"
-              accessibilityLabel="New project"
-              style={({ pressed }) => [
-                styles.addTile,
-                { backgroundColor: colors.surfaceSubtle },
-                pressed && styles.pressed,
-              ]}
-            >
-              <IconSymbol name="plus" size={22} color={colors.inkMuted} />
-              <ThemedText type="body" style={{ color: colors.inkMuted }}>
-                New project
-              </ThemedText>
-            </Pressable>
+          {addTileSide === "left" ? (
+            <AddProjectTile onPress={onAddProject} colors={colors} />
           ) : null}
         </View>
         <View style={styles.gridColumn}>
           {rightColumn.map((p) => (
             <ProjectCard key={p.id} project={p} rollup={projectRollup(p.id)} />
           ))}
-          {showAddTile && addTileSide === "right" ? (
-            <Pressable
-              onPress={onAddProject}
-              accessibilityRole="button"
-              accessibilityLabel="New project"
-              style={({ pressed }) => [
-                styles.addTile,
-                { backgroundColor: colors.surfaceSubtle },
-                pressed && styles.pressed,
-              ]}
-            >
-              <IconSymbol name="plus" size={22} color={colors.inkMuted} />
-              <ThemedText type="body" style={{ color: colors.inkMuted }}>
-                New project
-              </ThemedText>
-            </Pressable>
+          {addTileSide === "right" ? (
+            <AddProjectTile onPress={onAddProject} colors={colors} />
           ) : null}
         </View>
       </View>
     </View>
+  );
+}
+
+function AddProjectTile({
+  onPress,
+  colors,
+}: {
+  onPress: () => void;
+  colors: ReturnType<typeof useTheme>["colors"];
+}): React.ReactElement {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel="New project"
+      style={({ pressed }) => [
+        styles.addTile,
+        { backgroundColor: colors.surfaceSubtle },
+        pressed && styles.pressed,
+      ]}
+    >
+      <IconSymbol name="plus" size={22} color={colors.inkMuted} />
+      <ThemedText type="body" style={{ color: colors.inkMuted }}>
+        New project
+      </ThemedText>
+    </Pressable>
   );
 }
 
@@ -210,6 +249,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: tokens.space.xs,
     padding: tokens.space.md,
+    minHeight: 72,
   },
   // Zero-state tile: full-width row that introduces the project concept
   // without competing with the tab-bar pen for tier-1 weight.

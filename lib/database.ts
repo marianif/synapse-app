@@ -323,6 +323,33 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 12) {
+    // Migration 11: the Project Shelf. Two new columns on projects:
+    //   - is_featured  → drives what ProjectsOverview surfaces on home.
+    //                    The shelf's star button is the only place this toggles.
+    //   - last_opened_at → ms since epoch; bumped on every navigation into
+    //                      the project. Powers the shelf's RECENT sort.
+    // All existing projects start unfeatured; the user picks featured ones
+    // from the Project Shelf on first visit.
+    await db.withTransactionAsync(async () => {
+      const addColumn = async (sql: string) => {
+        try {
+          await db.execAsync(sql);
+        } catch {
+          // column already exists (fresh installs got it from CREATE_PROJECTS_TABLE)
+        }
+      };
+      await addColumn(
+        'ALTER TABLE projects ADD COLUMN is_featured INTEGER NOT NULL DEFAULT 0',
+      );
+      await addColumn('ALTER TABLE projects ADD COLUMN last_opened_at INTEGER');
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────
@@ -343,7 +370,16 @@ export async function insertProject(
     now,
     now,
   );
-  return { id, title, status: 'active', emoji, created_at: now, updated_at: now };
+  return {
+    id,
+    title,
+    status: 'active',
+    emoji,
+    is_featured: 0,
+    last_opened_at: null,
+    created_at: now,
+    updated_at: now,
+  };
 }
 
 /** All projects, active first, newest first within each status. */
@@ -383,6 +419,38 @@ export async function updateProject(
   values.push(Math.floor(Date.now() / 1000));
   values.push(id);
   await db.runAsync(`UPDATE projects SET ${updates.join(', ')} WHERE id = ?`, ...values);
+}
+
+/**
+ * Toggle a project's featured flag. Featured projects are the set that
+ * `ProjectsOverview` on home surfaces; the Project Shelf is the only UI
+ * that flips this. Does NOT bump updated_at — feature-state is metadata,
+ * not edit-state.
+ */
+export async function setProjectFeatured(
+  id: string,
+  value: boolean,
+): Promise<void> {
+  const db = getDb();
+  await db.runAsync(
+    'UPDATE projects SET is_featured = ? WHERE id = ?',
+    value ? 1 : 0,
+    id,
+  );
+}
+
+/**
+ * Stamp last_opened_at = now (ms). Called whenever the user navigates into
+ * the project from anywhere. Powers the shelf's RECENT sort. Does NOT bump
+ * updated_at — opening isn't editing.
+ */
+export async function touchProject(id: string): Promise<void> {
+  const db = getDb();
+  await db.runAsync(
+    'UPDATE projects SET last_opened_at = ? WHERE id = ?',
+    Date.now(),
+    id,
+  );
 }
 
 /**

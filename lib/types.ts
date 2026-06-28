@@ -52,6 +52,12 @@ export interface DbProject {
    * until the user picks one — the screen surfaces a quiet picker affordance
    * and falls back to a neutral folder glyph in the meantime. */
   emoji: string | null;
+  /** SQLite stores booleans as 0/1. The Project Shelf is the only place this
+   * toggles; `ProjectsOverview` on home reads `is_featured === 1` to filter. */
+  is_featured: 0 | 1;
+  /** Ms since epoch, bumped on every navigation into the project. Null on
+   * fresh rows; the shelf's RECENT sort falls back to `updated_at` then. */
+  last_opened_at: number | null;
   created_at: number;
   updated_at: number;
 }

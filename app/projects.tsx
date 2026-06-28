@@ -1,5 +1,6 @@
+import * as Haptics from "expo-haptics";
 import { Stack, useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -9,47 +10,119 @@ import {
 } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { AtlasCanvas } from "@/components/organisms/atlas-canvas";
+import { ProjectRow } from "@/components/molecules/project-row";
 import { ScreenHeader } from "@/components/organisms/screen-header";
-import { WorkshopList } from "@/components/organisms/workshop-list";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
+import { useUiPreference } from "@/hooks/use-ui-preference";
+
+import type { DbProject } from "@/lib/types";
+
+// ─── Sort mode ───────────────────────────────────────────────────────────────
+// Three modes only. A fourth would turn the cycle-tap into a menu, and a menu
+// becomes shopping. RECENT covers ~90% of "where was I last," BUSY answers
+// "what's on fire," A–Z is the index-of-known-name escape hatch.
+
+type SortMode = "recent" | "busy" | "az";
+const SORT_LABEL: Record<SortMode, string> = {
+  recent: "RECENT",
+  busy: "BUSY",
+  az: "A–Z",
+};
+const SORT_NEXT: Record<SortMode, SortMode> = {
+  recent: "busy",
+  busy: "az",
+  az: "recent",
+};
+function isSortMode(value: string | null): value is SortMode {
+  return value === "recent" || value === "busy" || value === "az";
+}
 
 /**
- * Projects — the all-projects index, in two complementary readouts stacked:
+ * The Project Shelf — `app/projects.tsx`.
  *
- *   • ATLAS (top): the spatial map of your brain. Each project is a tile you
- *     can long-press and drop anywhere on the canvas; position persists per
- *     project. Answers "where in my brain does this live?".
+ * Three verbs live here and nowhere else:
+ *   1. FIND a project (the sort chip cycles RECENT / BUSY / A–Z)
+ *   2. FEATURE a project (the star toggle on each row; the only knob that
+ *      decides what `ProjectsOverview` on home surfaces)
+ *   3. OPEN a project (tap the row body)
  *
- *   • WORKSHOP (bottom): the same projects, ranked by pressure. HOT projects
- *     (deadline ≤7d or overdue todo) sit above a NOW LINE; STEADY projects
- *     sit below in inventory dialect with a passage-of-time label. Answers
- *     "which project should I open right now?".
+ * Project mutations (rename, emoji, archive, delete) live on the project
+ * detail screen. This screen is a shelf, not a tool drawer — keeping the
+ * verb set tight is the whole point of the rethink.
  *
- *  The two sections speak different languages on purpose: position vs.
- *  priority. They don't compete.
- *
- *  Above both: the inception band — the only place new projects are born.
+ * The home is the map; this is where you choose what's on it.
  */
 export default function ProjectsScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
-  const { projects, entries, createProject } = useDatabase();
+  const { projects, entries, createProject, setProjectFeatured } =
+    useDatabase();
   const [draft, setDraft] = useState("");
+  const [archivedOpen, setArchivedOpen] = useState(false);
 
-  const active = projects.filter((p) => p.status === "active");
-  const archived = projects.filter((p) => p.status === "archived");
+  const [sort, setSort] = useUiPreference<SortMode>(
+    "projects.sort",
+    "recent",
+    isSortMode,
+  );
 
-  const submit = (): void => {
+  const active = useMemo(
+    () => projects.filter((p) => p.status === "active"),
+    [projects],
+  );
+  const archived = useMemo(
+    () => projects.filter((p) => p.status === "archived"),
+    [projects],
+  );
+  const featuredCount = useMemo(
+    () => active.filter((p) => p.is_featured === 1).length,
+    [active],
+  );
+
+  // Per-project open-item rollup. Same shape every sort mode reads from, so
+  // changing sort never re-walks the entry list more than once. The shelf
+  // doesn't show counts per type beyond "open + deadlines" — the project
+  // detail is the place for full breakdowns.
+  const openByProject = useMemo(() => {
+    const map = new Map<string, { open: number; deadlines: number }>();
+    for (const p of projects) map.set(p.id, { open: 0, deadlines: 0 });
+    for (const e of entries) {
+      if (!e.project_id) continue;
+      if (e.status === "completed" || e.status === "met") continue;
+      const slot = map.get(e.project_id);
+      if (!slot) continue;
+      slot.open += 1;
+      if (e.type === "deadline") slot.deadlines += 1;
+    }
+    return map;
+  }, [projects, entries]);
+
+  const sortedActive = useMemo(
+    () => sortProjects(active, sort, openByProject),
+    [active, sort, openByProject],
+  );
+
+  const submitDraft = (): void => {
     const title = draft.trim();
     if (!title) return;
     setDraft("");
-    createProject(title).catch((err) =>
-      console.error("Failed to create project:", err),
+    createProject(title)
+      .then((project) =>
+        router.push({ pathname: "/project", params: { id: project.id } }),
+      )
+      .catch((err) => console.error("Failed to create project:", err));
+  };
+
+  const toggleFeatured = (project: DbProject): void => {
+    void Haptics.selectionAsync();
+    setProjectFeatured(project.id, project.is_featured !== 1).catch((err) =>
+      console.error("Failed to toggle featured:", err),
     );
   };
+
+  const cycleSort = (): void => setSort(SORT_NEXT[sort]);
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
@@ -59,7 +132,7 @@ export default function ProjectsScreen(): React.ReactElement {
           header: () => (
             <ScreenHeader
               title="Projects"
-              kicker={`${active.length} ACTIVE · ${archived.length} ARCHIVED`}
+              kicker={`${featuredCount} FEATURED · ${active.length} TOTAL`}
               onBack={() => router.back()}
               inset
             />
@@ -73,82 +146,128 @@ export default function ProjectsScreen(): React.ReactElement {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Inception band — the only path to a new project. Framed by its
-            kicker as a verb, not a control. The clay submit is the only
-            saturated pressed-state on the whole screen. */}
-        <View style={styles.inceptionBand}>
-          <ThemedText
-            type="micro"
-            style={[styles.bandKicker, { color: colors.inkMuted }]}
-          >
-            START SOMETHING
-          </ThemedText>
-          <View style={[styles.createRow, { backgroundColor: colors.surface }]}>
-            <TextInput
-              value={draft}
-              onChangeText={setDraft}
-              onSubmitEditing={submit}
-              placeholder="Name a project"
-              placeholderTextColor={colors.inkMuted}
-              returnKeyType="done"
-              accessibilityLabel="New project title"
-              style={[styles.createInput, { color: colors.ink }]}
-            />
-            {draft.trim().length > 0 ? (
-              <Pressable
-                onPress={submit}
-                hitSlop={10}
-                accessibilityRole="button"
-                accessibilityLabel="Create project"
-                style={({ pressed }) => [
-                  styles.createBtn,
-                  { backgroundColor: colors.accent.clay },
-                  pressed && styles.pressed,
-                ]}
-              >
-                <IconSymbol
-                  name="arrow-up"
-                  size={20}
-                  color={colors.accent.onClay}
-                />
-              </Pressable>
-            ) : null}
-          </View>
-        </View>
-
         {projects.length === 0 ? (
-          <ThemedText
-            type="hand"
-            style={[styles.empty, { color: colors.inkMuted }]}
-          >
-            Nothing in the inventory yet. Name one above, or promote an idea
-            from its detail page.
-          </ThemedText>
+          // Fresh install: the inception band IS the screen. No sort chip, no
+          // archived disclosure, no shelf — pick a name and land in the project.
+          <View style={styles.inceptionBand}>
+            <ThemedText
+              type="hand"
+              style={[styles.inceptionHint, { color: colors.inkMuted }]}
+            >
+              Name your first life area
+            </ThemedText>
+            <CreateRow
+              draft={draft}
+              setDraft={setDraft}
+              onSubmit={submitDraft}
+              placeholder="A project, a season, a chapter…"
+              colors={colors}
+            />
+          </View>
         ) : (
           <>
-            {/* ATLAS — spatial map. Section kicker carries the affordance
-                hint so users discover the long-press to move. */}
-            <View style={styles.section}>
+            {/* Sort chip — one Pressable, taps cycle through three modes.
+                The ⇅ glyph signals it's a cycle, not a fixed label. */}
+            <Pressable
+              onPress={cycleSort}
+              accessibilityRole="button"
+              accessibilityLabel={`Sort by ${SORT_LABEL[sort]}. Tap to change.`}
+              style={({ pressed }) => [
+                styles.sortChip,
+                {
+                  backgroundColor: pressed
+                    ? colors.surface
+                    : colors.surfaceSubtle,
+                },
+              ]}
+            >
               <ThemedText
                 type="micro"
-                style={[styles.sectionKicker, { color: colors.inkMuted }]}
+                style={[styles.sortChipLabel, { color: colors.inkMuted }]}
               >
-                ATLAS · LONG-PRESS TO MOVE
+                {`SORTED · ${SORT_LABEL[sort]}`}
               </ThemedText>
-              <AtlasCanvas projects={projects} />
+              <IconSymbol
+                name="swap-vertical"
+                size={14}
+                color={colors.inkMuted}
+              />
+            </Pressable>
+
+            {/* The shelf itself. */}
+            <View style={styles.rowList}>
+              {sortedActive.map((project) => (
+                <ProjectRow
+                  key={project.id}
+                  project={project}
+                  signal={signalFor(project, sort, openByProject)}
+                  onToggleFeatured={() => toggleFeatured(project)}
+                />
+              ))}
             </View>
 
-            {/* WORKSHOP — ranked by pressure. The kicker frames the read:
-                "what's pressing" is the question this section answers. */}
-            <View style={styles.section}>
+            {/* Inception band — quieter, framed by a Caveat margin-note. The
+                shelf is primarily for finding/featuring; birthing is a quieter
+                affordance here than on a fresh install. */}
+            <View style={styles.inceptionBand}>
               <ThemedText
-                type="micro"
-                style={[styles.sectionKicker, { color: colors.inkMuted }]}
+                type="hand"
+                style={[styles.inceptionHint, { color: colors.inkMuted }]}
               >
-                WORKSHOP · WHAT’S PRESSING
+                …or start something new
               </ThemedText>
-              <WorkshopList projects={projects} entries={entries} />
+              <CreateRow
+                draft={draft}
+                setDraft={setDraft}
+                onSubmit={submitDraft}
+                placeholder="Name a project"
+                colors={colors}
+              />
             </View>
+
+            {/* Archived disclosure — collapsed by default. Single tap on a
+                row inside opens the project's detail, where the unarchive
+                action already lives. The shelf doesn't duplicate it. */}
+            {archived.length > 0 ? (
+              <View style={styles.archivedSection}>
+                <Pressable
+                  onPress={() => setArchivedOpen((o) => !o)}
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: archivedOpen }}
+                  accessibilityLabel={`Archived projects, ${archived.length}`}
+                  style={styles.archivedHeader}
+                >
+                  <IconSymbol
+                    name={archivedOpen ? "chevron-down" : "chevron-right"}
+                    size={16}
+                    color={colors.inkMuted}
+                  />
+                  <ThemedText
+                    type="micro"
+                    style={[styles.archivedKicker, { color: colors.inkMuted }]}
+                  >
+                    {`ARCHIVED · ${archived.length}`}
+                  </ThemedText>
+                </Pressable>
+                {archivedOpen ? (
+                  <View style={styles.rowList}>
+                    {archived.map((project) => (
+                      <ArchivedRow
+                        key={project.id}
+                        project={project}
+                        colors={colors}
+                        onOpen={() =>
+                          router.push({
+                            pathname: "/project",
+                            params: { id: project.id },
+                          })
+                        }
+                      />
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
           </>
         )}
       </ScrollView>
@@ -156,25 +275,200 @@ export default function ProjectsScreen(): React.ReactElement {
   );
 }
 
+// ─── Subcomponents (kept inline; one-off, never reused) ─────────────────────
+
+function CreateRow({
+  draft,
+  setDraft,
+  onSubmit,
+  placeholder,
+  colors,
+}: {
+  draft: string;
+  setDraft: (value: string) => void;
+  onSubmit: () => void;
+  placeholder: string;
+  colors: ReturnType<typeof useTheme>["colors"];
+}): React.ReactElement {
+  return (
+    <View style={[styles.createRow, { backgroundColor: colors.surface }]}>
+      <TextInput
+        value={draft}
+        onChangeText={setDraft}
+        onSubmitEditing={onSubmit}
+        placeholder={placeholder}
+        placeholderTextColor={colors.inkMuted}
+        returnKeyType="done"
+        accessibilityLabel="New project title"
+        style={[styles.createInput, { color: colors.ink }]}
+      />
+      {draft.trim().length > 0 ? (
+        <Pressable
+          onPress={onSubmit}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel="Create project"
+          style={({ pressed }) => [
+            styles.createBtn,
+            { backgroundColor: colors.accent.clay },
+            pressed && styles.pressed,
+          ]}
+        >
+          <IconSymbol name="arrow-up" size={20} color={colors.accent.onClay} />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+function ArchivedRow({
+  project,
+  colors,
+  onOpen,
+}: {
+  project: DbProject;
+  colors: ReturnType<typeof useTheme>["colors"];
+  onOpen: () => void;
+}): React.ReactElement {
+  return (
+    <Pressable
+      onPress={onOpen}
+      accessibilityRole="button"
+      accessibilityLabel={`Open archived ${project.title}`}
+      style={[styles.archivedRow, { backgroundColor: colors.surfaceSubtle }]}
+    >
+      {project.emoji ? (
+        <ThemedText type="item">{project.emoji}</ThemedText>
+      ) : null}
+      <ThemedText
+        type="item"
+        numberOfLines={1}
+        style={[styles.archivedTitle, { color: colors.ink }]}
+      >
+        {project.title}
+      </ThemedText>
+    </Pressable>
+  );
+}
+
+// ─── Sort + signal helpers ──────────────────────────────────────────────────
+
+function sortProjects(
+  list: DbProject[],
+  mode: SortMode,
+  openByProject: Map<string, { open: number; deadlines: number }>,
+): DbProject[] {
+  const copy = [...list];
+  switch (mode) {
+    case "recent": {
+      // last_opened_at preferred; fall back to updated_at*1000 (seconds → ms)
+      // so projects that were edited but never opened still sort meaningfully.
+      const stamp = (p: DbProject): number =>
+        p.last_opened_at ?? p.updated_at * 1000;
+      return copy.sort((a, b) => stamp(b) - stamp(a));
+    }
+    case "busy": {
+      // Open count desc; ties broken by deadlines desc, then title for stability.
+      return copy.sort((a, b) => {
+        const oa = openByProject.get(a.id) ?? { open: 0, deadlines: 0 };
+        const ob = openByProject.get(b.id) ?? { open: 0, deadlines: 0 };
+        if (ob.open !== oa.open) return ob.open - oa.open;
+        if (ob.deadlines !== oa.deadlines) return ob.deadlines - oa.deadlines;
+        return a.title.localeCompare(b.title);
+      });
+    }
+    case "az":
+      return copy.sort((a, b) => a.title.localeCompare(b.title));
+  }
+}
+
+function signalFor(
+  project: DbProject,
+  mode: SortMode,
+  openByProject: Map<string, { open: number; deadlines: number }>,
+): string {
+  const slot = openByProject.get(project.id) ?? { open: 0, deadlines: 0 };
+  switch (mode) {
+    case "recent": {
+      const ms = project.last_opened_at ?? project.updated_at * 1000;
+      return relativeStamp(ms);
+    }
+    case "busy": {
+      if (slot.open === 0) return "quiet";
+      const openLabel = `${slot.open} open`;
+      if (slot.deadlines > 0) {
+        return `${openLabel} · ${slot.deadlines} ${
+          slot.deadlines === 1 ? "deadline" : "deadlines"
+        }`;
+      }
+      return openLabel;
+    }
+    case "az":
+      // The signal slot stays informative even when sort is A–Z, but quietly:
+      // just the open count. Empty if zero — alpha sort is for finding by name.
+      return slot.open === 0 ? "" : `${slot.open} open`;
+  }
+}
+
+// Plain ms-since → short relative stamp. No external dep (the project already
+// has dayjs but this is a one-line helper; keeping it inline avoids a
+// dependency on the home/detail formatting style for what's a shelf detail).
+function relativeStamp(ms: number): string {
+  const diff = Date.now() - ms;
+  if (diff < 60_000) return "just now";
+  const minutes = Math.floor(diff / 60_000);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "yesterday";
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  return `${Math.floor(months / 12)}y ago`;
+}
+
+// ─── Styles ─────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  scroll: {
-    flex: 1,
-  },
+  screen: { flex: 1 },
+  scroll: { flex: 1 },
   content: {
     padding: tokens.space.lg,
-    gap: tokens.space.xl,
+    gap: tokens.space.xxl,
+    paddingBottom: tokens.space.xxxl * 2,
   },
 
-  inceptionBand: {
-    gap: tokens.space.sm,
+  // Sort chip — a self-contained pill, never edge-to-edge like a tab control.
+  sortChip: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.xs,
+    borderRadius: tokens.radius.pill,
+    minHeight: 32,
   },
-  bandKicker: {
+  sortChipLabel: {
     letterSpacing: tokens.type.micro.tracking,
   },
+
+  rowList: {
+    gap: tokens.space.xs,
+  },
+
+  // Inception band — same input/clay-submit pattern as before, but framed by
+  // a Caveat margin-note so it reads as an aside, not a primary affordance.
+  inceptionBand: {
+    gap: tokens.space.sm,
+    alignItems: "center",
+  },
+  inceptionHint: {
+    textAlign: "center",
+  },
   createRow: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
     minHeight: 52,
@@ -196,21 +490,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  section: {
+  // Archived disclosure
+  archivedSection: {
     gap: tokens.space.sm,
   },
-  sectionKicker: {
+  archivedHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+    paddingVertical: tokens.space.sm,
+  },
+  archivedKicker: {
     letterSpacing: tokens.type.micro.tracking,
-    marginBottom: tokens.space.xs,
   },
+  archivedRow: {
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+    paddingHorizontal: tokens.space.md,
+    borderRadius: tokens.radius.md,
+  },
+  archivedTitle: { flex: 1 },
 
-  empty: {
-    paddingVertical: tokens.space.xl,
-    textAlign: "center",
-    fontSize: 18,
-    lineHeight: 24,
-  },
-  pressed: {
-    opacity: 0.7,
-  },
+  pressed: { opacity: 0.7 },
 });

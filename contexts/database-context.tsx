@@ -7,6 +7,8 @@ import * as SQLite from "expo-sqlite";
 import {
   deleteProject as dbDeleteProject,
   insertProject as dbInsertProject,
+  setProjectFeatured as dbSetProjectFeatured,
+  touchProject as dbTouchProject,
   updateProject as dbUpdateProject,
   generateId,
   getProjects,
@@ -70,6 +72,10 @@ interface DatabaseContextValue {
     },
   ) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
+  /** Toggle the home-overview feature flag for a project. */
+  setProjectFeatured: (id: string, value: boolean) => Promise<void>;
+  /** Mark a project as just-opened. Fire-and-forget; errors only logged. */
+  touchProject: (id: string) => Promise<void>;
   promoteIdeaToProject: (ideaId: string) => Promise<DbProject>;
   completeRecurringInstance: (
     entryId: string,
@@ -799,6 +805,36 @@ export function DatabaseProvider({
     [],
   );
 
+  const setProjectFeatured = useCallback(
+    async (id: string, value: boolean): Promise<void> => {
+      try {
+        await getDb();
+        await dbSetProjectFeatured(id, value);
+        setProjects((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, is_featured: value ? 1 : 0 } : p)),
+        );
+      } catch (error) {
+        console.error("[DatabaseContext] setProjectFeatured failed:", error);
+        throw error;
+      }
+    },
+    [],
+  );
+
+  const touchProject = useCallback(async (id: string): Promise<void> => {
+    try {
+      await getDb();
+      const now = Date.now();
+      await dbTouchProject(id);
+      setProjects((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, last_opened_at: now } : p)),
+      );
+    } catch (error) {
+      // Touch is a side-effect on navigation — never throw and never block the route.
+      console.error("[DatabaseContext] touchProject failed:", error);
+    }
+  }, []);
+
   const deleteProject = useCallback(async (id: string): Promise<void> => {
     try {
       await getDb();
@@ -882,6 +918,8 @@ export function DatabaseProvider({
     createProject,
     updateProject,
     deleteProject,
+    setProjectFeatured,
+    touchProject,
     promoteIdeaToProject,
     completeRecurringInstance,
     uncompleteRecurringInstance,

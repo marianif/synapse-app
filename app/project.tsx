@@ -1,30 +1,32 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useRef, useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DirectRow } from "@/components/molecules/direct-row";
+import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
+import { ProjectCaptureChooserSheet } from "@/components/molecules/project-capture-chooser-sheet";
+import {
+  ProjectDeadlineComposerSheet,
+  ProjectIdeaComposerSheet,
+  ProjectTodoComposerSheet,
+} from "@/components/molecules/project-composers";
+import { ProjectNoteComposerSheet } from "@/components/molecules/project-note-composer-sheet";
+import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sheet";
+import { ProjectPullInSheet } from "@/components/molecules/project-pull-in-sheet";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { tokens, useTheme } from "@/constants/theme";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
-import { doneStatus } from "@/lib/direct-when";
+import { doneStatus, sortDirect } from "@/lib/direct-when";
 import { ConfirmKey } from "@/lib/settings";
 import { isTodoFamily } from "@/lib/taxonomy";
+import type { CreateEntryInput } from "@/contexts/database-context";
 import type { DbEntry, EntryType } from "@/lib/types";
-
-/** A small curated grid of starter emoji — fast pick, then the "another" tap
- *  opens the system emoji keyboard for anything off-shelf. */
-const EMOJI_QUICK = ["🧠", "🎨", "🎭", "🪩", "🛠️", "🌿", "📚", "💼", "🎬", "🧪", "🪐", "✨"];
 
 const isDone = (e: DbEntry): boolean =>
   e.status === "completed" || e.status === "met";
@@ -57,22 +59,33 @@ export default function ProjectScreen(): React.ReactElement {
   const {
     projects,
     entries,
+    createEntry,
+    updateEntry,
     updateEntryStatus,
     deleteEntry,
     updateProject,
     deleteProject,
   } = useDatabase();
-  const { entries: diaryEntries } = useDiary();
+  const {
+    entries: diaryEntries,
+    addEntry: addDiaryEntry,
+    updateEntry: updateDiaryEntry,
+  } = useDiary();
 
   const project = projects.find((p) => p.id === id);
 
   const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteProject });
 
-  // Inline emoji picker — tapping the hero opens this row of quick picks.
-  // Picking commits immediately; tapping "more" focuses a hidden TextInput so
-  // the system emoji keyboard takes over for anything off-shelf.
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const emojiInputRef = useRef<TextInput>(null);
+  // Overflow sheet — every tier-3 verb (rename, change emoji, archive, delete)
+  // lives here so the project surface itself can stay a working zone. Opens
+  // from ScreenHeader's `··` button on the "menu" pane; the hero emoji opens
+  // it straight on the "emoji" pane so picking stays a single tap.
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const [overflowMode, setOverflowMode] = useState<"menu" | "emoji">("menu");
+  const openOverflow = (next: "menu" | "emoji"): void => {
+    setOverflowMode(next);
+    setOverflowOpen(true);
+  };
 
   const requestDelete = (): void => {
     if (!project) return;
@@ -83,17 +96,126 @@ export default function ProjectScreen(): React.ReactElement {
     });
   };
 
-  const { open, ideas, origin, notes } = useMemo(() => {
-    const filed = entries.filter((e) => e.project_id === id);
-    return {
-      open: filed.filter((e) => isTodoFamily(e.type) && !isDone(e)),
-      ideas: filed.filter((e) => e.type === "idea" && !isDone(e)),
-      origin: entries.find(
-        (e) => e.type === "idea" && e.promoted_project_id === id,
-      ),
-      notes: diaryEntries.filter((n) => n.linked_project_id === id),
-    };
-  }, [entries, diaryEntries, id]);
+  const { spine, openCount, ideas, origin, notes, unfiledIdeas, unfiledNotes } =
+    useMemo(() => {
+      const filed = entries.filter((e) => e.project_id === id);
+      // Spine: open AND done todos/deadlines, sorted by sortDirect so done
+      // sinks to the bottom. DirectRow renders done lines with strikethrough +
+      // dimmed dot intrinsically; swipe-to-delete still works on done rows,
+      // which is what we want — the user can clear a done line if they're
+      // sure, or leave it as a record of completion.
+      const todoLike = filed.filter((e) => isTodoFamily(e.type));
+      return {
+        spine: sortDirect(todoLike),
+        openCount: todoLike.filter((e) => !isDone(e)).length,
+        ideas: filed.filter((e) => e.type === "idea" && !isDone(e)),
+        origin: entries.find(
+          (e) => e.type === "idea" && e.promoted_project_id === id,
+        ),
+        notes: diaryEntries.filter((n) => n.linked_project_id === id),
+        // Pull-in pool — loose thinking the user can attribute to THIS project.
+        // Ideas: open + unfiled. Notes: free (no entry link, no project link).
+        // Todos/deadlines are intentionally excluded — those were either
+        // captured into a project or live as standalone commitments; retro-
+        // attaching them is a re-categorization verb that doesn't belong here.
+        unfiledIdeas: entries.filter(
+          (e) =>
+            e.type === "idea" && !e.project_id && !isDone(e),
+        ),
+        unfiledNotes: diaryEntries.filter(
+          (n) => !n.linked_project_id && !n.linked_entry_id,
+        ),
+      };
+    }, [entries, diaryEntries, id]);
+  const [pullInOpen, setPullInOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
+  // Capture flow: hero pen → chooser sheet → one of three composers. Held
+  // separately (not a single union) so the chooser can close cleanly before
+  // the composer animates in — overlapping sheet animations look stacked.
+  const [chooserOpen, setChooserOpen] = useState(false);
+  const [activeComposer, setActiveComposer] = useState<
+    null | "todo" | "deadline" | "idea"
+  >(null);
+
+  // Long-press menu on idea chips. Holding the idea on the sheet by id (not
+  // the row) means re-renders during pull-in / promote don't yank the menu
+  // away from under the user's thumb.
+  const [actionIdeaId, setActionIdeaId] = useState<string | null>(null);
+  const actionIdea = useMemo(
+    () => entries.find((e) => e.id === actionIdeaId) ?? null,
+    [entries, actionIdeaId],
+  );
+
+  // Pull-in handlers. Both keep the sheet open — chaining is the point.
+  // updateEntry / updateDiaryEntry update both DB and in-memory state, so
+  // the next render's `unfiledIdeas`/`unfiledNotes` won't include the chip
+  // the user just tapped (it vanishes from the strip automatically).
+  const handlePullInIdea = (idea: DbEntry): void => {
+    if (!id) return;
+    void updateEntry(idea.id, { projectId: id }).catch((err) =>
+      console.error("Failed to pull idea into project:", err),
+    );
+  };
+  const handlePullInNote = (
+    note: import("@/lib/types").DbDiaryEntry,
+  ): void => {
+    if (!id) return;
+    void updateDiaryEntry(note.id, { linkedProjectId: id }).catch((err) =>
+      console.error("Failed to pull note into project:", err),
+    );
+  };
+
+  // Idea action handlers.
+  const handleMakeTodoFromIdea = (idea: DbEntry): void => {
+    if (!id) return;
+    // Spawn a sibling todo carrying the idea's title; the idea stays put as
+    // provenance (the user can later see "this todo came from that thought"
+    // if we surface the link, or just leave the two as parallel rows).
+    void createEntry({
+      title: idea.title,
+      type: "todo",
+      projectId: id,
+    }).catch((err) =>
+      console.error("Failed to make todo from idea:", err),
+    );
+  };
+  const handleUnfileIdea = (idea: DbEntry): void => {
+    void updateEntry(idea.id, { projectId: null }).catch((err) =>
+      console.error("Failed to unfile idea:", err),
+    );
+  };
+  const handleOpenIdea = (idea: DbEntry): void => {
+    router.push({
+      pathname: "/detail",
+      params: { id: idea.id, entryType: idea.type },
+    });
+  };
+
+  // + write a note — opens the lightweight composer pre-linked to this project.
+  const handleSaveNote = (body: string): void => {
+    if (!id) return;
+    void addDiaryEntry(body, null, null, id).catch((err) =>
+      console.error("Failed to save project note:", err),
+    );
+  };
+
+  // Hero pen → chooser → composer flow. The composers each emit a partial
+  // CreateEntryInput; we splice in the type + projectId and persist. Closing
+  // the composer is the composer's own responsibility; we just fire-and-log.
+  const persistComposed = (
+    type: "todo" | "deadline" | "idea",
+    input: Partial<CreateEntryInput>,
+  ): void => {
+    if (!id) return;
+    void createEntry({
+      ...input,
+      title: input.title ?? "",
+      type,
+      projectId: id,
+    }).catch((err) =>
+      console.error(`Failed to create ${type} in project:`, err),
+    );
+  };
 
   // DirectRow done/delete handlers — same shape as the home board, so a line
   // triaged here behaves exactly like the same line on the board.
@@ -109,11 +231,23 @@ export default function ProjectScreen(): React.ReactElement {
     );
   };
 
-  const pickEmoji = (next: string | null): void => {
+  const handleRename = (next: string): void => {
     if (!project) return;
-    setPickerOpen(false);
+    void updateProject(project.id, { title: next }).catch((err) =>
+      console.error("Failed to rename project:", err),
+    );
+  };
+  const handleChangeEmoji = (next: string | null): void => {
+    if (!project) return;
     void updateProject(project.id, { emoji: next }).catch((err) =>
       console.error("Failed to update project emoji:", err),
+    );
+  };
+  const handleToggleArchive = (): void => {
+    if (!project) return;
+    const next = project.status === "archived" ? "active" : "archived";
+    void updateProject(project.id, { status: next }).catch((err) =>
+      console.error("Failed to archive project:", err),
     );
   };
 
@@ -162,6 +296,21 @@ export default function ProjectScreen(): React.ReactElement {
               }
               onBack={() => router.back()}
               inset
+              headerRight={
+                <Pressable
+                  onPress={() => openOverflow("menu")}
+                  hitSlop={12}
+                  accessibilityRole="button"
+                  accessibilityLabel="Project actions"
+                  style={styles.overflowBtn}
+                >
+                  <MaterialCommunityIcons
+                    name="dots-horizontal"
+                    size={24}
+                    color={colors.ink}
+                  />
+                </Pressable>
+              }
             />
           ),
         }}
@@ -172,13 +321,15 @@ export default function ProjectScreen(): React.ReactElement {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* HERO — emoji identity + open-count gauge.
-            Tapping the emoji opens an inline quick-pick row; a quiet "+"
-            slot stands in until one is chosen. The big mono number to the
-            right is the instrument-panel readout: what's pressing in here. */}
+        {/* HERO — emoji identity + open-count gauge. The emoji slot is the
+            fast path to the picker (opens the overflow sheet directly on its
+            emoji pane); the same picker is also reachable via the header
+            `··` overflow → Change emoji, for symmetry with rename / archive /
+            delete. The big mono number to the right is the instrument-panel
+            readout: what's pressing in here. */}
         <View style={styles.hero}>
           <Pressable
-            onPress={() => setPickerOpen((v) => !v)}
+            onPress={() => openOverflow("emoji")}
             accessibilityRole="button"
             accessibilityLabel={
               project.emoji
@@ -194,18 +345,17 @@ export default function ProjectScreen(): React.ReactElement {
             {project.emoji ? (
               <ThemedText style={styles.heroEmoji}>{project.emoji}</ThemedText>
             ) : (
-              <ThemedText
-                type="title"
-                style={{ color: colors.inkMuted }}
-              >
-                +
-              </ThemedText>
+              <MaterialCommunityIcons
+                name="folder-outline"
+                size={28}
+                color={colors.inkMuted}
+              />
             )}
           </Pressable>
 
           <View style={styles.heroGauge}>
             <ThemedText type="display" style={{ color: colors.ink }}>
-              {open.length}
+              {openCount}
             </ThemedText>
             <ThemedText
               type="micro"
@@ -214,77 +364,30 @@ export default function ProjectScreen(): React.ReactElement {
               ON THE LINE
             </ThemedText>
           </View>
-        </View>
 
-        {/* Inline emoji picker — only mounts when the hero is tapped. A wrap
-            of quick options, a "more" tile that hands off to the system
-            emoji keyboard, and a clear chip when one is already set. */}
-        {pickerOpen ? (
-          <View style={styles.pickerRow}>
-            {EMOJI_QUICK.map((e) => (
-              <Pressable
-                key={e}
-                onPress={() => pickEmoji(e)}
-                accessibilityRole="button"
-                accessibilityLabel={`Set project emoji to ${e}`}
-                style={({ pressed }) => [
-                  styles.pickerTile,
-                  { backgroundColor: colors.surface },
-                  pressed && styles.pressed,
-                ]}
-              >
-                <ThemedText style={styles.pickerEmoji}>{e}</ThemedText>
-              </Pressable>
-            ))}
-            <Pressable
-              onPress={() => emojiInputRef.current?.focus()}
-              accessibilityRole="button"
-              accessibilityLabel="Pick a different emoji from the keyboard"
-              style={({ pressed }) => [
-                styles.pickerTile,
-                { backgroundColor: colors.surface },
-                pressed && styles.pressed,
-              ]}
-            >
-              <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-                MORE
-              </ThemedText>
-            </Pressable>
-            {project.emoji ? (
-              <Pressable
-                onPress={() => pickEmoji(null)}
-                accessibilityRole="button"
-                accessibilityLabel="Clear project emoji"
-                style={({ pressed }) => [
-                  styles.pickerTile,
-                  { backgroundColor: colors.surface },
-                  pressed && styles.pressed,
-                ]}
-              >
-                <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-                  CLEAR
-                </ThemedText>
-              </Pressable>
-            ) : null}
-
-            {/* Off-screen capture: focus this and the system keyboard opens;
-                first emoji entered commits and dismisses the keyboard. */}
-            <TextInput
-              ref={emojiInputRef}
-              value=""
-              onChangeText={(t) => {
-                const trimmed = t.trim();
-                if (!trimmed) return;
-                pickEmoji(Array.from(trimmed)[0] ?? null);
-                emojiInputRef.current?.blur();
-              }}
-              style={styles.hiddenInput}
-              caretHidden
-              accessibilityElementsHidden
-              importantForAccessibility="no"
+          {/* Capture trigger — opens a chooser sheet that asks WHAT the new
+              line is (todo / deadline / idea), then routes to the matching
+              minimal composer pre-locked to this project. No voice and no
+              ambient bar: the project surface is for deliberate authoring,
+              not 5-second-window ambient capture (which lives on home). */}
+          <Pressable
+            onPress={() => setChooserOpen(true)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Add to this project"
+            style={({ pressed }) => [
+              styles.capturePen,
+              { backgroundColor: colors.accent.clay },
+              pressed && styles.pressed,
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="plus"
+              size={20}
+              color={colors.accent.onClay}
             />
-          </View>
-        ) : null}
+          </Pressable>
+        </View>
 
         {/* Provenance — the handwritten line that says where this project
             came from. Identity, not metadata. Its own band so the eye
@@ -319,7 +422,7 @@ export default function ProjectScreen(): React.ReactElement {
             to one life area, not a separate read-only view. The gauge above
             already labels this section, so no duplicate kicker here. */}
         <View style={styles.section}>
-          {open.length === 0 ? (
+          {spine.length === 0 ? (
             <ThemedText
               type="hand"
               style={[styles.quiet, { color: colors.inkMuted }]}
@@ -327,7 +430,11 @@ export default function ProjectScreen(): React.ReactElement {
               Nothing on the line right now.
             </ThemedText>
           ) : (
-            open.map((e) => (
+            // Open lines first, then done lines (struck-through, dimmed dot —
+            // DirectRow handles the styling intrinsically from entry.status).
+            // Swipe-to-delete still works on done rows; the user clears them
+            // if they want, or leaves them as the week's record of work.
+            spine.map((e) => (
               <DirectRow
                 key={e.id}
                 entry={e}
@@ -337,6 +444,34 @@ export default function ProjectScreen(): React.ReactElement {
             ))
           )}
         </View>
+
+        {/* PULL IN — intake button for loose ideas and notes. Hidden when
+            nothing is loose (no point dangling an empty verb). Sits right
+            after the open spine because pulling-in IS open work: it's the
+            verb that turns ambient capture into project content. */}
+        {unfiledIdeas.length + unfiledNotes.length > 0 ? (
+          <Pressable
+            onPress={() => setPullInOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`Pull in ${unfiledIdeas.length} loose ideas and ${unfiledNotes.length} loose notes`}
+            style={({ pressed }) => [
+              styles.pullInButton,
+              pressed && styles.pressed,
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="plus"
+              size={16}
+              color={colors.inkMuted}
+            />
+            <ThemedText
+              type="micro"
+              style={[styles.pullInLabel, { color: colors.inkMuted }]}
+            >
+              {`PULL SOMETHING IN · ${unfiledIdeas.length + unfiledNotes.length}`}
+            </ThemedText>
+          </Pressable>
+        ) : null}
 
         {/* IDEAS — recall layer, intentionally quieter than the spine. A
             wrapped pin-row, each idea a slim chip, so the volume is clearly
@@ -359,8 +494,11 @@ export default function ProjectScreen(): React.ReactElement {
                       params: { id: e.id, entryType: e.type },
                     })
                   }
+                  onLongPress={() => setActionIdeaId(e.id)}
+                  delayLongPress={300}
                   accessibilityRole="button"
                   accessibilityLabel={`Idea: ${e.title}`}
+                  accessibilityHint="Long-press for actions"
                   style={({ pressed }) => [
                     styles.pin,
                     { backgroundColor: colors.surface },
@@ -383,80 +521,125 @@ export default function ProjectScreen(): React.ReactElement {
 
         {/* NOTES — the handwritten margin. No card chrome; just Caveat lines
             indented from a quiet vertical rule, so the section reads as
-            writing on the page rather than stored data. */}
-        {notes.length > 0 ? (
-          <View style={styles.section}>
-            <ThemedText
-              type="micro"
-              style={[styles.sectionKicker, { color: colors.inkMuted }]}
-            >
-              NOTES · {notes.length}
-            </ThemedText>
-            <View
-              style={[
-                styles.margin,
-                { borderLeftColor: colors.surfaceSubtle },
-              ]}
-            >
-              {notes.map((n) => (
-                <ThemedText
-                  key={n.id}
-                  type="hand"
-                  style={[styles.marginNote, { color: colors.ink }]}
-                >
-                  {n.body}
-                </ThemedText>
-              ))}
-            </View>
-          </View>
-        ) : null}
-
-        {/* Back-room: archive and delete. Kicker weight, well below the
-            reading zone — present and tappable, never competing. */}
-        <View style={styles.backroom}>
+            writing on the page rather than stored data. The section ALWAYS
+            renders (even at zero notes) because it owns the "+ write a note"
+            verb — the surface that displays notes is the one that authors them. */}
+        <View style={styles.section}>
+          {notes.length > 0 ? (
+            <>
+              <ThemedText
+                type="micro"
+                style={[styles.sectionKicker, { color: colors.inkMuted }]}
+              >
+                NOTES · {notes.length}
+              </ThemedText>
+              <View
+                style={[
+                  styles.margin,
+                  { borderLeftColor: colors.surfaceSubtle },
+                ]}
+              >
+                {notes.map((n) => (
+                  <ThemedText
+                    key={n.id}
+                    type="hand"
+                    style={[styles.marginNote, { color: colors.ink }]}
+                  >
+                    {n.body}
+                  </ThemedText>
+                ))}
+              </View>
+            </>
+          ) : null}
           <Pressable
-            onPress={() =>
-              updateProject(project.id, {
-                status: archived ? "active" : "archived",
-              }).catch((err) => console.error("Failed to archive:", err))
-            }
+            onPress={() => setNoteOpen(true)}
             accessibilityRole="button"
-            accessibilityLabel={
-              archived ? "Reactivate project" : "Archive project"
-            }
+            accessibilityLabel="Write a note about this project"
             style={({ pressed }) => [
-              styles.backroomBtn,
+              styles.addNoteBtn,
               pressed && styles.pressed,
             ]}
           >
+            <MaterialCommunityIcons
+              name="plus"
+              size={16}
+              color={colors.inkMuted}
+            />
             <ThemedText
               type="micro"
-              style={[styles.backroomLabel, { color: colors.inkMuted }]}
+              style={[styles.addNoteLabel, { color: colors.inkMuted }]}
             >
-              {archived ? "REACTIVATE" : "ARCHIVE"}
-            </ThemedText>
-          </Pressable>
-          <Pressable
-            onPress={requestDelete}
-            accessibilityRole="button"
-            accessibilityLabel="Delete project"
-            style={({ pressed }) => [
-              styles.backroomBtn,
-              pressed && styles.pressed,
-            ]}
-          >
-            <ThemedText
-              type="micro"
-              style={[
-                styles.backroomLabel,
-                { color: colors.feedback.danger },
-              ]}
-            >
-              DELETE
+              {notes.length === 0 ? "WRITE A NOTE" : "ADD A NOTE"}
             </ThemedText>
           </Pressable>
         </View>
+
       </ScrollView>
+
+      <ProjectOverflowSheet
+        visible={overflowOpen}
+        project={project}
+        initialMode={overflowMode}
+        onClose={() => setOverflowOpen(false)}
+        onRename={handleRename}
+        onChangeEmoji={handleChangeEmoji}
+        onToggleArchive={handleToggleArchive}
+        onDelete={requestDelete}
+      />
+
+      <ProjectPullInSheet
+        visible={pullInOpen}
+        onClose={() => setPullInOpen(false)}
+        unfiledIdeas={unfiledIdeas}
+        unfiledNotes={unfiledNotes}
+        onAttachIdea={handlePullInIdea}
+        onAttachNote={handlePullInNote}
+      />
+
+      <IdeaActionSheet
+        visible={actionIdea !== null}
+        idea={actionIdea}
+        onClose={() => setActionIdeaId(null)}
+        onMakeTodo={() => actionIdea && handleMakeTodoFromIdea(actionIdea)}
+        onUnfile={() => actionIdea && handleUnfileIdea(actionIdea)}
+        onOpen={() => actionIdea && handleOpenIdea(actionIdea)}
+      />
+
+      <ProjectNoteComposerSheet
+        visible={noteOpen}
+        projectTitle={project.title}
+        onClose={() => setNoteOpen(false)}
+        onSave={handleSaveNote}
+      />
+
+      {/* Hero pen → chooser → one of three composers. The chooser closes
+          itself before the composer animates in (state holds them apart). */}
+      <ProjectCaptureChooserSheet
+        visible={chooserOpen}
+        onClose={() => setChooserOpen(false)}
+        onPick={(type) => {
+          setChooserOpen(false);
+          setActiveComposer(type);
+        }}
+      />
+      <ProjectIdeaComposerSheet
+        visible={activeComposer === "idea"}
+        projectTitle={project.title}
+        onClose={() => setActiveComposer(null)}
+        onSave={(input) => persistComposed("idea", input)}
+      />
+      <ProjectTodoComposerSheet
+        visible={activeComposer === "todo"}
+        projectTitle={project.title}
+        onClose={() => setActiveComposer(null)}
+        onSave={(input) => persistComposed("todo", input)}
+      />
+      <ProjectDeadlineComposerSheet
+        visible={activeComposer === "deadline"}
+        projectTitle={project.title}
+        onClose={() => setActiveComposer(null)}
+        onSave={(input) => persistComposed("deadline", input)}
+      />
 
       <ConfirmSheet
         visible={deleteConfirm.visible}
@@ -511,34 +694,18 @@ const styles = StyleSheet.create({
   gaugeLabel: {
     letterSpacing: tokens.type.micro.tracking,
   },
-  headerGlyph: {
-    fontSize: 22,
-    lineHeight: 26,
-  },
-
-  // Picker tiles — slim, surface-filled, wrap to fit the row.
-  pickerRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: tokens.space.sm,
-  },
-  pickerTile: {
-    minWidth: 44,
+  // Pen tile — the project's capture trigger. Clay slab, matches every
+  // primary action across the brand; tap → text, long-press → voice.
+  capturePen: {
+    width: 44,
     height: 44,
-    paddingHorizontal: tokens.space.md,
     borderRadius: tokens.radius.md,
     alignItems: "center",
     justifyContent: "center",
   },
-  pickerEmoji: {
+  headerGlyph: {
     fontSize: 22,
-    lineHeight: 28,
-  },
-  hiddenInput: {
-    position: "absolute",
-    width: 1,
-    height: 1,
-    opacity: 0,
+    lineHeight: 26,
   },
 
   // Provenance band: own breathing room, reads as a margin note above the
@@ -594,19 +761,45 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
 
-  // Back-room footer — kicker weight, real distance above.
-  backroom: {
-    flexDirection: "row",
-    gap: tokens.space.xxxl,
-    paddingTop: tokens.space.xxl,
-  },
-  backroomBtn: {
-    minHeight: 44,
+  // Header `··` overflow button — matches the back button's hit area.
+  overflowBtn: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
     justifyContent: "center",
   },
-  backroomLabel: {
+
+  // Add-note button — same mono quiet voice as the pull-in trigger, sits
+  // under the NOTES margin so the verb belongs to the surface that displays
+  // the notes. Aligned to the rule's indent so it reads as "add to the margin."
+  addNoteBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+    paddingVertical: tokens.space.sm,
+    paddingLeft: tokens.space.md,
+    alignSelf: "flex-start",
+  },
+  addNoteLabel: {
     letterSpacing: tokens.type.micro.tracking,
   },
+
+  // Pull-in button — quiet mono affordance, sits flush between spine and
+  // done-this-week. Reads as a verb (the "+" makes the intake meaning legible
+  // without needing the word "ADD"), tier-2 weight so it never competes with
+  // the DirectRow gestures above.
+  pullInButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+    paddingVertical: tokens.space.sm,
+    paddingHorizontal: tokens.space.xs,
+    alignSelf: "flex-start",
+  },
+  pullInLabel: {
+    letterSpacing: tokens.type.micro.tracking,
+  },
+
 
   empty: {
     padding: tokens.space.xl,

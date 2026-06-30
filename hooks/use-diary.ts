@@ -4,6 +4,7 @@ import {
   deleteDiaryEntry,
   getDiaryEntries,
   insertDiaryEntry,
+  updateDiaryEntry as dbUpdateDiaryEntry,
 } from "@/lib/database";
 
 import type { DbDiaryEntry, DiaryMood } from "@/lib/types";
@@ -12,10 +13,23 @@ interface UseDiaryResult {
   entries: DbDiaryEntry[];
   isLoading: boolean;
   refresh: () => Promise<void>;
+  /** Insert a new note. Link targets are optional; either, both, or neither. */
   addEntry: (
     body: string,
     mood: DiaryMood | null,
     linkedEntryId?: string | null,
+    linkedProjectId?: string | null,
+  ) => Promise<void>;
+  /** Patch a note. Pass any link target as `null` to clear it. Used by the
+   *  project surface to file a free note under a project. */
+  updateEntry: (
+    id: string,
+    data: {
+      body?: string;
+      mood?: DiaryMood | null;
+      linkedEntryId?: string | null;
+      linkedProjectId?: string | null;
+    },
   ) => Promise<void>;
   removeEntry: (id: string) => Promise<void>;
 }
@@ -45,15 +59,59 @@ export function useDiary(): UseDiaryResult {
       body: string,
       mood: DiaryMood | null,
       linkedEntryId: string | null = null,
+      linkedProjectId: string | null = null,
     ): Promise<void> => {
       const trimmed = body.trim();
       if (!trimmed) return;
       try {
-        const created = await insertDiaryEntry(trimmed, mood, linkedEntryId);
+        const created = await insertDiaryEntry(
+          trimmed,
+          mood,
+          linkedEntryId,
+          linkedProjectId,
+        );
         // optimistic prepend — newest first, matching the query order
         setEntries((prev) => [created, ...prev]);
       } catch (error) {
         console.error("[useDiary] addEntry failed:", error);
+      }
+    },
+    [],
+  );
+
+  const updateEntry = useCallback(
+    async (
+      id: string,
+      data: {
+        body?: string;
+        mood?: DiaryMood | null;
+        linkedEntryId?: string | null;
+        linkedProjectId?: string | null;
+      },
+    ): Promise<void> => {
+      try {
+        await dbUpdateDiaryEntry(id, data);
+        const now = Math.floor(Date.now() / 1000);
+        setEntries((prev) =>
+          prev.map((e) =>
+            e.id !== id
+              ? e
+              : {
+                  ...e,
+                  ...(data.body !== undefined ? { body: data.body } : {}),
+                  ...(data.mood !== undefined ? { mood: data.mood } : {}),
+                  ...(data.linkedEntryId !== undefined
+                    ? { linked_entry_id: data.linkedEntryId }
+                    : {}),
+                  ...(data.linkedProjectId !== undefined
+                    ? { linked_project_id: data.linkedProjectId }
+                    : {}),
+                  updated_at: now,
+                },
+          ),
+        );
+      } catch (error) {
+        console.error("[useDiary] updateEntry failed:", error);
       }
     },
     [],
@@ -72,5 +130,5 @@ export function useDiary(): UseDiaryResult {
     refresh();
   }, [refresh]);
 
-  return { entries, isLoading, refresh, addEntry, removeEntry };
+  return { entries, isLoading, refresh, addEntry, updateEntry, removeEntry };
 }

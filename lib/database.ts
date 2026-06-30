@@ -532,6 +532,48 @@ export async function deleteDiaryEntry(id: string): Promise<void> {
 }
 
 /**
+ * Update a diary entry's body, mood, or link targets. Pass `linkedProjectId`
+ * or `linkedEntryId` as `null` to clear. Bumps updated_at.
+ */
+export async function updateDiaryEntry(
+  id: string,
+  data: {
+    body?: string;
+    mood?: DiaryMood | null;
+    linkedEntryId?: string | null;
+    linkedProjectId?: string | null;
+  },
+): Promise<void> {
+  const db = getDb();
+  const updates: string[] = [];
+  const values: (string | number | null)[] = [];
+  if (data.body !== undefined) {
+    updates.push('body = ?');
+    values.push(data.body);
+  }
+  if (data.mood !== undefined) {
+    updates.push('mood = ?');
+    values.push(data.mood);
+  }
+  if (data.linkedEntryId !== undefined) {
+    updates.push('linked_entry_id = ?');
+    values.push(data.linkedEntryId);
+  }
+  if (data.linkedProjectId !== undefined) {
+    updates.push('linked_project_id = ?');
+    values.push(data.linkedProjectId);
+  }
+  if (updates.length === 0) return;
+  updates.push('updated_at = ?');
+  values.push(Math.floor(Date.now() / 1000));
+  values.push(id);
+  await db.runAsync(
+    `UPDATE diary_entries SET ${updates.join(', ')} WHERE id = ?`,
+    ...values,
+  );
+}
+
+/**
  * Unlink any diary notes that point at the given entry — the app-side stand-in
  * for `ON DELETE SET NULL` (the FK clause can't be added by ADD COLUMN, so we
  * enforce it here). Call before deleting an entry so linked reflections survive

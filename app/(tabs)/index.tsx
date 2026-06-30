@@ -31,18 +31,13 @@ import {
   greetingFor,
 } from "@/components/molecules/field-greeting";
 
-import {
-  CaptureResolver,
-  type CaptureResolution,
-  type LinkableIdea,
-} from "@/components/molecules/capture-resolver";
+import { CaptureResolver } from "@/components/molecules/capture-resolver";
 import { tokens, useTheme } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
+import { useCapture } from "@/hooks/use-capture";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
 import { useDiary } from "@/hooks/use-diary";
-import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
-import { splitCapture } from "@/lib/capture";
 import { byRunway, daysUntil } from "@/lib/direct-when";
 import { horizonLabel } from "@/lib/horizons";
 
@@ -109,16 +104,10 @@ export default function HomeScreen(): React.ReactElement {
   // and by the tab-bar pen key (tap → text, long-press → voice). Consumed once below.
   const { capture } = useLocalSearchParams<{ capture?: string }>();
 
-  const {
-    entries,
-    projects,
-    recurrenceCompletions,
-    fetchEntries,
-    createEntry,
-    createProject,
-  } = useDatabase();
+  const { entries, projects, recurrenceCompletions, fetchEntries, createProject } =
+    useDatabase();
 
-  const { addEntry: addDiaryEntry, refresh: refreshDiary } = useDiary();
+  const { refresh: refreshDiary } = useDiary();
 
   const { today: calendarToday } = useCalendarData(
     entries,
@@ -126,16 +115,16 @@ export default function HomeScreen(): React.ReactElement {
     recurrenceCompletions,
   );
 
-  const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
-  const [isRecording, setIsRecording] = useState(false);
-
-  // The text composer is summoned by the pen key (no always-idle bar — capture
-  // has ONE trigger). It closes itself when the input blurs with nothing typed.
-  const [composerOpen, setComposerOpen] = useState(false);
+  // The capture state machine — composer/recorder/resolver mutex, pending
+  // thought, voice piping, recent-ideas pool, the resolveCapture switch.
+  // Shared with the project surface (via useCapture(projectId)) so the dock
+  // grammar stays identical across screens.
+  const cap = useCapture();
 
   // The manual bar — the pen key's TAP register (long-press is voice). Deliberate
   // creation that capture can't reach: today, opening a project. Mutually
   // exclusive with the composer / recorder / resolver in the dock below.
+  // Stays home-only; the project surface has no need to birth a sibling project.
   const [manualOpen, setManualOpen] = useState(false);
 
   // Create a project from the manual bar, then go straight into it — a project
@@ -152,98 +141,6 @@ export default function HomeScreen(): React.ReactElement {
     [createProject, router],
   );
 
-  // The capture bar captures a THOUGHT, not (yet) a filed entry. A captured
-  // thought is held here as "pending" while the CaptureResolver lets the user
-  // file it as an idea (default), a todo, a deadline, an autonomous diary note,
-  // or a note ON a recent idea.
-  const [pendingThought, setPendingThought] = useState<string | null>(null);
-  const [picking, setPicking] = useState(false);
-
-  // Recent ideas offered under "Note on…". Capped + newest-first; reading from
-  // the in-memory entries (single source of truth) keeps this in sync for free.
-  const recentIdeas: LinkableIdea[] = useMemo(
-    () =>
-      entries
-        .filter((e) => e.type === "idea")
-        .slice(0, 8)
-        .map((e) => ({ id: e.id, title: e.title })),
-    [entries],
-  );
-
-  // A thought arrives from the bar (typed or spoken): stash it and surface the
-  // resolver. Replacing a still-pending thought just swaps it.
-  const handleCapture = useCallback((text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    setPicking(false);
-    setPendingThought(trimmed);
-  }, []);
-
-  const resolveCapture = useCallback(
-    (resolution: CaptureResolution) => {
-      const text = pendingThought;
-      setPendingThought(null);
-      setPicking(false);
-      if (!text) return;
-      const { title, notes } = splitCapture(text);
-      switch (resolution.kind) {
-        case "idea":
-          createEntry({ title, type: "idea", notes }).catch((err) =>
-            console.error("Failed to capture idea:", err),
-          );
-          break;
-        case "todo":
-          createEntry({
-            title,
-            type: "todo",
-            notes,
-            scheduledDate: resolution.scheduledDate,
-            scheduledTime: resolution.scheduledTime,
-            projectId: resolution.projectId,
-          }).catch((err) => console.error("Failed to capture todo:", err));
-          break;
-        case "deadline":
-          createEntry({
-            title,
-            type: "deadline",
-            notes,
-            dueDate: resolution.dueDate,
-            dueTime: resolution.dueTime,
-            dueRange: resolution.dueRange,
-            projectId: resolution.projectId,
-          }).catch((err) => console.error("Failed to capture deadline:", err));
-          break;
-        case "note":
-          addDiaryEntry(text, null).catch((err) =>
-            console.error("Failed to file diary note:", err),
-          );
-          break;
-        case "note-on":
-          addDiaryEntry(text, null, resolution.entryId).catch((err) =>
-            console.error("Failed to file linked diary note:", err),
-          );
-          break;
-      }
-    },
-    [pendingThought, addDiaryEntry, createEntry],
-  );
-
-  const handleStartRecording = useCallback(async () => {
-    setIsRecording(true);
-    await startRecording();
-  }, [startRecording]);
-
-  const handleStopRecording = useCallback(async () => {
-    await stopRecording();
-    setIsRecording(false);
-    handleCapture(transcript);
-  }, [stopRecording, transcript, handleCapture]);
-
-  const handleCancelRecording = useCallback(async () => {
-    await stopRecording();
-    setIsRecording(false);
-  }, [stopRecording]);
-
   // Arm the dock when summoned — by the widget deep link (voice / text) or the
   // tab-bar pen key (tap → manual, long-press → voice). Guard with a ref so it
   // fires once per intent. Each register opens its own bar and closes the others.
@@ -251,26 +148,26 @@ export default function HomeScreen(): React.ReactElement {
   useEffect(() => {
     const known =
       capture === "voice" || capture === "text" || capture === "manual";
-    if (capture === "voice" && !armedFromLink.current && !isRecording) {
+    if (capture === "voice" && !armedFromLink.current && !cap.isRecording) {
       armedFromLink.current = true;
       setManualOpen(false);
-      setComposerOpen(false);
-      handleStartRecording();
+      cap.setComposerOpen(false);
+      cap.startRecording();
       router.setParams({ capture: undefined });
     } else if (capture === "text" && !armedFromLink.current) {
       armedFromLink.current = true;
       setManualOpen(false);
-      setComposerOpen(true);
+      cap.setComposerOpen(true);
       router.setParams({ capture: undefined });
     } else if (capture === "manual" && !armedFromLink.current) {
       armedFromLink.current = true;
-      setComposerOpen(false);
+      cap.setComposerOpen(false);
       setManualOpen(true);
       router.setParams({ capture: undefined });
     } else if (!known) {
       armedFromLink.current = false;
     }
-  }, [capture, isRecording, handleStartRecording, router]);
+  }, [capture, cap, router]);
 
   useFocusEffect(
     useCallback(() => {
@@ -384,7 +281,7 @@ export default function HomeScreen(): React.ReactElement {
           projects={activeProjects}
           entries={entries}
           onAddProject={() => {
-            setComposerOpen(false);
+            cap.setComposerOpen(false);
             setManualOpen(true);
           }}
         />
@@ -401,36 +298,33 @@ export default function HomeScreen(): React.ReactElement {
         style={[styles.captureDock, dockStyle]}
         pointerEvents="box-none"
       >
-        {manualOpen && pendingThought === null && !isRecording ? (
+        {manualOpen && cap.pendingThought === null && !cap.isRecording ? (
           <ManualBar
             onCreateProject={handleCreateProject}
             onDismissEmpty={() => setManualOpen(false)}
           />
         ) : null}
-        {pendingThought !== null ? (
+        {cap.pendingThought !== null ? (
           <CaptureResolver
-            text={pendingThought}
-            ideas={recentIdeas}
+            text={cap.pendingThought}
+            ideas={cap.recentIdeas}
             projects={projects}
-            picking={picking}
-            onTogglePicking={() => setPicking((p) => !p)}
-            onResolve={resolveCapture}
-            onDismiss={() => {
-              setPendingThought(null);
-              setPicking(false);
-            }}
+            picking={cap.picking}
+            onTogglePicking={() => cap.setPicking(!cap.picking)}
+            onResolve={cap.resolveCapture}
+            onDismiss={cap.dismissPending}
           />
         ) : null}
-        {composerOpen || isRecording ? (
+        {cap.composerOpen || cap.isRecording ? (
           <CaptureBar
-            onSubmit={handleCapture}
-            onVoice={handleStartRecording}
-            isRecording={isRecording}
-            transcript={transcript}
-            onStop={handleStopRecording}
-            onCancel={handleCancelRecording}
-            autoFocus={composerOpen}
-            onDismissEmpty={() => setComposerOpen(false)}
+            onSubmit={cap.capture}
+            onVoice={cap.startRecording}
+            isRecording={cap.isRecording}
+            transcript={cap.transcript}
+            onStop={cap.stopRecording}
+            onCancel={cap.cancelRecording}
+            autoFocus={cap.composerOpen}
+            onDismissEmpty={() => cap.setComposerOpen(false)}
           />
         ) : null}
       </Animated.View>

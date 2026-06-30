@@ -35,6 +35,12 @@ interface ScreenHeaderProps {
    * Leave off when rendered inside a screen that already owns its top inset.
    */
   inset?: boolean;
+  /**
+   * Optional right-side action(s) — typically a single icon button such as
+   * a `··` overflow menu. Sits flush with the trailing edge of the header,
+   * mirroring the back button on the left so the row stays balanced.
+   */
+  headerRight?: React.ReactNode;
 }
 
 /**
@@ -55,6 +61,7 @@ export function ScreenHeader({
   glyph,
   onBack,
   inset = false,
+  headerRight,
 }: ScreenHeaderProps): React.ReactElement {
   const { colors } = useTheme();
   const safeArea = useSafeAreaInsets();
@@ -103,8 +110,22 @@ export function ScreenHeader({
           <ThemedText type="headline" numberOfLines={1} style={styles.title}>
             {title}
           </ThemedText>
+          {kicker ? (
+            <ThemedText
+              type="micro"
+              style={[
+                styles.kicker,
+                { color: entryType ? accent : colors.inkMuted },
+              ]}
+              numberOfLines={1}
+            >
+              {kicker}
+            </ThemedText>
+          ) : null}
         </View>
       </View>
+
+      {headerRight ? <View style={styles.rightSlot}>{headerRight}</View> : null}
     </View>
   );
 }
@@ -145,5 +166,10 @@ const styles = StyleSheet.create({
   },
   kicker: {
     letterSpacing: tokens.type.kicker.tracking,
+  },
+  rightSlot: {
+    flexShrink: 0,
+    flexDirection: "row",
+    alignItems: "center",
   },
 });

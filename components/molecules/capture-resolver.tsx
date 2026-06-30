@@ -100,6 +100,15 @@ interface CaptureResolverProps {
   onResolve: (resolution: CaptureResolution) => void;
   /** Discard the pending thought without filing it. */
   onDismiss: () => void;
+  /**
+   * When set, any captured todo/deadline is pre-attributed to this project
+   * and the PROJECT picker row is hidden — the resolver was summoned from
+   * INSIDE the project surface, so attribution is implied. The "unfiled"
+   * option doesn't make sense there, and offering a switcher would let the
+   * user accidentally re-attribute the capture away from where they meant
+   * it to land.
+   */
+  lockedProjectId?: string | null;
 }
 
 // The two destinations that carry detail. Picking one SELECTS it (and opens the
@@ -152,6 +161,7 @@ export function CaptureResolver({
   onTogglePicking,
   onResolve,
   onDismiss,
+  lockedProjectId = null,
 }: CaptureResolverProps): React.ReactElement {
   const reduced = useReducedMotion();
   const { scheme } = useTheme();
@@ -172,7 +182,10 @@ export function CaptureResolver({
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [dueRange, setDueRange] = useState<DueRange | null>(null);
-  const [projectId, setProjectId] = useState<string | null>(null);
+  // Seed from the lock so the resolved attribution carries the locked project
+  // even on the very first commit. Re-seeding on lock change is intentional —
+  // the project surface re-mounts the resolver with a fresh thought each time.
+  const [projectId, setProjectId] = useState<string | null>(lockedProjectId);
   const [exact, setExact] = useState(false);
 
   const activeProjects = projects.filter((p) => p.status === "active");
@@ -584,8 +597,12 @@ export function CaptureResolver({
                   </ThemedText>
                 ) : null}
 
-                {/* PROJECT — attribution as inline words. Hidden with no projects. */}
-                {activeProjects.length > 0 ? (
+                {/* PROJECT — attribution as inline words. Hidden when:
+                    - no projects exist, OR
+                    - the resolver is locked (summoned from a project surface,
+                      so the attribution is implied; the echo line below
+                      already shows the project name). */}
+                {!lockedProjectId && activeProjects.length > 0 ? (
                   <ValueRow label="PROJECT" keyColor={BAR_INK_MUTED}>
                     <ResolverValue
                       label="unfiled"

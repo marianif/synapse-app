@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import {
@@ -63,6 +63,12 @@ export function DirectOverview({
   // Clamp during render so a deletion on the last page (or a filter change)
   // can't strand us on a page that no longer exists.
   const safePage = Math.min(page, pageCount - 1);
+  // Reconcile the render-time clamp back into state so a later change (e.g. items
+  // added back) resumes from the page the user is actually viewing, not a stale
+  // out-of-range page.
+  useEffect(() => {
+    if (page > pageCount - 1) setPage(pageCount - 1);
+  }, [page, pageCount]);
   const pageItems = ordered.slice(
     safePage * PAGE_SIZE,
     safePage * PAGE_SIZE + PAGE_SIZE,
@@ -85,8 +91,6 @@ export function DirectOverview({
     );
   };
 
-  if (counts.all === 0) return null;
-
   return (
     <View style={styles.section}>
       <DirectFilterBar value={filter} counts={counts} onChange={changeFilter} />
@@ -102,7 +106,11 @@ export function DirectOverview({
         ))}
       </View>
 
-      <DirectPager page={safePage} pageCount={pageCount} onChange={setPage} />
+      <DirectPager
+        page={safePage}
+        pageCount={pageCount}
+        onChange={(p) => setPage(Math.max(0, Math.min(p, pageCount - 1)))}
+      />
     </View>
   );
 }

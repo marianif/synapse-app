@@ -13,32 +13,29 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { CountdownChip } from "@/components/atoms/countdown-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DetailActionBar } from "@/components/molecules/detail-action-bar";
-import { DetailReadout } from "@/components/molecules/detail-readout";
+import { DetailHero } from "@/components/molecules/detail-hero";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
 import { RelatedNotes } from "@/components/molecules/related-notes";
-import { SignalRail } from "@/components/molecules/signal-rail";
 import { WhenPicker } from "@/components/molecules/when-picker";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import type { ThemeColors } from "@/constants/theme";
 import { entryColor, tokens, useTheme } from "@/constants/theme";
-import { SomedayBadge } from "@/components/molecules/someday-badge";
-import { isSomeday } from "@/lib/taxonomy";
-import { horizonEndDate, horizonLabel } from "@/lib/horizons";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
-import { ConfirmKey } from "@/lib/settings";
+import { horizonEndDate, horizonLabel } from "@/lib/horizons";
 import {
   getEffectiveStatus,
   humanizeRule,
   isRecurringEntry,
   parseRule,
 } from "@/lib/recurrence";
+import { ConfirmKey } from "@/lib/settings";
+import { isSomeday } from "@/lib/taxonomy";
 import type {
   DbEntry,
   DbRecurrenceCompletion,
@@ -49,7 +46,7 @@ import type {
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { PrimaryAction } from "@/components/molecules/detail-action-bar";
-import type { ReadoutLine } from "@/components/molecules/detail-readout";
+import type { TelemetryChip } from "@/components/molecules/detail-hero";
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
@@ -189,36 +186,44 @@ function DeleteScopeSheet({
           >
             DELETE RECURRING ENTRY
           </ThemedText>
-          <Pressable style={styles.sheetOption} onPress={onDeleteThis}>
+          <Pressable
+            onPress={onDeleteThis}
+            style={({ pressed }) => [
+              styles.sheetOption,
+              pressed && { backgroundColor: colors.surfaceSubtle },
+            ]}
+          >
             <ThemedText type="body">Delete this occurrence</ThemedText>
           </Pressable>
-          <View
-            style={[
-              styles.sheetDivider,
+          <Pressable
+            onPress={onDeleteFuture}
+            style={({ pressed }) => [
+              styles.sheetOption,
               { backgroundColor: colors.surfaceSubtle },
+              pressed && { backgroundColor: colors.paper },
             ]}
-          />
-          <Pressable style={styles.sheetOption} onPress={onDeleteFuture}>
+          >
             <ThemedText type="body">Delete this and all future</ThemedText>
           </Pressable>
-          <View
-            style={[
-              styles.sheetDivider,
-              { backgroundColor: colors.surfaceSubtle },
+          <Pressable
+            onPress={onDeleteAll}
+            style={({ pressed }) => [
+              styles.sheetOption,
+              pressed && { backgroundColor: colors.surfaceSubtle },
             ]}
-          />
-          <Pressable style={styles.sheetOption} onPress={onDeleteAll}>
+          >
             <ThemedText type="body" style={{ color: tokens.feedback.danger }}>
               Delete entire series
             </ThemedText>
           </Pressable>
-          <View
-            style={[
-              styles.sheetDivider,
+          <Pressable
+            onPress={onClose}
+            style={({ pressed }) => [
+              styles.sheetOption,
               { backgroundColor: colors.surfaceSubtle },
+              pressed && { backgroundColor: colors.paper },
             ]}
-          />
-          <Pressable style={styles.sheetOption} onPress={onClose}>
+          >
             <ThemedText type="bodyBold" muted>
               Cancel
             </ThemedText>
@@ -479,8 +484,7 @@ export default function DetailScreen(): React.ReactElement {
             ? horizonEndDate(horizon)
             : draft.date.trim() || null
           : null,
-        dueTime:
-          isDeadlineType && !horizon ? draft.time.trim() || null : null,
+        dueTime: isDeadlineType && !horizon ? draft.time.trim() || null : null,
         dueRange: horizon,
         notes: draft.notes.trim() || null,
         recurrenceRule,
@@ -516,7 +520,7 @@ export default function DetailScreen(): React.ReactElement {
           }
         : undefined;
 
-  // ── Readout lines (mono telemetry) ───────────────────────────────────────────
+  // ── Telemetry chips — one glance-row, not a stack of separate cards ──────────
 
   const statusColor = getStatusColor(
     effectiveStatus,
@@ -524,43 +528,48 @@ export default function DetailScreen(): React.ReactElement {
     colors.inkMuted,
   );
 
-  const readoutLines: ReadoutLine[] = [];
+  const chips: TelemetryChip[] = [];
 
   const isDeadline = type === "deadline";
   const isTask = type === "todo";
 
   if (isTask) {
-    readoutLines.push({
-      key: "STATUS",
-      value: STATUS_LABELS[effectiveStatus] ?? effectiveStatus.toUpperCase(),
+    chips.push({
+      label: STATUS_LABELS[effectiveStatus] ?? effectiveStatus.toUpperCase(),
       dotColor: statusColor,
     });
-    if (entry.scheduled_date)
-      readoutLines.push({
-        key: "DATE",
-        value: readoutDate(entry.scheduled_date),
-      });
-    if (entry.scheduled_time)
-      readoutLines.push({ key: "TIME", value: entry.scheduled_time });
+    if (showSomedayBadge) {
+      chips.push({ label: "SOMEDAY", neutral: true });
+    } else {
+      if (entry.scheduled_date)
+        chips.push({ label: readoutDate(entry.scheduled_date) });
+      if (entry.scheduled_time) chips.push({ label: entry.scheduled_time });
+    }
   } else if (isDeadline) {
-    if (entry.due_date)
-      readoutLines.push({ key: "DUE", value: readoutDate(entry.due_date) });
-    if (entry.due_time)
-      readoutLines.push({ key: "TIME", value: entry.due_time });
+    const daysRemaining = parseDaysRemaining(entry.due_date);
+    const countdownColor =
+      effectiveStatus === "met"
+        ? tokens.feedback.success
+        : effectiveStatus === "overdue"
+          ? tokens.feedback.danger
+          : accentColor;
+    const countdownLabel =
+      effectiveStatus === "met"
+        ? "MET"
+        : effectiveStatus === "overdue"
+          ? `OVERDUE BY ${Math.abs(daysRemaining)} ${Math.abs(daysRemaining) === 1 ? "DAY" : "DAYS"}`
+          : daysRemaining === 0
+            ? "DUE TODAY"
+            : `DUE IN ${daysRemaining} ${daysRemaining === 1 ? "DAY" : "DAYS"}`;
+    chips.push({ label: countdownLabel, dotColor: countdownColor });
+    if (entry.due_time) chips.push({ label: entry.due_time });
   }
 
   if (entry.recurrence_rule)
-    readoutLines.push({
-      key: "REPEAT",
-      value: humanizeRule(entry.recurrence_rule).toUpperCase(),
-    });
+    chips.push({ label: humanizeRule(entry.recurrence_rule).toUpperCase() });
   if (entry.recurrence_end_date)
-    readoutLines.push({
-      key: "ENDS",
-      value: readoutDate(entry.recurrence_end_date),
-    });
-  if (entry.subtitle)
-    readoutLines.push({ key: "PROJECT", value: entry.subtitle.toUpperCase() });
+    chips.push({ label: `ENDS ${readoutDate(entry.recurrence_end_date)}` });
+  if (entry.subtitle) chips.push({ label: entry.subtitle.toUpperCase() });
 
   return (
     <SafeAreaView
@@ -572,7 +581,10 @@ export default function DetailScreen(): React.ReactElement {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         {/* ── Header ───────────────────────────────────────────── */}
-        <ScreenHeader title={editing ? "Edit" : "Detail"} onBack={() => router.back()} />
+        <ScreenHeader
+          title={editing ? "Edit" : "Detail"}
+          onBack={() => router.back()}
+        />
 
         {/* ── Scrollable content ──────────────────────────────── */}
         <ScrollView
@@ -581,12 +593,15 @@ export default function DetailScreen(): React.ReactElement {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Signal rail: type-color edge-bar + kicker + title + readout. In edit
-              mode the title slot becomes an inline input at the same scale. */}
-          <SignalRail
+          {/* Hero: one fused unit — edge-bar, kicker, title, and every glance
+              fact in a single telemetry row. In edit mode the title slot
+              becomes an inline input at the same scale; telemetry is hidden
+              since the pickers below take over those facts. */}
+          <DetailHero
             entryType={type}
             isRecurring={isRecurringEntry(entry)}
             title={title}
+            chips={editing ? [] : chips}
             titleSlot={
               editing ? (
                 <TextInput
@@ -600,44 +615,17 @@ export default function DetailScreen(): React.ReactElement {
                 />
               ) : undefined
             }
-          >
-            {/* Deadlines lead with the countdown, then the readout below it. */}
-            {!editing && isDeadline ? (
-              <View style={styles.countdownSlot}>
-                <CountdownChip
-                  daysRemaining={parseDaysRemaining(entry.due_date)}
-                  state={effectiveStatus as "pending" | "overdue" | "met"}
-                />
-              </View>
-            ) : null}
+          />
 
-            {/* An undated todo wears the SOMEDAY badge — present, not pressing. */}
-            {!editing && showSomedayBadge ? (
-              <View style={styles.railChild}>
-                <SomedayBadge />
-              </View>
-            ) : null}
-
-            {!editing && readoutLines.length > 0 ? (
-              <View style={styles.railChild}>
-                <DetailReadout lines={readoutLines} />
-              </View>
-            ) : null}
-
-            {/* Idea inspiration — the one place a softer voice fits. */}
-            {!editing && isIdea && entry.inspiration ? (
-              <ThemedText
-                type="body"
-                style={[
-                  styles.inspiration,
-                  styles.railChild,
-                  { color: colors.inkMuted },
-                ]}
-              >
-                {entry.inspiration}
-              </ThemedText>
-            ) : null}
-          </SignalRail>
+          {/* Idea inspiration — the one place a softer voice fits. */}
+          {!editing && isIdea && entry.inspiration ? (
+            <ThemedText
+              type="body"
+              style={[styles.inspiration, { color: colors.inkMuted }]}
+            >
+              {entry.inspiration}
+            </ThemedText>
+          ) : null}
 
           {editing ? (
             <>
@@ -756,7 +744,11 @@ export default function DetailScreen(): React.ReactElement {
           ) : (
             <>
               {/* Notes — Tier 3: the one block you actually read, so it earns a
-                  real break from the hero and its own air. */}
+                  real break from the hero and its own air. An entry with
+                  nothing filed still gets a body: the handwritten voice (the
+                  one place a softer register fits) says so plainly, rather
+                  than the screen going quiet on a reflective, low-urgency
+                  visit (project provenance line, idea pin). */}
               {notes ? (
                 <View
                   style={[
@@ -771,7 +763,14 @@ export default function DetailScreen(): React.ReactElement {
                     {notes}
                   </ThemedText>
                 </View>
-              ) : null}
+              ) : (
+                <ThemedText
+                  type="hand"
+                  style={[styles.notesEmpty, { color: colors.inkMuted }]}
+                >
+                  Nothing filed here yet.
+                </ThemedText>
+              )}
 
               {/* Reflections filed ON this idea — the reverse of the diary link. */}
               <RelatedNotes notes={relatedNotes} />
@@ -792,7 +791,7 @@ export default function DetailScreen(): React.ReactElement {
                     accessibilityLabel="Open the project this idea became"
                     style={({ pressed }) => [
                       styles.promoteRow,
-                      pressed && styles.pressed,
+                      pressed && { backgroundColor: colors.surfaceSubtle },
                     ]}
                   >
                     <ThemedText type="hand" style={{ color: colors.inkMuted }}>
@@ -820,8 +819,11 @@ export default function DetailScreen(): React.ReactElement {
                     accessibilityLabel="Promote this idea to a project"
                     style={({ pressed }) => [
                       styles.promoteRow,
-                      { backgroundColor: colors.surface },
-                      pressed && styles.pressed,
+                      {
+                        backgroundColor: pressed
+                          ? colors.surfaceSubtle
+                          : colors.surface,
+                      },
                     ]}
                   >
                     <ThemedText type="bodyBold" style={{ color: colors.ink }}>
@@ -850,11 +852,12 @@ export default function DetailScreen(): React.ReactElement {
                 style={({ pressed }) => [
                   styles.saveButton,
                   {
-                    backgroundColor: canSaveEdit
-                      ? accentColor
-                      : colors.surfaceSubtle,
+                    backgroundColor: !canSaveEdit
+                      ? colors.surfaceSubtle
+                      : pressed
+                        ? colors.accent.clayPressed
+                        : accentColor,
                   },
-                  pressed && styles.pressed,
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel={isSaving ? "Saving" : "Save changes"}
@@ -873,7 +876,7 @@ export default function DetailScreen(): React.ReactElement {
                 onPress={handleCancelEdit}
                 style={({ pressed }) => [
                   styles.cancelButton,
-                  pressed && styles.pressed,
+                  pressed && { backgroundColor: colors.surfaceSubtle },
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel="Cancel editing"
@@ -944,18 +947,9 @@ const styles = StyleSheet.create({
     paddingTop: tokens.space.md,
     paddingBottom: tokens.space.md,
   },
-  // ── Signal rail children (Tier 2) ───────────────────────────
-  // The rail itself is now the autonomous <SignalRail>. These margins set the
-  // ratio for what the screen composes INSIDE it: telemetry / countdown /
-  // inspiration sit one real breath below the hero title.
-  railChild: {
-    marginTop: tokens.space.md,
-  },
-  countdownSlot: {
-    alignSelf: "flex-start",
-    marginTop: tokens.space.md,
-  },
+  // Idea inspiration sits one real breath below the hero's telemetry row.
   inspiration: {
+    marginTop: tokens.space.md,
     lineHeight: 22,
   },
   // ── Notes (Tier 3) ──────────────────────────────────────────
@@ -963,7 +957,7 @@ const styles = StyleSheet.create({
     // A real zone break from the hero/telemetry above — this is the only block
     // the user reads, so the ratio gives it the biggest gap on the screen.
     marginTop: tokens.space.xl,
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.sm,
     padding: tokens.space.lg,
     gap: tokens.space.sm,
   },
@@ -972,6 +966,13 @@ const styles = StyleSheet.create({
   },
   notesText: {
     lineHeight: 22,
+  },
+  // Same zone break as notesBlock — the empty state still earns its own air,
+  // it just doesn't need a filled surface under it.
+  notesEmpty: {
+    marginTop: tokens.space.xl,
+    fontSize: 20,
+    lineHeight: 26,
   },
   // ── Inline edit ──────────────────────────────────────────────
   // The title input sits at display scale in the rail's title slot, so the hero
@@ -1015,29 +1016,26 @@ const styles = StyleSheet.create({
     gap: tokens.space.sm,
   },
   saveButton: {
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.sm,
     paddingVertical: tokens.space.lg,
     minHeight: 56,
     alignItems: "center",
     justifyContent: "center",
   },
   cancelButton: {
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.sm,
     paddingVertical: tokens.space.md,
     minHeight: 44,
     alignItems: "center",
     justifyContent: "center",
   },
   promoteRow: {
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.sm,
     paddingVertical: tokens.space.md,
     paddingHorizontal: tokens.space.lg,
     gap: tokens.space.xs,
     minHeight: 48,
     justifyContent: "center",
-  },
-  pressed: {
-    opacity: 0.75,
   },
   // ── Action bar ───────────────────────────────────────────────
   actionBarWrapper: {
@@ -1052,8 +1050,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   sheet: {
-    borderTopLeftRadius: tokens.radius.lg,
-    borderTopRightRadius: tokens.radius.lg,
+    borderTopLeftRadius: tokens.radius.sm,
+    borderTopRightRadius: tokens.radius.sm,
     paddingTop: tokens.space.lg,
     paddingBottom: tokens.space.xl,
   },
@@ -1061,10 +1059,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space.xl,
     paddingBottom: tokens.space.md,
     letterSpacing: 0.6,
-  },
-  sheetDivider: {
-    height: 1,
-    marginHorizontal: tokens.space.lg,
   },
   sheetOption: {
     paddingVertical: tokens.space.lg,

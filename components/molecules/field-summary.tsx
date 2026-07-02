@@ -42,37 +42,23 @@ export function FieldSummary({
         ? " is still here."
         : " are still here.";
 
-  const empty = stakeSpans.length === 0 && presentSpans.length === 0;
-
+  // FieldGreeting only mounts this when the board has rows, so there is always
+  // at least one span to voice — no empty branch needed here.
   return (
     <ThemedText type="body" style={[styles.line, { color: colors.inkMuted }]}>
-      {empty ? (
-        "Your field is clear. Capture the first thing below."
-      ) : (
+      {stakeSpans.length > 0 ? (
         <>
-          {stakeSpans.length > 0 ? (
-            <>
-              <CountClause
-                spans={stakeSpans}
-                scheme={scheme}
-                muted={colors.inkMuted}
-              />
-              {stakeVerb}
-              {presentSpans.length > 0 ? "; " : "."}
-            </>
-          ) : null}
-          {presentSpans.length > 0 ? (
-            <>
-              <CountClause
-                spans={presentSpans}
-                scheme={scheme}
-                muted={colors.inkMuted}
-              />
-              {presentTail}
-            </>
-          ) : null}
+          <CountClause spans={stakeSpans} scheme={scheme} muted={colors.inkMuted} />
+          {stakeVerb}
+          {presentSpans.length > 0 ? "; " : "."}
         </>
-      )}
+      ) : null}
+      {presentSpans.length > 0 ? (
+        <>
+          <CountClause spans={presentSpans} scheme={scheme} muted={colors.inkMuted} />
+          {presentTail}
+        </>
+      ) : null}
     </ThemedText>
   );
 }

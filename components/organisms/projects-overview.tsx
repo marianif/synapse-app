@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -33,6 +34,14 @@ import type { DbEntry, DbProject } from "@/lib/types";
 // GRID card readouts cap: how many named lines a card preview shows.
 const PREVIEW_MAX = 3;
 
+// Stable fallback for projects with no open entries, so lookups never allocate
+// a fresh empty rollup per render.
+const EMPTY_ROLLUP: ProjectRollup = {
+  items: [],
+  total: 0,
+  counts: { deadline: 0, todo: 0, idea: 0 },
+};
+
 export function ProjectsOverview({
   projects,
   entries,
@@ -59,23 +68,32 @@ export function ProjectsOverview({
 
   // Every project rolls up into two complementary views: a typed numeric
   // summary and a named, most-pressing-first preview slice. Both read off the
-  // same filtered slice of `entries`; the card picks which to show.
-  const projectRollup = (projectId: string): ProjectRollup => {
-    const open = entries.filter(
-      (e) =>
-        e.project_id === projectId &&
-        e.status !== "completed" &&
-        e.status !== "met",
-    );
-    const counts = { deadline: 0, todo: 0, idea: 0 };
-    for (const e of open) {
-      if (e.type === "deadline") counts.deadline += 1;
-      else if (e.type === "todo") counts.todo += 1;
-      else if (e.type === "idea") counts.idea += 1;
+  // same filtered slice of `entries`; the card picks which to show. One pass
+  // over `entries` groups open items by project, so this is O(entries) per
+  // render rather than O(entries × projects) — `entries` churns on every
+  // capture, so per-project re-filtering was the hot path here.
+  const rollups = useMemo(() => {
+    const grouped = new Map<string, DbEntry[]>();
+    for (const e of entries) {
+      if (!e.project_id) continue;
+      if (e.status === "completed" || e.status === "met") continue;
+      const bucket = grouped.get(e.project_id);
+      if (bucket) bucket.push(e);
+      else grouped.set(e.project_id, [e]);
     }
-    const items = [...open].sort(byRunway).slice(0, PREVIEW_MAX);
-    return { items, total: open.length, counts };
-  };
+    const result = new Map<string, ProjectRollup>();
+    for (const [projectId, open] of grouped) {
+      const counts = { deadline: 0, todo: 0, idea: 0 };
+      for (const e of open) {
+        if (e.type === "deadline") counts.deadline += 1;
+        else if (e.type === "todo") counts.todo += 1;
+        else if (e.type === "idea") counts.idea += 1;
+      }
+      const items = [...open].sort(byRunway).slice(0, PREVIEW_MAX);
+      result.set(projectId, { items, total: open.length, counts });
+    }
+    return result;
+  }, [entries]);
 
   // Masonry split: alternate projects into two independent columns so each
   // column packs vertically on its own. A flex-wrap grid would force both
@@ -130,7 +148,7 @@ export function ProjectsOverview({
   // Count line on the section header doubles as the see-more affordance.
   // The shelf is where the user picks WHAT to feature here; the link reads
   // "all projects" so the relationship is honest.
-  const allLabel = `${projects.length} ${projects.length === 1 ? "project" : "all"}`;
+  const allLabel = `${projects.length} ${projects.length === 1 ? "project" : "projects"}`;
 
   return (
     <View style={styles.section}>
@@ -143,18 +161,26 @@ export function ProjectsOverview({
       <View style={styles.grid}>
         <View style={styles.gridColumn}>
           {leftColumn.map((p) => (
-            <ProjectCard key={p.id} project={p} rollup={projectRollup(p.id)} />
+            <ProjectCard
+              key={p.id}
+              project={p}
+              rollup={rollups.get(p.id) ?? EMPTY_ROLLUP}
+            />
           ))}
           {addTileSide === "left" ? (
-            <AddProjectTile onPress={onAddProject} colors={colors} />
+            <AddProjectTile onPress={onAddProject} />
           ) : null}
         </View>
         <View style={styles.gridColumn}>
           {rightColumn.map((p) => (
-            <ProjectCard key={p.id} project={p} rollup={projectRollup(p.id)} />
+            <ProjectCard
+              key={p.id}
+              project={p}
+              rollup={rollups.get(p.id) ?? EMPTY_ROLLUP}
+            />
           ))}
           {addTileSide === "right" ? (
-            <AddProjectTile onPress={onAddProject} colors={colors} />
+            <AddProjectTile onPress={onAddProject} />
           ) : null}
         </View>
       </View>
@@ -164,11 +190,10 @@ export function ProjectsOverview({
 
 function AddProjectTile({
   onPress,
-  colors,
 }: {
   onPress: () => void;
-  colors: ReturnType<typeof useTheme>["colors"];
 }): React.ReactElement {
+  const { colors } = useTheme();
   return (
     <Pressable
       onPress={onPress}

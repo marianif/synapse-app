@@ -29,6 +29,7 @@ import { ProjectsOverview } from "@/components/organisms/projects-overview";
 import {
   FieldGreeting,
   greetingFor,
+  seasonalNote,
 } from "@/components/molecules/field-greeting";
 
 import { CaptureResolver } from "@/components/molecules/capture-resolver";
@@ -109,9 +110,14 @@ export default function HomeScreen(): React.ReactElement {
 
   const { refresh: refreshDiary } = useDiary();
 
+  // Anchor "now" once per mount so date-derived reads (calendar, greeting,
+  // seasonal note) stay stable across renders — React Compiler won't memoize a
+  // fresh `new Date()` for us.
+  const today = useMemo(() => new Date(), []);
+
   const { today: calendarToday } = useCalendarData(
     entries,
-    new Date(),
+    today,
     recurrenceCompletions,
   );
 
@@ -175,8 +181,6 @@ export default function HomeScreen(): React.ReactElement {
       refreshDiary();
     }, [fetchEntries, refreshDiary]),
   );
-
-  const today = useMemo(() => new Date(), []);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -268,9 +272,10 @@ export default function HomeScreen(): React.ReactElement {
       >
         <FieldGreeting
           greeting={greetingFor(today.getHours())}
+          dateLabel={dayjs(today).format("dddd, D MMMM")}
+          seasonalNote={seasonalNote(today.getMonth(), today.getHours())}
           stakes={stakes}
           present={present}
-          focusedType={null}
         />
 
         {/* TODO(flow): visual shaping pass — this is a minimal projects +

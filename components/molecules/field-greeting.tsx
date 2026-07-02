@@ -4,28 +4,18 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { FieldSummary } from "@/components/molecules/field-summary";
 import { tokens, useTheme } from "@/constants/theme";
 
-import { CHANNELS } from "@/components/organisms/field-console/channels";
-import {
-  FocusLine,
-  segmentsFor,
-} from "@/components/organisms/field-console/focus-line";
-
-import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
-import type { EntryType } from "@/lib/types";
+import type { FieldRowItem } from "@/components/molecules/field-row";
 
 /**
- * The orbit console's header — the "greetings" block. It carries the metaphor in
- * words before the SVG ring does in shape: an instrument-panel kicker (idle orbit
- * count, focused channel, or live "pressing · in field" readout), the time-of-day
- * display greeting, then a body line that swaps with the field's state:
+ * The home's "greetings" block. A quiet kicker (today's date, plus a seasonal
+ * read of the light in the handwritten narrative voice), the time-of-day display
+ * greeting, then a body line that swaps with state:
  *
- *  • empty   — the "your whole brain's in orbit" thesis.
- *  • focused — the companion's spoken read of the poked channel (FocusLine).
- *  • else    — the FieldSummary roll-up of stakes + present.
+ *  • empty — a nudge to capture the first thing.
+ *  • else  — the FieldSummary roll-up of stakes + present.
  *
- * Autonomous: hand it the greeting, the two row streams, and which channel (if
- * any) is focused, and it derives its own readout. signalFor lives here because
- * the header owns the per-type rollup; the orbit body imports it back for its dots.
+ * Pure: hand it the greeting, the pre-formatted date + seasonal clause, and the
+ * two row streams; it renders, deriving nothing time-bound of its own.
  */
 
 /**
@@ -40,91 +30,133 @@ export function greetingFor(hour: number): string {
   return "Good evening.";
 }
 
-/** Aggregate read of one orbiting type once the field has signal. */
-export type TypeSignal = {
-  count: number;
-  /** Hottest heat present in this type — drives the glow halo. */
-  heat: Heat;
-  /** This channel's own rows, in field order — named when it's focused. */
-  rows: FieldRowItem[];
+type Season = "winter" | "spring" | "summer" | "autumn";
+type Part = "morning" | "afternoon" | "evening";
+
+// Northern-hemisphere seasons by 0-indexed month.
+function seasonOf(month: number): Season {
+  if (month === 11 || month === 0 || month === 1) return "winter";
+  if (month <= 4) return "spring";
+  if (month <= 7) return "summer";
+  return "autumn";
+}
+
+// Morning 5–11, afternoon 12–17, evening 18–4.
+function partOf(hour: number): Part {
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 18) return "afternoon";
+  return "evening";
+}
+
+// A small observational pool per season × part — a warmer seasonal read of the
+// light, still factual, never cozy. Two variants each; chosen deterministically.
+const SEASONAL: Record<Season, Record<Part, [string, string]>> = {
+  winter: {
+    morning: ["a thin, pale winter morning", "the light comes late and low"],
+    afternoon: [
+      "a short, bright winter afternoon",
+      "the cold's gone sharp and honest",
+    ],
+    evening: [
+      "a long winter evening, already dark",
+      "the dark settles in early",
+    ],
+  },
+  spring: {
+    morning: [
+      "a clean, rising spring morning",
+      "the light's getting longer again",
+    ],
+    afternoon: [
+      "a loose, open spring afternoon",
+      "the air's turned soft and green",
+    ],
+    evening: [
+      "a slow spring evening, light still holding",
+      "the day lets go slowly now",
+    ],
+  },
+  summer: {
+    morning: ["a bright, wide summer morning", "the long light of deep summer"],
+    afternoon: [
+      "a full, still summer afternoon",
+      "the heat sits heavy and slow",
+    ],
+    evening: [
+      "a warm summer evening, late light",
+      "the sun's in no hurry to leave",
+    ],
+  },
+  autumn: {
+    morning: [
+      "a crisp, clear autumn morning",
+      "the light's gone thin and gold",
+    ],
+    afternoon: [
+      "a bronze, tapering autumn afternoon",
+      "the year's tilting toward dark",
+    ],
+    evening: [
+      "a cool autumn evening drawing in",
+      "the dark comes on a little sooner",
+    ],
+  },
 };
 
-const HEAT_RANK: Record<Heat, number> = { hot: 3, warm: 2, cool: 1 };
-
-/** Roll the field's rows up into a per-type count + peak heat + the rows
-    themselves, so a focused channel can name its real contents. */
-export function signalFor(type: EntryType, rows: FieldRowItem[]): TypeSignal {
-  const own: FieldRowItem[] = [];
-  let peak = 0;
-  for (const r of rows) {
-    if (r.type !== type) continue;
-    own.push(r);
-    peak = Math.max(peak, HEAT_RANK[r.heat]);
-  }
-  const heat: Heat = peak >= 3 ? "hot" : peak === 2 ? "warm" : "cool";
-  return { count: own.length, heat, rows: own };
+/**
+ * A seasonal × time-of-day observation for the kicker — returned WITHOUT a
+ * leading dash. Pure and deterministic: derived from month + hour, no clocks or
+ * randomness, so the same moment always reads the same clause.
+ */
+export function seasonalNote(month: number, hour: number): string {
+  const season = seasonOf(month);
+  const part = partOf(hour);
+  const pair = SEASONAL[season][part];
+  // Deterministic pick from the passed-in values — no Math.random / Date.now.
+  return pair[(month + hour) % 2];
 }
 
 interface FieldGreetingProps {
   /** Greeting line, already time-resolved by the parent (keeps this pure). */
   greeting: string;
+  /** Today's date, pre-formatted normal-case by the parent (e.g. "Wednesday, 2 July"). */
+  dateLabel: string;
+  /** Seasonal clause (no leading dash), computed by the parent via seasonalNote. */
+  seasonalNote: string;
   /** STAKES rows (deadline/todo). */
   stakes: FieldRowItem[];
-  /** PRESENT rows (idea/event/someday). */
+  /** PRESENT rows (ideas). */
   present: FieldRowItem[];
-  /** Which channel the companion is reading aloud, or null. */
-  focusedType: EntryType | null;
 }
 
 export function FieldGreeting({
   greeting,
+  dateLabel,
+  seasonalNote,
   stakes,
   present,
-  focusedType,
 }: FieldGreetingProps): React.ReactElement {
-  const { scheme, colors } = useTheme();
+  const { colors } = useTheme();
 
-  const n = CHANNELS.length;
-
-  // The field is clear when there are no stakes and nothing present. Empty keeps
-  // the "brain's in orbit" thesis; populated swaps it for the field summary.
+  // The board is clear when there are no stakes and nothing present. Empty shows
+  // the capture nudge; populated swaps it for the field summary.
   const empty = stakes.length === 0 && present.length === 0;
-
-  const rows = [...stakes, ...present];
-  const signals = CHANNELS.map((c) => signalFor(c.type, rows));
-
-  // Live instrument readout: how many types carry pressing (hot) signal, and the
-  // total in the field — replacing the idle "5 in orbit · 0 landed".
-  const pressing = signals.filter(
-    (s) => s.heat === "hot" && s.count > 0,
-  ).length;
-  const inField = rows.length;
-
-  // The focused channel's rows, if any. Focus only "takes" when the channel
-  // still has something to read — a channel that's since emptied (or never had
-  // rows) yields no segments, so the header falls back to the field summary.
-  const focusedSignal = focusedType
-    ? signals[CHANNELS.findIndex((c) => c.type === focusedType)]
-    : null;
-  const hasFocus =
-    !!focusedType &&
-    !!focusedSignal &&
-    segmentsFor(focusedType, focusedSignal.rows) !== null;
 
   return (
     <View style={styles.head}>
-      {/* Instrument-panel readout — names the idle orbit state in the mono
-          signal voice, so the header carries the metaphor before the SVG. */}
-      <ThemedText
-        type="label"
-        style={[styles.kicker, { color: colors.inkMuted }]}
-      >
-        {empty
-          ? `${n} in orbit · 0 landed`
-          : hasFocus
-            ? `${focusedType} · tap again to clear`
-            : `${pressing} pressing · ${inField} in field`}
-      </ThemedText>
+      {/* Date + a seasonal read of the light — the normal-case date in a quiet
+          body voice, then the observation in the handwritten narrative voice. */}
+      <View style={styles.kicker}>
+        <ThemedText
+          type="body"
+          style={[styles.date, { color: colors.inkMuted }]}
+        >
+          {dateLabel}
+        </ThemedText>
+        <ThemedText type="hand" style={{ color: colors.inkMuted }}>
+          {`— ${seasonalNote}`}
+        </ThemedText>
+      </View>
       <ThemedText
         type="display"
         style={[styles.greeting, { color: colors.ink }]}
@@ -136,18 +168,9 @@ export function FieldGreeting({
           type="body"
           style={[styles.thesis, { color: colors.inkMuted }]}
         >
-          Your whole brain&apos;s in orbit. Pull the first thing down into the
-          field.
+          Nothing on the board yet. Tap a life area to get the first thing out
+          of your head.
         </ThemedText>
-      ) : hasFocus ? (
-        // The companion's read of the poked channel — same muted-body voice as
-        // the field summary, with the real items lifted in the agenda hand.
-        <FocusLine
-          type={focusedType!}
-          rows={focusedSignal!.rows}
-          scheme={scheme}
-          muted={colors.inkMuted}
-        />
       ) : (
         <FieldSummary stakes={stakes} present={present} />
       )}
@@ -161,7 +184,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space.xs,
   },
   kicker: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "baseline",
+    gap: tokens.space.xs,
     marginBottom: -tokens.space.xs,
+  },
+  date: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   // The greeting is the home's loudest word — sized a step above the display
   // token so it lands before the narrative voice and the zones below it.

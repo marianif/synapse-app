@@ -5,8 +5,9 @@ import type { DbEntry, EntryType } from "@/lib/types";
 
 dayjs.extend(customParseFormat);
 
-// Pure when/runway/status logic for the direct zone (deadlines + todos). Kept
-// React-free so the row and the section can share it without a hook.
+// Pure when/runway/status logic for the direct zone (deadlines + todos + ideas;
+// undated ideas fall into the calm band, never charged). Kept React-free so the
+// row and the section can share it without a hook.
 
 const TODAY_START = (): dayjs.Dayjs => dayjs().startOf("day");
 

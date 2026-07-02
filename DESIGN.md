@@ -9,7 +9,7 @@ description: "Cool graphite instrument-panel ground, three electric type-colors 
 
 **Creative North Star: "Your whole brain as a living instrument panel — switched on, never soothed."**
 
-Field Lab is built for an ADHD-adjacent user who opens the app mid-thought and needs to feel activated, not sedated. The previous system (The Field: warm oat-cream, pastels, Fraunces serif) read as soothing; Field Lab flips everything cool, sharp, and charged. Every entry type glows in its own electric color at **equal volume** — an idea is as alive as a looming deadline, it just glows in a different color and lives in a different zone (a direct zone of projects + deadlines vs the narrative zone). Nothing fades, because for this brain, out of sight is gone.
+Field Lab is built for an ADHD-adjacent user who opens the app mid-thought and needs to feel activated, not sedated. The previous system (The Field: warm oat-cream, pastels, Fraunces serif) read as soothing; Field Lab flips everything cool, sharp, and charged. Every entry type glows in its own electric color at **equal volume** — an idea is as alive as a looming deadline, it just glows in a different color. The direct zone (projects + the deadline/todo/idea overview) and the narrative zone are two readings of the same board, not two disjoint sets: an idea appears as a direct row **and** in the narrative voice, so a captured thought is held in sight two ways, never just skimmable prose. Nothing fades, because for this brain, out of sight is gone.
 
 The system explicitly rejects: corporate productivity tools, gamified habit-trackers (streaks, badges, confetti), pastel-illustration journaling apps, pure white / pure black interfaces, and plain checklist task managers with no projects and no memory.
 

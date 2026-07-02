@@ -45,7 +45,7 @@ Activating, charged, direct. Cool and sharp the way an instrument panel is — s
 1. **Capture is the core action.** The pen key in the tab bar is the primary affordance: tap for text, long-press for voice. One thumb gesture takes any thought and resolves it into an idea, a note, a todo, or a deadline. No FAB, no second add-path. Anything actionable becomes a todo, deadline, or idea; anything reflective is a diary note. Friction here is the one unforgivable failure.
 2. **Show projects and deadlines first.** The core glanceable affordance is an immediate overview of your projects and your live deadlines — present the moment the app opens, never behind a filter or a "today" curation. For this brain, out of sight is gone.
 3. **Everything at a glance — narrative is a layer, never a curtain.** Every open item stays visible and tappable. The narrative block references items and reads them back; it never replaces or hides them.
-4. **Equal volume.** Every entry type glows in its own electric color at the same intensity. An idea is as alive as a looming deadline; it just glows in a different color and lives in a different zone. Presence, not pressure — never dim the non-urgent, never let urgency drown the board.
+4. **Equal volume.** Every entry type glows in its own electric color at the same intensity. An idea is as alive as a looming deadline; it just glows in a different color. Ideas live in **both** zones — they surface in the narrative voice *and* earn a direct row in the overview, so a captured idea is never only a line of prose the eye can skim past. Presence, not pressure — never dim the non-urgent, never let urgency drown the board.
 5. **Commit to horizons, not fake dates.** A deadline takes a precise date or a window — this week, this month, this year — and warms up as the window closes. A todo with no date is not a failed todo; it's a "someday", marked by a quiet badge, never a color downgrade.
 6. **Speak in your own handwriting.** The agenda voice states facts about time, plainly and briefly. It may hold you accountable; it may not shame, nag, comfort, or celebrate.
 
@@ -54,7 +54,7 @@ Activating, charged, direct. Cool and sharp the way an instrument panel is — s
 The board is built from four things, plus projects and the diary:
 
 - **Project** — a top-level macro life area (a dev project, an art collective). Not a board item itself; referenced by name and shown in the projects overview. Ideas, todos, and deadlines can be attributed to a project or stand autonomous.
-- **Idea** — an autonomous capture, promotable into a project. The narrative voice resurfaces stale, unpromoted ideas.
+- **Idea** — an autonomous capture, promotable into a project. It shows both as a direct row in the overview (undated, so it rests in the calm band) and, when stale and unpromoted, as a resurfaced line in the narrative voice.
 - **Todo** — the actionable spine; autonomous or project-linked. **Deadline** is a flavor of todo that keeps its strong color identity and takes a date or a horizon. A todo with **no date** is the "someday" case: recognizable by a **badge, never by a separate color**.
 - **Diary note** — reflective, never actionable, never on the board. Linkable to an idea or a project, or free.
 

@@ -4,19 +4,21 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useTheme } from "@/constants/theme";
 
 /** Which slice of the direct zone is shown. */
-export type DirectFilter = "all" | "deadline" | "todo";
+export type DirectFilter = "all" | "deadline" | "todo" | "idea";
 
 /** Live tally of the whole direct zone (open + done together). */
 export interface DirectCounts {
   all: number;
   deadline: number;
   todo: number;
+  idea: number;
 }
 
 const SEGMENTS: { key: DirectFilter; label: string }[] = [
   { key: "all", label: "ALL" },
   { key: "deadline", label: "DEADLINES" },
   { key: "todo", label: "TODOS" },
+  { key: "idea", label: "IDEAS" },
 ];
 
 interface DirectFilterBarProps {
@@ -42,7 +44,7 @@ export function DirectFilterBar({
     <View
       style={styles.bar}
       accessibilityRole="tablist"
-      accessibilityLabel="Filter deadlines and todos"
+      accessibilityLabel="Filter deadlines, todos, and ideas"
     >
       {SEGMENTS.map(({ key, label }) => {
         const active = value === key;

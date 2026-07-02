@@ -20,7 +20,10 @@ import type { DbEntry, EntryType } from "@/lib/types";
 const PAGE_SIZE = 6;
 
 interface DirectOverviewProps {
-  /** Deadlines + todos in any status — the component sorts and paginates. */
+  /**
+   * Deadlines, todos, and ideas in any status — the component sorts and
+   * paginates. Undated ideas sort into the calm band (never charged).
+   */
   entries: DbEntry[];
   /**
    * Opens the shared capture composer. Wired from an empty-state CTA so a blank
@@ -50,6 +53,7 @@ export function DirectOverview({
   // the top level, so pre-compute both and pick by filter inside the memo.
   const deadlineShade = useEntryKicker("deadline");
   const todoShade = useEntryKicker("todo");
+  const ideaShade = useEntryKicker("idea");
   const [filter, setFilter] = useState<DirectFilter>("all");
   const [page, setPage] = useState(0);
 
@@ -58,11 +62,13 @@ export function DirectOverview({
   const counts = useMemo<DirectCounts>(() => {
     let deadline = 0;
     let todo = 0;
+    let idea = 0;
     for (const e of entries) {
       if (e.type === "deadline") deadline += 1;
       else if (e.type === "todo") todo += 1;
+      else if (e.type === "idea") idea += 1;
     }
-    return { all: deadline + todo, deadline, todo };
+    return { all: deadline + todo + idea, deadline, todo, idea };
   }, [entries]);
 
   // Filter, then order charged-first. Pagination slices this ordered list.
@@ -106,25 +112,49 @@ export function DirectOverview({
     if (filter === "all") {
       return {
         title: "Nothing pressing",
-        description: "Tap the pen to get a deadline or todo out of your head.",
+        description:
+          "Tap the pen to get a deadline, todo, or idea out of your head.",
         accent: colors.inkMuted,
       };
     }
     // A specific filter is active and its stream is empty — the user has already
     // said which flavour they want, so offer to add exactly that. An empty
-    // stream is an invitation, not a dead end.
-    const single = filter === "deadline" ? "deadline" : "todo";
+    // stream is an invitation, not a dead end. Title + CTA carry the type's own
+    // electric code (AA-safe kicker shade).
+    const byType = {
+      deadline: {
+        title: "No deadlines yet",
+        description:
+          "Nothing with a date hanging over you. Line one up before it sneaks up.",
+        shade: deadlineShade,
+      },
+      todo: {
+        title: "No todos yet",
+        description:
+          "No todos in play. Drop the next thing you need to do down here.",
+        shade: todoShade,
+      },
+      idea: {
+        title: "No ideas yet",
+        description:
+          "Nothing sketched out yet. Catch the next spark before it slips away.",
+        shade: ideaShade,
+      },
+    }[filter];
     return {
-      title: `No ${single}s yet`,
-      description:
-        filter === "deadline"
-          ? "Nothing with a date hanging over you. Line one up before it sneaks up."
-          : "No todos in play. Drop the next thing you need to do down here.",
-      cta: `Add ${single}`,
-      // Title + CTA carry the type's own electric code (AA-safe kicker shade).
-      accent: filter === "deadline" ? deadlineShade : todoShade,
+      title: byType.title,
+      description: byType.description,
+      cta: `Add ${filter}`,
+      accent: byType.shade,
     };
-  }, [ordered.length, filter, colors.inkMuted, deadlineShade, todoShade]);
+  }, [
+    ordered.length,
+    filter,
+    colors.inkMuted,
+    deadlineShade,
+    todoShade,
+    ideaShade,
+  ]);
 
   const changeFilter = (next: DirectFilter): void => {
     setFilter(next);

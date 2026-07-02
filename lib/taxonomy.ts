@@ -49,8 +49,9 @@ export function isSomeday(entry: DbEntry): boolean {
 }
 
 /**
- * Home registers: deadlines and todos are DIRECT items (clear, tappable);
- * ideas belong to the NARRATIVE voice.
+ * An idea carries the NARRATIVE voice (the greeting resurfaces stale ones). It
+ * is also a DIRECT row in the overview now — narrative-bearing is additive, not
+ * exclusive. Deadlines and todos are direct-only.
  */
 export function isNarrativeType(type: EntryType): boolean {
   return type === "idea";

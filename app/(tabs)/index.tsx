@@ -92,10 +92,11 @@ function toRowItem(e: DbEntry): FieldRowItem {
   };
 }
 
-// The direct zone the home surfaces at a glance: deadlines + todos (PRODUCT.md
-// principle 2 — show projects and deadlines first). Ideas live in the narrative
-// voice (FieldGreeting's summary), not as a direct row here.
-const DIRECT_TYPES: EntryType[] = ["deadline", "todo"];
+// The direct zone the home surfaces at a glance: deadlines + todos + ideas
+// (PRODUCT.md principle 2 — show projects and deadlines first). Ideas live in
+// BOTH zones: they also feed the narrative voice (FieldGreeting's summary), but
+// they earn a direct row too so a captured idea never falls out of sight.
+const DIRECT_TYPES: EntryType[] = ["deadline", "todo", "idea"];
 
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
@@ -190,11 +191,11 @@ export default function HomeScreen(): React.ReactElement {
     setTimeout(() => setSelectedDate(null), 200);
   }, []);
 
-  // The direct zone: deadlines + todos. DirectOverview owns the full set (open
-  // AND done — it sinks completed lines to the bottom and strikes them through),
-  // so it gets every status. FieldGreeting's summary voice reads only the OPEN
-  // streams (stakes + present); ideas feed the greeting's narrative line but are
-  // not a direct row on the home.
+  // The direct zone: deadlines + todos + ideas. DirectOverview owns the full set
+  // (open AND done — it sinks completed lines to the bottom and strikes them
+  // through), so it gets every status. FieldGreeting's summary voice reads the
+  // OPEN streams (stakes + present); ideas feed the greeting's narrative line
+  // AND appear as direct rows — held in sight in both zones.
   const { directEntries, stakes, present } = useMemo(() => {
     const isDone = (e: DbEntry): boolean =>
       e.status === "completed" || e.status === "met";

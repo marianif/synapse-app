@@ -96,7 +96,7 @@ export default function ProjectScreen(): React.ReactElement {
     });
   };
 
-  const { spine, openCount, ideas, origin, notes, unfiledIdeas, unfiledNotes } =
+  const { spine, ideas, origin, notes, unfiledIdeas, unfiledNotes } =
     useMemo(() => {
       const filed = entries.filter((e) => e.project_id === id);
       // Spine: open AND done todos/deadlines, sorted by sortDirect so done
@@ -107,7 +107,6 @@ export default function ProjectScreen(): React.ReactElement {
       const todoLike = filed.filter((e) => isTodoFamily(e.type));
       return {
         spine: sortDirect(todoLike),
-        openCount: todoLike.filter((e) => !isDone(e)).length,
         ideas: filed.filter((e) => e.type === "idea" && !isDone(e)),
         origin: entries.find(
           (e) => e.type === "idea" && e.promoted_project_id === id,
@@ -321,12 +320,12 @@ export default function ProjectScreen(): React.ReactElement {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* HERO — emoji identity + open-count gauge. The emoji slot is the
+        {/* HERO — emoji identity + capture trigger. The emoji slot is the
             fast path to the picker (opens the overflow sheet directly on its
             emoji pane); the same picker is also reachable via the header
             `··` overflow → Change emoji, for symmetry with rename / archive /
-            delete. The big mono number to the right is the instrument-panel
-            readout: what's pressing in here. */}
+            delete. The open count already lives in the spine's row count
+            right below, so it isn't repeated here as a separate gauge. */}
         <View style={styles.hero}>
           <Pressable
             onPress={() => openOverflow("emoji")}
@@ -353,17 +352,7 @@ export default function ProjectScreen(): React.ReactElement {
             )}
           </Pressable>
 
-          <View style={styles.heroGauge}>
-            <ThemedText type="display" style={{ color: colors.ink }}>
-              {openCount}
-            </ThemedText>
-            <ThemedText
-              type="micro"
-              style={[styles.gaugeLabel, { color: colors.inkMuted }]}
-            >
-              ON THE LINE
-            </ThemedText>
-          </View>
+          <View style={styles.heroSpacer} />
 
           {/* Capture trigger — opens a chooser sheet that asks WHAT the new
               line is (todo / deadline / idea), then routes to the matching
@@ -685,14 +674,8 @@ const styles = StyleSheet.create({
     fontSize: 36,
     lineHeight: 44,
   },
-  heroGauge: {
+  heroSpacer: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: tokens.space.md,
-  },
-  gaugeLabel: {
-    letterSpacing: tokens.type.micro.tracking,
   },
   // Pen tile — the project's capture trigger. Clay slab, matches every
   // primary action across the brand; tap → text, long-press → voice.

@@ -1,4 +1,3 @@
-import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -24,11 +23,11 @@ import type { DbEntry, DbProject } from "@/lib/types";
  * expanding a card on one side never strands its row-mate with dead
  * whitespace; the next card in that column simply flows up.
  *
- * Three empty states, each honoring PRODUCT.md principle 2 (show projects
- * first, even when there are none):
+ * Two states, honoring PRODUCT.md principle 2 (show projects first, and never
+ * hide them behind a curation prompt — projects are too important):
  *   - No projects at all → first-run invitation tile (creation)
- *   - Projects exist, none featured → Caveat invitation tile (curation)
- *   - Featured projects exist → the grid
+ *   - Projects exist → the grid. If the user has featured some, show those;
+ *     otherwise default to showing all projects rather than an empty state.
  */
 
 // GRID card readouts cap: how many named lines a card preview shows.
@@ -49,9 +48,14 @@ export function ProjectsOverview({
   onAddProject: () => void;
 }): React.ReactElement {
   const { colors } = useTheme();
-  const router = useRouter();
 
-  const featured = projects.filter((p) => p.is_featured === 1);
+  // Projects are too important to ever hide behind a curation prompt. If the
+  // user has explicitly featured some, honor that pick. But when none are
+  // featured yet, we DON'T fall back to an empty/curation state — we surface
+  // the existing projects as the default so the home always glows with them.
+  const explicitlyFeatured = projects.filter((p) => p.is_featured === 1);
+  const featured =
+    explicitlyFeatured.length > 0 ? explicitlyFeatured : projects;
 
   // Every project rolls up into two complementary views: a typed numeric
   // summary and a named, most-pressing-first preview slice. Both read off the
@@ -127,48 +131,6 @@ export function ProjectsOverview({
   // The shelf is where the user picks WHAT to feature here; the link reads
   // "all projects" so the relationship is honest.
   const allLabel = `${projects.length} ${projects.length === 1 ? "project" : "all"}`;
-
-  // Projects exist but none are featured. Don't vanish the section — show a
-  // single Caveat invitation that points the user at the shelf where they
-  // pick what to surface. Same energy as the first-run tile, different ask.
-  if (featured.length === 0) {
-    return (
-      <View style={styles.section}>
-        <SectionHeader
-          title="PROJECTS"
-          seeMoreHref="/projects"
-          seeMoreText={allLabel}
-          seeMoreA11yLabel="Open the project shelf"
-        />
-        <Pressable
-          onPress={() => router.push("/projects")}
-          accessibilityRole="button"
-          accessibilityLabel="Pick projects to feature on home"
-          style={({ pressed }) => [
-            styles.firstRunTile,
-            { backgroundColor: colors.surface },
-            pressed && styles.pressed,
-          ]}
-        >
-          <IconSymbol name="star-outline" size={20} color={colors.inkMuted} />
-          <View style={styles.firstRunCopy}>
-            <ThemedText
-              type="body"
-              style={[styles.firstRunTitle, { color: colors.ink }]}
-            >
-              Pick a few to keep close
-            </ThemedText>
-            <ThemedText
-              type="hand"
-              style={[styles.firstRunHint, { color: colors.inkMuted }]}
-            >
-              your home will glow with them
-            </ThemedText>
-          </View>
-        </Pressable>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.section}>

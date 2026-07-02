@@ -61,6 +61,12 @@ export default function ProjectsScreen(): React.ReactElement {
     useDatabase();
   const [draft, setDraft] = useState("");
   const [archivedOpen, setArchivedOpen] = useState(false);
+  // Search query filters the active shelf by title. Empty string = show all.
+  const [query, setQuery] = useState("");
+  // The create affordance is a FAB, not an always-visible input — with many
+  // projects an inline "name a project" row would push the shelf down. Tapping
+  // the FAB reveals a single-purpose composer band above it.
+  const [composing, setComposing] = useState(false);
 
   const [sort, setSort] = useUiPreference<SortMode>(
     "projects.sort",
@@ -104,15 +110,29 @@ export default function ProjectsScreen(): React.ReactElement {
     [active, sort, openByProject],
   );
 
+  // Title-substring filter, case-insensitive. Applied after sort so the shelf
+  // keeps its chosen order; search narrows, it doesn't re-rank.
+  const visibleActive = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return sortedActive;
+    return sortedActive.filter((p) => p.title.toLowerCase().includes(q));
+  }, [sortedActive, query]);
+
   const submitDraft = (): void => {
     const title = draft.trim();
     if (!title) return;
     setDraft("");
+    setComposing(false);
     createProject(title)
       .then((project) =>
         router.push({ pathname: "/project", params: { id: project.id } }),
       )
       .catch((err) => console.error("Failed to create project:", err));
+  };
+
+  const openComposer = (): void => {
+    void Haptics.selectionAsync();
+    setComposing(true);
   };
 
   const toggleFeatured = (project: DbProject): void => {
@@ -166,6 +186,40 @@ export default function ProjectsScreen(): React.ReactElement {
           </View>
         ) : (
           <>
+            {/* Search bar — filters the active shelf by title. Sits above the
+                sort chip so "find by name" reads as the primary entry point
+                once the shelf grows past a screenful. */}
+            <View
+              style={[styles.searchBar, { backgroundColor: colors.surfaceSubtle }]}
+            >
+              <IconSymbol name="magnify" size={18} color={colors.inkMuted} />
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Search projects"
+                placeholderTextColor={colors.inkMuted}
+                returnKeyType="search"
+                autoCorrect={false}
+                clearButtonMode="while-editing"
+                accessibilityLabel="Search projects"
+                style={[styles.searchInput, { color: colors.ink }]}
+              />
+              {query.length > 0 ? (
+                <Pressable
+                  onPress={() => setQuery("")}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear search"
+                >
+                  <IconSymbol
+                    name="close-circle"
+                    size={18}
+                    color={colors.inkMuted}
+                  />
+                </Pressable>
+              ) : null}
+            </View>
+
             {/* Sort chip — one Pressable, taps cycle through three modes.
                 The ⇅ glyph signals it's a cycle, not a fixed label. */}
             <Pressable
@@ -195,35 +249,25 @@ export default function ProjectsScreen(): React.ReactElement {
             </Pressable>
 
             {/* The shelf itself. */}
-            <View style={styles.rowList}>
-              {sortedActive.map((project) => (
-                <ProjectRow
-                  key={project.id}
-                  project={project}
-                  signal={signalFor(project, sort, openByProject)}
-                  onToggleFeatured={() => toggleFeatured(project)}
-                />
-              ))}
-            </View>
-
-            {/* Inception band — quieter, framed by a Caveat margin-note. The
-                shelf is primarily for finding/featuring; birthing is a quieter
-                affordance here than on a fresh install. */}
-            <View style={styles.inceptionBand}>
+            {visibleActive.length > 0 ? (
+              <View style={styles.rowList}>
+                {visibleActive.map((project) => (
+                  <ProjectRow
+                    key={project.id}
+                    project={project}
+                    signal={signalFor(project, sort, openByProject)}
+                    onToggleFeatured={() => toggleFeatured(project)}
+                  />
+                ))}
+              </View>
+            ) : (
               <ThemedText
                 type="hand"
-                style={[styles.inceptionHint, { color: colors.inkMuted }]}
+                style={[styles.noMatch, { color: colors.inkMuted }]}
               >
-                …or start something new
+                {`No projects match “${query.trim()}”`}
               </ThemedText>
-              <CreateRow
-                draft={draft}
-                setDraft={setDraft}
-                onSubmit={submitDraft}
-                placeholder="Name a project"
-                colors={colors}
-              />
-            </View>
+            )}
 
             {/* Archived disclosure — collapsed by default. Single tap on a
                 row inside opens the project's detail, where the unarchive
@@ -271,6 +315,43 @@ export default function ProjectsScreen(): React.ReactElement {
           </>
         )}
       </ScrollView>
+
+      {/* Create affordance — a FAB, not an inline row. Hidden on fresh install
+          (the inception band owns that state). Tapping it reveals a composer
+          band pinned above; submitting creates the project and opens it. */}
+      {projects.length > 0 ? (
+        composing ? (
+          <View
+            style={[styles.composerBand, { backgroundColor: colors.paper }]}
+          >
+            <CreateRow
+              draft={draft}
+              setDraft={setDraft}
+              onSubmit={submitDraft}
+              placeholder="Name a project"
+              colors={colors}
+              autoFocus
+              onCancel={() => {
+                setDraft("");
+                setComposing(false);
+              }}
+            />
+          </View>
+        ) : (
+          <Pressable
+            onPress={openComposer}
+            accessibilityRole="button"
+            accessibilityLabel="New project"
+            style={({ pressed }) => [
+              styles.createFab,
+              { backgroundColor: colors.accent.clay },
+              pressed && styles.pressed,
+            ]}
+          >
+            <IconSymbol name="plus" size={28} color={colors.accent.onClay} />
+          </Pressable>
+        )
+      ) : null}
     </View>
   );
 }
@@ -283,15 +364,30 @@ function CreateRow({
   onSubmit,
   placeholder,
   colors,
+  autoFocus = false,
+  onCancel,
 }: {
   draft: string;
   setDraft: (value: string) => void;
   onSubmit: () => void;
   placeholder: string;
   colors: ReturnType<typeof useTheme>["colors"];
+  autoFocus?: boolean;
+  onCancel?: () => void;
 }): React.ReactElement {
   return (
     <View style={[styles.createRow, { backgroundColor: colors.surface }]}>
+      {onCancel ? (
+        <Pressable
+          onPress={onCancel}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel="Cancel"
+          style={styles.createCancel}
+        >
+          <IconSymbol name="close" size={20} color={colors.inkMuted} />
+        </Pressable>
+      ) : null}
       <TextInput
         value={draft}
         onChangeText={setDraft}
@@ -299,6 +395,7 @@ function CreateRow({
         placeholder={placeholder}
         placeholderTextColor={colors.inkMuted}
         returnKeyType="done"
+        autoFocus={autoFocus}
         accessibilityLabel="New project title"
         style={[styles.createInput, { color: colors.ink }]}
       />
@@ -454,8 +551,29 @@ const styles = StyleSheet.create({
     letterSpacing: tokens.type.micro.tracking,
   },
 
+  // Search bar — pill, tonal fill (no 1px border, per the design system).
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+    minHeight: 44,
+    paddingHorizontal: tokens.space.md,
+    borderRadius: tokens.radius.pill,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 0,
+    fontSize: tokens.type.item.size,
+    fontFamily: tokens.type.fontInter.medium,
+  },
+
   rowList: {
     gap: tokens.space.xs,
+  },
+
+  noMatch: {
+    textAlign: "center",
+    paddingVertical: tokens.space.lg,
   },
 
   // Inception band — same input/clay-submit pattern as before, but framed by
@@ -481,6 +599,10 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     fontSize: tokens.type.item.size,
     fontFamily: tokens.type.fontInter.medium,
+  },
+  createCancel: {
+    marginRight: tokens.space.sm,
+    marginLeft: -tokens.space.xs,
   },
   createBtn: {
     width: 36,
@@ -512,6 +634,30 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
   },
   archivedTitle: { flex: 1 },
+
+  // Create FAB — mirrors the capture FAB's placement/elevation so the two
+  // read as the same class of affordance across screens.
+  createFab: {
+    position: "absolute",
+    bottom: 28,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: tokens.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    ...tokens.elevation.capture,
+  },
+  // Composer band — floats above the FAB slot, spanning the screen width so
+  // the input has room. Tonal top edge, no 1px structural border.
+  composerBand: {
+    position: "absolute",
+    left: tokens.space.lg,
+    right: tokens.space.lg,
+    bottom: 28,
+    borderRadius: tokens.radius.md,
+    ...tokens.elevation.capture,
+  },
 
   pressed: { opacity: 0.7 },
 });

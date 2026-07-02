@@ -8,7 +8,8 @@ import {
 } from "@/components/molecules/direct-filter-bar";
 import { DirectPager } from "@/components/molecules/direct-pager";
 import { DirectRow } from "@/components/molecules/direct-row";
-import { tokens } from "@/constants/theme";
+import { EmptyState } from "@/components/molecules/empty-state";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { doneStatus, sortDirect } from "@/lib/direct-when";
 
@@ -21,6 +22,12 @@ const PAGE_SIZE = 6;
 interface DirectOverviewProps {
   /** Deadlines + todos in any status — the component sorts and paginates. */
   entries: DbEntry[];
+  /**
+   * Opens the shared capture composer. Wired from an empty-state CTA so a blank
+   * zone can start a capture in place — it reuses the one add-path (the pen), it
+   * does not open a second one.
+   */
+  onCapture?: () => void;
 }
 
 /**
@@ -35,8 +42,14 @@ interface DirectOverviewProps {
  */
 export function DirectOverview({
   entries,
+  onCapture,
 }: DirectOverviewProps): React.ReactElement | null {
   const { updateEntryStatus, deleteEntry } = useDatabase();
+  const { colors } = useTheme();
+  // AA-safe type shades for the empty-state title + CTA. Hooks must resolve at
+  // the top level, so pre-compute both and pick by filter inside the memo.
+  const deadlineShade = useEntryKicker("deadline");
+  const todoShade = useEntryKicker("todo");
   const [filter, setFilter] = useState<DirectFilter>("all");
   const [page, setPage] = useState(0);
 
@@ -74,6 +87,45 @@ export function DirectOverview({
     safePage * PAGE_SIZE + PAGE_SIZE,
   );
 
+  // When the ordered cut is empty the rows view would otherwise render a bare
+  // gap. Two semantically distinct blanks reach here — resolve which, so the
+  // consequence zone always states a fact instead of showing a void:
+  //   • zone-empty — no deadlines/todos exist at all (first-run / cleared board)
+  //   • filtered   — items exist but the active cut has none
+  // (An all-done zone is NOT blank: done rows still render, struck through and
+  // sunk to the bottom, so ordered is non-empty and this branch never fires.)
+  const empty = useMemo<{
+    title: string;
+    description: string;
+    cta?: string;
+    accent: string;
+  } | null>(() => {
+    if (ordered.length > 0) return null;
+    // On "all" with a truly empty board there's no single type to add — point
+    // at the pen, which resolves the type from whatever thought lands.
+    if (filter === "all") {
+      return {
+        title: "Nothing pressing",
+        description: "Tap the pen to get a deadline or todo out of your head.",
+        accent: colors.inkMuted,
+      };
+    }
+    // A specific filter is active and its stream is empty — the user has already
+    // said which flavour they want, so offer to add exactly that. An empty
+    // stream is an invitation, not a dead end.
+    const single = filter === "deadline" ? "deadline" : "todo";
+    return {
+      title: `No ${single}s yet`,
+      description:
+        filter === "deadline"
+          ? "Nothing with a date hanging over you. Line one up before it sneaks up."
+          : "No todos in play. Drop the next thing you need to do down here.",
+      cta: `Add ${single}`,
+      // Title + CTA carry the type's own electric code (AA-safe kicker shade).
+      accent: filter === "deadline" ? deadlineShade : todoShade,
+    };
+  }, [ordered.length, filter, colors.inkMuted, deadlineShade, todoShade]);
+
   const changeFilter = (next: DirectFilter): void => {
     setFilter(next);
     setPage(0); // a new cut always opens on its most pressing page
@@ -95,22 +147,34 @@ export function DirectOverview({
     <View style={styles.section}>
       <DirectFilterBar value={filter} counts={counts} onChange={changeFilter} />
 
-      <View style={styles.rows}>
-        {pageItems.map((entry) => (
-          <DirectRow
-            key={entry.id}
-            entry={entry}
-            onMarkDone={handleMarkDone}
-            onDelete={handleDelete}
-          />
-        ))}
-      </View>
+      {empty ? (
+        <EmptyState
+          title={empty.title}
+          description={empty.description}
+          accentColor={empty.accent}
+          ctaLabel={empty.cta && onCapture ? empty.cta : undefined}
+          onCta={empty.cta && onCapture ? onCapture : undefined}
+        />
+      ) : (
+        <>
+          <View style={styles.rows}>
+            {pageItems.map((entry) => (
+              <DirectRow
+                key={entry.id}
+                entry={entry}
+                onMarkDone={handleMarkDone}
+                onDelete={handleDelete}
+              />
+            ))}
+          </View>
 
-      <DirectPager
-        page={safePage}
-        pageCount={pageCount}
-        onChange={(p) => setPage(Math.max(0, Math.min(p, pageCount - 1)))}
-      />
+          <DirectPager
+            page={safePage}
+            pageCount={pageCount}
+            onChange={(p) => setPage(Math.max(0, Math.min(p, pageCount - 1)))}
+          />
+        </>
+      )}
     </View>
   );
 }

@@ -290,7 +290,13 @@ export default function HomeScreen(): React.ReactElement {
             setManualOpen(true);
           }}
         />
-        <DirectOverview entries={directEntries} />
+        <DirectOverview
+          entries={directEntries}
+          onCapture={() => {
+            setManualOpen(false);
+            cap.setComposerOpen(true);
+          }}
+        />
 
         <View style={styles.captureSpacer} />
       </ScrollView>

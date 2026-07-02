@@ -1,18 +1,8 @@
 import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider as NavThemeProvider,
-} from "@react-navigation/native";
-import {
   Caveat_500Medium,
   Caveat_600SemiBold,
   Caveat_700Bold,
 } from "@expo-google-fonts/caveat";
-import {
-  JetBrainsMono_400Regular,
-  JetBrainsMono_500Medium,
-  JetBrainsMono_700Bold,
-} from "@expo-google-fonts/jetbrains-mono";
 import {
   HostGrotesk_400Regular,
   HostGrotesk_500Medium,
@@ -20,6 +10,16 @@ import {
   HostGrotesk_700Bold,
   useFonts,
 } from "@expo-google-fonts/host-grotesk";
+import {
+  JetBrainsMono_400Regular,
+  JetBrainsMono_500Medium,
+  JetBrainsMono_700Bold,
+} from "@expo-google-fonts/jetbrains-mono";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider as NavThemeProvider,
+} from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -29,8 +29,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 
 import { ErrorBoundary } from "@/components/error-boundary";
-import { ThemeProvider, useThemeContext } from "@/contexts/theme-context";
 import { DatabaseProvider } from "@/contexts/database-context";
+import { ThemeProvider, useThemeContext } from "@/contexts/theme-context";
 import { requestNotificationPermissions } from "@/lib/notifications";
 
 export const unstable_settings = {
@@ -108,8 +108,6 @@ function ThemedNavigationShell(): React.ReactElement | null {
               while still reading screen-local, param-driven title/kicker. */}
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="list" />
-            <Stack.Screen name="calendar" />
             <Stack.Screen name="detail" />
             <Stack.Screen name="projects" />
             <Stack.Screen name="project" />

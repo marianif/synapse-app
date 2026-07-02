@@ -390,6 +390,81 @@ export async function getProjects(): Promise<DbProject[]> {
   );
 }
 
+/**
+ * The macro life areas seeded on genuine first run. Deliberately broad,
+ * one-word, and universal so they fit wildly different users (a dev, an
+ * artist, a parent) without reading as a corporate folder tree. `Making` is
+ * the catch-all for creative / side work. Emoji are restrained, instrument-
+ * panel legible — the user can clear or change any via the project picker.
+ *
+ * PRODUCT.md principle 2: projects must be present at a glance from the very
+ * first launch, never behind a naming-cold-start. Seeding real (editable,
+ * deletable) rows beats an empty "Name a project" field for a capture-first,
+ * "out of sight is gone" ADHD mind.
+ */
+const DEFAULT_PROJECTS: { title: string; emoji: string }[] = [
+  { title: 'Work', emoji: '💼' },
+  { title: 'Home', emoji: '🏠' },
+  { title: 'Body', emoji: '🌿' },
+  { title: 'Money', emoji: '💰' },
+  { title: 'People', emoji: '👥' },
+  { title: 'Making', emoji: '🔨' },
+];
+
+/**
+ * Narrative empty-lines for the seeded macro-areas. When a default project is
+ * still empty, its card shows this instead of the generic "Quiet right now." —
+ * a short scrawl that "talks" about what the area is for, so the six defaults
+ * teach the concept rather than sitting mute. Keyed by the exact seed title:
+ * the moment a user renames a default (or fills it), the match drops and the
+ * card falls back to the generic quiet line, which is correct — it's no longer
+ * a pristine default. Voice per PRODUCT.md principle 6: a plain fact, never a
+ * nag, never a cheer. Exported so `ProjectCard` and the seed can't drift.
+ */
+export const DEFAULT_PROJECT_NARRATIVES: Record<string, string> = {
+  Work: 'Where the work lands.',
+  Home: 'The place you come back to.',
+  Body: 'Sleep, food, moving.',
+  Money: 'What comes in, what goes out.',
+  People: 'The ones you keep up with.',
+  Making: 'Whatever you build for you.',
+};
+
+/**
+ * Seed the default macro-area projects, exactly once in the lifetime of an
+ * install. Guarded by a persistent `schema_meta` flag — NOT by "is the table
+ * empty" — so a user who deletes every default is never re-seeded on the next
+ * launch. Their board is theirs. Returns true only when it actually seeded.
+ *
+ * Seeded rows are `is_featured = 1` so they surface on the home grid
+ * immediately (principle 2). Runs in production, not just __DEV__.
+ */
+export async function seedDefaultProjectsOnce(): Promise<boolean> {
+  const db = getDb();
+  const flag = await db.getFirstAsync<{ value: string }>(
+    "SELECT value FROM schema_meta WHERE key = 'did_seed_default_projects'",
+  );
+  if (flag?.value === '1') return false;
+
+  const now = Math.floor(Date.now() / 1000);
+  await db.withTransactionAsync(async () => {
+    for (const { title, emoji } of DEFAULT_PROJECTS) {
+      await db.runAsync(
+        "INSERT INTO projects (id, title, status, emoji, is_featured, created_at, updated_at) VALUES (?, ?, 'active', ?, 1, ?, ?)",
+        generateId(),
+        title,
+        emoji,
+        now,
+        now,
+      );
+    }
+    await db.runAsync(
+      "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('did_seed_default_projects', '1')",
+    );
+  });
+  return true;
+}
+
 /** Update a project's title, status, and/or emoji. Pass `emoji: null` to clear. */
 export async function updateProject(
   id: string,
@@ -589,9 +664,15 @@ export async function unlinkDiaryNotesForEntry(entryId: string): Promise<void> {
 
 /**
  * Wipes every row from the data tables, leaving the schema (and schema_version)
- * intact. Dev-only convenience for starting from an empty slate. Order respects
- * FK references — diary first (it points at entries/projects), then
- * completions, then the entries themselves, then projects.
+ * intact. Starts from a genuine first-run slate. Order respects FK references —
+ * diary first (it points at entries/projects), then completions, then the
+ * entries themselves, then projects.
+ *
+ * Also clears the `did_seed_default_projects` flag so "clear everything" truly
+ * resets to first-run state: the caller (or the next launch) re-runs
+ * `seedDefaultProjectsOnce()` and the six default macro-areas come back, exactly
+ * as a fresh install would. Without this, a clear would leave the projects
+ * table empty AND blocked from ever re-seeding.
  */
 export async function clearAllData(): Promise<void> {
   const db = getDb();
@@ -600,6 +681,9 @@ export async function clearAllData(): Promise<void> {
     await db.execAsync('DELETE FROM recurrence_completions');
     await db.execAsync('DELETE FROM entries');
     await db.execAsync('DELETE FROM projects');
+    await db.execAsync(
+      "DELETE FROM schema_meta WHERE key = 'did_seed_default_projects'",
+    );
   });
 }
 

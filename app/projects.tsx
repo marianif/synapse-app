@@ -8,9 +8,15 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Animated, {
+  useAnimatedKeyboard,
+  useAnimatedStyle,
+} from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ProjectRow } from "@/components/molecules/project-row";
+import { ManualBar } from "@/components/organisms/manual-bar";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
@@ -57,8 +63,21 @@ function isSortMode(value: string | null): value is SortMode {
 export default function ProjectsScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const { projects, entries, createProject, setProjectFeatured } =
     useDatabase();
+
+  // Lift the floating composer band above the keyboard. The band sits at
+  // bottom: 28, so we translate it up by (keyboardHeight − that offset − safe
+  // inset) whenever the keyboard is open. Reanimated's keyboard value tracks
+  // the show/hide animation, so the band rides up in sync.
+  const keyboard = useAnimatedKeyboard();
+  const composerLift = useAnimatedStyle(() => {
+    // Dock rests at bottom: space.lg. Lift it by the keyboard height minus the
+    // safe-area inset the keyboard already covers, so the bar sits just above.
+    const overlap = keyboard.height.value - insets.bottom;
+    return { transform: [{ translateY: -Math.max(overlap, 0) }] };
+  });
   const [draft, setDraft] = useState("");
   const [archivedOpen, setArchivedOpen] = useState(false);
   // Search query filters the active shelf by title. Empty string = show all.
@@ -118,17 +137,21 @@ export default function ProjectsScreen(): React.ReactElement {
     return sortedActive.filter((p) => p.title.toLowerCase().includes(q));
   }, [sortedActive, query]);
 
-  const submitDraft = (): void => {
-    const title = draft.trim();
-    if (!title) return;
+  // Create + navigate. Shared by the fresh-install inception band (CreateRow)
+  // and the FAB-raised ManualBar.
+  const handleCreateProject = (title: string): void => {
+    const name = title.trim();
+    if (!name) return;
     setDraft("");
     setComposing(false);
-    createProject(title)
+    createProject(name)
       .then((project) =>
         router.push({ pathname: "/project", params: { id: project.id } }),
       )
       .catch((err) => console.error("Failed to create project:", err));
   };
+
+  const submitDraft = (): void => handleCreateProject(draft);
 
   const openComposer = (): void => {
     void Haptics.selectionAsync();
@@ -190,7 +213,10 @@ export default function ProjectsScreen(): React.ReactElement {
                 sort chip so "find by name" reads as the primary entry point
                 once the shelf grows past a screenful. */}
             <View
-              style={[styles.searchBar, { backgroundColor: colors.surfaceSubtle }]}
+              style={[
+                styles.searchBar,
+                { backgroundColor: colors.surfaceSubtle },
+              ]}
             >
               <IconSymbol name="magnify" size={18} color={colors.inkMuted} />
               <TextInput
@@ -317,40 +343,31 @@ export default function ProjectsScreen(): React.ReactElement {
       </ScrollView>
 
       {/* Create affordance — a FAB, not an inline row. Hidden on fresh install
-          (the inception band owns that state). Tapping it reveals a composer
-          band pinned above; submitting creates the project and opens it. */}
+          (the inception band owns that state). Tapping it raises the ManualBar
+          — the shared "NEW PROJECT" instrument the home dock uses — which rides
+          above the keyboard via the dock's UI-thread translate. */}
       {projects.length > 0 ? (
-        composing ? (
-          <View
-            style={[styles.composerBand, { backgroundColor: colors.paper }]}
-          >
-            <CreateRow
-              draft={draft}
-              setDraft={setDraft}
-              onSubmit={submitDraft}
-              placeholder="Name a project"
-              colors={colors}
-              autoFocus
-              onCancel={() => {
-                setDraft("");
-                setComposing(false);
-              }}
+        <Animated.View style={[styles.composerDock, composerLift]}>
+          {composing ? (
+            <ManualBar
+              onCreateProject={handleCreateProject}
+              onDismissEmpty={() => setComposing(false)}
             />
-          </View>
-        ) : (
-          <Pressable
-            onPress={openComposer}
-            accessibilityRole="button"
-            accessibilityLabel="New project"
-            style={({ pressed }) => [
-              styles.createFab,
-              { backgroundColor: colors.accent.clay },
-              pressed && styles.pressed,
-            ]}
-          >
-            <IconSymbol name="plus" size={28} color={colors.accent.onClay} />
-          </Pressable>
-        )
+          ) : (
+            <Pressable
+              onPress={openComposer}
+              accessibilityRole="button"
+              accessibilityLabel="New project"
+              style={({ pressed }) => [
+                styles.createFab,
+                { backgroundColor: colors.accent.clay },
+                pressed && styles.pressed,
+              ]}
+            >
+              <IconSymbol name="plus" size={28} color={colors.accent.onClay} />
+            </Pressable>
+          )}
+        </Animated.View>
       ) : null}
     </View>
   );
@@ -364,30 +381,15 @@ function CreateRow({
   onSubmit,
   placeholder,
   colors,
-  autoFocus = false,
-  onCancel,
 }: {
   draft: string;
   setDraft: (value: string) => void;
   onSubmit: () => void;
   placeholder: string;
   colors: ReturnType<typeof useTheme>["colors"];
-  autoFocus?: boolean;
-  onCancel?: () => void;
 }): React.ReactElement {
   return (
     <View style={[styles.createRow, { backgroundColor: colors.surface }]}>
-      {onCancel ? (
-        <Pressable
-          onPress={onCancel}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Cancel"
-          style={styles.createCancel}
-        >
-          <IconSymbol name="close" size={20} color={colors.inkMuted} />
-        </Pressable>
-      ) : null}
       <TextInput
         value={draft}
         onChangeText={setDraft}
@@ -395,7 +397,6 @@ function CreateRow({
         placeholder={placeholder}
         placeholderTextColor={colors.inkMuted}
         returnKeyType="done"
-        autoFocus={autoFocus}
         accessibilityLabel="New project title"
         style={[styles.createInput, { color: colors.ink }]}
       />
@@ -600,10 +601,6 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.item.size,
     fontFamily: tokens.type.fontInter.medium,
   },
-  createCancel: {
-    marginRight: tokens.space.sm,
-    marginLeft: -tokens.space.xs,
-  },
   createBtn: {
     width: 36,
     height: 36,
@@ -635,27 +632,25 @@ const styles = StyleSheet.create({
   },
   archivedTitle: { flex: 1 },
 
-  // Create FAB — mirrors the capture FAB's placement/elevation so the two
-  // read as the same class of affordance across screens.
-  createFab: {
+  // Composer dock — mirrors the home capture dock: full-width, resting at
+  // bottom: space.lg, lifted above the keyboard by composerLift. Holds either
+  // the raised ManualBar (full width) or, idle, the "+" FAB pinned right.
+  composerDock: {
     position: "absolute",
-    bottom: 28,
-    right: 20,
+    left: tokens.space.lg,
+    right: tokens.space.lg,
+    bottom: tokens.space.lg,
+  },
+  // Create FAB — mirrors the capture FAB's placement/elevation so the two
+  // read as the same class of affordance across screens. Pinned right within
+  // the full-width dock (the ManualBar, when raised, fills the dock instead).
+  createFab: {
+    alignSelf: "flex-end",
     width: 56,
     height: 56,
     borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
-    ...tokens.elevation.capture,
-  },
-  // Composer band — floats above the FAB slot, spanning the screen width so
-  // the input has room. Tonal top edge, no 1px structural border.
-  composerBand: {
-    position: "absolute",
-    left: tokens.space.lg,
-    right: tokens.space.lg,
-    bottom: 28,
-    borderRadius: tokens.radius.md,
     ...tokens.elevation.capture,
   },
 

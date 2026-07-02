@@ -22,7 +22,7 @@ import Animated, {
 import { entryColor, type Scheme, tokens, useTheme } from "@/constants/theme";
 import { useThemeContext } from "@/contexts/theme-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
-import { clearAllData, getDb } from "@/lib/database";
+import { clearAllData, getDb, seedDefaultProjectsOnce } from "@/lib/database";
 import { SCENARIOS, seedScenario, type ScenarioKey } from "@/lib/dev-seed";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -90,7 +90,11 @@ export function AppMenu({
           style: "destructive",
           onPress: async () => {
             try {
+              // Clearing resets to genuine first-run state: clearAllData drops
+              // the seed flag, so re-seed the default macro-areas immediately
+              // (the user gets their defaults back, exactly like a fresh install).
               await clearAllData();
+              await seedDefaultProjectsOnce();
               await fetchEntries();
               await fetchProjects();
               onClose();

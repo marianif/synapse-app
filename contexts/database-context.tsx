@@ -13,6 +13,7 @@ import {
   generateId,
   getProjects,
   initDatabase,
+  seedDefaultProjectsOnce,
 } from "@/lib/database";
 import { seedDevDataIfEmpty } from "@/lib/dev-seed";
 import {
@@ -239,6 +240,15 @@ export function DatabaseProvider({
         await seedDevDataIfEmpty(db);
       } catch (err) {
         console.warn("[DatabaseContext] dev seed failed:", err);
+      }
+      // PROD + DEV: seed the default macro-area projects exactly once per
+      // install (guarded by a persistent flag, delete-safe). Ensures the home
+      // is never a blank naming prompt on first run — PRODUCT.md principle 2.
+      try {
+        await getDb();
+        await seedDefaultProjectsOnce();
+      } catch (err) {
+        console.warn("[DatabaseContext] default-project seed failed:", err);
       }
       fetchEntries();
       fetchProjects();

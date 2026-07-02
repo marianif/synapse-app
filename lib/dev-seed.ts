@@ -1,6 +1,10 @@
 import dayjs from "dayjs";
 
-import { clearAllData, generateId } from "@/lib/database";
+import {
+  clearAllData,
+  generateId,
+  seedDefaultProjectsOnce,
+} from "@/lib/database";
 
 import type * as SQLite from "expo-sqlite";
 
@@ -67,6 +71,7 @@ type Fixture = {
 
 export type ScenarioKey =
   | "empty"
+  | "default-projects"
   | "mixed-pressure"
   | "nothing-pressing"
   | "all-hot"
@@ -249,7 +254,17 @@ const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
   empty: {
     key: "empty",
     label: "Empty",
-    description: "No projects. Projects page shows the inception empty-state copy.",
+    description: "No projects at all. Home shows the first-run \"Name a project\" tile.",
+    fixture: EMPTY,
+  },
+  "default-projects": {
+    key: "default-projects",
+    label: "Default projects",
+    description:
+      "Genuine first-run state: the six seeded macro-areas, featured and empty, each showing its narrative line.",
+    // Seeded via seedDefaultProjectsOnce (not a fixture) so this mirrors the
+    // real production first launch exactly. Fixture is empty; seedScenario
+    // routes this key through the real default-seeding path.
     fixture: EMPTY,
   },
   "mixed-pressure": {
@@ -286,6 +301,7 @@ const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
 
 /** Ordered list for the dev-menu picker. */
 export const SCENARIOS: Scenario[] = [
+  SCENARIOS_BY_KEY["default-projects"],
   SCENARIOS_BY_KEY["mixed-pressure"],
   SCENARIOS_BY_KEY["nothing-pressing"],
   SCENARIOS_BY_KEY["all-hot"],
@@ -381,6 +397,13 @@ export async function seedDevDataIfEmpty(
 
   const fixture = SCENARIOS_BY_KEY["mixed-pressure"].fixture;
   await insertFixture(db, fixture);
+  // Claim the default-seed flag so seedDefaultProjectsOnce (which runs right
+  // after this in the provider init) doesn't stack the six defaults on top of
+  // the dev fixture. Devs who want the defaults pick the "Default projects"
+  // scenario explicitly.
+  await db.runAsync(
+    "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('did_seed_default_projects', '1')",
+  );
   console.log(
     `[dev-seed] auto-seeded "mixed-pressure": ${fixture.projects.length} projects, ${fixture.entries.length} entries, ${fixture.diary.length} diary notes`,
   );
@@ -390,6 +413,14 @@ export async function seedDevDataIfEmpty(
 /**
  * Manual seed: wipes the database, then inserts the named scenario.
  * Triggered from the dev menu. Never runs outside __DEV__.
+ *
+ * Default-project handling: `clearAllData` drops the `did_seed_default_projects`
+ * flag (so a real clear returns to first-run). That would let the next launch's
+ * auto-seed inject the six defaults on top of whatever scenario we pick. So:
+ *   - "default-projects": route through the real seed path so the scenario IS
+ *     the production first-run (featured, empty, narrative lines showing).
+ *   - every other scenario: seed the curated fixture, then re-set the flag so
+ *     the auto-seed stays out and the scenario reads exactly as authored.
  */
 export async function seedScenario(
   db: SQLite.SQLiteDatabase,
@@ -400,7 +431,18 @@ export async function seedScenario(
   if (!scenario) throw new Error(`Unknown seed scenario: ${key}`);
 
   await clearAllData();
+
+  if (key === "default-projects") {
+    await seedDefaultProjectsOnce();
+    console.log('[dev-seed] applied "Default projects": 6 seeded macro-areas');
+    return;
+  }
+
   await insertFixture(db, scenario.fixture);
+  // Keep the auto-seed from stacking defaults onto this curated scenario.
+  await db.runAsync(
+    "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('did_seed_default_projects', '1')",
+  );
   console.log(
     `[dev-seed] applied "${scenario.label}": ${scenario.fixture.projects.length} projects, ${scenario.fixture.entries.length} entries, ${scenario.fixture.diary.length} diary notes`,
   );

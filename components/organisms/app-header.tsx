@@ -6,9 +6,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useTheme } from "@/constants/theme";
 import { useIncomingCount } from "@/hooks/use-incoming-count";
-import { CalendarIcon } from "../atoms/calendar-icon";
 import { EntryCluster } from "../atoms/entry-cluster";
-import { NotificationBadge } from "../atoms/notification-badge";
 import { AppMenu } from "./app-menu";
 
 interface AppHeaderProps {
@@ -42,37 +40,6 @@ export function AppHeader({
         </View>
 
         <View style={styles.actions}>
-          {/* Incoming tray — opens the temporal lane (deadlines, events,
-              todos). Its badge counts what's due this week. */}
-          <Pressable
-            onPress={() => router.push("/list")}
-            style={styles.iconBtn}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={
-              incomingCount > 0
-                ? `Incoming, ${incomingCount} this week`
-                : "Incoming"
-            }
-          >
-            <MaterialCommunityIcons
-              name="tray-arrow-down"
-              size={24}
-              color={colors.inkMuted}
-            />
-            <NotificationBadge count={incomingCount} />
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.push("/calendar")}
-            style={styles.iconBtn}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel="Calendar"
-          >
-            <CalendarIcon size={26} />
-          </Pressable>
-
           <Pressable
             onPress={() => setMenuVisible(true)}
             style={styles.iconBtn}

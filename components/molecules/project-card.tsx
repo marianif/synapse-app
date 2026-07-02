@@ -7,6 +7,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useUiPreference } from "@/hooks/use-ui-preference";
+import { DEFAULT_PROJECT_NARRATIVES } from "@/lib/database";
 
 import type { DbEntry, DbProject, EntryType } from "@/lib/types";
 
@@ -77,6 +78,15 @@ export function ProjectCard({
   const isQuiet = total === 0;
   const isExpanded = mode === "preview";
 
+  // A still-empty default project speaks a short line about what it's for
+  // instead of the generic quiet line — so the seeded six teach the concept.
+  // Keyed by exact title: rename it and it's no longer a pristine default, so
+  // it correctly falls back to "Quiet right now."
+  const defaultNarrative = isQuiet
+    ? DEFAULT_PROJECT_NARRATIVES[project.title]
+    : undefined;
+  const quietLine = defaultNarrative ?? "Quiet right now.";
+
   const openProject = (): void => {
     // Side effect: bump last_opened_at so the Project Shelf's RECENT sort
     // reflects the navigation. Fire-and-forget — never block the route.
@@ -99,7 +109,7 @@ export function ProjectCard({
       ? "Collapses preview"
       : "Expands preview";
   const a11yBody = isQuiet
-    ? `${project.title}, nothing on the line`
+    ? `${project.title}, ${defaultNarrative ?? "nothing on the line"}`
     : `${project.title}, ${summaryLine(counts)}`;
 
   return (
@@ -146,7 +156,7 @@ export function ProjectCard({
             type="hand"
             style={[styles.cardSummary, { color: colors.inkMuted }]}
           >
-            {isQuiet ? "Quiet right now." : summaryLine(counts)}
+            {isQuiet ? quietLine : summaryLine(counts)}
           </ThemedText>
         ) : null}
       </Pressable>

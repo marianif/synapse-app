@@ -1,8 +1,10 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import Animated, {
   Easing,
+  FadeOut,
+  SlideInDown,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -65,8 +67,24 @@ export function CaptureBar({
   onDismissEmpty,
 }: CaptureBarProps): React.ReactElement {
   const { scheme, colors } = useTheme();
+  const reduced = useReducedMotion();
   const [draft, setDraft] = useState("");
   const hasText = draft.trim().length > 0;
+
+  // The dock's shared entrance — matches the ManualBar so composer, recorder,
+  // and manual bar all slide up from below as one instrument. The idle and
+  // recording states are two roots that swap in place; slide only the FIRST
+  // appearance so the composer→recorder mode-swap doesn't re-fire the slide
+  // and jump the bar mid-interaction. FadeOut on exit keeps the swap smooth.
+  const firstMount = useRef(true);
+  useEffect(() => {
+    firstMount.current = false;
+  }, []);
+  const entering =
+    reduced || !firstMount.current
+      ? undefined
+      : SlideInDown.duration(320).easing(Easing.out(Easing.cubic));
+  const exiting = reduced ? undefined : FadeOut.duration(110);
 
   const handleBlur = (): void => {
     if (!hasText) onDismissEmpty?.();
@@ -102,7 +120,9 @@ export function CaptureBar({
       scheme === "light" ? colors.type.ideas : entryKicker("idea", "light");
 
     return (
-      <View
+      <Animated.View
+        entering={entering}
+        exiting={exiting}
         style={[
           styles.bar,
           styles.recording,
@@ -143,12 +163,14 @@ export function CaptureBar({
         >
           <MaterialCommunityIcons name="check" size={24} color={onSlab} />
         </Pressable>
-      </View>
+      </Animated.View>
     );
   }
 
   return (
-    <View
+    <Animated.View
+      entering={entering}
+      exiting={exiting}
       style={[
         styles.bar,
         styles.idle,
@@ -206,7 +228,7 @@ export function CaptureBar({
           <MaterialCommunityIcons name="microphone" size={22} color={signal} />
         </Pressable>
       )}
-    </View>
+    </Animated.View>
   );
 }
 

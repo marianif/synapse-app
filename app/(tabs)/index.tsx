@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -264,6 +265,24 @@ export default function HomeScreen(): React.ReactElement {
     transform: [{ translateY: -keyboardLift.value }],
   }));
 
+  // Is any dock surface up? The dock is summoned, so an outside tap should
+  // put it away — mirrors the empty-blur dismissal, but works even with text
+  // in the line (the tap is an explicit "not now"). The resolver is excluded:
+  // a pending thought is a caught idea we don't want to silently drop on a
+  // stray tap — it keeps its own explicit keep/discard controls.
+  const dockOpen =
+    manualOpen || cap.composerOpen || cap.isRecording;
+
+  // Dismiss whatever the outside tap landed behind. Recording is cancelled
+  // (discards the transcript without filing — same as the recorder's ✕);
+  // the composer and manual bar just close. Also drop the keyboard.
+  const dismissDock = useCallback(() => {
+    if (cap.isRecording) cap.cancelRecording();
+    setManualOpen(false);
+    cap.setComposerOpen(false);
+    Keyboard.dismiss();
+  }, [cap]);
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <ScrollView
@@ -301,6 +320,19 @@ export default function HomeScreen(): React.ReactElement {
 
         <View style={styles.captureSpacer} />
       </ScrollView>
+
+      {/* Outside-tap backdrop — a transparent full-screen catcher that only
+          exists while a dock surface is up. Tapping anywhere off the dock puts
+          it away (see dismissDock). Sits under the dock so the bars stay
+          interactive; the resolver is intentionally not covered so a caught
+          thought isn't dropped by a stray tap. */}
+      {dockOpen ? (
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={dismissDock}
+          accessibilityLabel="Dismiss capture"
+        />
+      ) : null}
 
       {/* The capture dock is summoned, not always-on: the pen key (tab bar)
           opens the composer or starts voice; the dock vanishes when idle so the

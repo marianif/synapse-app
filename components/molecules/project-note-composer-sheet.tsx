@@ -169,7 +169,9 @@ export function ProjectNoteComposerSheet({
               style={[
                 styles.input,
                 {
-                  backgroundColor: isRecording ? ideaTint : colors.surfaceSubtle,
+                  backgroundColor: isRecording
+                    ? ideaTint
+                    : colors.surfaceSubtle,
                   color: colors.ink,
                   // While listening, the band above and the input share a tint
                   // so they read as one surface — only the corner radii tell
@@ -296,12 +298,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   input: {
-    minHeight: 120,
     paddingHorizontal: tokens.space.lg,
     paddingVertical: tokens.space.md,
     borderRadius: tokens.radius.md,
     fontSize: tokens.type.body.size,
     lineHeight: 22,
+    maxHeight: 120,
   },
   actions: {
     flexDirection: "row",
@@ -318,7 +320,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: tokens.space.xs,
     paddingHorizontal: tokens.space.md,
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.pill,
   },
   micLabel: {
     letterSpacing: tokens.type.micro.tracking,
@@ -342,11 +344,11 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
   },
   saveBtn: {
-    minHeight: 44,
+    minHeight: 28,
     paddingHorizontal: tokens.space.lg,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.pill,
   },
   pressed: { opacity: 0.7 },
 });

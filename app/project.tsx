@@ -10,23 +10,18 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { CaptureResolver } from "@/components/molecules/capture-resolver";
+import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DirectRow } from "@/components/molecules/direct-row";
-import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
 import { ProjectNoteComposerSheet } from "@/components/molecules/project-note-composer-sheet";
 import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sheet";
 import { ProjectPullInSheet } from "@/components/molecules/project-pull-in-sheet";
 import { CaptureBar } from "@/components/organisms/capture-bar";
+import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { tokens, useTheme } from "@/constants/theme";
 import { useCapture } from "@/hooks/use-capture";
@@ -132,8 +127,7 @@ export default function ProjectScreen(): React.ReactElement {
         // captured into a project or live as standalone commitments; retro-
         // attaching them is a re-categorization verb that doesn't belong here.
         unfiledIdeas: entries.filter(
-          (e) =>
-            e.type === "idea" && !e.project_id && !isDone(e),
+          (e) => e.type === "idea" && !e.project_id && !isDone(e),
         ),
         unfiledNotes: diaryEntries.filter(
           (n) => !n.linked_project_id && !n.linked_entry_id,
@@ -171,7 +165,9 @@ export default function ProjectScreen(): React.ReactElement {
     for (const e of spine) ts.push(e.updated_at);
     for (const e of ideas) ts.push(e.updated_at);
     for (const n of notes) ts.push(n.updated_at);
-    return ts.length > 0 ? Math.max(...ts) : project?.updated_at ?? Math.floor(Date.now() / 1000);
+    return ts.length > 0
+      ? Math.max(...ts)
+      : project?.updated_at ?? Math.floor(Date.now() / 1000);
   }, [project, spine, ideas, notes]);
 
   const openCount = useMemo(
@@ -214,11 +210,6 @@ export default function ProjectScreen(): React.ReactElement {
     return groups;
   }, [notes]);
 
-  const isIdle = useMemo(() => {
-    const daysSince = Math.floor((Date.now() / 1000 - lastActive) / 86400);
-    return daysSince >= 7;
-  }, [lastActive]);
-
   function ruleOpacity(epochSeconds: number): number {
     const daysSince = Math.floor(
       (Date.now() / 1000 - epochSeconds) / 86400,
@@ -227,11 +218,6 @@ export default function ProjectScreen(): React.ReactElement {
     if (daysSince === 1) return 0.6;
     return 0.3;
   }
-
-  const emojiHeld = useSharedValue(0);
-  const emojiScaleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 - emojiHeld.value * 0.06 }],
-  }));
 
   // Long-press menu on idea chips. Holding the idea on the sheet by id (not
   // the row) means re-renders during pull-in / promote don't yank the menu
@@ -252,9 +238,7 @@ export default function ProjectScreen(): React.ReactElement {
       console.error("Failed to pull idea into project:", err),
     );
   };
-  const handlePullInNote = (
-    note: import("@/lib/types").DbDiaryEntry,
-  ): void => {
+  const handlePullInNote = (note: import("@/lib/types").DbDiaryEntry): void => {
     if (!id) return;
     void updateDiaryEntry(note.id, { linkedProjectId: id }).catch((err) =>
       console.error("Failed to pull note into project:", err),
@@ -271,9 +255,7 @@ export default function ProjectScreen(): React.ReactElement {
       title: idea.title,
       type: "todo",
       projectId: id,
-    }).catch((err) =>
-      console.error("Failed to make todo from idea:", err),
-    );
+    }).catch((err) => console.error("Failed to make todo from idea:", err));
   };
   const handleUnfileIdea = (idea: DbEntry): void => {
     void updateEntry(idea.id, { projectId: null }).catch((err) =>
@@ -287,7 +269,9 @@ export default function ProjectScreen(): React.ReactElement {
     });
   };
 
-  // + write a note — opens the lightweight composer pre-linked to this project.
+  // + write/edit a note — opens the lightweight composer pre-linked to this
+  // project. When editing, the composer is pre-populated and saves via
+  // updateDiaryEntry; for new notes it calls addDiaryEntry.
   const handleTapNote = (note: DbDiaryEntry): void => {
     setEditingNote(note);
     setNoteOpen(true);
@@ -321,10 +305,9 @@ export default function ProjectScreen(): React.ReactElement {
   // DirectRow done/delete handlers — same shape as the home board, so a line
   // triaged here behaves exactly like the same line on the board.
   const handleMarkDone = (entry: DbEntry): void => {
-    void updateEntryStatus(
-      entry.id,
-      doneStatus(entry.type as EntryType),
-    ).catch((err) => console.error("Failed to mark entry done:", err));
+    void updateEntryStatus(entry.id, doneStatus(entry.type as EntryType)).catch(
+      (err) => console.error("Failed to mark entry done:", err),
+    );
   };
   const handleDeleteEntry = (entry: DbEntry): void => {
     void entryDeleteConfirm.request(() => {
@@ -368,7 +351,11 @@ export default function ProjectScreen(): React.ReactElement {
           options={{
             headerShown: true,
             header: () => (
-              <ScreenHeader title="Project" onBack={() => router.back()} inset />
+              <ScreenHeader
+                title="Project"
+                onBack={() => router.back()}
+                inset
+              />
             ),
           }}
         />
@@ -398,11 +385,28 @@ export default function ProjectScreen(): React.ReactElement {
               title={project.title}
               kicker={archived ? "ARCHIVED PROJECT" : "PROJECT"}
               glyph={
-                project.emoji ? (
-                  <ThemedText type="title" style={styles.headerGlyph}>
-                    {project.emoji}
-                  </ThemedText>
-                ) : undefined
+                <Pressable
+                  onPress={() => openOverflow("emoji")}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    project.emoji
+                      ? `Change project emoji, currently ${project.emoji}`
+                      : "Pick an emoji for this project"
+                  }
+                >
+                  {project.emoji ? (
+                    <ThemedText type="title" style={styles.headerGlyph}>
+                      {project.emoji}
+                    </ThemedText>
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="folder-outline"
+                      size={22}
+                      color={colors.inkMuted}
+                    />
+                  )}
+                </Pressable>
               }
               onBack={() => router.back()}
               inset
@@ -425,100 +429,11 @@ export default function ProjectScreen(): React.ReactElement {
           ),
         }}
       />
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* HERO — instrument cluster. Emoji identity (left), live mono readouts
-            (center, right-aligned), capture trigger (right, clay slab). The
-            open count, done ratio, and last-active label give the project's
-            vital signs at a glance — no scrolling needed. Idle projects
-            (untouched for 7+ days) get a subtle stale-pulse glow ring. */}
-        <View style={styles.hero}>
-          <Animated.View style={emojiScaleStyle}>
-            <Pressable
-              onPress={() => openOverflow("emoji")}
-              onPressIn={() => {
-                emojiHeld.value = withSpring(1, tokens.motion.spring);
-              }}
-              onPressOut={() => {
-                emojiHeld.value = withSpring(0, tokens.motion.spring);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={
-                project.emoji
-                  ? `Change project emoji, currently ${project.emoji}`
-                  : "Pick an emoji for this project"
-              }
-              style={[
-                styles.heroGlyphSlot,
-                { backgroundColor: colors.surface },
-              ]}
-            >
-              {isIdle ? (
-                <View
-                  style={[
-                    styles.idleGlow,
-                    { backgroundColor: tokens.color.glow.stalePulse },
-                  ]}
-                />
-              ) : null}
-              {project.emoji ? (
-                <ThemedText style={styles.heroEmoji}>
-                  {project.emoji}
-                </ThemedText>
-              ) : (
-                <MaterialCommunityIcons
-                  name="folder-outline"
-                  size={28}
-                  color={colors.inkMuted}
-                />
-              )}
-            </Pressable>
-          </Animated.View>
-
-          <View style={styles.heroReadouts}>
-            <ThemedText
-              type="mono"
-              style={[styles.heroReadoutPrimary, { color: colors.ink }]}
-            >
-              {openCount} OPEN
-            </ThemedText>
-            <ThemedText
-              type="mono"
-              style={[styles.heroReadoutSecondary, { color: colors.inkMuted }]}
-            >
-              {doneCount} / {spine.length} DONE
-            </ThemedText>
-            <ThemedText
-              type="mono"
-              style={[styles.heroReadoutSecondary, { color: colors.inkMuted }]}
-            >
-              {lastActiveLabel(lastActive)}
-            </ThemedText>
-          </View>
-
-          <Pressable
-            onPress={() => cap.setComposerOpen(true)}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel="Add to this project"
-            style={({ pressed }) => [
-              styles.capturePen,
-              { backgroundColor: colors.accent.clay },
-              pressed && styles.pressed,
-            ]}
-          >
-            <MaterialCommunityIcons
-              name="plus"
-              size={20}
-              color={colors.accent.onClay}
-            />
-          </Pressable>
-        </View>
-
         {/* Provenance — the handwritten line that says where this project
             came from. Identity, not metadata. Its own band so the eye
             registers it as the project's origin story, not as content. */}
@@ -545,6 +460,31 @@ export default function ProjectScreen(): React.ReactElement {
             </ThemedText>
           </Pressable>
         ) : null}
+
+        {/* Stats bar — compact instrument readout below provenance.
+            Open count (primary), done ratio, and last-active label in the
+            mono signal layer so the eye gets the project's vital signs
+            without a dedicated hero section. */}
+        <View style={styles.statsBar}>
+          <ThemedText
+            type="mono"
+            style={[styles.statsPrimary, { color: colors.ink }]}
+          >
+            {openCount} OPEN
+          </ThemedText>
+          <ThemedText
+            type="mono"
+            style={[styles.statsSecondary, { color: colors.inkMuted }]}
+          >
+            {doneCount} / {spine.length} DONE
+          </ThemedText>
+          <ThemedText
+            type="mono"
+            style={[styles.statsSecondary, { color: colors.inkMuted }]}
+          >
+            {lastActiveLabel(lastActive)}
+          </ThemedText>
+        </View>
 
         {/* The actionable spine — open todos and deadlines filed here.
             Uses DirectRow so swipe-to-done and swipe-to-delete are the same
@@ -651,9 +591,9 @@ export default function ProjectScreen(): React.ReactElement {
         ) : null}
 
         {/* NOTES — the handwritten margin, now with session grouping so the
-            margin reads like a dated journal, not a flat dump. Each note is
-            tappable to edit; the vertical rule per note uses opacity to
-            signal recency (today = full, yesterday = 0.6, older = 0.3). */}
+            margin reads like a dated journal. Each note is tappable to edit;
+            the vertical rule uses per-note opacity segments (today = full,
+            yesterday = 0.6, older = 0.3) so recency is carried by the rule. */}
         <View style={styles.section}>
           {notesSessionGroups.map((group) => (
             <View key={group.label}>
@@ -734,9 +674,7 @@ export default function ProjectScreen(): React.ReactElement {
             </ThemedText>
           </Pressable>
         </View>
-
       </ScrollView>
-
       <ProjectOverflowSheet
         visible={overflowOpen}
         project={project}
@@ -747,7 +685,6 @@ export default function ProjectScreen(): React.ReactElement {
         onToggleArchive={handleToggleArchive}
         onDelete={requestDelete}
       />
-
       <ProjectPullInSheet
         visible={pullInOpen}
         onClose={() => setPullInOpen(false)}
@@ -756,7 +693,6 @@ export default function ProjectScreen(): React.ReactElement {
         onAttachIdea={handlePullInIdea}
         onAttachNote={handlePullInNote}
       />
-
       <IdeaActionSheet
         visible={actionIdea !== null}
         idea={actionIdea}
@@ -765,7 +701,6 @@ export default function ProjectScreen(): React.ReactElement {
         onUnfile={() => actionIdea && handleUnfileIdea(actionIdea)}
         onOpen={() => actionIdea && handleOpenIdea(actionIdea)}
       />
-
       <ProjectNoteComposerSheet
         visible={noteOpen}
         projectTitle={project.title}
@@ -776,7 +711,6 @@ export default function ProjectScreen(): React.ReactElement {
         }}
         onSave={handleSaveNote}
       />
-
       <ConfirmSheet
         visible={deleteConfirm.visible}
         kicker="DELETE PROJECT"
@@ -786,7 +720,6 @@ export default function ProjectScreen(): React.ReactElement {
         onConfirm={deleteConfirm.confirm}
         onCancel={deleteConfirm.cancel}
       />
-
       <DirectDetailSheet
         entry={selectedEntry}
         project={project ?? null}
@@ -796,7 +729,6 @@ export default function ProjectScreen(): React.ReactElement {
         onDelete={handleDeleteEntry}
         onEdit={handleEditEntry}
       />
-
       <ConfirmSheet
         visible={entryDeleteConfirm.visible}
         kicker="DELETE ENTRY"
@@ -806,7 +738,6 @@ export default function ProjectScreen(): React.ReactElement {
         onConfirm={entryDeleteConfirm.confirm}
         onCancel={entryDeleteConfirm.cancel}
       />
-
       {/* Outside-tap backdrop — only while a dock surface is up. Sits under the
           dock so the bar stays interactive; the resolver is intentionally not
           covered, so a caught thought isn't dropped by a stray tap. */}
@@ -817,7 +748,6 @@ export default function ProjectScreen(): React.ReactElement {
           accessibilityLabel="Dismiss capture"
         />
       ) : null}
-
       {/* The capture dock — the same instrument as the home board, pinned to the
           bottom and pre-locked to this project. Only mounts a surface when
           summoned: composer/recorder (bar) or the pending-thought resolver. */}
@@ -870,58 +800,22 @@ const styles = StyleSheet.create({
     gap: tokens.space.xxl,
   },
 
-  // Hero: emoji slot on the left, gauge on the right.
-  hero: {
+  // Stats bar — compact instrument readout between provenance and spine.
+  // Mimics the bento-card CounterDisplay feel but as an inline strip so it
+  // never competes with the DirectRow gestures below.
+  statsBar: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.lg,
+    alignItems: "baseline",
+    gap: tokens.space.md,
   },
-  heroGlyphSlot: {
-    width: 64,
-    height: 64,
-    borderRadius: tokens.radius.lg,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  heroEmoji: {
-    fontSize: 36,
-    lineHeight: 44,
-  },
-  heroSpacer: {
-    flex: 1,
-  },
-  heroReadouts: {
-    flex: 1,
-    alignItems: "flex-end",
-    gap: 0,
-  },
-  heroReadoutPrimary: {
-    fontSize: 22,
+  statsPrimary: {
+    fontSize: 18,
     fontWeight: "700",
-    letterSpacing: -0.5,
-    includeFontPadding: false,
+    letterSpacing: -0.3,
   },
-  heroReadoutSecondary: {
+  statsSecondary: {
     fontSize: tokens.type.micro.size,
     letterSpacing: tokens.type.micro.tracking,
-    includeFontPadding: false,
-  },
-  idleGlow: {
-    position: "absolute",
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    top: -4,
-    left: -4,
-  },
-  // Pen tile — the project's capture trigger. Clay slab, matches every
-  // primary action across the brand; tap → text, long-press → voice.
-  capturePen: {
-    width: 44,
-    height: 44,
-    borderRadius: tokens.radius.md,
-    alignItems: "center",
-    justifyContent: "center",
   },
   headerGlyph: {
     fontSize: 22,
@@ -970,9 +864,9 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
 
-  // Notes margin — per-note 2px rule segments with opacity tied to recency
-  // (today = 1.0, yesterday = 0.6, older = 0.3). No container border —
-  // each row carries its own left bar so opacity varies per note.
+  // Notes margin — per-note 2px rule segments whose opacity varies with
+  // recency (today = full, yesterday = 0.6, older = 0.3). No container
+  // border — each row carries its own left bar.
   sessionHeader: {
     letterSpacing: tokens.type.micro.tracking,
     marginTop: tokens.space.sm,
@@ -1035,7 +929,6 @@ const styles = StyleSheet.create({
   pullInLabel: {
     letterSpacing: tokens.type.micro.tracking,
   },
-
 
   empty: {
     padding: tokens.space.xl,

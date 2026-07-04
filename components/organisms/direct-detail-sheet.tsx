@@ -1,15 +1,14 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import Animated, {
+  Easing,
+  FadeInUp,
+  useReducedMotion,
+} from "react-native-reanimated";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import {
-  entryColor,
-  tokens,
-  useEntryKicker,
-  useEntryTint,
-  useTheme,
-} from "@/constants/theme";
+import { entryColor, tokens, useTheme } from "@/constants/theme";
 import {
   daysUntil,
   isDone,
@@ -22,9 +21,7 @@ import { humanizeRule } from "@/lib/recurrence";
 import type { DbEntry, DbProject, EntryType } from "@/lib/types";
 
 interface DirectDetailSheetProps {
-  /** The entry to inspect. Null when the sheet is closed. */
   entry: DbEntry | null;
-  /** Owning project, or null for unfiled. */
   project: DbProject | null;
   visible: boolean;
   onClose: () => void;
@@ -34,12 +31,12 @@ interface DirectDetailSheetProps {
 }
 
 const STATUS_LABELS: Record<DbEntry["status"], string> = {
-  scheduled: "SCHEDULED",
-  active: "ACTIVE",
-  completed: "DONE",
-  pending: "PENDING",
-  met: "MET",
-  overdue: "OVERDUE",
+  scheduled: "Scheduled",
+  active: "Active",
+  completed: "Done",
+  pending: "Pending",
+  met: "Met",
+  overdue: "Overdue",
 };
 
 function doneLabel(type: EntryType): string {
@@ -85,19 +82,25 @@ function recurrenceValue(entry: DbEntry): string {
   return label;
 }
 
-function projectValue(project: DbProject | null): string {
-  if (!project) return "Unfiled";
-  return project.emoji ? `${project.emoji} ${project.title}` : project.title;
+function urgencyTag(entry: DbEntry): { text: string; color: string } | null {
+  if (isDone(entry)) return null;
+
+  const days = daysUntil(entry.due_date ?? entry.scheduled_date ?? null);
+  if (days !== null) {
+    if (days < 0) return { text: `Over by ${Math.abs(days)}d`, color: tokens.feedback.danger };
+    if (days === 0) return { text: "Today", color: tokens.feedback.warning };
+    return { text: `${days}d left`, color: entryColor(entry.type) };
+  }
+
+  return null;
 }
 
-/**
- * Field Card detail sheet — the consequence zone's read-out.
- *
- * A bottom sheet that turns a direct-row tap into a glanceable instrument
- * readout: type-tinted header, mono metadata compartments, narrative margin
- * note, and quick actions. No page navigation; the user reads it and returns
- * to the field in one tap.
- */
+function statusColor(status: DbEntry["status"]): string | null {
+  if (status === "overdue") return tokens.feedback.danger;
+  if (status === "completed" || status === "met") return tokens.feedback.success;
+  return null;
+}
+
 export function DirectDetailSheet({
   entry,
   project,
@@ -108,17 +111,18 @@ export function DirectDetailSheet({
   onEdit,
 }: DirectDetailSheetProps): React.ReactElement | null {
   const { colors } = useTheme();
-  const tint = useEntryTint(entry?.type ?? "todo");
-  const kickerColor = useEntryKicker(entry?.type ?? "todo");
+  const reduced = useReducedMotion();
 
   if (!entry) return null;
 
   const type = entry.type;
   const done = isDone(entry);
   const accent = entryColor(type);
-  const when = whenValue(entry);
-  const whenCharged = !done && isWhenCharged(daysUntil(entry.due_date ?? entry.scheduled_date ?? null));
-  const narrative = narrativeFor(entry);
+  const charged =
+    !done &&
+    isWhenCharged(daysUntil(entry.due_date ?? entry.scheduled_date ?? null));
+  const urgency = urgencyTag(entry);
+  const statColor = statusColor(entry.status);
 
   const handleMarkDone = (): void => {
     onMarkDone(entry);
@@ -154,18 +158,56 @@ export function DirectDetailSheet({
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
           >
-            {/* ── Header block ── type tint, kicker, title, narrative note */}
-            <View style={[styles.header, { backgroundColor: tint }]}>
-              <View style={styles.headerRow}>
+            <Animated.View
+              entering={
+                reduced
+                  ? undefined
+                  : FadeInUp.duration(280)
+                      .delay(40)
+                      .easing(Easing.out(Easing.cubic))
+              }
+            >
+              {/* ── Project breadcrumb ── */}
+              {project ? (
+                <View style={styles.breadcrumb}>
+                  <MaterialCommunityIcons
+                    name="folder-outline"
+                    size={13}
+                    color={colors.inkMuted}
+                  />
+                  <ThemedText type="micro" muted numberOfLines={1} style={styles.breadcrumbText}>
+                    {project.emoji ? `${project.emoji} ${project.title}` : project.title}
+                  </ThemedText>
+                </View>
+              ) : null}
+
+              {/* ── Header: type + status ── */}
+              <View style={styles.header}>
                 <EntryDot type={type} size={8} />
-                <ThemedText
-                  type="micro"
-                  style={[styles.kicker, { color: kickerColor }]}
-                >
+                <ThemedText type="label" style={{ color: accent }}>
                   {type}
                 </ThemedText>
+
+                {urgency ? (
+                  <View style={[styles.chip, { backgroundColor: urgency.color + "18" }]}>
+                    <ThemedText type="micro" style={{ color: urgency.color }}>
+                      {urgency.text}
+                    </ThemedText>
+                  </View>
+                ) : null}
+
+                {statColor ? (
+                  <ThemedText type="micro" style={{ color: statColor }}>
+                    {STATUS_LABELS[entry.status].toUpperCase()}
+                  </ThemedText>
+                ) : (
+                  <ThemedText type="micro" muted>
+                    {STATUS_LABELS[entry.status].toUpperCase()}
+                  </ThemedText>
+                )}
               </View>
 
+              {/* ── Identity ── */}
               <ThemedText
                 type="title"
                 style={[
@@ -179,86 +221,88 @@ export function DirectDetailSheet({
                 {entry.title}
               </ThemedText>
 
-              {narrative ? (
-                <ThemedText
-                  type="hand"
-                  style={[styles.narrative, { color: kickerColor }]}
-                >
-                  {narrative}
+              {entry.subtitle ? (
+                <ThemedText type="body" muted style={styles.subtitle}>
+                  {entry.subtitle}
                 </ThemedText>
               ) : null}
-            </View>
 
-            {/* ── Metadata bento ── */}
-            <View style={styles.grid}>
-              <View style={styles.gridRow}>
-                <MetadataCell
-                  label="WHEN"
-                  value={when}
-                  valueColor={whenCharged ? accent : colors.ink}
-                />
-                <MetadataCell label="PROJECT" value={projectValue(project)} />
+              {narrativeFor(entry) ? (
+                <ThemedText type="mono" muted style={styles.narrative}>
+                  {narrativeFor(entry)}
+                </ThemedText>
+              ) : null}
+
+              {/* ── Divider ── */}
+              <View style={[styles.divider, { backgroundColor: colors.surfaceSubtle }]} />
+
+              {/* ── Temporal metadata ── */}
+              <View style={styles.meta}>
+                <View style={styles.metaRow}>
+                  <ThemedText type="micro" muted style={styles.metaLabel}>
+                    WHEN
+                  </ThemedText>
+                  <ThemedText
+                    type="mono"
+                    style={[styles.metaValue, charged && { color: tokens.feedback.danger }]}
+                  >
+                    {whenValue(entry)}
+                  </ThemedText>
+                </View>
+
+                {entry.recurrence_rule ? (
+                  <View style={styles.metaRow}>
+                    <ThemedText type="micro" muted style={styles.metaLabel}>
+                      REPEATS
+                    </ThemedText>
+                    <ThemedText type="mono" style={styles.metaValue}>
+                      {recurrenceValue(entry)}
+                    </ThemedText>
+                  </View>
+                ) : null}
               </View>
 
-              <View style={styles.gridRow}>
-                <MetadataCell
-                  label="STATUS"
-                  value={STATUS_LABELS[entry.status]}
-                  valueColor={
-                    done
-                      ? tokens.feedback.success
-                      : entry.status === "overdue"
-                        ? tokens.feedback.danger
-                        : colors.ink
-                  }
-                />
-                <MetadataCell
-                  label="REPEATS"
-                  value={recurrenceValue(entry)}
-                />
-              </View>
-            </View>
+              {/* ── Notes ── */}
+              {entry.inspiration ? (
+                <View style={[styles.noteBlock, { backgroundColor: colors.surfaceSubtle }]}>
+                  <ThemedText type="micro" muted>
+                    INSPIRATION
+                  </ThemedText>
+                  <ThemedText type="body" style={{ color: colors.ink }}>
+                    {entry.inspiration}
+                  </ThemedText>
+                </View>
+              ) : null}
 
-            {/* ── Subtitle ── */}
-            {entry.subtitle ? (
-              <InfoBlock label="SUBTITLE" value={entry.subtitle} />
-            ) : null}
+              {entry.notes ? (
+                <View style={[styles.noteBlock, { backgroundColor: colors.surfaceSubtle }]}>
+                  <ThemedText type="micro" muted>
+                    NOTES
+                  </ThemedText>
+                  <ThemedText type="body" style={{ color: colors.ink }}>
+                    {entry.notes}
+                  </ThemedText>
+                </View>
+              ) : null}
 
-            {/* ── Inspiration ── ideas only */}
-            {entry.inspiration ? (
-              <InfoBlock label="INSPIRATION" value={entry.inspiration} />
-            ) : null}
-
-            {/* ── Notes ── */}
-            {entry.notes ? (
-              <InfoBlock label="NOTES" value={entry.notes} />
-            ) : null}
-
-            {/* ── Actions ── */}
-            <View style={styles.actions}>
-              <View style={styles.actionRow}>
+              {/* ── Actions ── */}
+              <View style={styles.actions}>
                 {!done ? (
                   <Pressable
                     onPress={handleMarkDone}
                     style={({ pressed }) => [
-                      styles.doneButton,
-                      {
-                        backgroundColor: tokens.feedback.success,
-                        opacity: pressed ? 0.8 : 1,
-                      },
+                      styles.actionBtn,
+                      { backgroundColor: colors.surfaceSubtle, opacity: pressed ? 0.7 : 1 },
                     ]}
                     accessibilityRole="button"
                     accessibilityLabel={doneLabel(type)}
                   >
                     <MaterialCommunityIcons
                       name="check"
-                      size={20}
-                      color={tokens.color.dark.paper}
+                      size={18}
+                      color={tokens.feedback.success}
                     />
-                    <ThemedText
-                      type="bodyBold"
-                      style={{ color: tokens.color.dark.paper }}
-                    >
+                    <ThemedText type="bodyBold" style={{ color: tokens.feedback.success }}>
                       {doneLabel(type)}
                     </ThemedText>
                   </Pressable>
@@ -267,99 +311,46 @@ export function DirectDetailSheet({
                 <Pressable
                   onPress={handleEdit}
                   style={({ pressed }) => [
-                    styles.editButton,
-                    {
-                      backgroundColor: colors.accent.clay,
-                      opacity: pressed ? 0.8 : 1,
-                    },
+                    styles.actionBtn,
+                    { backgroundColor: colors.surfaceSubtle, opacity: pressed ? 0.7 : 1 },
                   ]}
                   accessibilityRole="button"
                   accessibilityLabel="Edit"
                 >
                   <MaterialCommunityIcons
                     name="pencil-outline"
-                    size={18}
-                    color={colors.accent.onClay}
+                    size={16}
+                    color={colors.inkMuted}
                   />
-                  <ThemedText
-                    type="bodyBold"
-                    style={{ color: colors.accent.onClay }}
-                  >
+                  <ThemedText type="bodyBold" muted>
                     Edit
                   </ThemedText>
                 </Pressable>
-              </View>
 
-              <Pressable
-                onPress={handleDelete}
-                style={({ pressed }) => [
-                  styles.deleteButton,
-                  pressed && styles.deleteButtonPressed,
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel="Delete"
-              >
-                <ThemedText
-                  type="body"
-                  style={{ color: tokens.feedback.danger }}
+                <Pressable
+                  onPress={handleDelete}
+                  style={({ pressed }) => [
+                    styles.actionBtn,
+                    { backgroundColor: colors.surfaceSubtle, opacity: pressed ? 0.7 : 1 },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Delete"
                 >
-                  Delete
-                </ThemedText>
-              </Pressable>
-            </View>
+                  <MaterialCommunityIcons
+                    name="trash-can-outline"
+                    size={16}
+                    color={tokens.feedback.danger}
+                  />
+                  <ThemedText type="bodyBold" style={{ color: tokens.feedback.danger }}>
+                    Delete
+                  </ThemedText>
+                </Pressable>
+              </View>
+            </Animated.View>
           </ScrollView>
         </View>
       </View>
     </Modal>
-  );
-}
-
-function MetadataCell({
-  label,
-  value,
-  valueColor,
-}: {
-  label: string;
-  value: string;
-  valueColor?: string;
-}): React.ReactElement {
-  const { colors } = useTheme();
-  return (
-    <View
-      style={[styles.cell, { backgroundColor: colors.surfaceSubtle }]}
-      accessibilityLabel={`${label}: ${value}`}
-    >
-      <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-        {label}
-      </ThemedText>
-      <ThemedText
-        type="mono"
-        numberOfLines={2}
-        style={{ color: valueColor ?? colors.ink }}
-      >
-        {value}
-      </ThemedText>
-    </View>
-  );
-}
-
-function InfoBlock({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}): React.ReactElement {
-  const { colors } = useTheme();
-  return (
-    <View style={[styles.block, { backgroundColor: colors.surfaceSubtle }]}>
-      <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-        {label}
-      </ThemedText>
-      <ThemedText type="body" style={{ color: colors.ink }}>
-        {value}
-      </ThemedText>
-    </View>
   );
 }
 
@@ -373,9 +364,9 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.color.scrim.strong,
   },
   sheet: {
-    borderTopLeftRadius: tokens.radius.lg + 8,
-    borderTopRightRadius: tokens.radius.lg + 8,
-    maxHeight: "88%",
+    borderTopLeftRadius: tokens.radius.lg + 10,
+    borderTopRightRadius: tokens.radius.lg + 10,
+    maxHeight: "92%",
     paddingBottom: tokens.space.xxl,
   },
   handle: {
@@ -384,86 +375,94 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     alignSelf: "center",
     marginTop: tokens.space.sm,
-    marginBottom: tokens.space.md,
+    marginBottom: tokens.space.lg,
   },
   scroll: {
     flexGrow: 0,
   },
   content: {
     paddingHorizontal: tokens.space.lg,
-    gap: tokens.space.md,
+    paddingBottom: tokens.space.lg,
   },
+
+  // ── Breadcrumb ──
+  breadcrumb: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+    marginBottom: tokens.space.md,
+  },
+  breadcrumbText: {
+    flexShrink: 1,
+  },
+
+  // ── Header ──
   header: {
-    borderRadius: tokens.radius.md,
-    padding: tokens.space.lg,
-    gap: tokens.space.sm,
-  },
-  headerRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.sm,
+    marginBottom: tokens.space.sm,
   },
-  kicker: {
-    letterSpacing: tokens.type.kicker.tracking,
+  chip: {
+    borderRadius: tokens.radius.sm,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
+
+  // ── Identity ──
   title: {
-    letterSpacing: tokens.type.title.tracking,
+    marginBottom: tokens.space.xs,
   },
+  subtitle: {},
   narrative: {
     marginTop: tokens.space.xs,
   },
-  grid: {
-    gap: tokens.space.sm,
+
+  // ── Divider ──
+  divider: {
+    height: 1,
+    marginTop: tokens.space.md,
+    marginBottom: tokens.space.md,
   },
-  gridRow: {
+
+  // ── Metadata ──
+  meta: {
+    gap: tokens.space.sm,
+    marginBottom: tokens.space.sm,
+  },
+  metaRow: {
     flexDirection: "row",
+    alignItems: "baseline",
     gap: tokens.space.sm,
   },
-  cell: {
+  metaLabel: {
+    width: 64,
+  },
+  metaValue: {
     flex: 1,
+  },
+
+  // ── Notes ──
+  noteBlock: {
     borderRadius: tokens.radius.md,
     padding: tokens.space.md,
     gap: tokens.space.xs,
-    minHeight: 72,
+    marginTop: tokens.space.sm,
   },
-  block: {
-    borderRadius: tokens.radius.md,
-    padding: tokens.space.md,
-    gap: tokens.space.xs,
-  },
+
+  // ── Actions ──
   actions: {
-    gap: tokens.space.sm,
-    paddingTop: tokens.space.sm,
-  },
-  actionRow: {
     flexDirection: "row",
     gap: tokens.space.sm,
+    marginTop: tokens.space.md,
   },
-  doneButton: {
+  actionBtn: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: tokens.space.sm,
-    minHeight: 48,
-    borderRadius: tokens.radius.md,
-  },
-  editButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: tokens.space.sm,
-    minHeight: 48,
-    borderRadius: tokens.radius.md,
-  },
-  deleteButton: {
     minHeight: 44,
-    alignItems: "center",
-    justifyContent: "center",
     borderRadius: tokens.radius.md,
-  },
-  deleteButtonPressed: {
-    backgroundColor: tokens.color.dark.paper + "14",
   },
 });

@@ -38,6 +38,7 @@ export function ProjectNoteComposerSheet({
   projectTitle,
   onClose,
   onSave,
+  initialBody,
 }: {
   visible: boolean;
   /** The project name — surfaced in the kicker so the user can confirm
@@ -45,6 +46,9 @@ export function ProjectNoteComposerSheet({
   projectTitle: string;
   onClose: () => void;
   onSave: (body: string) => void;
+  /** Pre-populate the draft for editing an existing note. When set,
+   *  the kicker reads "EDIT" instead of "NOTE ON". */
+  initialBody?: string;
 }): React.ReactElement {
   const { colors } = useTheme();
   // Listening tint — amber is the brand's "capture is active" code (matches
@@ -79,9 +83,11 @@ export function ProjectNoteComposerSheet({
 
   // Reset draft and focus the input every time the sheet opens. Focus on a
   // tick so the modal's mount animation doesn't fight the keyboard rise.
+  // When initialBody is set (editing mode), seed the draft with the
+  // existing note body.
   useEffect(() => {
     if (visible) {
-      setDraft("");
+      setDraft(initialBody ?? "");
       const t = setTimeout(() => inputRef.current?.focus(), 50);
       return () => clearTimeout(t);
     }
@@ -89,7 +95,7 @@ export function ProjectNoteComposerSheet({
     if (!visible && wasRecording.current) {
       void stopRecording();
     }
-  }, [visible, stopRecording]);
+  }, [visible, stopRecording, initialBody]);
 
   const canSave = draft.trim().length > 0;
 
@@ -131,7 +137,9 @@ export function ProjectNoteComposerSheet({
               type="label"
               style={[styles.kicker, { color: colors.inkMuted }]}
             >
-              {`NOTE ON ${projectTitle.toUpperCase()}`}
+              {initialBody
+                ? `EDIT NOTE ON ${projectTitle.toUpperCase()}`
+                : `NOTE ON ${projectTitle.toUpperCase()}`}
             </ThemedText>
 
             {/* Input area. While recording, we drop a tinted band + waveform

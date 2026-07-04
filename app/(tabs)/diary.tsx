@@ -14,6 +14,7 @@ import {
   type DiaryMacro,
 } from "@/components/molecules/diary-filter-bar";
 import { DiaryFeed } from "@/components/organisms/diary-feed";
+import { IdeaConstellation } from "@/components/organisms/idea-constellation";
 import {
   LinkSheet,
   type LinkableIdea,
@@ -34,6 +35,24 @@ export default function DiaryScreen(): React.ReactElement {
   const [macro, setMacro] = useState<DiaryMacro>("all");
   const [ideaId, setIdeaId] = useState<string | null>(null);
   const [ideaSheetOpen, setIdeaSheetOpen] = useState(false);
+
+  const freeNoteCount = useMemo(
+    () => entries.filter((n) => !n.linked_entry_id).length,
+    [entries],
+  );
+
+  const handleSelectIdea = useCallback(
+    (id: string | null) => {
+      setIdeaId(id);
+      if (id !== null) setMacro("all");
+    },
+    [],
+  );
+
+  const handleSelectFree = useCallback(() => {
+    setIdeaId(null);
+    setMacro("free");
+  }, []);
 
   const linkedTitles = useMemo(() => {
     const map: Record<string, string> = {};
@@ -107,6 +126,15 @@ export default function DiaryScreen(): React.ReactElement {
         keyboardShouldPersistTaps="handled"
       >
         <DiaryComposer ideas={ideas} onSave={handleSave} />
+
+        <IdeaConstellation
+          entries={boardEntries}
+          notes={entries}
+          selectedIdeaId={ideaId}
+          onSelectIdea={handleSelectIdea}
+          freeNoteCount={freeNoteCount}
+          onSelectFree={handleSelectFree}
+        />
 
         <DiaryFilterBar
           macro={macro}

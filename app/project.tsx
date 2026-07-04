@@ -10,6 +10,11 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -31,7 +36,7 @@ import { useDiary } from "@/hooks/use-diary";
 import { doneStatus, sortDirect } from "@/lib/direct-when";
 import { ConfirmKey } from "@/lib/settings";
 import { isTodoFamily } from "@/lib/taxonomy";
-import type { DbEntry, EntryType } from "@/lib/types";
+import type { DbDiaryEntry, DbEntry, EntryType } from "@/lib/types";
 
 const isDone = (e: DbEntry): boolean =>
   e.status === "completed" || e.status === "met";
@@ -137,6 +142,7 @@ export default function ProjectScreen(): React.ReactElement {
     }, [entries, diaryEntries, id]);
   const [pullInOpen, setPullInOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<DbDiaryEntry | null>(null);
 
   // Capture: the SAME dock the home board uses (bar → resolver), pre-locked to
   // this project. The old hero-pen → chooser-sheet → three-composer flow was a
@@ -145,6 +151,87 @@ export default function ProjectScreen(): React.ReactElement {
   // grammar. `lockedProjectId` threads attribution through every resolution and
   // hides the resolver's PROJECT picker — the surface implies the project.
   const cap = useCapture({ lockedProjectId: id ?? null });
+
+  function lastActiveLabel(epochSeconds: number): string {
+    const diffDays = Math.floor(
+      (Date.now() / 1000 - epochSeconds) / 86400,
+    );
+    if (diffDays <= 0) return "TODAY";
+    if (diffDays === 1) return "YESTERDAY";
+    if (diffDays < 7) return `${diffDays}D AGO`;
+    if (diffDays < 14) return "1W AGO";
+    if (diffDays < 60) return `${Math.floor(diffDays / 7)}W AGO`;
+    return "A WHILE BACK";
+  }
+
+  const lastActive = useMemo(() => {
+    const ts: number[] = [];
+    if (project?.last_opened_at)
+      ts.push(Math.floor(project.last_opened_at / 1000));
+    for (const e of spine) ts.push(e.updated_at);
+    for (const e of ideas) ts.push(e.updated_at);
+    for (const n of notes) ts.push(n.updated_at);
+    return ts.length > 0 ? Math.max(...ts) : project?.updated_at ?? Math.floor(Date.now() / 1000);
+  }, [project, spine, ideas, notes]);
+
+  const openCount = useMemo(
+    () => spine.filter((e) => !isDone(e)).length,
+    [spine],
+  );
+  const doneCount = useMemo(() => spine.filter(isDone).length, [spine]);
+
+  const notesById = useMemo(() => {
+    const map = new Map<string, DbDiaryEntry>();
+    for (const n of notes) map.set(n.id, n);
+    return map;
+  }, [notes]);
+
+  const notesSessionGroups = useMemo(() => {
+    const groups: { label: string; ids: string[] }[] = [];
+    const sorted = [...notes].sort((a, b) => b.created_at - a.created_at);
+    for (const note of sorted) {
+      const date = new Date(note.created_at * 1000);
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      let label: string;
+      if (date.toDateString() === today.toDateString()) {
+        label = "TODAY";
+      } else if (date.toDateString() === yesterday.toDateString()) {
+        label = "YESTERDAY";
+      } else {
+        label = date
+          .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+          .toUpperCase();
+      }
+      const last = groups[groups.length - 1];
+      if (last && last.label === label) {
+        last.ids.push(note.id);
+      } else {
+        groups.push({ label, ids: [note.id] });
+      }
+    }
+    return groups;
+  }, [notes]);
+
+  const isIdle = useMemo(() => {
+    const daysSince = Math.floor((Date.now() / 1000 - lastActive) / 86400);
+    return daysSince >= 7;
+  }, [lastActive]);
+
+  function ruleOpacity(epochSeconds: number): number {
+    const daysSince = Math.floor(
+      (Date.now() / 1000 - epochSeconds) / 86400,
+    );
+    if (daysSince === 0) return 1.0;
+    if (daysSince === 1) return 0.6;
+    return 0.3;
+  }
+
+  const emojiHeld = useSharedValue(0);
+  const emojiScaleStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 - emojiHeld.value * 0.06 }],
+  }));
 
   // Long-press menu on idea chips. Holding the idea on the sheet by id (not
   // the row) means re-renders during pull-in / promote don't yank the menu
@@ -201,11 +288,23 @@ export default function ProjectScreen(): React.ReactElement {
   };
 
   // + write a note — opens the lightweight composer pre-linked to this project.
+  const handleTapNote = (note: DbDiaryEntry): void => {
+    setEditingNote(note);
+    setNoteOpen(true);
+  };
+
   const handleSaveNote = (body: string): void => {
     if (!id) return;
-    void addDiaryEntry(body, null, null, id).catch((err) =>
-      console.error("Failed to save project note:", err),
-    );
+    if (editingNote) {
+      void updateDiaryEntry(editingNote.id, { body }).catch((err) =>
+        console.error("Failed to update note:", err),
+      );
+      setEditingNote(null);
+    } else {
+      void addDiaryEntry(body, null, null, id).catch((err) =>
+        console.error("Failed to save project note:", err),
+      );
+    }
   };
 
   // The capture dock is summoned, not always-on. An outside tap puts it away
@@ -332,44 +431,75 @@ export default function ProjectScreen(): React.ReactElement {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* HERO — emoji identity + capture trigger. The emoji slot is the
-            fast path to the picker (opens the overflow sheet directly on its
-            emoji pane); the same picker is also reachable via the header
-            `··` overflow → Change emoji, for symmetry with rename / archive /
-            delete. The open count already lives in the spine's row count
-            right below, so it isn't repeated here as a separate gauge. */}
+        {/* HERO — instrument cluster. Emoji identity (left), live mono readouts
+            (center, right-aligned), capture trigger (right, clay slab). The
+            open count, done ratio, and last-active label give the project's
+            vital signs at a glance — no scrolling needed. Idle projects
+            (untouched for 7+ days) get a subtle stale-pulse glow ring. */}
         <View style={styles.hero}>
-          <Pressable
-            onPress={() => openOverflow("emoji")}
-            accessibilityRole="button"
-            accessibilityLabel={
-              project.emoji
-                ? `Change project emoji, currently ${project.emoji}`
-                : "Pick an emoji for this project"
-            }
-            style={({ pressed }) => [
-              styles.heroGlyphSlot,
-              { backgroundColor: colors.surface },
-              pressed && styles.pressed,
-            ]}
-          >
-            {project.emoji ? (
-              <ThemedText style={styles.heroEmoji}>{project.emoji}</ThemedText>
-            ) : (
-              <MaterialCommunityIcons
-                name="folder-outline"
-                size={28}
-                color={colors.inkMuted}
-              />
-            )}
-          </Pressable>
+          <Animated.View style={emojiScaleStyle}>
+            <Pressable
+              onPress={() => openOverflow("emoji")}
+              onPressIn={() => {
+                emojiHeld.value = withSpring(1, tokens.motion.spring);
+              }}
+              onPressOut={() => {
+                emojiHeld.value = withSpring(0, tokens.motion.spring);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={
+                project.emoji
+                  ? `Change project emoji, currently ${project.emoji}`
+                  : "Pick an emoji for this project"
+              }
+              style={[
+                styles.heroGlyphSlot,
+                { backgroundColor: colors.surface },
+              ]}
+            >
+              {isIdle ? (
+                <View
+                  style={[
+                    styles.idleGlow,
+                    { backgroundColor: tokens.color.glow.stalePulse },
+                  ]}
+                />
+              ) : null}
+              {project.emoji ? (
+                <ThemedText style={styles.heroEmoji}>
+                  {project.emoji}
+                </ThemedText>
+              ) : (
+                <MaterialCommunityIcons
+                  name="folder-outline"
+                  size={28}
+                  color={colors.inkMuted}
+                />
+              )}
+            </Pressable>
+          </Animated.View>
 
-          <View style={styles.heroSpacer} />
+          <View style={styles.heroReadouts}>
+            <ThemedText
+              type="mono"
+              style={[styles.heroReadoutPrimary, { color: colors.ink }]}
+            >
+              {openCount} OPEN
+            </ThemedText>
+            <ThemedText
+              type="mono"
+              style={[styles.heroReadoutSecondary, { color: colors.inkMuted }]}
+            >
+              {doneCount} / {spine.length} DONE
+            </ThemedText>
+            <ThemedText
+              type="mono"
+              style={[styles.heroReadoutSecondary, { color: colors.inkMuted }]}
+            >
+              {lastActiveLabel(lastActive)}
+            </ThemedText>
+          </View>
 
-          {/* Capture trigger — opens the SAME capture dock as the home board
-              (bar → resolver), pre-locked to this project. Tap types; the bar's
-              mic arms voice. The resolver then decides WHAT it is (do it / by a
-              date / keep / note), so there's no separate chooser step. */}
           <Pressable
             onPress={() => cap.setComposerOpen(true)}
             hitSlop={8}
@@ -520,40 +650,70 @@ export default function ProjectScreen(): React.ReactElement {
           </View>
         ) : null}
 
-        {/* NOTES — the handwritten margin. No card chrome; just Caveat lines
-            indented from a quiet vertical rule, so the section reads as
-            writing on the page rather than stored data. The section ALWAYS
-            renders (even at zero notes) because it owns the "+ write a note"
-            verb — the surface that displays notes is the one that authors them. */}
+        {/* NOTES — the handwritten margin, now with session grouping so the
+            margin reads like a dated journal, not a flat dump. Each note is
+            tappable to edit; the vertical rule per note uses opacity to
+            signal recency (today = full, yesterday = 0.6, older = 0.3). */}
         <View style={styles.section}>
-          {notes.length > 0 ? (
-            <>
+          {notesSessionGroups.map((group) => (
+            <View key={group.label}>
               <ThemedText
                 type="micro"
-                style={[styles.sectionKicker, { color: colors.inkMuted }]}
+                style={[styles.sessionHeader, { color: colors.inkMuted }]}
               >
-                NOTES · {notes.length}
+                {group.label} · {group.ids.length}{" "}
+                {group.ids.length === 1 ? "NOTE" : "NOTES"}
               </ThemedText>
-              <View
-                style={[
-                  styles.margin,
-                  { borderLeftColor: colors.surfaceSubtle },
-                ]}
-              >
-                {notes.map((n) => (
-                  <ThemedText
-                    key={n.id}
-                    type="hand"
-                    style={[styles.marginNote, { color: colors.ink }]}
-                  >
-                    {n.body}
-                  </ThemedText>
-                ))}
+              <View style={styles.margin}>
+                {group.ids.map((nid) => {
+                  const note = notesById.get(nid);
+                  if (!note) return null;
+                  const segOpacity = ruleOpacity(note.created_at);
+                  return (
+                    <Pressable
+                      key={note.id}
+                      onPress={() => handleTapNote(note)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Edit note: ${note.body.slice(0, 40)}`}
+                      style={({ pressed }) => [
+                        styles.marginNoteRow,
+                        pressed && styles.pressed,
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.ruleSegment,
+                          {
+                            backgroundColor: colors.surfaceSubtle,
+                            opacity: segOpacity,
+                          },
+                        ]}
+                      />
+                      <ThemedText
+                        type="hand"
+                        style={[styles.marginNote, { color: colors.ink }]}
+                      >
+                        {note.body}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
               </View>
-            </>
+            </View>
+          ))}
+          {notes.length === 0 ? (
+            <ThemedText
+              type="hand"
+              style={[styles.quiet, { color: colors.inkMuted }]}
+            >
+              No notes yet.
+            </ThemedText>
           ) : null}
           <Pressable
-            onPress={() => setNoteOpen(true)}
+            onPress={() => {
+              setEditingNote(null);
+              setNoteOpen(true);
+            }}
             accessibilityRole="button"
             accessibilityLabel="Write a note about this project"
             style={({ pressed }) => [
@@ -609,7 +769,11 @@ export default function ProjectScreen(): React.ReactElement {
       <ProjectNoteComposerSheet
         visible={noteOpen}
         projectTitle={project.title}
-        onClose={() => setNoteOpen(false)}
+        initialBody={editingNote?.body}
+        onClose={() => {
+          setNoteOpen(false);
+          setEditingNote(null);
+        }}
         onSave={handleSaveNote}
       />
 
@@ -726,6 +890,30 @@ const styles = StyleSheet.create({
   heroSpacer: {
     flex: 1,
   },
+  heroReadouts: {
+    flex: 1,
+    alignItems: "flex-end",
+    gap: 0,
+  },
+  heroReadoutPrimary: {
+    fontSize: 22,
+    fontWeight: "700",
+    letterSpacing: -0.5,
+    includeFontPadding: false,
+  },
+  heroReadoutSecondary: {
+    fontSize: tokens.type.micro.size,
+    letterSpacing: tokens.type.micro.tracking,
+    includeFontPadding: false,
+  },
+  idleGlow: {
+    position: "absolute",
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    top: -4,
+    left: -4,
+  },
   // Pen tile — the project's capture trigger. Clay slab, matches every
   // primary action across the brand; tap → text, long-press → voice.
   capturePen: {
@@ -782,15 +970,31 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
 
-  // Notes margin — a quiet vertical rule on the left, Caveat lines stacked.
+  // Notes margin — per-note 2px rule segments with opacity tied to recency
+  // (today = 1.0, yesterday = 0.6, older = 0.3). No container border —
+  // each row carries its own left bar so opacity varies per note.
+  sessionHeader: {
+    letterSpacing: tokens.type.micro.tracking,
+    marginTop: tokens.space.sm,
+    marginBottom: tokens.space.xs,
+  },
   margin: {
-    borderLeftWidth: 2,
-    paddingLeft: tokens.space.md,
     gap: tokens.space.sm,
+  },
+  marginNoteRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: tokens.space.md,
+  },
+  ruleSegment: {
+    width: 2,
+    alignSelf: "stretch",
+    borderRadius: 1,
   },
   marginNote: {
     fontSize: 18,
     lineHeight: 24,
+    flex: 1,
   },
 
   // Header `··` overflow button — matches the back button's hit area.

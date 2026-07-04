@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -9,9 +10,13 @@ import {
 import { DirectPager } from "@/components/molecules/direct-pager";
 import { DirectRow } from "@/components/molecules/direct-row";
 import { EmptyState } from "@/components/molecules/empty-state";
+import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
+import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
 import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
+import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { doneStatus, sortDirect } from "@/lib/direct-when";
+import { ConfirmKey } from "@/lib/settings";
 
 import type { DbEntry, EntryType } from "@/lib/types";
 
@@ -28,9 +33,12 @@ interface DirectOverviewProps {
   /**
    * Opens the shared capture composer. Wired from an empty-state CTA so a blank
    * zone can start a capture in place — it reuses the one add-path (the pen), it
-   * does not open a second one.
+   * does not open a second one. An optional `type` seeds the resolver: a
+   * specific empty stream (No deadlines / todos / ideas yet) passes its own type
+   * so capture opens on that door, while the neutral "all" empty state passes
+   * nothing and the resolver stays type-agnostic.
    */
-  onCapture?: () => void;
+  onCapture?: (type?: EntryType) => void;
 }
 
 /**
@@ -47,7 +55,8 @@ export function DirectOverview({
   entries,
   onCapture,
 }: DirectOverviewProps): React.ReactElement | null {
-  const { updateEntryStatus, deleteEntry } = useDatabase();
+  const router = useRouter();
+  const { updateEntryStatus, deleteEntry, projects } = useDatabase();
   const { colors } = useTheme();
   // AA-safe type shades for the empty-state title + CTA. Hooks must resolve at
   // the top level, so pre-compute both and pick by filter inside the memo.
@@ -56,6 +65,8 @@ export function DirectOverview({
   const ideaShade = useEntryKicker("idea");
   const [filter, setFilter] = useState<DirectFilter>("all");
   const [page, setPage] = useState(0);
+  const [selectedEntry, setSelectedEntry] = useState<DbEntry | null>(null);
+  const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteEntry });
 
   // Live counts off the unfiltered set so the header reads the true field, not
   // the current cut. Counts are the whole direct zone (open + done together).
@@ -105,6 +116,10 @@ export function DirectOverview({
     description: string;
     cta?: string;
     accent: string;
+    // The type to seed capture with. Undefined on the neutral "all" state so
+    // the resolver stays type-agnostic; set to the active filter's type on a
+    // specific empty stream so capture opens straight on that door.
+    captureType?: EntryType;
   } | null>(() => {
     if (ordered.length > 0) return null;
     // On "all" with a truly empty board there's no single type to add — point
@@ -146,6 +161,9 @@ export function DirectOverview({
       description: byType.description,
       cta: `Add ${filter}`,
       accent: byType.shade,
+      // `filter` here is narrowed to a concrete type (not "all"), so seed
+      // capture with it — the CTA opens the resolver already on this door.
+      captureType: filter,
     };
   }, [
     ordered.length,
@@ -161,6 +179,11 @@ export function DirectOverview({
     setPage(0); // a new cut always opens on its most pressing page
   };
 
+  const selectedProject = useMemo(
+    () => projects.find((p) => p.id === selectedEntry?.project_id) ?? null,
+    [projects, selectedEntry?.project_id],
+  );
+
   const handleMarkDone = (entry: DbEntry): void => {
     void updateEntryStatus(entry.id, doneStatus(entry.type as EntryType)).catch(
       (err) => console.error("Failed to mark entry done:", err),
@@ -168,9 +191,18 @@ export function DirectOverview({
   };
 
   const handleDelete = (entry: DbEntry): void => {
-    void deleteEntry(entry.id).catch((err) =>
-      console.error("Failed to delete entry:", err),
-    );
+    void deleteConfirm.request(() => {
+      void deleteEntry(entry.id).catch((err) =>
+        console.error("Failed to delete entry:", err),
+      );
+    });
+  };
+
+  const handleEdit = (entry: DbEntry): void => {
+    router.push({
+      pathname: "/detail",
+      params: { id: entry.id, entryType: entry.type },
+    });
   };
 
   return (
@@ -183,7 +215,11 @@ export function DirectOverview({
           description={empty.description}
           accentColor={empty.accent}
           ctaLabel={empty.cta && onCapture ? empty.cta : undefined}
-          onCta={empty.cta && onCapture ? onCapture : undefined}
+          onCta={
+            empty.cta && onCapture
+              ? () => onCapture(empty.captureType)
+              : undefined
+          }
         />
       ) : (
         <>
@@ -192,6 +228,7 @@ export function DirectOverview({
               <DirectRow
                 key={entry.id}
                 entry={entry}
+                onPress={setSelectedEntry}
                 onMarkDone={handleMarkDone}
                 onDelete={handleDelete}
               />
@@ -205,6 +242,26 @@ export function DirectOverview({
           />
         </>
       )}
+
+      <DirectDetailSheet
+        entry={selectedEntry}
+        project={selectedProject}
+        visible={selectedEntry !== null}
+        onClose={() => setSelectedEntry(null)}
+        onMarkDone={handleMarkDone}
+        onDelete={handleDelete}
+        onEdit={handleEdit}
+      />
+
+      <ConfirmSheet
+        visible={deleteConfirm.visible}
+        kicker="DELETE ENTRY"
+        message="This removes it from the field for good."
+        dontAsk={deleteConfirm.dontAsk}
+        onToggleDontAsk={deleteConfirm.toggleDontAsk}
+        onConfirm={deleteConfirm.confirm}
+        onCancel={deleteConfirm.cancel}
+      />
     </View>
   );
 }

@@ -109,6 +109,15 @@ interface CaptureResolverProps {
    * it to land.
    */
   lockedProjectId?: string | null;
+  /**
+   * A type to open pre-selected on. When it's a dated verb (todo / deadline)
+   * the resolver skips the neutral chooser and lands straight on that door's
+   * workbench — set when capture was summoned from a type-specific surface
+   * (e.g. an empty "No deadlines yet" stream), so the user isn't re-asked what
+   * they already said. `idea` / `note` have no workbench, so they fall through
+   * to the neutral chooser (their door is a single tap away anyway).
+   */
+  seedType?: EntryType | null;
 }
 
 // The two destinations that carry detail. Picking one SELECTS it (and opens the
@@ -162,6 +171,7 @@ export function CaptureResolver({
   onResolve,
   onDismiss,
   lockedProjectId = null,
+  seedType = null,
 }: CaptureResolverProps): React.ReactElement {
   const reduced = useReducedMotion();
   const { scheme } = useTheme();
@@ -178,7 +188,12 @@ export function CaptureResolver({
   } = barPalette(scheme);
 
   // The selected dated destination (null = nothing selected, detail closed).
-  const [selected, setSelected] = useState<DatedKind | null>(null);
+  // Seed from a type-specific summon: a seeded todo/deadline opens straight on
+  // its workbench. idea/note have no workbench, so they leave this null and the
+  // neutral chooser shows (their door is one tap away).
+  const [selected, setSelected] = useState<DatedKind | null>(
+    seedType === "todo" || seedType === "deadline" ? seedType : null,
+  );
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [dueRange, setDueRange] = useState<DueRange | null>(null);

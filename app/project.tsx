@@ -1,31 +1,36 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
+import { CaptureResolver } from "@/components/molecules/capture-resolver";
 import { DirectRow } from "@/components/molecules/direct-row";
+import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
-import { ProjectCaptureChooserSheet } from "@/components/molecules/project-capture-chooser-sheet";
-import {
-  ProjectDeadlineComposerSheet,
-  ProjectIdeaComposerSheet,
-  ProjectTodoComposerSheet,
-} from "@/components/molecules/project-composers";
 import { ProjectNoteComposerSheet } from "@/components/molecules/project-note-composer-sheet";
 import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sheet";
 import { ProjectPullInSheet } from "@/components/molecules/project-pull-in-sheet";
+import { CaptureBar } from "@/components/organisms/capture-bar";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { tokens, useTheme } from "@/constants/theme";
+import { useCapture } from "@/hooks/use-capture";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 import { doneStatus, sortDirect } from "@/lib/direct-when";
 import { ConfirmKey } from "@/lib/settings";
 import { isTodoFamily } from "@/lib/taxonomy";
-import type { CreateEntryInput } from "@/contexts/database-context";
 import type { DbEntry, EntryType } from "@/lib/types";
 
 const isDone = (e: DbEntry): boolean =>
@@ -75,6 +80,10 @@ export default function ProjectScreen(): React.ReactElement {
   const project = projects.find((p) => p.id === id);
 
   const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteProject });
+  const entryDeleteConfirm = useConfirm({
+    confirmKey: ConfirmKey.deleteEntry,
+  });
+  const [selectedEntry, setSelectedEntry] = useState<DbEntry | null>(null);
 
   // Overflow sheet — every tier-3 verb (rename, change emoji, archive, delete)
   // lives here so the project surface itself can stay a working zone. Opens
@@ -128,13 +137,14 @@ export default function ProjectScreen(): React.ReactElement {
     }, [entries, diaryEntries, id]);
   const [pullInOpen, setPullInOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
-  // Capture flow: hero pen → chooser sheet → one of three composers. Held
-  // separately (not a single union) so the chooser can close cleanly before
-  // the composer animates in — overlapping sheet animations look stacked.
-  const [chooserOpen, setChooserOpen] = useState(false);
-  const [activeComposer, setActiveComposer] = useState<
-    null | "todo" | "deadline" | "idea"
-  >(null);
+
+  // Capture: the SAME dock the home board uses (bar → resolver), pre-locked to
+  // this project. The old hero-pen → chooser-sheet → three-composer flow was a
+  // slower, project-only fork of capture; capture is the brand's one trigger
+  // (PRODUCT.md: one add-path), so the project surface now speaks the same
+  // grammar. `lockedProjectId` threads attribution through every resolution and
+  // hides the resolver's PROJECT picker — the surface implies the project.
+  const cap = useCapture({ lockedProjectId: id ?? null });
 
   // Long-press menu on idea chips. Holding the idea on the sheet by id (not
   // the row) means re-renders during pull-in / promote don't yank the menu
@@ -198,23 +208,16 @@ export default function ProjectScreen(): React.ReactElement {
     );
   };
 
-  // Hero pen → chooser → composer flow. The composers each emit a partial
-  // CreateEntryInput; we splice in the type + projectId and persist. Closing
-  // the composer is the composer's own responsibility; we just fire-and-log.
-  const persistComposed = (
-    type: "todo" | "deadline" | "idea",
-    input: Partial<CreateEntryInput>,
-  ): void => {
-    if (!id) return;
-    void createEntry({
-      ...input,
-      title: input.title ?? "",
-      type,
-      projectId: id,
-    }).catch((err) =>
-      console.error(`Failed to create ${type} in project:`, err),
-    );
-  };
+  // The capture dock is summoned, not always-on. An outside tap puts it away
+  // (mirrors the home board). The resolver is excluded from the backdrop: a
+  // pending thought is a caught idea we don't silently drop on a stray tap — it
+  // keeps its own explicit keep/discard controls.
+  const dockOpen = cap.composerOpen || cap.isRecording;
+  const dismissDock = useCallback((): void => {
+    if (cap.isRecording) void cap.cancelRecording();
+    cap.setComposerOpen(false);
+    Keyboard.dismiss();
+  }, [cap]);
 
   // DirectRow done/delete handlers — same shape as the home board, so a line
   // triaged here behaves exactly like the same line on the board.
@@ -225,9 +228,18 @@ export default function ProjectScreen(): React.ReactElement {
     ).catch((err) => console.error("Failed to mark entry done:", err));
   };
   const handleDeleteEntry = (entry: DbEntry): void => {
-    void deleteEntry(entry.id).catch((err) =>
-      console.error("Failed to delete entry:", err),
-    );
+    void entryDeleteConfirm.request(() => {
+      void deleteEntry(entry.id).catch((err) =>
+        console.error("Failed to delete entry:", err),
+      );
+    });
+  };
+
+  const handleEditEntry = (entry: DbEntry): void => {
+    router.push({
+      pathname: "/detail",
+      params: { id: entry.id, entryType: entry.type },
+    });
   };
 
   const handleRename = (next: string): void => {
@@ -354,13 +366,12 @@ export default function ProjectScreen(): React.ReactElement {
 
           <View style={styles.heroSpacer} />
 
-          {/* Capture trigger — opens a chooser sheet that asks WHAT the new
-              line is (todo / deadline / idea), then routes to the matching
-              minimal composer pre-locked to this project. No voice and no
-              ambient bar: the project surface is for deliberate authoring,
-              not 5-second-window ambient capture (which lives on home). */}
+          {/* Capture trigger — opens the SAME capture dock as the home board
+              (bar → resolver), pre-locked to this project. Tap types; the bar's
+              mic arms voice. The resolver then decides WHAT it is (do it / by a
+              date / keep / note), so there's no separate chooser step. */}
           <Pressable
-            onPress={() => setChooserOpen(true)}
+            onPress={() => cap.setComposerOpen(true)}
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel="Add to this project"
@@ -427,6 +438,7 @@ export default function ProjectScreen(): React.ReactElement {
               <DirectRow
                 key={e.id}
                 entry={e}
+                onPress={setSelectedEntry}
                 onMarkDone={handleMarkDone}
                 onDelete={handleDeleteEntry}
               />
@@ -601,35 +613,6 @@ export default function ProjectScreen(): React.ReactElement {
         onSave={handleSaveNote}
       />
 
-      {/* Hero pen → chooser → one of three composers. The chooser closes
-          itself before the composer animates in (state holds them apart). */}
-      <ProjectCaptureChooserSheet
-        visible={chooserOpen}
-        onClose={() => setChooserOpen(false)}
-        onPick={(type) => {
-          setChooserOpen(false);
-          setActiveComposer(type);
-        }}
-      />
-      <ProjectIdeaComposerSheet
-        visible={activeComposer === "idea"}
-        projectTitle={project.title}
-        onClose={() => setActiveComposer(null)}
-        onSave={(input) => persistComposed("idea", input)}
-      />
-      <ProjectTodoComposerSheet
-        visible={activeComposer === "todo"}
-        projectTitle={project.title}
-        onClose={() => setActiveComposer(null)}
-        onSave={(input) => persistComposed("todo", input)}
-      />
-      <ProjectDeadlineComposerSheet
-        visible={activeComposer === "deadline"}
-        projectTitle={project.title}
-        onClose={() => setActiveComposer(null)}
-        onSave={(input) => persistComposed("deadline", input)}
-      />
-
       <ConfirmSheet
         visible={deleteConfirm.visible}
         kicker="DELETE PROJECT"
@@ -639,6 +622,72 @@ export default function ProjectScreen(): React.ReactElement {
         onConfirm={deleteConfirm.confirm}
         onCancel={deleteConfirm.cancel}
       />
+
+      <DirectDetailSheet
+        entry={selectedEntry}
+        project={project ?? null}
+        visible={selectedEntry !== null}
+        onClose={() => setSelectedEntry(null)}
+        onMarkDone={handleMarkDone}
+        onDelete={handleDeleteEntry}
+        onEdit={handleEditEntry}
+      />
+
+      <ConfirmSheet
+        visible={entryDeleteConfirm.visible}
+        kicker="DELETE ENTRY"
+        message="This removes it from the field for good."
+        dontAsk={entryDeleteConfirm.dontAsk}
+        onToggleDontAsk={entryDeleteConfirm.toggleDontAsk}
+        onConfirm={entryDeleteConfirm.confirm}
+        onCancel={entryDeleteConfirm.cancel}
+      />
+
+      {/* Outside-tap backdrop — only while a dock surface is up. Sits under the
+          dock so the bar stays interactive; the resolver is intentionally not
+          covered, so a caught thought isn't dropped by a stray tap. */}
+      {dockOpen ? (
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={dismissDock}
+          accessibilityLabel="Dismiss capture"
+        />
+      ) : null}
+
+      {/* The capture dock — the same instrument as the home board, pinned to the
+          bottom and pre-locked to this project. Only mounts a surface when
+          summoned: composer/recorder (bar) or the pending-thought resolver. */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.dock}
+        pointerEvents="box-none"
+      >
+        {cap.pendingThought !== null ? (
+          <CaptureResolver
+            text={cap.pendingThought}
+            ideas={cap.recentIdeas}
+            projects={projects}
+            picking={cap.picking}
+            onTogglePicking={() => cap.setPicking(!cap.picking)}
+            onResolve={cap.resolveCapture}
+            onDismiss={cap.dismissPending}
+            lockedProjectId={cap.lockedProjectId}
+            seedType={cap.seedType}
+          />
+        ) : null}
+        {cap.composerOpen || cap.isRecording ? (
+          <CaptureBar
+            onSubmit={cap.capture}
+            onVoice={cap.startRecording}
+            isRecording={cap.isRecording}
+            transcript={cap.transcript}
+            onStop={cap.stopRecording}
+            onCancel={cap.cancelRecording}
+            autoFocus={cap.composerOpen}
+            onDismissEmpty={() => cap.setComposerOpen(false)}
+          />
+        ) : null}
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -789,6 +838,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 18,
     lineHeight: 24,
+  },
+
+  // Capture dock — pinned to the bottom edge, matching the home board's dock.
+  dock: {
+    position: "absolute",
+    left: tokens.space.lg,
+    right: tokens.space.lg,
+    bottom: tokens.space.lg,
   },
   pressed: {
     opacity: 0.7,

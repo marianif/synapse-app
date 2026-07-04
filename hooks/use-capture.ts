@@ -9,6 +9,8 @@ import { useDiary } from "@/hooks/use-diary";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 import { splitCapture } from "@/lib/capture";
 
+import type { EntryType } from "@/lib/types";
+
 /**
  * The shared capture state-machine. Lifted from `app/(tabs)/index.tsx` so the
  * home AND the project surface can mount the same dock with the same grammar
@@ -59,6 +61,16 @@ export interface UseCaptureReturn {
   /** Inside the resolver: the note-rail (free + linkable) is expanded. */
   picking: boolean;
   setPicking: (picking: boolean) => void;
+  /**
+   * A type the resolver should open pre-selected on. Set when capture is
+   * summoned from a type-specific surface (e.g. an empty "No deadlines yet"
+   * stream) so the resolver skips straight to that door instead of the neutral
+   * chooser — the user already said what flavour they want. `null` = the
+   * neutral resolver (the pen, the widget deep-link). Cleared on resolve /
+   * dismiss so the next capture starts neutral again.
+   */
+  seedType: EntryType | null;
+  setSeedType: (type: EntryType | null) => void;
 
   // ── Voice piping ───────────────────────────────────────────────────────
   transcript: string;
@@ -100,6 +112,7 @@ export function useCapture(
   const [isRecording, setIsRecording] = useState(false);
   const [pendingThought, setPendingThought] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
+  const [seedType, setSeedType] = useState<EntryType | null>(null);
 
   // Recent ideas offered under "Note on…". Capped + newest-first; reading
   // off the in-memory entries (single source of truth) keeps this fresh
@@ -125,6 +138,7 @@ export function useCapture(
       const text = pendingThought;
       setPendingThought(null);
       setPicking(false);
+      setSeedType(null);
       if (!text) return;
       const { title, notes } = splitCapture(text);
       switch (resolution.kind) {
@@ -203,11 +217,20 @@ export function useCapture(
   const dismissPending = useCallback((): void => {
     setPendingThought(null);
     setPicking(false);
+    setSeedType(null);
+  }, []);
+
+  // Closing the composer drops any pending seed — a seed only lives for the
+  // capture it was armed for. If the user abandons the composer empty (blur),
+  // the next neutral capture must start neutral, not inherit a stale flavour.
+  const handleSetComposerOpen = useCallback((open: boolean): void => {
+    setComposerOpen(open);
+    if (!open) setSeedType(null);
   }, []);
 
   return {
     composerOpen,
-    setComposerOpen,
+    setComposerOpen: handleSetComposerOpen,
     isRecording,
     pendingThought,
     picking,
@@ -219,6 +242,8 @@ export function useCapture(
     capture,
     resolveCapture,
     dismissPending,
+    seedType,
+    setSeedType,
     recentIdeas,
     lockedProjectId,
   };

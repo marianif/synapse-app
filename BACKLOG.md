@@ -1,5 +1,7 @@
 ## BACKLOG
 
+## Original notes (verbatim)
+
 1. Capture bar deve essere generalizzata, sostuisce la capture del progetto siccome il punto è essere veloci, catturare todo ideee cose rapid,e non catturare velocemente un progetto. li abbiamo perso un po+ il filo ora lo recuperiamo.
 
 2. "Put somethin in deve essere valorizzato, è molto figo.

@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { useRef } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { RectButton, Swipeable } from "react-native-gesture-handler";
@@ -20,6 +19,7 @@ const ON_ACTION = tokens.color.dark.paper;
 
 interface DirectRowProps {
   entry: DbEntry;
+  onPress: (entry: DbEntry) => void;
   onMarkDone: (entry: DbEntry) => void;
   onDelete: (entry: DbEntry) => void;
 }
@@ -37,10 +37,10 @@ interface DirectRowProps {
  */
 export function DirectRow({
   entry,
+  onPress,
   onMarkDone,
   onDelete,
 }: DirectRowProps): React.ReactElement {
-  const router = useRouter();
   const { colors } = useTheme();
   const swipeableRef = useRef<Swipeable>(null);
   const done = isDone(entry);
@@ -103,12 +103,7 @@ export function DirectRow({
       friction={2}
     >
       <Pressable
-        onPress={() =>
-          router.push({
-            pathname: "/detail",
-            params: { id: entry.id, entryType: entry.type },
-          })
-        }
+        onPress={() => onPress(entry)}
         accessibilityRole="button"
         accessibilityState={{ checked: done }}
         accessibilityLabel={`${entry.title}, ${when}${done ? ", done" : ""}`}

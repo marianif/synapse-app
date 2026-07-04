@@ -312,8 +312,12 @@ export default function HomeScreen(): React.ReactElement {
         />
         <DirectOverview
           entries={directEntries}
-          onCapture={() => {
+          onCapture={(type) => {
             setManualOpen(false);
+            // A type-specific empty state (No deadlines / todos / ideas yet)
+            // seeds the resolver so it opens on that door; the neutral "all"
+            // empty state passes nothing and the resolver stays neutral.
+            cap.setSeedType(type ?? null);
             cap.setComposerOpen(true);
           }}
         />
@@ -357,6 +361,7 @@ export default function HomeScreen(): React.ReactElement {
             onTogglePicking={() => cap.setPicking(!cap.picking)}
             onResolve={cap.resolveCapture}
             onDismiss={cap.dismissPending}
+            seedType={cap.seedType}
           />
         ) : null}
         {cap.composerOpen || cap.isRecording ? (

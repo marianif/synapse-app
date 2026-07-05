@@ -177,7 +177,6 @@ export default function ProjectsScreen(): React.ReactElement {
               title="Projects"
               kicker={`${featuredCount} FEATURED · ${active.length} TOTAL`}
               onBack={() => router.back()}
-              inset
             />
           ),
         }}

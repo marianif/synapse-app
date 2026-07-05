@@ -307,13 +307,11 @@ export default function DetailScreen(): React.ReactElement {
       >
         <Stack.Screen
           options={{
-            headerShown: true,
             header: () => (
               <ScreenHeader
                 title=""
                 entryType={hintType}
                 onBack={() => router.back()}
-                inset
               />
             ),
           }}
@@ -335,12 +333,10 @@ export default function DetailScreen(): React.ReactElement {
       >
         <Stack.Screen
           options={{
-            headerShown: true,
             header: () => (
               <ScreenHeader
                 title="Not found"
                 onBack={() => router.back()}
-                inset
               />
             ),
           }}
@@ -579,14 +575,12 @@ export default function DetailScreen(): React.ReactElement {
     >
       <Stack.Screen
         options={{
-          headerShown: true,
           header: () => (
             <ScreenHeader
               title={title}
               kicker={STATUS_LABELS[effectiveStatus] ?? undefined}
               entryType={type}
               onBack={() => router.back()}
-              inset
             />
           ),
         }}

@@ -24,9 +24,8 @@ import {
   CaptureComposer,
 } from "@/components/organisms/capture-composer";
 import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
-import { ProjectComposer } from "@/components/organisms/project-composer";
 import type { ProjectComposerKind } from "@/components/organisms/project-composer";
-import { ProjectEmptyFabPointer } from "@/components/organisms/project-empty-sketch";
+import { ProjectComposer } from "@/components/organisms/project-composer";
 import { ProjectFab } from "@/components/organisms/project-fab";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { tokens, useTheme } from "@/constants/theme";
@@ -181,10 +180,7 @@ export default function ProjectScreen(): React.ReactElement {
     };
   }, []);
 
-  const handleFabSubmit = (
-    kind: ProjectComposerKind,
-    text: string,
-  ): void => {
+  const handleFabSubmit = (kind: ProjectComposerKind, text: string): void => {
     if (!id) return;
     if (kind === "note") {
       void addDiaryEntry(text, null, null, id).catch((err) =>
@@ -401,10 +397,7 @@ export default function ProjectScreen(): React.ReactElement {
           options={{
             headerShown: true,
             header: () => (
-              <ScreenHeader
-                title="Project"
-                onBack={() => router.back()}
-              />
+              <ScreenHeader title="Project" onBack={() => router.back()} />
             ),
           }}
         />
@@ -420,10 +413,7 @@ export default function ProjectScreen(): React.ReactElement {
 
   const archived = project.status === "archived";
   const isEmpty =
-    spine.length === 0 &&
-    ideas.length === 0 &&
-    notes.length === 0 &&
-    !origin;
+    spine.length === 0 && ideas.length === 0 && notes.length === 0 && !origin;
 
   // Archived projects: a hairline tonal wash on the paper, never a banner.
   // The kicker on the header says "ARCHIVED PROJECT"; the surface whispers it.
@@ -553,9 +543,7 @@ export default function ProjectScreen(): React.ReactElement {
                 page={safeSpinePage}
                 pageCount={spinePageCount}
                 onChange={(p) =>
-                  setSpinePage(
-                    Math.max(0, Math.min(p, spinePageCount - 1)),
-                  )
+                  setSpinePage(Math.max(0, Math.min(p, spinePageCount - 1)))
                 }
               />
             </>
@@ -566,7 +554,7 @@ export default function ProjectScreen(): React.ReactElement {
             nothing is loose (no point dangling an empty verb). Sits right
             after the open spine because pulling-in IS open work: it's the
             verb that turns ambient capture into project content. */}
-        {unfiledIdeas.length + unfiledNotes.length > 0 ? (
+        {!isEmpty && unfiledIdeas.length + unfiledNotes.length > 0 ? (
           <Pressable
             onPress={() => setPullInOpen(true)}
             accessibilityRole="button"
@@ -794,10 +782,7 @@ export default function ProjectScreen(): React.ReactElement {
           bottom and pre-locked to this project (no ManualBar: a project can't
           birth a sibling project). Only mounts a surface when summoned. */}
       <View
-        style={[
-          styles.dock,
-          { bottom: tokens.space.lg + kbHeight },
-        ]}
+        style={[styles.dock, { bottom: tokens.space.lg + kbHeight }]}
         pointerEvents="box-none"
       >
         <CaptureComposer cap={cap} projects={projects} />
@@ -809,9 +794,8 @@ export default function ProjectScreen(): React.ReactElement {
       </View>
       {fabKind === null ? (
         <>
-          <ProjectEmptyFabPointer visible={isEmpty} />
           <ProjectFab
-            defaultOpen={isEmpty}
+            isEmpty={isEmpty}
             onAction={(key) => {
               setFabKind(key as ProjectComposerKind);
             }}

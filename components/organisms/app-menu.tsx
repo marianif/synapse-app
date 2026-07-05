@@ -19,7 +19,12 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { type Scheme, tokens, useEntryKicker, useTheme } from "@/constants/theme";
+import {
+  tokens,
+  useEntryKicker,
+  useTheme,
+  type Scheme,
+} from "@/constants/theme";
 import { useThemeContext } from "@/contexts/theme-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { clearAllData, getDb, seedDefaultProjectsOnce } from "@/lib/database";
@@ -182,13 +187,17 @@ export function AppMenu({
           <View style={styles.footer}>
             {__DEV__ && (
               <View style={styles.devScenarios}>
-                <Text style={[styles.devSectionLabel, { color: colors.inkMuted }]}>
+                <Text
+                  style={[styles.devSectionLabel, { color: colors.inkMuted }]}
+                >
                   Dev · Seed Scenario
                 </Text>
                 {SCENARIOS.map((scenario) => (
                   <Pressable
                     key={scenario.key}
-                    onPress={() => handleSeedScenario(scenario.key, scenario.label)}
+                    onPress={() =>
+                      handleSeedScenario(scenario.key, scenario.label)
+                    }
                     style={({ pressed }) => [
                       styles.scenarioRow,
                       {
@@ -244,10 +253,7 @@ export function AppMenu({
                   color={deadlineAccent}
                 />
                 <Text
-                  style={[
-                    styles.devButtonLabel,
-                    { color: deadlineAccent },
-                  ]}
+                  style={[styles.devButtonLabel, { color: deadlineAccent }]}
                 >
                   Clear Database
                 </Text>
@@ -374,7 +380,7 @@ const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: tokens.color.scrim.medium,
-    zIndex: 100,
+    zIndex: 1000,
   },
   blurContainer: {
     position: "absolute",

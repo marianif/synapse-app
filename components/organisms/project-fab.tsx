@@ -11,6 +11,7 @@ import Animated, {
 import { ThemedText } from "@/components/atoms/themed-text";
 import type { Scheme, ThemeColors } from "@/constants/theme";
 import { entryKicker, entryTint, tokens, useTheme } from "@/constants/theme";
+import { ProjectEmptyFabPointer } from "./project-empty-sketch";
 
 // ─── Types ───────────────────────────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ interface FabAction {
 
 interface ProjectFabProps {
   onAction?: (key: string) => void;
-  defaultOpen?: boolean;
+  isEmpty: boolean;
 }
 
 // ─── Default actions per project screen ──────────────────────────────────────────
@@ -75,12 +76,14 @@ const STAGGER_MULTIPLIER = 1.6;
 
 export function ProjectFab({
   onAction,
-  defaultOpen = false,
+  isEmpty = false,
 }: ProjectFabProps): React.ReactElement {
+  const defaultOpen = isEmpty;
   const { colors, scheme } = useTheme();
   const [open, setOpen] = useState(defaultOpen);
   const isOpen = useSharedValue(defaultOpen ? 1 : 0);
-
+  const pointerVisible = open ?? isEmpty;
+  console.log({ open, isEmpty });
   const actions = getActions(colors, scheme);
 
   const close = useCallback((): void => {
@@ -109,50 +112,53 @@ export function ProjectFab({
   }));
 
   return (
-    <View style={styles.wrapper} pointerEvents="box-none">
-      {open ? (
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={close}
-          accessibilityLabel="Close"
-          accessibilityRole="button"
-        />
-      ) : null}
-
-      <View style={styles.actionsContainer}>
-        {actions.map((action, index) => (
-          <ActionPill
-            key={action.key}
-            action={action}
-            index={index}
-            isOpen={isOpen}
-            onPress={() => handleAction(action.key)}
+    <>
+      <ProjectEmptyFabPointer visible={pointerVisible} />
+      <View style={styles.wrapper} pointerEvents="box-none">
+        {open ? (
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={close}
+            accessibilityLabel="Close"
+            accessibilityRole="button"
           />
-        ))}
+        ) : null}
+
+        <View style={styles.actionsContainer}>
+          {actions.map((action, index) => (
+            <ActionPill
+              key={action.key}
+              action={action}
+              index={index}
+              isOpen={isOpen}
+              onPress={() => handleAction(action.key)}
+            />
+          ))}
+        </View>
+
+        <Animated.View style={[styles.fabShadow, btnStyle]}>
+          <Pressable
+            onPress={handleToggle}
+            style={({ pressed }) => [
+              styles.fab,
+              { backgroundColor: colors.accent.clay },
+              pressed && styles.fabPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={open ? "Close actions" : "Add to project"}
+          >
+            <View
+              style={[styles.glow, { backgroundColor: colors.accent.clay }]}
+            />
+            <MaterialCommunityIcons
+              name="plus"
+              size={28}
+              color={colors.accent.onClay}
+            />
+          </Pressable>
+        </Animated.View>
       </View>
-
-      <Animated.View style={[styles.fabShadow, btnStyle]}>
-        <Pressable
-          onPress={handleToggle}
-          style={({ pressed }) => [
-            styles.fab,
-            { backgroundColor: colors.accent.clay },
-            pressed && styles.fabPressed,
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={open ? "Close actions" : "Add to project"}
-        >
-          <View
-            style={[styles.glow, { backgroundColor: colors.accent.clay }]}
-          />
-          <MaterialCommunityIcons
-            name="plus"
-            size={28}
-            color={colors.accent.onClay}
-          />
-        </Pressable>
-      </Animated.View>
-    </View>
+    </>
   );
 }
 

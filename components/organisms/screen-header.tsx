@@ -71,8 +71,8 @@ export function ScreenHeader({
     <View
       style={[
         styles.header,
-        inset && {
-          paddingTop: safeArea.top + tokens.space.md,
+
+        {
           backgroundColor: colors.paper,
         },
       ]}

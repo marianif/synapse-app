@@ -79,8 +79,7 @@ const LABEL_HEIGHT = 44;
 const ARROW_W = LABEL_RIGHT - PILL_LEFT_EDGE_FROM_RIGHT; // 18
 const ARROW_H = 20;
 // Hand-tremored squiggle with arrowhead — from (2, 10) to (16, 10)
-const ARROW_D =
-  "M 2 10 Q 6 8 10 11 T 15 10 M 11 6 L 16 10 L 11 14";
+const ARROW_D = "M 2 10 Q 6 8 10 11 T 15 10 M 11 6 L 16 10 L 11 14";
 
 export function ProjectEmptyFabPointer({
   visible,
@@ -109,31 +108,7 @@ export function ProjectEmptyFabPointer({
   const headlineBottom = topAnnoCenterFromBottom + LABEL_HEIGHT + 40;
 
   return (
-    <Animated.View
-      style={[styles.overlay, animatedStyle]}
-      pointerEvents="none"
-    >
-      {/* Handwritten headline sits above the top-most pill's label. */}
-      <View
-        style={[
-          styles.headline,
-          { bottom: headlineBottom, right: LABEL_RIGHT - LABEL_WIDTH + 8 },
-        ]}
-      >
-        <ThemedText
-          type="hand"
-          style={[styles.headlineText, { color: colors.ink }]}
-        >
-          An empty project.
-        </ThemedText>
-        <ThemedText
-          type="hand"
-          style={[styles.headlineSub, { color: colors.inkMuted }]}
-        >
-          Pick what belongs here.
-        </ThemedText>
-      </View>
-
+    <Animated.View style={[styles.overlay, animatedStyle]} pointerEvents="none">
       {/* One label + arrow per pill. */}
       {ANNOS.map((a, i) => {
         const centerY = pillCenterFromBottom(i);
@@ -195,12 +170,7 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
   },
-  headline: {
-    position: "absolute",
-    width: 240,
-    alignItems: "flex-end",
-    gap: tokens.space.xs,
-  },
+
   headlineText: {
     fontSize: 26,
     lineHeight: 30,

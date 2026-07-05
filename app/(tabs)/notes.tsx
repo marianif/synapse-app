@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 
-import { DiaryComposer } from "@/components/molecules/diary-composer";
+import { NotesComposer } from "@/components/organisms/notes-composer";
 import {
   DiaryFilterBar,
   type DiaryMacro,
@@ -150,7 +150,7 @@ export default function NotesScreen(): React.ReactElement {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <DiaryComposer targets={composerTargets} onSave={handleSave} />
+        <NotesComposer targets={composerTargets} onSave={handleSave} />
 
         <DiaryFilterBar
           macro={macro}

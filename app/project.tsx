@@ -13,6 +13,7 @@ import {
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
+import { DirectPager } from "@/components/molecules/direct-pager";
 import { DirectRow } from "@/components/molecules/direct-row";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
 import { ProjectNoteComposerSheet } from "@/components/molecules/project-note-composer-sheet";
@@ -39,6 +40,8 @@ import type { DbDiaryEntry, DbEntry, EntryType } from "@/lib/types";
 
 const isDone = (e: DbEntry): boolean =>
   e.status === "completed" || e.status === "met";
+
+const PAGE_SIZE = 6;
 
 /**
  * A project opened up. A destination *and* a triage zone: the spine of open
@@ -88,6 +91,7 @@ export default function ProjectScreen(): React.ReactElement {
     confirmKey: ConfirmKey.deleteEntry,
   });
   const [selectedEntry, setSelectedEntry] = useState<DbEntry | null>(null);
+  const [spinePage, setSpinePage] = useState(0);
 
   // Overflow sheet — every tier-3 verb (rename, change emoji, archive, delete)
   // lives here so the project surface itself can stay a working zone. Opens
@@ -219,6 +223,20 @@ export default function ProjectScreen(): React.ReactElement {
     [spine],
   );
   const doneCount = useMemo(() => spine.filter(isDone).length, [spine]);
+
+  const spinePageCount = Math.max(1, Math.ceil(spine.length / PAGE_SIZE));
+  const safeSpinePage = Math.min(spinePage, spinePageCount - 1);
+  useEffect(() => {
+    if (spinePage > spinePageCount - 1) setSpinePage(spinePageCount - 1);
+  }, [spinePage, spinePageCount]);
+  const spinePageItems = useMemo(
+    () =>
+      spine.slice(
+        safeSpinePage * PAGE_SIZE,
+        safeSpinePage * PAGE_SIZE + PAGE_SIZE,
+      ),
+    [spine, safeSpinePage],
+  );
 
   const notesById = useMemo(() => {
     const map = new Map<string, DbDiaryEntry>();
@@ -515,15 +533,26 @@ export default function ProjectScreen(): React.ReactElement {
             // DirectRow handles the styling intrinsically from entry.status).
             // Swipe-to-delete still works on done rows; the user clears them
             // if they want, or leaves them as the week's record of work.
-            spine.map((e) => (
-              <DirectRow
-                key={e.id}
-                entry={e}
-                onPress={setSelectedEntry}
-                onMarkDone={handleMarkDone}
-                onDelete={handleDeleteEntry}
+            <>
+              {spinePageItems.map((e) => (
+                <DirectRow
+                  key={e.id}
+                  entry={e}
+                  onPress={setSelectedEntry}
+                  onMarkDone={handleMarkDone}
+                  onDelete={handleDeleteEntry}
+                />
+              ))}
+              <DirectPager
+                page={safeSpinePage}
+                pageCount={spinePageCount}
+                onChange={(p) =>
+                  setSpinePage(
+                    Math.max(0, Math.min(p, spinePageCount - 1)),
+                  )
+                }
               />
-            ))
+            </>
           )}
         </View>
 
@@ -770,11 +799,13 @@ export default function ProjectScreen(): React.ReactElement {
           onSubmit={handleFabSubmit}
         />
       </View>
-      <ProjectFab
-        onAction={(key) => {
-          setFabKind(key as ProjectComposerKind);
-        }}
-      />
+      {fabKind === null ? (
+        <ProjectFab
+          onAction={(key) => {
+            setFabKind(key as ProjectComposerKind);
+          }}
+        />
+      ) : null}
     </View>
   );
 }

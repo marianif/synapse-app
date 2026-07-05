@@ -157,12 +157,7 @@ export function FieldGreeting({
           {`— ${seasonalNote}`}
         </ThemedText>
       </View>
-      <ThemedText
-        type="display"
-        style={[styles.greeting, { color: colors.ink }]}
-      >
-        {greeting}
-      </ThemedText>
+
       {empty ? (
         <ThemedText
           type="body"
@@ -180,7 +175,7 @@ export function FieldGreeting({
 
 const styles = StyleSheet.create({
   head: {
-    gap: tokens.space.sm,
+    gap: tokens.space.md,
     paddingHorizontal: tokens.space.xs,
   },
   kicker: {

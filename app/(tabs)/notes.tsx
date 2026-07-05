@@ -1,0 +1,200 @@
+import { useFocusEffect } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+
+import { DiaryComposer } from "@/components/molecules/diary-composer";
+import {
+  DiaryFilterBar,
+  type DiaryMacro,
+} from "@/components/molecules/diary-filter-bar";
+import { DiaryFeed } from "@/components/organisms/diary-feed";
+import {
+  LinkSheet,
+  type LinkSelection,
+  type LinkableTarget,
+} from "@/components/organisms/link-sheet";
+import { tokens } from "@/constants/theme";
+import { useDatabase } from "@/hooks/use-database/use-database";
+import { useDiary } from "@/hooks/use-diary";
+
+export default function NotesScreen(): React.ReactElement {
+  const { entries, addEntry, removeEntry, refresh } = useDiary();
+  // Board entries + projects — read-only, used to resolve linked titles for the
+  // feed chip and to offer targets in the composer's link sheet. Notes writes
+  // never touch these stores.
+  const { entries: boardEntries, projects } = useDatabase();
+
+  // Filter state. `macro` is the ALL/LINKED/FREE bucket; `target` narrows to
+  // one project/idea and takes over when set (mutually exclusive with macro).
+  const [macro, setMacro] = useState<DiaryMacro>("all");
+  const [target, setTarget] = useState<LinkSelection>(null);
+  const [targetSheetOpen, setTargetSheetOpen] = useState(false);
+
+  const ideaTitles = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const e of boardEntries) if (e.type === "idea") map[e.id] = e.title;
+    return map;
+  }, [boardEntries]);
+
+  const projectTitles = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const p of projects) map[p.id] = p.title;
+    return map;
+  }, [projects]);
+
+  // Count notes per target — one map per kind, indexed by the target id.
+  const { ideaNoteCounts, projectNoteCounts } = useMemo(() => {
+    const ideas: Record<string, number> = {};
+    const projs: Record<string, number> = {};
+    for (const n of entries) {
+      if (n.linked_entry_id) {
+        ideas[n.linked_entry_id] = (ideas[n.linked_entry_id] ?? 0) + 1;
+      }
+      if (n.linked_project_id) {
+        projs[n.linked_project_id] = (projs[n.linked_project_id] ?? 0) + 1;
+      }
+    }
+    return { ideaNoteCounts: ideas, projectNoteCounts: projs };
+  }, [entries]);
+
+  // Composer offers ALL projects + ideas (you can start a relation with no
+  // notes filed yet), each carrying its current count.
+  const composerTargets: LinkableTarget[] = useMemo(() => {
+    const p: LinkableTarget[] = projects.map((pr) => ({
+      id: pr.id,
+      title: pr.title,
+      kind: "project",
+      noteCount: projectNoteCounts[pr.id],
+    }));
+    const i: LinkableTarget[] = boardEntries
+      .filter((e) => e.type === "idea")
+      .map((e) => ({
+        id: e.id,
+        title: e.title,
+        kind: "idea",
+        noteCount: ideaNoteCounts[e.id],
+      }));
+    return [...p, ...i];
+  }, [projects, boardEntries, projectNoteCounts, ideaNoteCounts]);
+
+  // The FILTER sheet only shows targets that actually have notes — filtering
+  // to an empty target would just yield a blank feed.
+  const filterTargets = useMemo(
+    () => composerTargets.filter((t) => (t.noteCount ?? 0) > 0),
+    [composerTargets],
+  );
+
+  const visibleEntries = useMemo(() => {
+    if (target) {
+      if (target.kind === "idea") {
+        return entries.filter((n) => n.linked_entry_id === target.id);
+      }
+      return entries.filter((n) => n.linked_project_id === target.id);
+    }
+    if (macro === "linked") {
+      return entries.filter(
+        (n) => n.linked_entry_id || n.linked_project_id,
+      );
+    }
+    if (macro === "free") {
+      return entries.filter(
+        (n) => !n.linked_entry_id && !n.linked_project_id,
+      );
+    }
+    return entries;
+  }, [entries, target, macro]);
+
+  const targetLabel = target
+    ? target.kind === "idea"
+      ? (ideaTitles[target.id] ?? "Idea")
+      : (projectTitles[target.id] ?? "Project")
+    : null;
+
+  const handleSave = useCallback(
+    (body: string, selection: LinkSelection) =>
+      addEntry(
+        body,
+        null,
+        selection?.kind === "idea" ? selection.id : null,
+        selection?.kind === "project" ? selection.id : null,
+      ),
+    [addEntry],
+  );
+
+  const handlePickTarget = useCallback((selection: LinkSelection) => {
+    setTarget(selection);
+    // Picking "Free note" (null) in the filter context means: show free.
+    if (selection === null) setMacro("free");
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <DiaryComposer targets={composerTargets} onSave={handleSave} />
+
+        <DiaryFilterBar
+          macro={macro}
+          onMacro={(m) => {
+            setMacro(m);
+            setTarget(null);
+          }}
+          targetLabel={targetLabel}
+          targetKind={target?.kind ?? null}
+          onOpenTargetFilter={() => setTargetSheetOpen(true)}
+          onClearTarget={() => setTarget(null)}
+        />
+
+        <DiaryFeed
+          entries={visibleEntries}
+          ideaTitles={ideaTitles}
+          projectTitles={projectTitles}
+          filtered={target !== null || macro !== "all"}
+          onDelete={removeEntry}
+        />
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+
+      <LinkSheet
+        visible={targetSheetOpen}
+        selected={target}
+        targets={filterTargets}
+        onSelect={handlePickTarget}
+        onClose={() => setTargetSheetOpen(false)}
+      />
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: tokens.space.lg,
+    paddingTop: tokens.space.md,
+    gap: tokens.space.xxl,
+  },
+  bottomSpacer: {
+    height: 96,
+  },
+});

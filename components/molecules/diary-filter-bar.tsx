@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
+import type { LinkableKind } from "@/components/organisms/link-sheet";
+import { tokens, useTheme } from "@/constants/theme";
 
 export type DiaryMacro = "all" | "linked" | "free";
 
@@ -16,55 +17,61 @@ const MACROS: { value: DiaryMacro; label: string }[] = [
 interface DiaryFilterBarProps {
   macro: DiaryMacro;
   onMacro: (macro: DiaryMacro) => void;
-  /** Title of the idea currently filtered to (overrides macro), or null. */
-  ideaLabel: string | null;
-  /** Open the idea-filter bottom sheet. */
-  onOpenIdeaFilter: () => void;
-  /** Clear the idea filter (back to the macro buckets). */
-  onClearIdea: () => void;
+  /** Title of the target currently filtered to (overrides macro), or null. */
+  targetLabel: string | null;
+  /** Kind of the target currently filtered to — decides the leading glyph. */
+  targetKind: LinkableKind | null;
+  /** Open the target-filter bottom sheet. */
+  onOpenTargetFilter: () => void;
+  /** Clear the target filter (back to the macro buckets). */
+  onClearTarget: () => void;
 }
 
 /**
- * The diary's filter row — editorial, not a control panel. The macro views (All /
- * Linked / Free) read as a line of section labels; the active one is full-ink and
- * carries a thin underline rule, the rest sit muted with no rule. No pills, no
- * fills. To the right, the idea filter: a minimal filter glyph that opens the
- * sheet, or — when active — the idea's name underlined (amber) with a small
- * clear. Macro and idea are mutually exclusive views.
+ * The notes filter row — editorial, not a control panel. Macro views (All /
+ * Linked / Free) sit as a line of section labels; the active one is full-ink
+ * with a thin underline. To the right, the target filter glyph opens the sheet.
+ * When a target is picked the row steps aside so the target's name stands
+ * centered with a clear.
  */
 export function DiaryFilterBar({
   macro,
   onMacro,
-  ideaLabel,
-  onOpenIdeaFilter,
-  onClearIdea,
+  targetLabel,
+  targetKind,
+  onOpenTargetFilter,
+  onClearTarget,
 }: DiaryFilterBarProps): React.ReactElement {
   const { colors } = useTheme();
-  const idea = useEntryKicker("idea");
-  const filteringByIdea = ideaLabel !== null;
+  const filteringByTarget = targetLabel !== null;
 
-  // When an idea filter is active, the macro line steps aside entirely — the idea
-  // is the view now, so it stands centered and readable with a clear, nothing
-  // else competing for the row.
-  if (filteringByIdea) {
+  if (filteringByTarget) {
     return (
-      <View style={styles.ideaRow}>
-        <View style={styles.ideaItemCentered}>
-          <SketchIcon type="idea" size={22} />
-          <View style={styles.ideaTextWrap}>
+      <View style={styles.targetRow}>
+        <View style={styles.targetItemCentered}>
+          {targetKind === "idea" ? (
+            <SketchIcon type="idea" size={22} />
+          ) : (
+            <IconSymbol
+              name="folder-outline"
+              size={22}
+              color={colors.inkMuted}
+            />
+          )}
+          <View style={styles.targetTextWrap}>
             <ThemedText
               numberOfLines={1}
-              style={[styles.ideaLabel, { color: colors.ink }]}
+              style={[styles.targetLabel, { color: colors.ink }]}
             >
-              {ideaLabel}
+              {targetLabel}
             </ThemedText>
-            <View style={[styles.rule, { backgroundColor: idea }]} />
+            <View style={[styles.rule, { backgroundColor: colors.ink }]} />
           </View>
           <Pressable
-            onPress={onClearIdea}
+            onPress={onClearTarget}
             hitSlop={12}
             accessibilityRole="button"
-            accessibilityLabel={`Clear idea filter: ${ideaLabel}`}
+            accessibilityLabel={`Clear filter: ${targetLabel}`}
             style={styles.clearKey}
           >
             <IconSymbol name="close" size={18} color={colors.inkMuted} />
@@ -76,7 +83,6 @@ export function DiaryFilterBar({
 
   return (
     <View style={styles.row}>
-      {/* Macro views — a line of labels. Active = ink + underline. */}
       <View style={styles.macros}>
         {MACROS.map((m) => {
           const active = macro === m.value;
@@ -109,12 +115,11 @@ export function DiaryFilterBar({
         })}
       </View>
 
-      {/* Idea filter — a minimal filter glyph that opens the sheet. */}
       <Pressable
-        onPress={onOpenIdeaFilter}
+        onPress={onOpenTargetFilter}
         hitSlop={10}
         accessibilityRole="button"
-        accessibilityLabel="Filter by a specific idea"
+        accessibilityLabel="Filter by a specific project or idea"
         style={styles.filterKey}
       >
         <IconSymbol name="filter-variant" size={20} color={colors.inkMuted} />
@@ -144,26 +149,22 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     letterSpacing: 0.2,
   },
-  // The shared state rule — a thin underline that carries "active" for both the
-  // macro labels and the idea name. Width tracks the label above it.
   rule: {
     alignSelf: "stretch",
     height: 2,
     borderRadius: tokens.radius.pill,
   },
-  // Active idea filter takes the whole row, centered — the idea is the view.
-  ideaRow: {
+  targetRow: {
     flexDirection: "row",
     justifyContent: "center",
     paddingHorizontal: tokens.space.xs,
   },
-  ideaItemCentered: {
+  targetItemCentered: {
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.sm,
     maxWidth: "100%",
   },
-  // Inactive idea filter — just the glyph, right-aligned, no fill.
   filterKey: {
     marginLeft: "auto",
     width: 28,
@@ -171,19 +172,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  // Clear the active idea filter — a real close target (28pt + hitSlop → 44pt).
   clearKey: {
     width: 28,
     height: 28,
     alignItems: "center",
     justifyContent: "center",
   },
-  ideaTextWrap: {
+  targetTextWrap: {
     flexShrink: 1,
     alignItems: "flex-start",
     gap: 5,
   },
-  ideaLabel: {
+  targetLabel: {
     fontFamily: tokens.type.fontInter.semiBold,
     fontSize: 15,
     lineHeight: 18,

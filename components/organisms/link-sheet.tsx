@@ -13,57 +13,84 @@ import {
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 
-// Above this many ideas, a search field earns its place; below it, the list is
-// short enough to graze and a search box would just be chrome.
+// Above this many targets, a search field earns its place; below it, the list
+// is short enough to graze and a search box would just be chrome.
 const SEARCH_THRESHOLD = 6;
 
-export interface LinkableIdea {
+export type LinkableKind = "idea" | "project";
+
+export interface LinkableTarget {
   id: string;
   title: string;
-  /** Diary notes already filed on this idea. Shown as a trailing mono count. */
+  kind: LinkableKind;
+  /** Notes already filed on this target. Shown as a trailing mono count. */
   noteCount?: number;
 }
 
+/** Back-compat alias — legacy call sites (capture-resolver, use-capture) still
+ *  pass idea-only lists. New sites use `LinkableTarget`. */
+export type LinkableIdea = {
+  id: string;
+  title: string;
+  noteCount?: number;
+};
+
+/** The composite selection returned when the user picks a target. `null` = free
+ *  note. Idea and project are mutually exclusive on a single note. */
+export type LinkSelection =
+  | { kind: "idea"; id: string }
+  | { kind: "project"; id: string }
+  | null;
+
 interface LinkSheetProps {
   visible: boolean;
-  /** Currently-linked idea id, or null (a free note). */
-  selected: string | null;
-  ideas: LinkableIdea[];
-  /** Pick an idea to link, or null to make the note free. */
-  onSelect: (entryId: string | null) => void;
+  /** Currently-linked target, or null (a free note). */
+  selected: LinkSelection;
+  targets: LinkableTarget[];
+  /** Pick a target to link, or null to make the note free. */
+  onSelect: (selection: LinkSelection) => void;
   onClose: () => void;
 }
 
 /**
- * Bottom sheet for relating a diary note to an idea — the diary's organizing
- * gesture (it replaced mood). A note is either ON an idea or FREE. The first row
- * is always "Free note" (clears any link); the rest are your ideas, newest-first.
- * Reuses the MoodSheet shell + the amber idea identity so the diary and the
- * action-board read as one system.
+ * Bottom sheet for relating a note to a project or an idea — the notes tab's
+ * organizing gesture. A note is either ON a target or FREE. The first row is
+ * always "Free note" (clears any link); the rest are your projects and ideas,
+ * sectioned so the writer can graze either register.
  */
 export function LinkSheet({
   visible,
   selected,
-  ideas,
+  targets,
   onSelect,
   onClose,
 }: LinkSheetProps): React.ReactElement {
   const { colors } = useTheme();
-  const idea = useEntryKicker("idea");
 
   const [query, setQuery] = useState("");
-  const showSearch = ideas.length > SEARCH_THRESHOLD;
+  const showSearch = targets.length > SEARCH_THRESHOLD;
   const searching = query.trim().length > 0;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return ideas;
-    return ideas.filter((i) => i.title.toLowerCase().includes(q));
-  }, [ideas, query]);
+    if (!q) return targets;
+    return targets.filter((t) => t.title.toLowerCase().includes(q));
+  }, [targets, query]);
 
-  // Leave the sheet clean for its next open — drop any half-typed search.
+  const projects = useMemo(
+    () => filtered.filter((t) => t.kind === "project"),
+    [filtered],
+  );
+  const ideas = useMemo(
+    () => filtered.filter((t) => t.kind === "idea"),
+    [filtered],
+  );
+
+  const isSelected = (t: LinkableTarget): boolean =>
+    selected !== null && selected.kind === t.kind && selected.id === t.id;
+
   const close = (): void => {
     setQuery("");
     onClose();
@@ -101,13 +128,13 @@ export function LinkSheet({
                 <TextInput
                   value={query}
                   onChangeText={setQuery}
-                  placeholder="Search ideas"
+                  placeholder="Search projects & ideas"
                   placeholderTextColor={colors.inkMuted}
-                  selectionColor={idea}
+                  selectionColor={colors.ink}
                   autoCorrect={false}
                   returnKeyType="search"
                   style={[styles.searchInput, { color: colors.ink }]}
-                  accessibilityLabel="Search ideas"
+                  accessibilityLabel="Search projects and ideas"
                 />
                 {searching ? (
                   <Pressable
@@ -129,8 +156,7 @@ export function LinkSheet({
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Free note — always first; clears the link. Hidden while searching,
-                since a query is clearly a hunt for a specific idea. */}
+            {/* Free note — always first, hidden while searching. */}
             {!searching ? (
               <Pressable
                 onPress={() => {
@@ -146,9 +172,11 @@ export function LinkSheet({
                 ]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: selected === null }}
-                accessibilityLabel="Free note, not related to any idea"
+                accessibilityLabel="Free note, not related to anything"
               >
-                <View style={[styles.freeDot, { borderColor: colors.inkMuted }]} />
+                <View
+                  style={[styles.freeDot, { borderColor: colors.inkMuted }]}
+                />
                 <ThemedText
                   style={[styles.rowLabel, { color: colors.ink }]}
                   numberOfLines={1}
@@ -157,73 +185,127 @@ export function LinkSheet({
                 </ThemedText>
                 {selected === null ? (
                   <View
-                    style={[styles.activeDot, { backgroundColor: colors.inkMuted }]}
+                    style={[
+                      styles.activeDot,
+                      { backgroundColor: colors.inkMuted },
+                    ]}
                   />
                 ) : null}
               </Pressable>
             ) : null}
 
-            {ideas.length === 0 ? (
+            {targets.length === 0 ? (
               <View style={styles.emptyHint}>
                 <ThemedText type="body" muted>
-                  No ideas yet. Capture one from the home screen to link notes to
-                  it.
+                  Nothing to link yet. Capture a project or an idea to relate
+                  notes to it.
                 </ThemedText>
               </View>
             ) : filtered.length === 0 ? (
               <View style={styles.emptyHint}>
                 <ThemedText type="body" muted>
-                  No ideas match “{query.trim()}”.
+                  Nothing matches “{query.trim()}”.
                 </ThemedText>
               </View>
             ) : (
-              filtered.map((it) => {
-                const active = selected === it.id;
-                return (
-                  <Pressable
-                    key={it.id}
-                    onPress={() => {
-                      onSelect(it.id);
-                      close();
-                    }}
-                    style={[
-                      styles.row,
-                      { backgroundColor: colors.surface },
-                      active && { backgroundColor: idea + "24" },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={`Relate to idea: ${it.title}`}
-                  >
-                    <SketchIcon type="idea" size={22} />
+              <>
+                {projects.length > 0 ? (
+                  <>
                     <ThemedText
-                      style={[
-                        styles.rowLabel,
-                        { color: active ? colors.ink : colors.inkMuted },
-                      ]}
-                      numberOfLines={1}
+                      type="label"
+                      style={[styles.sectionLabel, { color: colors.inkMuted }]}
                     >
-                      {it.title}
+                      PROJECTS
                     </ThemedText>
-                    {it.noteCount ? (
-                      <ThemedText
-                        type="mono"
-                        style={{ color: colors.inkMuted }}
-                      >
-                        {it.noteCount}
-                      </ThemedText>
-                    ) : null}
-                    {active ? (
-                      <View style={[styles.activeDot, { backgroundColor: idea }]} />
-                    ) : null}
-                  </Pressable>
-                );
-              })
+                    {projects.map((it) => (
+                      <TargetRow
+                        key={`project:${it.id}`}
+                        target={it}
+                        active={isSelected(it)}
+                        onPress={() => {
+                          onSelect({ kind: "project", id: it.id });
+                          close();
+                        }}
+                      />
+                    ))}
+                  </>
+                ) : null}
+
+                {ideas.length > 0 ? (
+                  <>
+                    <ThemedText
+                      type="label"
+                      style={[styles.sectionLabel, { color: colors.inkMuted }]}
+                    >
+                      IDEAS
+                    </ThemedText>
+                    {ideas.map((it) => (
+                      <TargetRow
+                        key={`idea:${it.id}`}
+                        target={it}
+                        active={isSelected(it)}
+                        onPress={() => {
+                          onSelect({ kind: "idea", id: it.id });
+                          close();
+                        }}
+                      />
+                    ))}
+                  </>
+                ) : null}
+              </>
             )}
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </Modal>
+  );
+}
+
+function TargetRow({
+  target,
+  active,
+  onPress,
+}: {
+  target: LinkableTarget;
+  active: boolean;
+  onPress: () => void;
+}): React.ReactElement {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.row,
+        { backgroundColor: colors.surface },
+        active && { backgroundColor: colors.inkMuted + "24" },
+      ]}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={`Relate to ${target.kind}: ${target.title}`}
+    >
+      {target.kind === "idea" ? (
+        <SketchIcon type="idea" size={22} />
+      ) : (
+        <IconSymbol name="folder-outline" size={22} color={colors.inkMuted} />
+      )}
+      <ThemedText
+        style={[
+          styles.rowLabel,
+          { color: active ? colors.ink : colors.inkMuted },
+        ]}
+        numberOfLines={1}
+      >
+        {target.title}
+      </ThemedText>
+      {target.noteCount ? (
+        <ThemedText type="mono" style={{ color: colors.inkMuted }}>
+          {target.noteCount}
+        </ThemedText>
+      ) : null}
+      {active ? (
+        <View style={[styles.activeDot, { backgroundColor: colors.ink }]} />
+      ) : null}
+    </Pressable>
   );
 }
 
@@ -278,6 +360,10 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: tokens.space.lg,
     gap: tokens.space.sm,
+  },
+  sectionLabel: {
+    paddingHorizontal: tokens.space.md,
+    paddingTop: tokens.space.sm,
   },
   row: {
     flexDirection: "row",

@@ -14,39 +14,34 @@ import Animated, {
 import { ThemedText } from "@/components/atoms/themed-text";
 import {
   LinkSheet,
-  type LinkableIdea,
+  type LinkSelection,
+  type LinkableTarget,
 } from "@/components/organisms/link-sheet";
 import { tokens, useTheme } from "@/constants/theme";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
 const WAVEFORM_BARS = 9;
 
-// Ink/icon color that sits ON the saturated send key + the full-bleed recording
-// state — a fixed cool-near-black that clears AA on the butter/someday code in
-// BOTH schemes (matches the home capture bar's ON_AMBER pairing).
-const ON_CODE = tokens.color.dark.paper;
-
 interface DiaryComposerProps {
-  /** Ideas this note can be related to (newest-first). */
-  ideas: LinkableIdea[];
-  /** Persist a kept entry. The composer clears its draft + link on resolve. */
-  onSave: (body: string, linkedEntryId: string | null) => Promise<void> | void;
+  /** Projects + ideas this note can be related to (newest-first). */
+  targets: LinkableTarget[];
+  /** Persist a kept note. The composer clears its draft + link on resolve. A
+   *  note may point at one target (idea OR project) or be free. */
+  onSave: (
+    body: string,
+    selection: LinkSelection,
+  ) => Promise<void> | void;
 }
 
 /**
- * The diary's command line — the bottom-pinned twin of the home CaptureBar,
- * wearing the diary's butter/someday code instead of ideas/amber. At rest it's a
- * single quiet line you FILL: a someday edge-bar (the diary channel), an inline
- * TextInput, and one trailing affordance — a mic when empty, a charged send key
- * once there's text. Engaging the line reveals the diary's one distinguishing
- * gesture, RELATE (file the note onto an idea), as a leading inline chip. Voice
- * capture goes full butter-bleed with a waveform, exactly as the CaptureBar goes
- * full amber — the color shift IS the "listening" signal. Owns its own draft,
- * link, and dictation state so the screen only wires persistence. A note is
- * either related to an idea or free.
+ * The notes tab's command line — a bottom-pinned single quiet line you FILL:
+ * a neutral edge-bar, an inline TextInput, mic + send. Send opens the link
+ * sheet so filing the note (onto a project, an idea, or free) IS the send.
+ * Voice capture goes full-bleed with a waveform. The composer owns its draft,
+ * link, and dictation state so the screen only wires persistence.
  */
 export function DiaryComposer({
-  ideas,
+  targets,
   onSave,
 }: DiaryComposerProps): React.ReactElement {
   const { colors } = useTheme();
@@ -89,23 +84,24 @@ export function DiaryComposer({
     setLinkSheetOpen(true);
   };
 
-  // Picking in the sheet commits: an idea id files the note onto it, null files
+  // Picking in the sheet commits: a target files the note onto it, null files
   // it free. Either way the note sends and the bar clears.
-  const handleLink = async (entryId: string | null): Promise<void> => {
+  const handleLink = async (selection: LinkSelection): Promise<void> => {
     setLinkSheetOpen(false);
-    await onSave(draft, entryId);
+    await onSave(draft, selection);
     setDraft("");
   };
 
-  // Recording is the one full-bleed moment — the whole bar goes butter, mirroring
-  // the CaptureBar's full-amber listening state. The color shift IS the signal.
+  // Recording is the one full-bleed moment. The bar wears the neutral action
+  // slab so the color shift reads as "listening" without any type coding.
+  const onSlab = colors.accent.onClay;
   if (isRecording) {
     return (
       <View
         style={[
           styles.bar,
           styles.recording,
-          { backgroundColor: colors.type.ideas },
+          { backgroundColor: colors.accent.clay },
           tokens.elevation.capture,
         ]}
       >
@@ -114,12 +110,12 @@ export function DiaryComposer({
             <ThemedText
               type="item"
               numberOfLines={1}
-              style={[styles.transcript, { color: ON_CODE }]}
+              style={[styles.transcript, { color: onSlab }]}
             >
               {transcript}
             </ThemedText>
           ) : (
-            <Waveform tint={ON_CODE} />
+            <Waveform tint={onSlab} />
           )}
         </View>
 
@@ -130,7 +126,7 @@ export function DiaryComposer({
           accessibilityLabel="Stop recording"
           style={styles.iconBtn}
         >
-          <MaterialCommunityIcons name="check" size={24} color={ON_CODE} />
+          <MaterialCommunityIcons name="check" size={24} color={onSlab} />
         </Pressable>
       </View>
     );
@@ -146,7 +142,7 @@ export function DiaryComposer({
           tokens.elevation.capture,
         ]}
       >
-        <View style={[styles.edge, { backgroundColor: colors.type.ideas }]} />
+        <View style={[styles.edge, { backgroundColor: colors.inkMuted }]} />
 
         {/* Clear — appears only with content. A leading x wipes the draft so the
             writer can abandon a line without backspacing it out. */}
@@ -176,7 +172,7 @@ export function DiaryComposer({
           onChangeText={setDraft}
           placeholder="Write a note, capture a thought..."
           placeholderTextColor={colors.inkMuted}
-          selectionColor={colors.type.ideas}
+          selectionColor={colors.ink}
           multiline
           accessibilityLabel="Write a diary note"
           style={[
@@ -210,7 +206,7 @@ export function DiaryComposer({
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Send note"
-            accessibilityHint="Opens a sheet to file this note onto an idea, or as a free note."
+            accessibilityHint="Opens a sheet to file this note onto a project, an idea, or as a free note."
             style={({ pressed }) => [
               styles.sendBtn,
               { backgroundColor: colors.accent.clay },
@@ -230,7 +226,7 @@ export function DiaryComposer({
       <LinkSheet
         visible={linkSheetOpen}
         selected={null}
-        ideas={ideas}
+        targets={targets}
         onSelect={handleLink}
         onClose={() => setLinkSheetOpen(false)}
       />

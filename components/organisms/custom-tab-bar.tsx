@@ -16,7 +16,7 @@ export function CustomTabBar(): React.ReactElement {
   const pathname = usePathname();
 
   const isHome = pathname === "/" || pathname === "/(tabs)";
-  const isDiary = pathname === "/(tabs)/diary" || pathname === "/diary";
+  const isNotes = pathname === "/(tabs)/notes" || pathname === "/notes";
 
   const active = (on: boolean): string =>
     on ? colors.accent.clay : colors.inkMuted;
@@ -74,15 +74,15 @@ export function CustomTabBar(): React.ReactElement {
         </Pressable>
 
         <Pressable
-          onPress={() => router.push("/(tabs)/diary")}
+          onPress={() => router.push("/(tabs)/notes")}
           accessibilityRole="button"
-          accessibilityLabel="Diary"
+          accessibilityLabel="Notes"
           style={({ pressed }) => [
             styles.tabButton,
             pressed && styles.tabButtonPressed,
           ]}
         >
-          <TabIcon name="notebook-outline" color={active(isDiary)} />
+          <TabIcon name="notebook-outline" color={active(isNotes)} />
         </Pressable>
       </View>
     </View>

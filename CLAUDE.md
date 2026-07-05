@@ -100,7 +100,7 @@ Five entry types live in `lib/types.ts`: `todo`, `deadline`, `event`, `someday`,
 
 Recurring entries use a separate `recurrence_completions` table. Never mutate a recurring entry's base row for a single instance — use `completeRecurringInstance` / `skipRecurringInstance`.
 
-Reflective notes live in a separate `diary_entries` table (body, optional mood, optional `linked_entry_id` FK to entries) — deliberately isolated from the action board. Notes are never actionable and never appear on the home field.
+Reflective notes live in a separate `diary_entries` table (body, optional mood, optional `linked_entry_id` FK to an idea entry, optional `linked_project_id` to a project) — deliberately isolated from the action board. Notes are never actionable and never appear on the home field.
 
 ### Database Layer
 
@@ -141,7 +141,7 @@ synapse-app/
 │   └── (tabs)/                 # Tab group (expo-router convention)
 │       ├── _layout.tsx         # Tab navigator (custom tab bar, native bar hidden)
 │       ├── index.tsx           # Home tab — the Field (STAKES + PRESENT zones)
-│       └── diary.tsx           # Diary tab (notes feed + composer)
+│       └── notes.tsx           # Notes tab (feed + composer; notes link to projects or ideas)
 │
 ├── components/                 # Shared UI components (Atomic Design)
 │   ├── atoms/                  # Smallest building blocks

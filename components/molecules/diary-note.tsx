@@ -4,8 +4,10 @@ import { findNodeHandle, StyleSheet, View } from "react-native";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
-import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
+import type { LinkableKind } from "@/components/organisms/link-sheet";
+import { tokens, useTheme } from "@/constants/theme";
 import { useTendrilRegistry } from "@/hooks/use-tendril-registry";
 import { ConfirmKey } from "@/lib/settings";
 
@@ -13,13 +15,11 @@ import type { DbDiaryEntry } from "@/lib/types";
 
 interface DiaryNoteProps {
   entry: DbDiaryEntry;
-  /**
-   * Title of the idea this note is related to, if linked. Resolved by the feed
-   * (the note row only stores the id). A linked note shows an "ON · <idea>"
-   * chip; an unlinked one shows a quiet "FREE" chip — so every note declares
-   * its relatedness at a glance.
-   */
+  /** Title of the target this note is related to, if linked. Resolved by the
+   *  feed (the note row only stores the id). */
   linkedTitle?: string;
+  /** Kind of the linked target — picks the leading glyph. */
+  linkedKind?: LinkableKind;
   onDelete: () => void;
 }
 
@@ -31,10 +31,10 @@ interface DiaryNoteProps {
 export function DiaryNote({
   entry,
   linkedTitle,
+  linkedKind,
   onDelete,
 }: DiaryNoteProps): React.ReactElement {
   const { colors } = useTheme();
-  const ideaAccent = useEntryKicker("idea");
   const registry = useTendrilRegistry();
   const noteRef = useRef<View | null>(null);
 
@@ -95,10 +95,18 @@ export function DiaryNote({
             <View
               style={[
                 styles.relTag,
-                { backgroundColor: ideaAccent + "1F" },
+                { backgroundColor: colors.surfaceSubtle },
               ]}
             >
-              <SketchIcon type="idea" size={13} />
+              {linkedKind === "project" ? (
+                <IconSymbol
+                  name="folder-outline"
+                  size={13}
+                  color={colors.inkMuted}
+                />
+              ) : (
+                <SketchIcon type="idea" size={13} />
+              )}
               <ThemedText
                 type="micro"
                 numberOfLines={1}

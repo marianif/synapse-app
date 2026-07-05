@@ -10,10 +10,12 @@ import type { DbDiaryEntry } from "@/lib/types";
 interface DiaryFeedProps {
   /** Newest-first entries. The feed groups them by calendar day. */
   entries: DbDiaryEntry[];
-  /** id → idea title, for notes filed ON an idea. Missing → render autonomous. */
-  linkedTitles?: Record<string, string>;
+  /** id → idea title, for notes filed ON an idea. */
+  ideaTitles?: Record<string, string>;
+  /** id → project title, for notes filed ON a project. */
+  projectTitles?: Record<string, string>;
   /** True when a filter is narrowing the feed — changes the empty-state copy so
-   *  "nothing matches" never reads as "the diary is empty". */
+   *  "nothing matches" never reads as "the notes tab is empty". */
   filtered?: boolean;
   onDelete: (id: string) => void;
 }
@@ -46,7 +48,8 @@ function groupByDay(
  */
 export function DiaryFeed({
   entries,
-  linkedTitles,
+  ideaTitles,
+  projectTitles,
   filtered = false,
   onDelete,
 }: DiaryFeedProps): React.ReactElement {
@@ -57,7 +60,7 @@ export function DiaryFeed({
     return (
       <View style={styles.empty}>
         <ThemedText type="title" style={{ color: colors.ink }}>
-          {filtered ? "No notes here" : "Your diary is empty"}
+          {filtered ? "No notes here" : "No notes yet"}
         </ThemedText>
         <ThemedText type="body" muted style={styles.emptyBody}>
           {filtered
@@ -81,18 +84,29 @@ export function DiaryFeed({
             />
           </View>
 
-          {group.items.map((e) => (
-            <DiaryNote
-              key={e.id}
-              entry={e}
-              linkedTitle={
-                e.linked_entry_id
-                  ? linkedTitles?.[e.linked_entry_id]
-                  : undefined
-              }
-              onDelete={() => onDelete(e.id)}
-            />
-          ))}
+          {group.items.map((e) => {
+            const projectTitle = e.linked_project_id
+              ? projectTitles?.[e.linked_project_id]
+              : undefined;
+            const ideaTitle = e.linked_entry_id
+              ? ideaTitles?.[e.linked_entry_id]
+              : undefined;
+            const title = projectTitle ?? ideaTitle;
+            const kind = projectTitle
+              ? ("project" as const)
+              : ideaTitle
+                ? ("idea" as const)
+                : undefined;
+            return (
+              <DiaryNote
+                key={e.id}
+                entry={e}
+                linkedTitle={title}
+                linkedKind={kind}
+                onDelete={() => onDelete(e.id)}
+              />
+            );
+          })}
         </View>
       ))}
     </>

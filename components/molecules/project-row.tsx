@@ -47,7 +47,6 @@ export function ProjectRow({
   // Scheme-aware shades — the electric type codes only clear AA on the dark
   // graphite; on light paper we render the darkened kicker variant so the
   // edge-bar and featured star read AA-safe in both schemes.
-  const todoAccent = useEntryKicker("todo");
   const ideaAccent = useEntryKicker("idea");
 
   const isFeatured = project.is_featured === 1;
@@ -59,8 +58,6 @@ export function ProjectRow({
 
   return (
     <View style={[styles.row, { backgroundColor: colors.surface }]}>
-      <View style={[styles.edgeBar, { backgroundColor: todoAccent }]} />
-
       <Pressable
         onPress={open}
         accessibilityRole="button"
@@ -104,7 +101,7 @@ export function ProjectRow({
         style={styles.starButton}
       >
         <IconSymbol
-          name={isFeatured ? "pin" : "pin-off-outline"}
+          name={isFeatured ? "lock" : "lock-open"}
           size={22}
           color={isFeatured ? ideaAccent : colors.inkMuted}
         />
@@ -121,7 +118,7 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
     overflow: "hidden",
   },
-  edgeBar: { width: 3, alignSelf: "stretch" },
+
   body: {
     flex: 1,
     justifyContent: "center",

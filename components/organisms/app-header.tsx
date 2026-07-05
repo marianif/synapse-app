@@ -1,13 +1,11 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useTheme } from "@/constants/theme";
 import { useIncomingCount } from "@/hooks/use-incoming-count";
 import { EntryCluster } from "../atoms/entry-cluster";
-import { AppMenu } from "./app-menu";
 
 interface AppHeaderProps {
   onAvatarPress?: () => void;
@@ -20,44 +18,39 @@ export function AppHeader({
 }: AppHeaderProps): React.ReactElement {
   const { colors } = useTheme();
   const router = useRouter();
-  const [menuVisible, setMenuVisible] = useState(false);
   const incomingCount = useIncomingCount();
 
   return (
-    <>
-      <View style={[styles.bar, { backgroundColor: colors.paper }]}>
-        <View style={styles.brand}>
-          <EntryCluster
-            types={["deadline", "todo", "idea"]}
-            dotSize={7}
-            gap={3}
-            width={24}
-          />
+    <View style={[styles.bar, { backgroundColor: colors.paper }]}>
+      <View style={styles.brand}>
+        <EntryCluster
+          types={["deadline", "todo", "idea"]}
+          dotSize={7}
+          gap={3}
+          width={24}
+        />
 
-          <ThemedText type="headline" style={styles.wordmark}>
-            Synapse
-          </ThemedText>
-        </View>
-
-        <View style={styles.actions}>
-          <Pressable
-            onPress={() => setMenuVisible(true)}
-            style={styles.iconBtn}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel="Menu"
-          >
-            <MaterialCommunityIcons
-              name="dots-vertical"
-              size={22}
-              color={colors.inkMuted}
-            />
-          </Pressable>
-        </View>
+        <ThemedText type="headline" style={styles.wordmark}>
+          Synapse
+        </ThemedText>
       </View>
 
-      <AppMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
-    </>
+      <View style={styles.actions}>
+        <Pressable
+          onPress={() => router.push("/settings")}
+          style={styles.iconBtn}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Settings"
+        >
+          <MaterialCommunityIcons
+            name="dots-vertical"
+            size={22}
+            color={colors.inkMuted}
+          />
+        </Pressable>
+      </View>
+    </View>
   );
 }
 

@@ -19,6 +19,7 @@ export default function HomeStackLayout(): React.ReactElement {
       <Stack.Screen name="detail" />
       <Stack.Screen name="projects" />
       <Stack.Screen name="project" />
+      <Stack.Screen name="settings" />
     </Stack>
   );
 }

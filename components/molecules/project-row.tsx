@@ -104,7 +104,7 @@ export function ProjectRow({
         style={styles.starButton}
       >
         <IconSymbol
-          name={isFeatured ? "star" : "star-outline"}
+          name={isFeatured ? "pin" : "pin-off-outline"}
           size={22}
           color={isFeatured ? ideaAccent : colors.inkMuted}
         />
@@ -148,5 +148,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: tokens.space.sm,
+    transform: [{ rotate: "12deg" }], // a little tilt for the pin icon, like a thumbtack
   },
 });

@@ -44,12 +44,13 @@ interface CaptureBarProps {
  * This component is now FRAMELESS: the surrounding frame, fill, radius,
  * elevation, and entrance belong to `DockShell`. The bar renders only its row of
  * controls on a transparent ground, so the shell can morph the panel in place
- * (idle line ↔ recorder) without the bar popping between shapes. Idle it's a
- * live text line you FILL (a breathing capture-mark, an inline TextInput, a
- * first-class mic) on the shell's `surface` fill; recording, the shell flips to
- * the neutral slab and the bar renders on-slab inks with a live waveform and
- * inline discard / keep. Typing + ↵ (or the send key) hands the thought to the
- * capture resolver — no navigation, no type decided up front.
+ * (idle line ↔ recorder) without the bar popping between shapes. It rides the
+ * neutral clay slab in BOTH states — the same slab as the AddProjectBar, so the
+ * two read as one instrument family — with all inks on-slab (`onClay`). Idle
+ * it's a live text line you FILL (a breathing capture-mark, an inline TextInput,
+ * a first-class mic, an off-slab send key); recording swaps in a live waveform
+ * and inline discard / keep. Typing + ↵ (or the send key) hands the thought to
+ * the capture resolver — no navigation, no type decided up front.
  */
 export function CaptureBar({
   onSubmit,
@@ -75,17 +76,17 @@ export function CaptureBar({
     setDraft("");
   };
 
-  // Neutral interface grammar: the mic glyph reads as an affordance, not a type.
-  // inkMuted tracks the scheme and clears AA on the surface in both.
-  const signal = colors.inkMuted;
+  // The bar rides the neutral clay slab in every state, so all inks are on-slab
+  // (onClay), never scheme ink — exactly like AddProjectBar. `onSlab` is the
+  // primary on-slab ink; `signal` is the recessive on-slab voice (mark, mic,
+  // placeholder) at reduced alpha, AA-safe on the slab in both schemes.
+  const onSlab = colors.accent.onClay;
+  const signal = `${onSlab}A6`; // ~65% — recessive on-slab affordance ink
 
-  // Recording: the shell has flipped to the neutral action slab, so the bar
-  // renders on-slab — the same interface object as the resolver, never a type
-  // chrome. The "listening" life lives in the moving waveform as a SIGNAL,
-  // tinted with the on-slab ink so it stays legible in both schemes.
+  // Recording: same neutral slab, controls on-slab — never a type chrome. The
+  // "listening" life lives in the moving waveform as a SIGNAL, tinted with the
+  // on-slab ink so it stays legible in both schemes.
   if (isRecording) {
-    const onSlab = colors.accent.onClay;
-
     return (
       <View style={[styles.bar, styles.recording]}>
         <Pressable
@@ -127,8 +128,6 @@ export function CaptureBar({
 
   return (
     <View style={[styles.bar, styles.idle]}>
-      <View style={[styles.edge, { backgroundColor: colors.inkMuted }]} />
-
       {/* The line you FILL: a pulsing capture-mark + inline TextInput. ↵ drops the
           thought onto the board; the mark hides once typing starts (the cursor
           takes over). */}
@@ -141,13 +140,13 @@ export function CaptureBar({
           onBlur={handleBlur}
           autoFocus={autoFocus}
           placeholder="Put something in"
-          placeholderTextColor={colors.inkMuted}
-          selectionColor={colors.ink}
+          placeholderTextColor={signal}
+          selectionColor={onSlab}
           returnKeyType="done"
           submitBehavior="submit"
           accessibilityLabel="Put something in"
           accessibilityHint="Type anything and submit; then choose what it is — a to-do, a deadline, an idea, or a note."
-          style={[styles.input, { color: colors.ink }]}
+          style={[styles.input, { color: onSlab }]}
         />
       </View>
 
@@ -161,14 +160,14 @@ export function CaptureBar({
           accessibilityLabel="Put it in"
           style={({ pressed }) => [
             styles.sendBtn,
-            { backgroundColor: colors.accent.clay },
+            { backgroundColor: onSlab },
             pressed && styles.pressed,
           ]}
         >
           <MaterialCommunityIcons
             name="arrow-up"
             size={22}
-            color={colors.accent.onClay}
+            color={colors.accent.clay}
           />
         </Pressable>
       ) : (
@@ -281,7 +280,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minHeight: 56,
   },
-  // Idle: a command line — left edge-bar, prompt, mic.
+  // Idle: a command line — flush + capture-mark, prompt, mic. No left edge-bar,
+  // so the line starts clean and matches AddProjectBar's flush-left start.
   idle: {
     paddingLeft: tokens.space.lg,
     paddingRight: tokens.space.xs,
@@ -291,13 +291,6 @@ const styles = StyleSheet.create({
   recording: {
     gap: tokens.space.md,
     paddingHorizontal: tokens.space.lg,
-  },
-  edge: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
   },
   prompt: {
     flex: 1,
@@ -319,14 +312,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  // Send key: the one moment clay appears in the idle bar — a charged enter key.
-  // hitSlop carries it to the 44pt target; the visual key stays a tight 36pt
-  // square so it reads as a key inside the line, not a second slab.
+  // Send key — the off-slab key, identical to AddProjectBar's send: a filled
+  // onSlab pill (36pt, radius.pill) with the clay glyph inside. hitSlop carries
+  // it to the 44pt target so the two slab bars share one send grammar.
   sendBtn: {
     width: 36,
     height: 36,
-    marginHorizontal: tokens.space.xs,
-    borderRadius: tokens.radius.sm,
+    marginRight: tokens.space.xs,
+    borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -116,9 +116,10 @@ export function CaptureComposer({
       />
     );
   } else if (cap.composerOpen || cap.isRecording) {
-    // The capture bar: idle composer reads as CONTENT (the fillable surface);
-    // recording flips to the committed slab. The fill shift is the state signal.
-    register = cap.isRecording ? "slab" : "surface";
+    // The capture bar rides the committed slab in BOTH composer and recording —
+    // one neutral instrument ground, matching the AddProjectBar slab so the two
+    // read as one family. (No surface-register fill flip: the slab is constant.)
+    register = "slab";
     contentKey = cap.isRecording ? "recording" : "composer";
     surface = (
       <CaptureBar

@@ -70,7 +70,7 @@ function barPalette(scheme: Scheme): BarPalette {
 // wash out and the darker `typeKicker.light` shades are the ones that clear it.
 // Both directions verified ≥4.5:1 (deadline reaches AA-large on slate, fine for
 // the large bold verb text). This mirrors the system's existing rule that
-// type-colored TEXT uses kicker shades while dots/edge-bars use the raw code.
+// type-colored TEXT uses kicker shades while dots use the raw code.
 const KICKER_LIGHT: Record<EntryType, string> = {
   deadline: tokens.color.typeKicker.light.bills,
   todo: tokens.color.typeKicker.light.todo,
@@ -171,8 +171,8 @@ const WHEN_OPTIONS: WhenOption[] = [
 /**
  * The post-capture destination chooser. No bubbles, no buttons: every choice is
  * a word you READ and tap, in its type color, the active one bold + underlined.
- * Instrument-panel register (DESIGN.md: tonal weight and edge-bars carry
- * structure, not capsules).
+ * Instrument-panel register (DESIGN.md: tonal weight and spacing carry
+ * structure, not capsules or bars).
  *
  * Two grammars, kept apart by behavior:
  *   • Bare verbs — keep (idea) · note — file on the first tap (note opens a rail

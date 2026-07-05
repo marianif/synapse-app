@@ -58,7 +58,7 @@ interface DetailHeroProps {
  * it leads with the title alone and keeps its equal volume through the tab code,
  * never a downgrade.
  *
- * Reading order: edge-bar → type tab → title → readout (the standing) → chips.
+ * Reading order: type tab → title → readout (the standing) → chips.
  */
 export function DetailHero({
   entryType,
@@ -68,17 +68,15 @@ export function DetailHero({
   readout,
   chips = [],
 }: DetailHeroProps): React.ReactElement {
-  // `code` (edge-bar, readout tone) and `tabFill` (kicker chip fill) both use
-  // the scheme-aware kicker shade — one hue per scheme, AA-safe on paper and
-  // graphite alike.
+  // `tabFill` (kicker chip fill) uses the scheme-aware kicker shade — one hue
+  // per scheme, AA-safe on paper and graphite alike. It also drives the
+  // readout tone, so the standing threads the same type color.
   const code = useEntryKicker(entryType);
   const tabFill = code;
   const readoutTone = readout?.tone ?? code;
 
   return (
     <View style={styles.row}>
-      <View style={[styles.edge, { backgroundColor: code }]} />
-
       <View style={styles.body}>
         <View style={[styles.tab, { backgroundColor: tabFill }]}>
           <ThemedText type="label" style={{ color: chipInk() }}>
@@ -159,11 +157,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     gap: tokens.space.md,
-  },
-  edge: {
-    width: 3,
-    borderRadius: tokens.radius.pill,
-    alignSelf: "stretch",
   },
   body: {
     flex: 1,

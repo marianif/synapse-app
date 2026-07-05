@@ -6,8 +6,8 @@ import { tokens } from "@/constants/theme";
 /**
  * A single tappable verb on the capture resolver's destination line. The
  * affordance is the word itself in its type color — no enclosure. Picked dated
- * verbs go bold with a 2px underline in their color (the edge-bar pattern, laid
- * flat). Generous vertical padding + hitSlop keep the tap target ≥44pt though the
+ * verbs go bold with a 2px underline in their color — a flat mark of the type,
+ * no chrome. Generous vertical padding + hitSlop keep the tap target ≥44pt though the
  * ink is small. Semibold at rest so it qualifies as large-text AA on the bar.
  */
 export function ResolverVerb({

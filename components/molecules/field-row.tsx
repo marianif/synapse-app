@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 
@@ -25,11 +26,11 @@ interface FieldRowProps {
 }
 
 /**
- * One entry on the Field Lab board. The saturated type-color edge-bar IS the
- * type signal (no border, no icon) and a faint same-hue glow behind the bar
- * makes the row read as charged, not listed — a hot row glows visibly, a cool
- * one barely. Every type glows on the same scale: an idea is as alive as a bill.
- * The mono when-label on the right reads like an instrument readout.
+ * One entry on the Field Lab board. A leading 6px EntryDot carries the type
+ * identity (no border, no bar) and a faint same-hue glow makes the row read as
+ * charged, not listed — a hot row glows visibly, a cool one barely. Every type
+ * glows on the same scale: an idea is as alive as a bill. The mono when-label
+ * on the right reads like an instrument readout.
  */
 export function FieldRow({ item, href }: FieldRowProps): React.ReactElement {
   const router = useRouter();
@@ -49,14 +50,14 @@ export function FieldRow({ item, href }: FieldRowProps): React.ReactElement {
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
       hitSlop={6}
     >
-      {/* same-hue glow wash behind the bar — the Field Lab charge */}
+      {/* same-hue glow wash — the Field Lab charge */}
       <View
         style={[
           styles.glow,
           { backgroundColor: code, opacity: glowAlpha },
         ]}
       />
-      <View style={[styles.edge, { backgroundColor: code }]} />
+      <EntryDot type={item.type} size={6} />
 
       <ThemedText
         type={item.heat === "hot" ? "item" : "body"}
@@ -85,6 +86,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
+    gap: tokens.space.sm,
     minHeight: 44,
     paddingVertical: tokens.space.sm,
     paddingLeft: tokens.space.md,
@@ -95,21 +97,13 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
-  // colored charge bleeding from the edge-bar — clipped to the row radius
+  // colored charge — clipped to the row radius
   glow: {
     position: "absolute",
     left: 0,
     top: 0,
     bottom: 0,
     width: 96,
-  },
-  // saturated edge-bar replaces a 1px border (DESIGN.md)
-  edge: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
   },
   title: {
     flex: 1,

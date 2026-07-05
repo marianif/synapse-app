@@ -8,8 +8,9 @@ import {
   View,
 } from "react-native";
 
+import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, tokens, useEntryTint, useTheme } from "@/constants/theme";
+import { tokens, useEntryTint, useTheme } from "@/constants/theme";
 
 import type { DbDiaryEntry, DbEntry } from "@/lib/types";
 
@@ -131,12 +132,9 @@ export function ProjectPullInSheet({
                           pressed && styles.pressed,
                         ]}
                       >
-                        <View
-                          style={[
-                            styles.chipEdge,
-                            { backgroundColor: entryColor("idea") },
-                          ]}
-                        />
+                        <View style={styles.chipDot}>
+                          <EntryDot type="idea" size={6} />
+                        </View>
                         <ThemedText
                           type="body"
                           numberOfLines={2}
@@ -264,17 +262,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space.md,
     paddingVertical: tokens.space.xs,
   },
-  // Idea chips wear an edge-bar (matches the brand's edge-bar grammar for
-  // type-coded actionable content). Notes are neutral — diary is non-
-  // actionable, so no type code, just a tonally recessed surface.
+  // Idea chips get a leading dot (the brand's type signal); notes are neutral
+  // — diary is non-actionable, so no type code, just a tonally recessed surface.
   chip: {
     width: 200,
     minHeight: 64,
     flexDirection: "row",
+    alignItems: "center",
     borderRadius: tokens.radius.md,
     overflow: "hidden",
   },
-  chipEdge: { width: 3, alignSelf: "stretch" },
+  chipDot: {
+    paddingLeft: tokens.space.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   chipText: {
     flex: 1,
     paddingHorizontal: tokens.space.md,

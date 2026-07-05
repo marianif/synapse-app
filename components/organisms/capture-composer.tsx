@@ -12,12 +12,10 @@ import Animated, {
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { WaveformVisualizer } from "@/components/atoms/waveform-bar";
-import {
-  ClassifyStageView,
-  DetailsStageView,
-  NoteLinkStageView,
-} from "@/components/molecules/capture-stage-views";
 import { DockShell } from "@/components/organisms/dock-shell";
+import { ClassifyStageView } from "@/components/organisms/classify-stage-view";
+import { DetailsStageView } from "@/components/organisms/details-stage-view";
+import { NoteLinkStageView } from "@/components/organisms/note-link-stage-view";
 import { entryColor, entryKicker, tokens, useTheme } from "@/constants/theme";
 import type { UseCaptureReturn } from "@/hooks/use-capture";
 import { horizonEndDate } from "@/lib/horizons";
@@ -117,7 +115,6 @@ function CaptureFlow({
   const muted = `${onSlab}A6`;
   const quiet = `${onSlab}24`;
   const raised = `${onSlab}1F`;
-  const panel = colors.accent.clayPressed;
 
   useEffect(() => {
     if (cap.pendingThought === null) {
@@ -314,7 +311,7 @@ function CaptureFlow({
           <View
             style={[
               styles.stage,
-              { width: trackWidthPx, left: trackWidthPx * 2, backgroundColor: panel },
+              { width: trackWidthPx, left: trackWidthPx * 2 },
             ]}
             onLayout={(e) => { detailsH.value = e.nativeEvent.layout.height; }}
             accessibilityElementsHidden={stage !== "details"}
@@ -354,7 +351,7 @@ function CaptureFlow({
           <View
             style={[
               styles.stage,
-              { width: trackWidthPx, left: trackWidthPx * 3, backgroundColor: panel },
+              { width: trackWidthPx, left: trackWidthPx * 3 },
             ]}
             onLayout={(e) => { noteH.value = e.nativeEvent.layout.height; }}
             accessibilityElementsHidden={stage !== "note-link"}

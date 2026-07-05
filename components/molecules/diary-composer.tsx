@@ -27,16 +27,13 @@ interface DiaryComposerProps {
   targets: LinkableTarget[];
   /** Persist a kept note. The composer clears its draft + link on resolve. A
    *  note may point at one target (idea OR project) or be free. */
-  onSave: (
-    body: string,
-    selection: LinkSelection,
-  ) => Promise<void> | void;
+  onSave: (body: string, selection: LinkSelection) => Promise<void> | void;
 }
 
 /**
  * The notes tab's command line — a bottom-pinned single quiet line you FILL:
- * a neutral edge-bar, an inline TextInput, mic + send. Send opens the link
- * sheet so filing the note (onto a project, an idea, or free) IS the send.
+ * an inline TextInput plus mic + send. Send opens the link sheet so filing the
+ * note (onto a project, an idea, or free) IS the send.
  * Voice capture goes full-bleed with a waveform. The composer owns its draft,
  * link, and dictation state so the screen only wires persistence.
  */
@@ -142,8 +139,6 @@ export function DiaryComposer({
           tokens.elevation.capture,
         ]}
       >
-        <View style={[styles.edge, { backgroundColor: colors.inkMuted }]} />
-
         {/* Clear — appears only with content. A leading x wipes the draft so the
             writer can abandon a line without backspacing it out. */}
         {canSave ? (
@@ -291,7 +286,7 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
     overflow: "hidden",
   },
-  // Idle: a command line — left edge-bar, prompt, trailing control cluster.
+  // Idle: a command line — prompt with a trailing control cluster.
   idle: {
     paddingLeft: tokens.space.lg,
     paddingRight: tokens.space.xs,
@@ -308,13 +303,6 @@ const styles = StyleSheet.create({
   recording: {
     gap: tokens.space.md,
     paddingHorizontal: tokens.space.lg,
-  },
-  edge: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
   },
   // Clear key: a quiet leading x — recessed, smaller than the trailing key, so
   // it reads as "undo this line" without competing with send.

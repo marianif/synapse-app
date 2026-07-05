@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 
+import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
@@ -16,7 +17,7 @@ interface NextUpChipProps {
 
 /**
  * The "next" chip — the one thing the briefing points the eye at. A tappable
- * pill carrying the type-color edge-bar, the title, an optional mono when-label,
+ * pill carrying a leading EntryDot, the title, an optional mono when-label,
  * and a type-colored arrow. Distinct from FieldRow (the glowing board row): this
  * is a compact summary chip that opens the entry's detail. With an onDelete
  * handler it swipes left to reveal a delete action (shared SwipeableRow).
@@ -46,7 +47,7 @@ export function NextUpChip({
         pressed && styles.chipPressed,
       ]}
     >
-      <View style={[styles.chipEdge, { backgroundColor: code }]} />
+      <EntryDot type={item.type} size={6} />
       <ThemedText
         type="item"
         numberOfLines={1}
@@ -81,21 +82,14 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: "row",
     alignItems: "center",
+    gap: tokens.space.sm,
     minHeight: 48,
-    paddingLeft: tokens.space.md,
-    paddingRight: tokens.space.md,
+    paddingHorizontal: tokens.space.md,
     borderRadius: tokens.radius.md,
     overflow: "hidden",
   },
   chipPressed: {
     opacity: 0.7,
-  },
-  chipEdge: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
   },
   chipTitle: {
     flex: 1,

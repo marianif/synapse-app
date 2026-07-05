@@ -24,10 +24,8 @@ import type { DbProject } from "@/lib/types";
  * open count). The parent passes the signal already formatted — this row
  * is dumb about sort modes.
  *
- * Visual grammar: 3pt cyan edge-bar (a project is where todos live, and
- * todos are cyan in the type palette — Project ≈ Todo-container is the
- * brand-consistent read). Featured star is amber-filled (idea code: "this
- * one is alive on my home") or hollow ink-muted (everything else).
+ * Visual grammar: a quiet row on the surface tone; type identity carries via
+ * spacing and the featured star (idea-amber when locked in, ink-muted when not).
  */
 export function ProjectRow({
   project,
@@ -46,7 +44,7 @@ export function ProjectRow({
   const { touchProject } = useDatabase();
   // Scheme-aware shades — the electric type codes only clear AA on the dark
   // graphite; on light paper we render the darkened kicker variant so the
-  // edge-bar and featured star read AA-safe in both schemes.
+  // featured star reads AA-safe in both schemes.
   const ideaAccent = useEntryKicker("idea");
 
   const isFeatured = project.is_featured === 1;

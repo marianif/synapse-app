@@ -318,7 +318,7 @@ VSCode auto-organizes imports on save (`source.organizeImports`).
 - **Cool extremes only** — never `#FFF`/`#000`; graphite/crisp paper surfaces.
 - **Equal volume** — five electric entry-type colors at equal intensity; never dim non-urgent types.
 - **Green is completion-only** — todo is cyan, never green.
-- **No 1px structural borders** — tonal layering, edge-bars, and glow carry structure.
+- **No 1px structural borders, no colored edge-bars** — tonal layering, spacing, and the 6px `EntryDot` / mono kicker carry structure. No card fills where a row on tone will do.
 - **Three type voices** — Host Grotesk (display/body), JetBrains Mono (counts/kickers/status), Caveat (handwritten narrative layer only).
 - **No FAB, no gamification, no gradients, no "today" curation** — see DESIGN.md Do's and Don'ts.
 

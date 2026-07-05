@@ -35,7 +35,7 @@ interface CaptureBarProps {
 
 /**
  * The board's command line — the capture readout inside the dock shell. Field
- * Lab is an instrument panel (mono readouts, sharp corners, saturated edge-bars
+ * Lab is an instrument panel (mono readouts, sharp corners, tonal layering
  * carrying structure), and this is where anything enters the board: a todo, a
  * deadline, an idea, a note. It belongs to no single type, so it wears the
  * NEUTRAL grammar (never a type tint) — dressing it in amber made it read as

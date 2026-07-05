@@ -1,8 +1,9 @@
 import { Link } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryKicker, tokens, useTheme } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 import { horizonReadout } from "@/lib/horizons";
 import type { DbEntry } from "@/lib/types";
 
@@ -18,7 +19,7 @@ interface HorizonStripProps {
  * with its commitment readout ("by Sun", "by 30 Jun").
  */
 export function HorizonStrip({ entries }: HorizonStripProps): React.ReactElement | null {
-  const { colors, scheme } = useTheme();
+  const { colors } = useTheme();
 
   if (entries.length === 0) return null;
 
@@ -38,9 +39,7 @@ export function HorizonStrip({ entries }: HorizonStripProps): React.ReactElement
             accessibilityLabel={`${e.title}, ${e.due_range ? horizonReadout(e.due_range, e.due_date) : ""}`}
             style={({ pressed }) => [styles.row, pressed && styles.pressed]}
           >
-            <View
-              style={[styles.edgeBar, { backgroundColor: entryKicker(e.type, scheme) }]}
-            />
+            <EntryDot type={e.type} size={6} />
             <ThemedText
               type="item"
               numberOfLines={1}
@@ -73,11 +72,6 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
-  },
-  edgeBar: {
-    width: 3,
-    alignSelf: "stretch",
-    borderRadius: tokens.radius.pill,
   },
   title: {
     flex: 1,

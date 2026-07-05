@@ -25,7 +25,7 @@ Three voices carry the typography: **Host Grotesk** (display/body — Inter was 
 - **The Green Is Done Rule.** Green appears only as `feedback.success`. Todo is cyan, never green — green on an open todo would lie.
 - **The Someday Is A Badge Rule.** An undated todo keeps the cyan todo code and earns a small mono "SOMEDAY" badge — never a separate color. Datedness is a state, not a type.
 - Accent is a scheme-aware **neutral slab** (slate in light, off-white in dark), not a hue — so the action color can never be confused with a content category.
-- No 1px structural borders — tonal layering, edge-bars, and glow carry structure. Sharp radii (6–14): surgical, not soft.
+- No 1px structural borders and no colored edge-bars — tonal layering, spacing, and the 6px EntryDot / mono kicker carry structure. Sharp radii (6–14): surgical, not soft.
 - Motion is expressive but earns its place: quick springs on re-flow; the stale-pulse on untouched ideas is the one sanctioned continuous motion.
 
 ## Tokens
@@ -174,17 +174,18 @@ const styles = StyleSheet.create({
 });
 ```
 
-### Edge-bar row
+### Row on tone
 
-Structure without borders: a saturated 3pt edge-bar carries the type identity; the row body sits on `surface` or the type tint. The pattern behind entry rows and tiles (see `components/molecules/entry-row.tsx`).
+Structure without borders and without edge-bars: a leading 6px `EntryDot` (or a mono kicker) carries the type identity; the row body sits on `surface` / `surfaceSubtle` or the type tint. Spacing + tonal layering carry the row — never a colored strip on its left edge.
 
 ```tsx
 import { StyleSheet, Pressable, Text, View } from "react-native";
 
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { EntryDot } from "@/components/atoms/entry-dot";
+import { tokens, useTheme } from "@/constants/theme";
 import type { EntryType } from "@/lib/types";
 
-export function EdgeBarRow({ type, title, onPress }: { type: EntryType; title: string; onPress: () => void }) {
+export function TypedRow({ type, title, onPress }: { type: EntryType; title: string; onPress: () => void }) {
   const { colors } = useTheme();
   return (
     <Pressable
@@ -193,7 +194,7 @@ export function EdgeBarRow({ type, title, onPress }: { type: EntryType; title: s
       accessibilityRole="button"
       accessibilityLabel={title}
     >
-      <View style={[styles.edgeBar, { backgroundColor: entryColor(type) }]} />
+      <EntryDot type={type} size={6} />
       <Text style={[styles.title, { color: colors.ink }]} numberOfLines={1}>{title}</Text>
     </Pressable>
   );
@@ -204,13 +205,12 @@ const styles = StyleSheet.create({
     minHeight: 48, // meets iOS 44pt and Android 48dp
     flexDirection: "row",
     alignItems: "center",
+    gap: tokens.space.sm,
+    paddingHorizontal: tokens.space.md,
     borderRadius: tokens.radius.md,
-    overflow: "hidden",
   },
-  edgeBar: { width: 3, alignSelf: "stretch" },
   title: {
     flex: 1,
-    paddingHorizontal: tokens.space.md,
     fontFamily: tokens.type.fontInter.medium,
     fontSize: tokens.type.item.size,
     lineHeight: tokens.type.item.lineHeight,
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
 
 ### Signature organisms (existing, documented for reference)
 
-- **CaptureBar** (`components/organisms/capture-bar.tsx`) — always-on bottom capture; idle amber edge-bar, recording state goes full amber with live waveform; `elevation.capture` lift.
+- **CaptureBar** (`components/organisms/capture-bar.tsx`) — always-on bottom capture; neutral idle bar, recording state goes full amber with live waveform; `elevation.capture` lift.
 - **FieldGreeting** (`components/molecules/field-greeting.tsx`) — display-step companion voice plus a mono instrument readout ("3 pressing · 12 in field").
 - **Custom tab bar** (`components/organisms/custom-tab-bar.tsx`) — replaces the native bar; center slab action key.
 
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
 - **Do** keep every style in `StyleSheet.create`, including `renderItem` styles.
 - **Do** animate `transform` and `opacity` only; springs at `{damping:18, stiffness:220}`, timing on the `(0.22, 1, 0.36, 1)` bezier.
 - **Do** check `useReducedMotion()`: resizing becomes instant, the stale-pulse becomes a static outline ring.
-- **Do** use `typeKicker` shades for any type-colored text on a tint; the electric codes are for dots, edge-bars, and fills.
+- **Do** use `typeKicker` shades for any type-colored text on a tint; the electric codes are for dots and fills.
 - **Do** keep the mono layer for numbers, time, counts, and kickers — that contrast is the instrument-panel signature.
 - **Do** reserve Caveat for the narrative/margin voice; it never carries UI labels, buttons, or data.
 
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
 - **Don't** reintroduce an event type or an event color (ultraviolet) — events are out of the model.
 - **Don't** use green for anything but completion.
 - **Don't** use gradients — glow is solid-color opacity, never a gradient ramp.
-- **Don't** add 1px structural borders — tonal layering, edge-bars, and glow carry structure.
+- **Don't** add 1px structural borders and don't use colored edge-bars on rows, chips, composers, or hero surfaces — tonal layering, spacing, and the 6px EntryDot / mono kicker carry structure. No card fills where a row on tone will do.
 - **Don't** curate the home down to "today" or hide items behind filters — the whole field stays present.
 - **Don't** show dead count-only tiles — every tile shows real, tappable items.
 - **Don't** add a FAB — capture is the always-on bar / center tab key.

@@ -7,6 +7,7 @@ import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useEntryKicker, useTheme, tokens } from "@/constants/theme";
 
+
 import type { EntryType } from "@/components/atoms/entry-dot";
 
 export type ItemStatus = "scheduled" | "active" | "completed";
@@ -56,10 +57,6 @@ export function ListItem({
   const { colors } = useTheme();
   // Ideas get the soft "sparkle" row — they're undated thoughts, not tasks.
   const isIdea = entryType === "idea";
-  // The row's own type drives the edge-bar (scheme-aware kicker shade, so the
-  // bar lands AA-safe on light paper too), so a mixed "Incoming" list stays
-  // color-coded per row instead of collapsing to one screen accent.
-  const edgeColor = useEntryKicker(entryType);
   const ideaAccent = useEntryKicker("idea");
 
   const renderContent = (): React.ReactElement => {
@@ -69,7 +66,7 @@ export function ListItem({
           onPress={onPress}
           style={({ pressed }) => [
             styles.row,
-            { backgroundColor: colors.surfaceSubtle, borderLeftColor: edgeColor },
+            { backgroundColor: colors.surfaceSubtle },
             pressed && styles.rowPressed,
           ]}
           accessibilityRole="button"
@@ -134,10 +131,7 @@ export function ListItem({
         onPress={onPress}
         style={({ pressed }) => [
           styles.row,
-          {
-            backgroundColor: colors.surfaceSubtle,
-            borderLeftColor: isCompleted ? colors.inkMuted : edgeColor,
-          },
+          { backgroundColor: colors.surfaceSubtle },
           isCompleted && styles.rowCompleted,
           pressed && styles.rowPressed,
         ]}
@@ -265,11 +259,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: tokens.radius.md,
-    // saturated edge-bar = structure + per-row type code (no 1px borders).
-    borderLeftWidth: 3,
+    // Type identity is carried by the leading EntryDot in the title row —
+    // no bar, no border. Spacing + tonal surfaceSubtle carry the row.
     paddingVertical: tokens.space.md,
-    paddingLeft: tokens.space.md - 3, // keep content flush despite the bar
-    paddingRight: tokens.space.md,
+    paddingHorizontal: tokens.space.md,
     gap: tokens.space.md,
   },
   rowCompleted: {

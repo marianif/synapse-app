@@ -138,7 +138,6 @@ export function FloatNote({
       accessibilityHint="Opens what this note is about"
       style={[styles.card, shadowStyle, dynamic, cardStyle]}
     >
-      <Animated.View style={[styles.edge, { backgroundColor: kicker }]} />
       <ThemedText
         type="hand"
         numberOfLines={2}
@@ -158,20 +157,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     minHeight: 56,
     paddingVertical: tokens.space.sm,
-    paddingLeft: tokens.space.md,
-    paddingRight: tokens.space.sm,
+    paddingHorizontal: tokens.space.md,
     borderRadius: tokens.radius.md,
     overflow: "hidden",
     justifyContent: "center",
     gap: 2,
-  },
-  // Accent edge-bar carries the type identity without a 1px border.
-  edge: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 3,
   },
   subject: {
     fontFamily: tokens.type.fontHand.bold,

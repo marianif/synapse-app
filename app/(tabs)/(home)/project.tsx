@@ -18,6 +18,7 @@ import { DirectRow } from "@/components/molecules/direct-row";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
 import { ProjectNoteComposerSheet } from "@/components/molecules/project-note-composer-sheet";
 import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sheet";
+import { ProjectStarters } from "@/components/molecules/project-starters";
 import {
   CaptureBackdrop,
   CaptureComposer,
@@ -33,6 +34,7 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 import { doneStatus, sortDirect } from "@/lib/direct-when";
+import type { StarterPrompt } from "@/lib/project-starters";
 import { ConfirmKey } from "@/lib/settings";
 import { isTodoFamily } from "@/lib/taxonomy";
 import type { DbDiaryEntry, DbEntry, EntryType } from "@/lib/types";
@@ -77,6 +79,7 @@ export default function ProjectScreen(): React.ReactElement {
     updateProject,
     deleteProject,
   } = useDatabase();
+
   const {
     entries: diaryEntries,
     addEntry: addDiaryEntry,
@@ -144,6 +147,9 @@ export default function ProjectScreen(): React.ReactElement {
   // Distinct from `cap` (the shared home-style dock): this composer skips the
   // classify/details stages because the FAB item already decided the kind.
   const [fabKind, setFabKind] = useState<ProjectComposerKind | null>(null);
+  // Text the composer opens pre-filled with. The FAB arms it empty; the empty-
+  // project starter rows arm it with a suggested line the user can send or edit.
+  const [starterSeed, setStarterSeed] = useState("");
 
   // Manual keyboard-lift for the pinned dock. KeyboardAvoidingView doesn't
   // reliably lift an absolutely-positioned child on iOS (KAV measures its own
@@ -178,34 +184,6 @@ export default function ProjectScreen(): React.ReactElement {
       console.error(`Failed to capture ${kind}:`, err),
     );
   };
-
-  function lastActiveLabel(epochSeconds: number): string {
-    const diffDays = Math.floor((Date.now() / 1000 - epochSeconds) / 86400);
-    if (diffDays <= 0) return "TODAY";
-    if (diffDays === 1) return "YESTERDAY";
-    if (diffDays < 7) return `${diffDays}D AGO`;
-    if (diffDays < 14) return "1W AGO";
-    if (diffDays < 60) return `${Math.floor(diffDays / 7)}W AGO`;
-    return "A WHILE BACK";
-  }
-
-  const lastActive = useMemo(() => {
-    const ts: number[] = [];
-    if (project?.last_opened_at)
-      ts.push(Math.floor(project.last_opened_at / 1000));
-    for (const e of spine) ts.push(e.updated_at);
-    for (const e of ideas) ts.push(e.updated_at);
-    for (const n of notes) ts.push(n.updated_at);
-    return ts.length > 0
-      ? Math.max(...ts)
-      : (project?.updated_at ?? Math.floor(Date.now() / 1000));
-  }, [project, spine, ideas, notes]);
-
-  const openCount = useMemo(
-    () => spine.filter((e) => !isDone(e)).length,
-    [spine],
-  );
-  const doneCount = useMemo(() => spine.filter(isDone).length, [spine]);
 
   const spinePageCount = Math.max(1, Math.ceil(spine.length / PAGE_SIZE));
   const safeSpinePage = Math.min(spinePage, spinePageCount - 1);
@@ -287,6 +265,15 @@ export default function ProjectScreen(): React.ReactElement {
     void updateEntry(idea.id, { projectId: null }).catch((err) =>
       console.error("Failed to unfile idea:", err),
     );
+  };
+
+  // Arm the composer from an empty-project starter row. Same in-screen composer
+  // the FAB opens — one add-path — seeded with the prompt's suggested text when
+  // it's a real suggestion (a default project's tailored line), or blank for a
+  // generic user-created placeholder. Nothing is committed until the user sends.
+  const handleStartFromStarter = (prompt: StarterPrompt): void => {
+    setStarterSeed(prompt.prefill ? prompt.text : "");
+    setFabKind(prompt.type as ProjectComposerKind);
   };
   const handleOpenIdea = (idea: DbEntry): void => {
     router.push({
@@ -485,7 +472,16 @@ export default function ProjectScreen(): React.ReactElement {
             already labels this section, so no duplicate kicker here. */}
         <View style={styles.section}>
           {spine.length === 0 ? (
-            isEmpty ? null : (
+            isEmpty ? (
+              // Empty project: the instrument panel at rest. One starter row per
+              // channel — topic-suited lines for a seeded default (a real head-
+              // start), generic labels for a user-created project. Tapping arms
+              // the same composer the FAB opens, so there's one add-path.
+              <ProjectStarters
+                projectTitle={project.title}
+                onStart={handleStartFromStarter}
+              />
+            ) : (
               <ThemedText
                 type="hand"
                 style={[styles.quiet, { color: colors.inkMuted }]}
@@ -721,7 +717,11 @@ export default function ProjectScreen(): React.ReactElement {
         <CaptureComposer cap={cap} projects={projects} />
         <ProjectComposer
           kind={fabKind}
-          onClose={() => setFabKind(null)}
+          initialText={starterSeed}
+          onClose={() => {
+            setFabKind(null);
+            setStarterSeed("");
+          }}
           onSubmit={handleFabSubmit}
         />
       </View>
@@ -730,6 +730,9 @@ export default function ProjectScreen(): React.ReactElement {
           <ProjectFab
             isEmpty={isEmpty}
             onAction={(key) => {
+              // The FAB always opens the composer blank — starter rows are the
+              // only path that seeds it.
+              setStarterSeed("");
               setFabKind(key as ProjectComposerKind);
             }}
           />

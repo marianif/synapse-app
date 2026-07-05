@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 
 import type { DbProject } from "@/lib/types";
@@ -45,7 +45,6 @@ export function ProjectRow({
   // Scheme-aware shades — the electric type codes only clear AA on the dark
   // graphite; on light paper we render the darkened kicker variant so the
   // featured star reads AA-safe in both schemes.
-  const ideaAccent = useEntryKicker("idea");
 
   const isFeatured = project.is_featured === 1;
 
@@ -101,7 +100,7 @@ export function ProjectRow({
         <IconSymbol
           name={isFeatured ? "lock" : "lock-open"}
           size={22}
-          color={isFeatured ? ideaAccent : colors.inkMuted}
+          color={isFeatured ? colors.feedback.success : colors.inkMuted}
         />
       </Pressable>
     </View>

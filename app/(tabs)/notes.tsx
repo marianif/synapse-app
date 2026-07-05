@@ -7,8 +7,8 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { NotesComposer } from "@/components/organisms/notes-composer";
 import {
   DiaryFilterBar,
   type DiaryMacro,
@@ -19,6 +19,7 @@ import {
   type LinkSelection,
   type LinkableTarget,
 } from "@/components/organisms/link-sheet";
+import { NotesComposer } from "@/components/organisms/notes-composer";
 import { tokens } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
@@ -26,6 +27,7 @@ import { useDiary } from "@/hooks/use-diary";
 import type { DbDiaryEntry } from "@/lib/types";
 
 export default function NotesScreen(): React.ReactElement {
+  const insets = useSafeAreaInsets();
   const { entries, addEntry, updateEntry, removeEntry, refresh } = useDiary();
   // Board entries + projects — read-only, used to resolve linked titles for the
   // feed chip and to offer targets in the composer's link sheet. Notes writes
@@ -107,14 +109,10 @@ export default function NotesScreen(): React.ReactElement {
       return entries.filter((n) => n.linked_project_id === target.id);
     }
     if (macro === "linked") {
-      return entries.filter(
-        (n) => n.linked_entry_id || n.linked_project_id,
-      );
+      return entries.filter((n) => n.linked_entry_id || n.linked_project_id);
     }
     if (macro === "free") {
-      return entries.filter(
-        (n) => !n.linked_entry_id && !n.linked_project_id,
-      );
+      return entries.filter((n) => !n.linked_entry_id && !n.linked_project_id);
     }
     return entries;
   }, [entries, target, macro]);
@@ -182,8 +180,6 @@ export default function NotesScreen(): React.ReactElement {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <NotesComposer targets={composerTargets} onSave={handleSave} />
-
         <DiaryFilterBar
           macro={macro}
           onMacro={(m) => {
@@ -206,6 +202,13 @@ export default function NotesScreen(): React.ReactElement {
         />
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Composer pinned to the bottom as a floating action bar — the feed
+          scrolls behind it, the KeyboardAvoidingView lifts it above the
+          keyboard when the input is focused. */}
+      <View style={[styles.composerBar, { paddingBottom: insets.bottom }]}>
+        <NotesComposer targets={composerTargets} onSave={handleSave} />
+      </View>
 
       <LinkSheet
         visible={targetSheetOpen}
@@ -239,7 +242,11 @@ const styles = StyleSheet.create({
     paddingTop: tokens.space.md,
     gap: tokens.space.xxl,
   },
+  composerBar: {
+    paddingHorizontal: tokens.space.lg,
+    paddingTop: tokens.space.md,
+  },
   bottomSpacer: {
-    height: 96,
+    height: 120,
   },
 });

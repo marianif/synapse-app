@@ -76,7 +76,8 @@ export type ScenarioKey =
   | "nothing-pressing"
   | "all-hot"
   | "archived-heavy"
-  | "freshness-ladder";
+  | "freshness-ladder"
+  | "empty-project-starters";
 
 export type Scenario = {
   key: ScenarioKey;
@@ -250,6 +251,28 @@ const FRESHNESS_LADDER: Fixture = {
   diary: [],
 };
 
+/**
+ * Empty-project starter states. Three empty projects, no filed content, so each
+ * shows the ProjectStarters rows (the useful default):
+ *   - "Body" is a seeded DEFAULT title → tailored starters ("Book a workout")
+ *     with prefill; tapping opens the composer pre-filled.
+ *   - "Money" is a second seeded default → different tailored starters, proving
+ *     the copy is per-project.
+ *   - "Weekend cabin" is a USER-created title → generic starters ("First
+ *     project todo") that open the composer blank.
+ * Titles must match DEFAULT_PROJECT_STARTERS keys in lib/project-starters.ts for
+ * the tailored path to fire.
+ */
+const EMPTY_PROJECT_STARTERS: Fixture = {
+  projects: [
+    { key: "body", title: "Body", emoji: "🌿" },
+    { key: "money", title: "Money", emoji: "💰" },
+    { key: "cabin", title: "Weekend cabin", emoji: "🏕️" },
+  ],
+  entries: [],
+  diary: [],
+};
+
 const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
   empty: {
     key: "empty",
@@ -297,6 +320,13 @@ const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
     description: "One STEADY project at each passage rung: NEW / TODAY / 3D / 2W / QUIET 3M.",
     fixture: FRESHNESS_LADDER,
   },
+  "empty-project-starters": {
+    key: "empty-project-starters",
+    label: "Empty project · starters",
+    description:
+      "Empty Body / Money (tailored starters) + a user-named project (generic starters). Open each to see the starter rows.",
+    fixture: EMPTY_PROJECT_STARTERS,
+  },
 };
 
 /** Ordered list for the dev-menu picker. */
@@ -307,6 +337,7 @@ export const SCENARIOS: Scenario[] = [
   SCENARIOS_BY_KEY["all-hot"],
   SCENARIOS_BY_KEY["archived-heavy"],
   SCENARIOS_BY_KEY["freshness-ladder"],
+  SCENARIOS_BY_KEY["empty-project-starters"],
   SCENARIOS_BY_KEY.empty,
 ];
 

@@ -38,6 +38,12 @@ interface ProjectComposerProps {
   kind: ProjectComposerKind | null;
   onClose: () => void;
   onSubmit: (kind: ProjectComposerKind, text: string) => void;
+  /**
+   * Seed the draft when the composer opens — used by the empty-project starter
+   * rows, which pre-fill a suggested line ("Book a workout") the user can send
+   * as-is or edit. Empty string (the FAB's path) opens a blank composer.
+   */
+  initialText?: string;
 }
 
 /**
@@ -54,11 +60,22 @@ export function ProjectComposer({
   kind,
   onClose,
   onSubmit,
+  initialText,
 }: ProjectComposerProps): React.ReactElement | null {
   if (kind === null) return null;
   return (
-    <DockShell register="surface" contentKey={`project-composer-${kind}`}>
-      <ProjectComposerBody kind={kind} onClose={onClose} onSubmit={onSubmit} />
+    // contentKey includes the seed so switching starter rows (todo → idea)
+    // remounts the body and re-seeds the draft, rather than keeping the old text.
+    <DockShell
+      register="surface"
+      contentKey={`project-composer-${kind}-${initialText ?? ""}`}
+    >
+      <ProjectComposerBody
+        kind={kind}
+        onClose={onClose}
+        onSubmit={onSubmit}
+        initialText={initialText}
+      />
     </DockShell>
   );
 }
@@ -67,13 +84,15 @@ function ProjectComposerBody({
   kind,
   onClose,
   onSubmit,
+  initialText,
 }: {
   kind: ProjectComposerKind;
   onClose: () => void;
   onSubmit: (kind: ProjectComposerKind, text: string) => void;
+  initialText?: string;
 }): React.ReactElement {
   const { colors } = useTheme();
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState(initialText ?? "");
   const [isRecording, setIsRecording] = useState(false);
   const inputRef = useRef<TextInput | null>(null);
   const {

@@ -83,7 +83,7 @@ export function ProjectFab({
   const [open, setOpen] = useState(defaultOpen);
   const isOpen = useSharedValue(defaultOpen ? 1 : 0);
   const pointerVisible = open ?? isEmpty;
-  console.log({ open, isEmpty });
+
   const actions = getActions(colors, scheme);
 
   const close = useCallback((): void => {

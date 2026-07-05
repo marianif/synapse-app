@@ -1,8 +1,8 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  KeyboardAvoidingView,
+  Keyboard,
   Platform,
   Pressable,
   ScrollView,
@@ -23,6 +23,8 @@ import {
   CaptureComposer,
 } from "@/components/organisms/capture-composer";
 import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
+import { ProjectComposer } from "@/components/organisms/project-composer";
+import type { ProjectComposerKind } from "@/components/organisms/project-composer";
 import { ProjectFab } from "@/components/organisms/project-fab";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { tokens, useTheme } from "@/constants/theme";
@@ -147,6 +149,48 @@ export default function ProjectScreen(): React.ReactElement {
   // grammar. `lockedProjectId` threads attribution through every resolution and
   // hides the resolver's PROJECT picker — the surface implies the project.
   const cap = useCapture({ lockedProjectId: id ?? null });
+
+  // FAB-armed composer: which kind is currently open (null = closed).
+  // Distinct from `cap` (the shared home-style dock): this composer skips the
+  // classify/details stages because the FAB item already decided the kind.
+  const [fabKind, setFabKind] = useState<ProjectComposerKind | null>(null);
+
+  // Manual keyboard-lift for the pinned dock. KeyboardAvoidingView doesn't
+  // reliably lift an absolutely-positioned child on iOS (KAV measures its own
+  // frame, and an absolute wrapper detaches from that measurement), so we
+  // subscribe to keyboard events and shift the dock's `bottom` by the
+  // keyboard height directly. Android's soft input mode already resizes the
+  // window, so we only need the offset on iOS.
+  const [kbHeight, setKbHeight] = useState(0);
+  useEffect(() => {
+    if (Platform.OS !== "ios") return;
+    const showSub = Keyboard.addListener("keyboardWillShow", (e) => {
+      setKbHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener("keyboardWillHide", () => {
+      setKbHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const handleFabSubmit = (
+    kind: ProjectComposerKind,
+    text: string,
+  ): void => {
+    if (!id) return;
+    if (kind === "note") {
+      void addDiaryEntry(text, null, null, id).catch((err) =>
+        console.error("Failed to save project note:", err),
+      );
+      return;
+    }
+    void createEntry({ title: text, type: kind, projectId: id }).catch((err) =>
+      console.error(`Failed to capture ${kind}:`, err),
+    );
+  };
 
   function lastActiveLabel(epochSeconds: number): string {
     const diffDays = Math.floor((Date.now() / 1000 - epochSeconds) / 86400);
@@ -712,16 +756,23 @@ export default function ProjectScreen(): React.ReactElement {
       {/* The capture dock — the same instrument as the home board, pinned to the
           bottom and pre-locked to this project (no ManualBar: a project can't
           birth a sibling project). Only mounts a surface when summoned. */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.dock}
+      <View
+        style={[
+          styles.dock,
+          { bottom: tokens.space.lg + kbHeight },
+        ]}
         pointerEvents="box-none"
       >
         <CaptureComposer cap={cap} projects={projects} />
-      </KeyboardAvoidingView>
+        <ProjectComposer
+          kind={fabKind}
+          onClose={() => setFabKind(null)}
+          onSubmit={handleFabSubmit}
+        />
+      </View>
       <ProjectFab
         onAction={(key) => {
-          console.log("Project FAB action:", key);
+          setFabKind(key as ProjectComposerKind);
         }}
       />
     </View>

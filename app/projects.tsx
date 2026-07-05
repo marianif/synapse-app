@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ProjectRow } from "@/components/molecules/project-row";
-import { ManualBar } from "@/components/organisms/manual-bar";
+import { AddProjectBar } from "@/components/organisms/add-project-bar";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
@@ -138,7 +138,7 @@ export default function ProjectsScreen(): React.ReactElement {
   }, [sortedActive, query]);
 
   // Create + navigate. Shared by the fresh-install inception band (CreateRow)
-  // and the FAB-raised ManualBar.
+  // and the FAB-raised AddProjectBar.
   const handleCreateProject = (title: string): void => {
     const name = title.trim();
     if (!name) return;
@@ -343,13 +343,14 @@ export default function ProjectsScreen(): React.ReactElement {
       </ScrollView>
 
       {/* Create affordance — a FAB, not an inline row. Hidden on fresh install
-          (the inception band owns that state). Tapping it raises the ManualBar
-          — the shared "NEW PROJECT" instrument the home dock uses — which rides
-          above the keyboard via the dock's UI-thread translate. */}
+          (the inception band owns that state). Tapping it raises the
+          AddProjectBar — the "NEW PROJECT" instrument that lives here on the
+          shelf — which rides above the keyboard via the dock's UI-thread
+          translate. */}
       {projects.length > 0 ? (
         <Animated.View style={[styles.composerDock, composerLift]}>
           {composing ? (
-            <ManualBar
+            <AddProjectBar
               onCreateProject={handleCreateProject}
               onDismissEmpty={() => setComposing(false)}
             />
@@ -632,18 +633,17 @@ const styles = StyleSheet.create({
   },
   archivedTitle: { flex: 1 },
 
-  // Composer dock — mirrors the home capture dock: full-width, resting at
-  // bottom: space.lg, lifted above the keyboard by composerLift. Holds either
-  // the raised ManualBar (full width) or, idle, the "+" FAB pinned right.
+  // Composer dock — full-width, resting at bottom: space.lg, lifted above the
+  // keyboard by composerLift. Holds either the raised AddProjectBar (full width)
+  // or, idle, the "+" FAB pinned right.
   composerDock: {
     position: "absolute",
     left: tokens.space.lg,
     right: tokens.space.lg,
     bottom: tokens.space.lg,
   },
-  // Create FAB — mirrors the capture FAB's placement/elevation so the two
-  // read as the same class of affordance across screens. Pinned right within
-  // the full-width dock (the ManualBar, when raised, fills the dock instead).
+  // Create FAB — pinned right within the full-width dock (the AddProjectBar,
+  // when raised, fills the dock instead).
   createFab: {
     alignSelf: "flex-end",
     width: 56,

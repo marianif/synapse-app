@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 
 import type { FieldRowItem } from "@/components/molecules/field-row";
 
@@ -27,7 +27,7 @@ export function NextUpChip({
 }: NextUpChipProps): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
-  const code = entryColor(item.type);
+  const code = useEntryKicker(item.type);
 
   const chip = (
     <Pressable

@@ -1,7 +1,7 @@
 import { Pressable, View, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/atoms/themed-text';
-import { entryColor, useTheme, tokens } from '@/constants/theme';
+import { entryKicker, useTheme, tokens } from '@/constants/theme';
 
 import type { CalendarEntry } from '@/hooks/use-calendar-data';
 
@@ -22,7 +22,7 @@ export function DayCell({
   entries,
   onPress,
 }: DayCellProps): React.ReactElement {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const hasEntries = entries.length > 0;
   const overflow = entries.length > 3 ? entries.length - 3 : 0;
 
@@ -63,7 +63,7 @@ export function DayCell({
                 key={entry.id}
                 style={[
                   styles.dot,
-                  { backgroundColor: entryColor(entry.type) },
+                  { backgroundColor: entryKicker(entry.type, scheme) },
                 ]}
               />
             ))}

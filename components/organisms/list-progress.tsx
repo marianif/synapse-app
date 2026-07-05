@@ -2,7 +2,7 @@ import { StyleSheet, View } from "react-native";
 
 import { StreakBadge } from "@/components/atoms/streak-badge";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, useTheme, tokens } from "@/constants/theme";
+import { useEntryKicker, useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
@@ -25,7 +25,7 @@ export function ListProgress({
   entryType,
 }: ListProgressProps): React.ReactElement {
   const { colors } = useTheme();
-  const accentColor = entryColor(entryType);
+  const accentColor = useEntryKicker(entryType);
 
   return (
     <View style={styles.container}>

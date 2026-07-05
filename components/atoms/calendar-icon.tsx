@@ -1,6 +1,6 @@
 import Svg, { Path, Rect } from "react-native-svg";
 
-import { entryColor, useTheme } from "@/constants/theme";
+import { entryKicker, useTheme } from "@/constants/theme";
 
 import type { EntryType } from "@/lib/types";
 
@@ -32,7 +32,7 @@ export function CalendarIcon({
   size = 24,
   days = DAY_TYPES,
 }: CalendarIconProps): React.ReactElement {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const frame = colors.ink;
   const sw = (size / 24) * 1.6;
 
@@ -83,7 +83,7 @@ export function CalendarIcon({
       {/* Day cells — entry-type colors fill the grid. */}
       {cells.map((c, i) => {
         const type = days[i];
-        const fill = type ? entryColor(type) : colors.inkMuted;
+        const fill = type ? entryKicker(type, scheme) : colors.inkMuted;
         return (
           <Rect
             key={`${c.x}-${c.y}`}

@@ -5,7 +5,7 @@ import { Pressable, View, StyleSheet } from 'react-native';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { BentoCardHeader } from '@/components/molecules/bento-card-header';
 import { WeekdayRow } from '@/components/molecules/weekday-row';
-import { entryColor, useTheme, tokens } from '@/constants/theme';
+import { useEntryKicker, useTheme, tokens } from '@/constants/theme';
 
 import type { ItemStatus } from '@/components/molecules/list-item';
 
@@ -34,6 +34,7 @@ export function DeadlinesCard({
 }: DeadlinesCardProps): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
+  const deadlineAccent = useEntryKicker('deadline');
 
   return (
     <Pressable
@@ -62,7 +63,7 @@ export function DeadlinesCard({
             description="Add deadlines to track critical milestones."
             ctaLabel="+ Add Deadline"
             onCta={onAdd ?? (() => router.push('/list?entryType=deadline'))}
-            accentColor={entryColor('deadline')}
+            accentColor={deadlineAccent}
           />
         ) : (
           <View style={styles.rows}>

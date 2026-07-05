@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { chipInk, entryColor, tokens, useEntryKicker } from "@/constants/theme";
+import { chipInk, tokens, useEntryKicker } from "@/constants/theme";
 
 import type { EntryType } from "@/lib/types";
 
@@ -68,8 +68,11 @@ export function DetailHero({
   readout,
   chips = [],
 }: DetailHeroProps): React.ReactElement {
-  const code = entryColor(entryType);
-  const tabFill = useEntryKicker(entryType);
+  // `code` (edge-bar, readout tone) and `tabFill` (kicker chip fill) both use
+  // the scheme-aware kicker shade — one hue per scheme, AA-safe on paper and
+  // graphite alike.
+  const code = useEntryKicker(entryType);
+  const tabFill = code;
   const readoutTone = readout?.tone ?? code;
 
   return (

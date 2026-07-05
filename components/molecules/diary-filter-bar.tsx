@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { tokens, useTheme } from "@/constants/theme";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 
 export type DiaryMacro = "all" | "linked" | "free";
 
@@ -40,7 +40,7 @@ export function DiaryFilterBar({
   onClearIdea,
 }: DiaryFilterBarProps): React.ReactElement {
   const { colors } = useTheme();
-  const idea = colors.type.ideas;
+  const idea = useEntryKicker("idea");
   const filteringByIdea = ideaLabel !== null;
 
   // When an idea filter is active, the macro line steps aside entirely — the idea

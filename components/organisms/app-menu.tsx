@@ -19,7 +19,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { entryColor, type Scheme, tokens, useTheme } from "@/constants/theme";
+import { type Scheme, tokens, useEntryKicker, useTheme } from "@/constants/theme";
 import { useThemeContext } from "@/contexts/theme-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { clearAllData, getDb, seedDefaultProjectsOnce } from "@/lib/database";
@@ -57,6 +57,10 @@ export function AppMenu({
   const { resolvedScheme, setPreference } = useThemeContext();
   const { fetchEntries, fetchProjects } = useDatabase();
   const translateX = useSharedValue(MENU_WIDTH);
+  // Dev-only accents; scheme-aware so light mode gets the darkened AA-safe
+  // variant instead of the electric dark-mode code.
+  const ideaAccent = useEntryKicker("idea");
+  const deadlineAccent = useEntryKicker("deadline");
 
   useEffect(() => {
     if (visible) {
@@ -199,7 +203,7 @@ export function AppMenu({
                     <MaterialCommunityIcons
                       name="database-plus-outline"
                       size={16}
-                      color={entryColor("idea")}
+                      color={ideaAccent}
                     />
                     <View style={styles.scenarioCopy}>
                       <Text
@@ -237,12 +241,12 @@ export function AppMenu({
                 <MaterialCommunityIcons
                   name="database-remove-outline"
                   size={18}
-                  color={entryColor("deadline")}
+                  color={deadlineAccent}
                 />
                 <Text
                   style={[
                     styles.devButtonLabel,
-                    { color: entryColor("deadline") },
+                    { color: deadlineAccent },
                   ]}
                 >
                   Clear Database

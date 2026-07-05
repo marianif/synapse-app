@@ -2,7 +2,7 @@ import { Link } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { entryKicker, tokens, useTheme } from "@/constants/theme";
 import { horizonReadout } from "@/lib/horizons";
 import type { DbEntry } from "@/lib/types";
 
@@ -18,7 +18,7 @@ interface HorizonStripProps {
  * with its commitment readout ("by Sun", "by 30 Jun").
  */
 export function HorizonStrip({ entries }: HorizonStripProps): React.ReactElement | null {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
 
   if (entries.length === 0) return null;
 
@@ -39,7 +39,7 @@ export function HorizonStrip({ entries }: HorizonStripProps): React.ReactElement
             style={({ pressed }) => [styles.row, pressed && styles.pressed]}
           >
             <View
-              style={[styles.edgeBar, { backgroundColor: entryColor(e.type) }]}
+              style={[styles.edgeBar, { backgroundColor: entryKicker(e.type, scheme) }]}
             />
             <ThemedText
               type="item"

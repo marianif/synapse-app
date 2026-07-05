@@ -14,7 +14,7 @@ import { ListItem } from "@/components/molecules/list-item";
 import { WrapupCard } from "@/components/molecules/wrapup-card";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import {
-  entryColor,
+  entryKicker,
   entryTint,
   useTheme,
   tokens,
@@ -230,7 +230,7 @@ export default function ListScreen(): React.ReactElement {
 
   // Accent + tint follow the lane's type; Incoming has no single owner, so it
   // borrows neutral ink and a faint surface tint.
-  const accentColor = resolvedType ? entryColor(resolvedType) : colors.ink;
+  const accentColor = resolvedType ? entryKicker(resolvedType, scheme) : colors.ink;
   const tintColor = resolvedType
     ? entryTint(resolvedType, scheme)
     : colors.surfaceSubtle;

@@ -15,7 +15,7 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import type { ThemeColors } from "@/constants/theme";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { entryKicker, tokens, useTheme } from "@/constants/theme";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
@@ -225,7 +225,7 @@ function DeleteScopeSheet({
 
 export default function DetailScreen(): React.ReactElement {
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const { id: rawId, entryType } = useLocalSearchParams<{
     id?: string;
     entryType?: string;
@@ -307,7 +307,7 @@ export default function DetailScreen(): React.ReactElement {
       >
         <ScreenHeader title="" onBack={() => router.back()} />
         <View style={styles.centered}>
-          <ActivityIndicator color={entryColor(hintType)} />
+          <ActivityIndicator color={entryKicker(hintType, scheme)} />
         </View>
       </SafeAreaView>
     );
@@ -329,7 +329,7 @@ export default function DetailScreen(): React.ReactElement {
   // keeps the accent color and the primary action honest for every entry type.
 
   const type = entry.type;
-  const accentColor = entryColor(type);
+  const accentColor = entryKicker(type, scheme);
   // An idea has no scheduled action (no primary, inspiration shown instead).
   const isIdea = type === "idea";
   // An undated todo IS a "someday" — surfaced by the badge, render-time only.

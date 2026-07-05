@@ -5,7 +5,7 @@ import { RectButton, Swipeable } from "react-native-gesture-handler";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 import { daysUntil, isDone, isWhenCharged, whenLabel } from "@/lib/direct-when";
 import { horizonLabel } from "@/lib/horizons";
 
@@ -53,10 +53,12 @@ export function DirectRow({
     ? horizonLabel(entry.due_range)
     : whenLabel(dateStr, time, days);
 
-  // When-label color: charged (type color) when approaching or expired, muted
-  // when comfortably out. A done line is settled — always muted, never charged.
+  // When-label color: charged (scheme-aware type shade) when approaching or
+  // expired, muted when comfortably out. A done line is settled — always muted,
+  // never charged.
+  const typeShade = useEntryKicker(type);
   const whenColor =
-    !done && isWhenCharged(days) ? entryColor(type) : colors.inkMuted;
+    !done && isWhenCharged(days) ? typeShade : colors.inkMuted;
 
   const handleMarkDone = (): void => {
     swipeableRef.current?.close();

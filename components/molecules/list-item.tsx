@@ -5,7 +5,7 @@ import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { entryColor, useTheme, tokens } from "@/constants/theme";
+import { useEntryKicker, useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
@@ -56,9 +56,11 @@ export function ListItem({
   const { colors } = useTheme();
   // Ideas get the soft "sparkle" row — they're undated thoughts, not tasks.
   const isIdea = entryType === "idea";
-  // The row's own type drives the edge-bar, so a mixed "Incoming" list stays
+  // The row's own type drives the edge-bar (scheme-aware kicker shade, so the
+  // bar lands AA-safe on light paper too), so a mixed "Incoming" list stays
   // color-coded per row instead of collapsing to one screen accent.
-  const edgeColor = entryColor(entryType);
+  const edgeColor = useEntryKicker(entryType);
+  const ideaAccent = useEntryKicker("idea");
 
   const renderContent = (): React.ReactElement => {
     if (isIdea) {
@@ -78,7 +80,7 @@ export function ListItem({
             <IconSymbol
               name="star-four-points"
               size={18}
-              color={entryColor("idea")}
+              color={ideaAccent}
             />
           </View>
 
@@ -105,7 +107,7 @@ export function ListItem({
           <MaterialCommunityIcons
             name="chevron-right"
             size={18}
-            color={entryColor("idea") + "80"}
+            color={ideaAccent + "80"}
           />
         </Pressable>
       );

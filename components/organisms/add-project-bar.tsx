@@ -1,43 +1,44 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, TextInput } from "react-native";
+import Animated, {
+  Easing,
+  FadeOut,
+  SlideInDown,
+  useReducedMotion,
+} from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 
 /**
- * The manual bar — the deliberate counterpart to capture. The pen key's TAP
- * raises this; its LONG-PRESS arms voice capture. Capture catches a thought and
- * resolves it into a board item (idea / todo / deadline / note); the manual bar
- * is for the one creation that is NOT a caught thought and has no capture path:
- * opening a PROJECT — a macro life area, a container, not a board item.
+ * The add-project bar — project creation, and ONLY project creation. It lives on
+ * the Project Shelf (`app/projects.tsx`), raised by that screen's create FAB. It
+ * is deliberately NOT part of the home capture dock: the home dock is for
+ * catching thoughts (ideas / notes / todos / deadlines via the capture bar and
+ * resolver), and a project is a macro life-area container, not a caught thought
+ * or a board item. Naming a new life area is a slower, deliberate act that
+ * belongs where projects live, so it stays here.
  *
- * It is NOT a second add-path for todos/deadlines (PRODUCT.md: one capture
- * trigger, no second add). It exists only for what capture structurally cannot
- * do. Built as a single-action bar today; the action set is data-driven so a
- * future deliberate-only action (e.g. archive review) can slot in without a
- * rewrite.
- *
- * Anatomy mirrors the CaptureBar so the dock reads as one instrument: the same
- * 56pt line inside the shared DockShell. It's FRAMELESS — the shell owns the
- * radius, elevation, entrance, and the NEUTRAL slab fill (`accent.clay`); this
- * bar renders only its row on-slab. The slab (never a type tint) is the surface
- * that means "interface, not content" — a project belongs to no entry type. A
- * mono "NEW PROJECT" kicker is the channel label, the instrument-panel parallel
- * to the edge-bar on the idle capture line.
+ * It's a self-contained bar (own frame, entrance, and slab fill) because it
+ * stands alone in the shelf's composer dock — there's no DockShell around it.
+ * It rides the NEUTRAL action slab (`accent.clay`), never a type tint — a
+ * project belongs to no entry type, and the slab is the surface that means
+ * "interface, not content". A mono "NEW PROJECT" kicker is the channel label.
  */
-interface ManualBarProps {
+interface AddProjectBarProps {
   /** Create a project from the typed name and (typically) navigate to it. */
   onCreateProject: (title: string) => void;
-  /** The input blurred with nothing typed — close the bar (matches CaptureBar). */
+  /** The input blurred with nothing typed — close the bar. */
   onDismissEmpty: () => void;
 }
 
-export function ManualBar({
+export function AddProjectBar({
   onCreateProject,
   onDismissEmpty,
-}: ManualBarProps): React.ReactElement {
+}: AddProjectBarProps): React.ReactElement {
   const { colors } = useTheme();
+  const reduced = useReducedMotion();
 
   const [draft, setDraft] = useState("");
   const hasText = draft.trim().length > 0;
@@ -55,9 +56,20 @@ export function ManualBar({
   };
 
   return (
-    <View style={styles.bar}>
-      {/* The channel label — mono kicker reading what this line opens, the
-          instrument-panel parallel to the capture line's amber edge-bar. */}
+    <Animated.View
+      entering={
+        reduced
+          ? undefined
+          : SlideInDown.duration(320).easing(Easing.out(Easing.cubic))
+      }
+      exiting={reduced ? undefined : FadeOut.duration(110)}
+      style={[
+        styles.bar,
+        { backgroundColor: colors.accent.clay },
+        tokens.elevation.capture,
+      ]}
+    >
+      {/* The channel label — mono kicker reading what this line opens. */}
       <ThemedText type="label" style={[styles.kicker, { color: onSlab }]}>
         NEW PROJECT
       </ThemedText>
@@ -103,7 +115,7 @@ export function ManualBar({
           <IconSymbol name="close" size={22} color={onSlab} />
         </Pressable>
       )}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -114,15 +126,15 @@ function withDimmed(hex: string): string {
 }
 
 const styles = StyleSheet.create({
-  // Frameless: the DockShell owns radius, slab fill, clip, elevation, entrance.
-  // The bar is just the row on-slab; it sizes the shell via minHeight.
   bar: {
     flexDirection: "row",
     alignItems: "center",
     minHeight: 56,
+    borderRadius: tokens.radius.pill,
     paddingLeft: tokens.space.lg,
     paddingRight: tokens.space.xs,
     gap: tokens.space.md,
+    overflow: "hidden",
   },
   kicker: {
     // The channel label sits flush left as a fixed prefix, not a growing word.
@@ -132,11 +144,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 0,
     fontSize: tokens.type.item.size,
-
     fontFamily: tokens.type.fontInter.medium,
   },
-  // The send key — the slab's inverse, an off-slab key, mirroring the capture
-  // bar's send. Tight 36pt visual, 44pt via hitSlop.
+  // The send key — the slab's inverse, an off-slab key. Tight 36pt visual, 44pt
+  // via hitSlop.
   sendBtn: {
     width: 36,
     height: 36,

@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 
 import type { EntryType } from "@/lib/types";
 import type { Href } from "expo-router";
@@ -34,7 +34,7 @@ interface FieldRowProps {
 export function FieldRow({ item, href }: FieldRowProps): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
-  const code = entryColor(item.type);
+  const code = useEntryKicker(item.type);
 
   // Glow opacity encodes aliveness, not rank — hot rows pull the eye
   // pre-attentively. Built from the row's own type hue so the charge is colored.

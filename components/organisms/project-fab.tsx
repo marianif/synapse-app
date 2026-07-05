@@ -9,8 +9,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import type { ThemeColors } from "@/constants/theme";
-import { tokens, useTheme } from "@/constants/theme";
+import type { Scheme, ThemeColors } from "@/constants/theme";
+import { entryKicker, entryTint, tokens, useTheme } from "@/constants/theme";
 
 // ─── Types ───────────────────────────────────────────────────────────────────────
 
@@ -28,28 +28,31 @@ interface ProjectFabProps {
 
 // ─── Default actions per project screen ──────────────────────────────────────────
 
-function getActions(colors: ThemeColors): FabAction[] {
+function getActions(colors: ThemeColors, scheme: Scheme): FabAction[] {
+  // Scheme-aware pairing: entryTint for the pill fill, entryKicker for the icon
+  // color — the electric type codes only clear AA on the dark tile tints, so on
+  // light paper we render the darkened kicker + soft light tint instead.
   return [
     {
       key: "idea",
       label: "Idea",
       icon: "lightbulb-outline",
-      color: colors.type.ideas,
-      bgColor: colors.typeTint.ideas,
+      color: entryKicker("idea", scheme),
+      bgColor: entryTint("idea", scheme),
     },
     {
       key: "todo",
       label: "Todo",
       icon: "check-circle-outline",
-      color: colors.type.todo,
-      bgColor: colors.typeTint.todo,
+      color: entryKicker("todo", scheme),
+      bgColor: entryTint("todo", scheme),
     },
     {
       key: "deadline",
       label: "Deadline",
       icon: "clock-outline",
-      color: colors.type.bills,
-      bgColor: colors.typeTint.bills,
+      color: entryKicker("deadline", scheme),
+      bgColor: entryTint("deadline", scheme),
     },
     {
       key: "note",
@@ -70,11 +73,11 @@ const STAGGER_MULTIPLIER = 1.6;
 // ─── Component ────────────────────────────────────────────────────────────────────
 
 export function ProjectFab({ onAction }: ProjectFabProps): React.ReactElement {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const [open, setOpen] = useState(false);
   const isOpen = useSharedValue(0);
 
-  const actions = getActions(colors);
+  const actions = getActions(colors, scheme);
 
   const close = useCallback((): void => {
     setOpen(false);

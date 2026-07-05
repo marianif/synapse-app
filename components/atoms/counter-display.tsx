@@ -1,6 +1,6 @@
 import { StyleSheet, Text } from "react-native";
 
-import { entryColor, tokens } from "@/constants/theme";
+import { tokens, useEntryKicker } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 
@@ -11,15 +11,17 @@ interface CounterDisplayProps {
 
 /**
  * 48pt hero counter — the heartbeat of each Bento card.
- * Color is derived from the entry type accent palette.
+ * Color is derived from the entry-type kicker shade (scheme-aware, AA-safe on
+ * both light paper and dark graphite).
  * Per DESIGN.md: tracking set to -2% to feel confident and tight.
  */
 export function CounterDisplay({
   value,
   accentType,
 }: CounterDisplayProps): React.ReactElement {
+  const shade = useEntryKicker(accentType);
   return (
-    <Text style={[styles.counter, { color: entryColor(accentType) }]}>
+    <Text style={[styles.counter, { color: shade }]}>
       {value}
     </Text>
   );

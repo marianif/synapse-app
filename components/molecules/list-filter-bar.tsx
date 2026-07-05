@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { entryKicker, tokens, useTheme } from "@/constants/theme";
 
 import type { EntryType } from "@/lib/types";
 
@@ -45,7 +45,7 @@ export function ListFilterBar({
   status,
   onStatus,
 }: ListFilterBarProps): React.ReactElement {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
 
   return (
     <View style={styles.bar}>
@@ -54,7 +54,7 @@ export function ListFilterBar({
         {TYPE_OPTIONS.map((o) => {
           const active = type === o.value;
           const activeHue =
-            o.value === "all" ? colors.ink : entryColor(o.value as EntryType);
+            o.value === "all" ? colors.ink : entryKicker(o.value as EntryType, scheme);
           return (
             <Pressable
               key={o.value}

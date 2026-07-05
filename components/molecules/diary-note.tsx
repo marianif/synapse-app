@@ -5,7 +5,7 @@ import { findNodeHandle, StyleSheet, View } from "react-native";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
-import { tokens, useTheme } from "@/constants/theme";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 import { useTendrilRegistry } from "@/hooks/use-tendril-registry";
 import { ConfirmKey } from "@/lib/settings";
 
@@ -34,6 +34,7 @@ export function DiaryNote({
   onDelete,
 }: DiaryNoteProps): React.ReactElement {
   const { colors } = useTheme();
+  const ideaAccent = useEntryKicker("idea");
   const registry = useTendrilRegistry();
   const noteRef = useRef<View | null>(null);
 
@@ -94,7 +95,7 @@ export function DiaryNote({
             <View
               style={[
                 styles.relTag,
-                { backgroundColor: colors.type.ideas + "1F" },
+                { backgroundColor: ideaAccent + "1F" },
               ]}
             >
               <SketchIcon type="idea" size={13} />

@@ -4,7 +4,6 @@ import { CaptureResolver } from "@/components/molecules/capture-resolver";
 import { CaptureBar } from "@/components/organisms/capture-bar";
 import { DockShell } from "@/components/organisms/dock-shell";
 import type { DockRegister } from "@/components/organisms/dock-shell";
-import { ManualBar } from "@/components/organisms/manual-bar";
 import type { UseCaptureReturn } from "@/hooks/use-capture";
 import type { DbProject } from "@/lib/types";
 
@@ -17,21 +16,6 @@ interface CaptureComposerProps {
   cap: UseCaptureReturn;
   /** Active projects offered in the resolver's PROJECT picker. */
   projects: DbProject[];
-  /**
-   * Enables the ManualBar (new-project) surface. When provided, a raised manual
-   * bar can occupy the dock; the callback creates the project from the typed
-   * name. Omit on surfaces that structurally can't birth a project (e.g. inside
-   * a project) — no callback, no ManualBar.
-   */
-  onManualCreate?: (title: string) => void;
-  /**
-   * Whether the manual bar is currently raised. Only meaningful alongside
-   * `onManualCreate`; the owning screen holds this state (the pen key / an
-   * "add project" affordance raises it).
-   */
-  manualOpen?: boolean;
-  /** Close the manual bar (blur-empty or an explicit dismiss). */
-  onManualDismiss?: () => void;
 }
 
 /**
@@ -41,12 +25,8 @@ interface CaptureComposerProps {
  * keep/discard controls. Shared by the backdrop and the surface selector so
  * both read "is the dock open?" from one place.
  */
-export function isDockDismissible(
-  cap: UseCaptureReturn,
-  manualOpen = false,
-): boolean {
-  const showManual = manualOpen && cap.pendingThought === null && !cap.isRecording;
-  return showManual || cap.composerOpen || cap.isRecording;
+export function isDockDismissible(cap: UseCaptureReturn): boolean {
+  return cap.composerOpen || cap.isRecording;
 }
 
 /**
@@ -60,21 +40,15 @@ export function isDockDismissible(
  */
 export function CaptureBackdrop({
   cap,
-  manualOpen = false,
-  onManualDismiss,
 }: {
   cap: UseCaptureReturn;
-  manualOpen?: boolean;
-  onManualDismiss?: () => void;
 }): React.ReactElement | null {
-  if (!isDockDismissible(cap, manualOpen)) return null;
+  if (!isDockDismissible(cap)) return null;
 
   // Dismiss whatever the outside tap landed behind. Recording is cancelled
-  // (discards the transcript — same as the recorder's ✕); the composer and
-  // manual bar just close.
+  // (discards the transcript — same as the recorder's ✕); the composer closes.
   const dismiss = (): void => {
     if (cap.isRecording) void cap.cancelRecording();
-    onManualDismiss?.();
     cap.setComposerOpen(false);
   };
 
@@ -88,14 +62,17 @@ export function CaptureBackdrop({
 }
 
 /**
- * The capture dock's surfaces — one instrument that puts a thought on the board.
- * It gathers the three mutually-exclusive surfaces that answer that one
- * intention (the ManualBar new-project line, the pending-thought CaptureResolver,
- * and the always-summonable CaptureBar composer/recorder). The home board and
- * the project surface both raise this exact set; the only differences are details
- * fed in as props — whether a ManualBar can appear, which projects the resolver
- * offers, and (via the `cap` instance) whether attribution is pre-locked to a
- * project.
+ * The capture dock — one instrument that catches a thought and files it. Two
+ * surfaces answer that one intention: the CaptureBar (compose / record) and the
+ * pending-thought CaptureResolver. The home board and the project surface both
+ * raise this exact dock; the only differences are details fed in as props —
+ * which projects the resolver offers, and (via the `cap` instance) whether
+ * attribution is pre-locked to a project.
+ *
+ * It creates board things only — ideas, notes, todos, deadlines. It does NOT
+ * create projects: a project is a macro life-area container, not a caught
+ * thought, and naming one is a deliberate act that lives on the Project Shelf
+ * (`app/projects.tsx`), not in the mid-thought capture dock.
  *
  * It owns NO capture state: the screen passes a `useCapture()` instance and the
  * composer renders whichever surface that machine has active. It owns no
@@ -105,29 +82,18 @@ export function CaptureBackdrop({
  * (`CaptureBackdrop`) rendered as a sibling above the dock, since it must span
  * the screen while these surfaces sit inside the positioned shell.
  *
- * Mutual exclusivity mirrors the dock's grammar: the resolver wins when a thought
- * is pending; the manual bar shows only while raised with nothing pending and no
- * recording; the bar shows for composer/recording.
+ * The DockShell wraps whichever surface is active so the dock morphs in place
+ * (idle line → recorder → resolver) instead of popping between separate objects.
  */
 export function CaptureComposer({
   cap,
   projects,
-  onManualCreate,
-  manualOpen = false,
-  onManualDismiss,
 }: CaptureComposerProps): React.ReactElement | null {
-  const showManual =
-    onManualCreate !== undefined &&
-    manualOpen &&
-    cap.pendingThought === null &&
-    !cap.isRecording;
-
-  // Exactly ONE surface occupies the dock at a time, resolved in priority order:
-  // a caught thought (resolver) wins; then a raised new-project line; then the
-  // capture bar (composer/recorder). Deriving the active surface here — rather
-  // than rendering three conditionals — lets the shell treat the swap as a
-  // single body that cross-fades and reshapes in place, the whole point of the
-  // morph. Nothing active → the dock isn't summoned, so render nothing.
+  // Exactly ONE surface occupies the dock at a time: a caught thought (resolver)
+  // wins; otherwise the capture bar (composer / recorder). Deriving the active
+  // surface here — rather than rendering parallel conditionals — lets the shell
+  // treat the swap as a single body that cross-fades and reshapes in place, the
+  // whole point of the morph. Nothing active → the dock isn't summoned.
   let surface: React.ReactElement;
   let register: DockRegister;
   let contentKey: string;
@@ -147,16 +113,6 @@ export function CaptureComposer({
         onDismiss={cap.dismissPending}
         lockedProjectId={cap.lockedProjectId}
         seedType={cap.seedType}
-      />
-    );
-  } else if (showManual) {
-    // The new-project line — deliberate creation, on the committed slab.
-    register = "slab";
-    contentKey = "manual";
-    surface = (
-      <ManualBar
-        onCreateProject={onManualCreate!}
-        onDismissEmpty={() => onManualDismiss?.()}
       />
     );
   } else if (cap.composerOpen || cap.isRecording) {

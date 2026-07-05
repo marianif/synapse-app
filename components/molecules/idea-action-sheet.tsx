@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 
 import type { DbEntry } from "@/lib/types";
 
@@ -41,6 +41,7 @@ export function IdeaActionSheet({
   onOpen: () => void;
 }): React.ReactElement | null {
   const { colors } = useTheme();
+  const ideaAccent = useEntryKicker("idea");
   // Don't render the modal frame at all when there's no idea — saves a tree.
   if (!idea) return null;
 
@@ -60,7 +61,7 @@ export function IdeaActionSheet({
             <View
               style={[
                 styles.titleDot,
-                { backgroundColor: entryColor("idea") },
+                { backgroundColor: ideaAccent },
               ]}
             />
             <ThemedText

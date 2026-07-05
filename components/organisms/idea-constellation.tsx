@@ -28,7 +28,7 @@ import Svg, {
 } from "react-native-svg";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { tokens, useTheme } from "@/constants/theme";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 import {
   nowFloorMinute,
   useIdeaNodes,
@@ -210,7 +210,9 @@ export function IdeaConstellation({
   }, [magnetX, magnetY]);
 
   const isEmpty = nodes.length === 0;
-  const amber = colors.type.ideas;
+  // Scheme-aware amber — the electric idea code only clears AA on the dark
+  // graphite; on light paper the darkened kicker variant lands AA-safe.
+  const amber = useEntryKicker("idea");
   const gridColor = colors.surfaceSubtle;
   const inkFaint = scheme === "dark" ? "rgba(233,237,243,0.35)" : "rgba(26,30,37,0.35)";
 

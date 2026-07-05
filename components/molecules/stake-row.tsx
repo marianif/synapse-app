@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 
 import type { EntryType } from "@/lib/types";
 import type { Href } from "expo-router";
@@ -51,7 +51,7 @@ export function StakeRow({ item, href }: StakeRowProps): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
 
-  const code = entryColor(item.type);
+  const code = useEntryKicker(item.type);
 
   // Trailing-meta colour carries the heat: danger when overdue, calm when done,
   // muted otherwise. The title stays `ink` (or struck-muted) — bulletproof AA.

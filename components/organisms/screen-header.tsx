@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EntryCluster } from "@/components/atoms/entry-cluster";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { entryKicker, tokens, useTheme } from "@/constants/theme";
 
 import type { EntryType } from "@/lib/types";
 
@@ -63,9 +63,9 @@ export function ScreenHeader({
   inset = false,
   headerRight,
 }: ScreenHeaderProps): React.ReactElement {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const safeArea = useSafeAreaInsets();
-  const accent = entryType ? entryColor(entryType) : colors.ink;
+  const accent = entryType ? entryKicker(entryType, scheme) : colors.ink;
 
   return (
     <View

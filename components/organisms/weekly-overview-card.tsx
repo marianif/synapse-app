@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { BentoCardHeader } from "@/components/molecules/bento-card-header";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { WeekdayRow } from "@/components/molecules/weekday-row";
-import { entryColor, useTheme, tokens } from "@/constants/theme";
+import { useEntryKicker, useTheme, tokens } from "@/constants/theme";
 
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type { ItemStatus } from "@/components/molecules/list-item";
@@ -38,6 +38,7 @@ export function WeeklyOverviewCard({
 }: WeeklyOverviewCardProps): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
+  const todoAccent = useEntryKicker("todo");
 
   return (
     <Pressable
@@ -65,7 +66,7 @@ export function WeeklyOverviewCard({
             description="Schedule todos to track your weekly momentum."
             ctaLabel="+ Add Todo"
             onCta={onAdd ?? (() => router.push("/list?entryType=todo"))}
-            accentColor={entryColor("todo")}
+            accentColor={todoAccent}
           />
         ) : (
           <View style={styles.rows}>

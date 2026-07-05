@@ -107,7 +107,7 @@ export default function HomeScreen(): React.ReactElement {
   // and by the tab-bar pen key (tap → text, long-press → voice). Consumed once below.
   const { capture } = useLocalSearchParams<{ capture?: string }>();
 
-  const { entries, projects, recurrenceCompletions, fetchEntries, createProject } =
+  const { entries, projects, recurrenceCompletions, fetchEntries } =
     useDatabase();
 
   const { refresh: refreshDiary } = useDiary();
@@ -126,51 +126,25 @@ export default function HomeScreen(): React.ReactElement {
   // The capture state machine — composer/recorder/resolver mutex, pending
   // thought, voice piping, recent-ideas pool, the resolveCapture switch.
   // Shared with the project surface (via useCapture(projectId)) so the dock
-  // grammar stays identical across screens.
+  // grammar stays identical across screens. The home dock catches thoughts only
+  // (ideas / notes / todos / deadlines); creating a project is a deliberate act
+  // that lives on the Project Shelf, not here.
   const cap = useCapture();
 
-  // The manual bar — the pen key's TAP register (long-press is voice). Deliberate
-  // creation that capture can't reach: today, opening a project. Mutually
-  // exclusive with the composer / recorder / resolver in the dock below.
-  // Stays home-only; the project surface has no need to birth a sibling project.
-  const [manualOpen, setManualOpen] = useState(false);
-
-  // Create a project from the manual bar, then go straight into it — a project
-  // is a place you open, so creating one lands you there.
-  const handleCreateProject = useCallback(
-    (title: string) => {
-      setManualOpen(false);
-      createProject(title)
-        .then((project) =>
-          router.push({ pathname: "/project", params: { id: project.id } }),
-        )
-        .catch((err) => console.error("Failed to create project:", err));
-    },
-    [createProject, router],
-  );
-
   // Arm the dock when summoned — by the widget deep link (voice / text) or the
-  // tab-bar pen key (tap → manual, long-press → voice). Guard with a ref so it
-  // fires once per intent. Each register opens its own bar and closes the others.
+  // tab-bar pen key (tap → text, long-press → voice). Guard with a ref so it
+  // fires once per intent. Each register opens its own bar and closes the other.
   const armedFromLink = useRef(false);
   useEffect(() => {
-    const known =
-      capture === "voice" || capture === "text" || capture === "manual";
+    const known = capture === "voice" || capture === "text";
     if (capture === "voice" && !armedFromLink.current && !cap.isRecording) {
       armedFromLink.current = true;
-      setManualOpen(false);
       cap.setComposerOpen(false);
       cap.startRecording();
       router.setParams({ capture: undefined });
     } else if (capture === "text" && !armedFromLink.current) {
       armedFromLink.current = true;
-      setManualOpen(false);
       cap.setComposerOpen(true);
-      router.setParams({ capture: undefined });
-    } else if (capture === "manual" && !armedFromLink.current) {
-      armedFromLink.current = true;
-      cap.setComposerOpen(false);
-      setManualOpen(true);
       router.setParams({ capture: undefined });
     } else if (!known) {
       armedFromLink.current = false;
@@ -287,15 +261,14 @@ export default function HomeScreen(): React.ReactElement {
         <ProjectsOverview
           projects={activeProjects}
           entries={entries}
-          onAddProject={() => {
-            cap.setComposerOpen(false);
-            setManualOpen(true);
-          }}
+          // Creating a project is a deliberate act that lives on the Project
+          // Shelf, not in the home capture dock — so "add project" navigates
+          // there rather than raising a home-dock bar.
+          onAddProject={() => router.push("/projects")}
         />
         <DirectOverview
           entries={directEntries}
           onCapture={(type) => {
-            setManualOpen(false);
             // A type-specific empty state (No deadlines / todos / ideas yet)
             // seeds the resolver so it opens on that door; the neutral "all"
             // empty state passes nothing and the resolver stays neutral.
@@ -311,29 +284,17 @@ export default function HomeScreen(): React.ReactElement {
           exists while a dismissible dock surface is up. It's screen-level (not
           inside the lifted dock) so it spans the whole field; the resolver is
           intentionally not covered so a caught thought isn't dropped. */}
-      <CaptureBackdrop
-        cap={cap}
-        manualOpen={manualOpen}
-        onManualDismiss={() => setManualOpen(false)}
-      />
+      <CaptureBackdrop cap={cap} />
 
       {/* The capture dock is summoned, not always-on: the pen key (tab bar)
           opens the composer or starts voice; the dock vanishes when idle so the
           field stays clear. The resolver holds a captured thought until filed.
-          It rides above the keyboard via a UI-thread translate (see dockStyle).
-          Home also carries the ManualBar (new-project) — the one surface the
-          project dock omits. */}
+          It rides above the keyboard via a UI-thread translate (see dockStyle). */}
       <Animated.View
         style={[styles.captureDock, dockStyle]}
         pointerEvents="box-none"
       >
-        <CaptureComposer
-          cap={cap}
-          projects={projects}
-          onManualCreate={handleCreateProject}
-          manualOpen={manualOpen}
-          onManualDismiss={() => setManualOpen(false)}
-        />
+        <CaptureComposer cap={cap} projects={projects} />
       </Animated.View>
 
       <DayDetailSheet

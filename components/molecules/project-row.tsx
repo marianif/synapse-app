@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 
 import type { DbProject } from "@/lib/types";
@@ -44,6 +44,11 @@ export function ProjectRow({
   const { colors } = useTheme();
   const router = useRouter();
   const { touchProject } = useDatabase();
+  // Scheme-aware shades — the electric type codes only clear AA on the dark
+  // graphite; on light paper we render the darkened kicker variant so the
+  // edge-bar and featured star read AA-safe in both schemes.
+  const todoAccent = useEntryKicker("todo");
+  const ideaAccent = useEntryKicker("idea");
 
   const isFeatured = project.is_featured === 1;
 
@@ -54,7 +59,7 @@ export function ProjectRow({
 
   return (
     <View style={[styles.row, { backgroundColor: colors.surface }]}>
-      <View style={[styles.edgeBar, { backgroundColor: entryColor("todo") }]} />
+      <View style={[styles.edgeBar, { backgroundColor: todoAccent }]} />
 
       <Pressable
         onPress={open}
@@ -101,7 +106,7 @@ export function ProjectRow({
         <IconSymbol
           name={isFeatured ? "star" : "star-outline"}
           size={22}
-          color={isFeatured ? entryColor("idea") : colors.inkMuted}
+          color={isFeatured ? ideaAccent : colors.inkMuted}
         />
       </Pressable>
     </View>

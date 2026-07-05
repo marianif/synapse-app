@@ -1,6 +1,6 @@
 import Svg, { Circle, Path } from "react-native-svg";
 
-import { entryColor } from "@/constants/theme";
+import { useEntryKicker } from "@/constants/theme";
 
 import type { EntryType } from "@/lib/types";
 
@@ -10,7 +10,7 @@ interface SketchIconProps {
   type: EntryType;
   /** Box size in px; the glyph is drawn on a 24×24 canvas and scaled. */
   size?: number;
-  /** Override the type color (defaults to `entryColor(type)`). */
+  /** Override the type color (defaults to the scheme-aware kicker shade). */
   color?: string;
 }
 
@@ -34,7 +34,8 @@ export function SketchIcon({
   size = 18,
   color,
 }: SketchIconProps): React.ReactElement {
-  const stroke = color ?? entryColor(type);
+  const typeShade = useEntryKicker(type);
+  const stroke = color ?? typeShade;
   // Keep optical line-weight steady across sizes (~1.6px at the default 18px).
   const sw = (size / 18) * 1.6;
 

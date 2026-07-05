@@ -8,7 +8,7 @@ import Animated, {
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, tokens, useTheme } from "@/constants/theme";
+import { entryKicker, tokens, useTheme } from "@/constants/theme";
 import {
   daysUntil,
   isDone,
@@ -82,14 +82,17 @@ function recurrenceValue(entry: DbEntry): string {
   return label;
 }
 
-function urgencyTag(entry: DbEntry): { text: string; color: string } | null {
+function urgencyTag(
+  entry: DbEntry,
+  typeShade: string,
+): { text: string; color: string } | null {
   if (isDone(entry)) return null;
 
   const days = daysUntil(entry.due_date ?? entry.scheduled_date ?? null);
   if (days !== null) {
     if (days < 0) return { text: `Over by ${Math.abs(days)}d`, color: tokens.feedback.danger };
     if (days === 0) return { text: "Today", color: tokens.feedback.warning };
-    return { text: `${days}d left`, color: entryColor(entry.type) };
+    return { text: `${days}d left`, color: typeShade };
   }
 
   return null;
@@ -110,18 +113,18 @@ export function DirectDetailSheet({
   onDelete,
   onEdit,
 }: DirectDetailSheetProps): React.ReactElement | null {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const reduced = useReducedMotion();
 
   if (!entry) return null;
 
   const type = entry.type;
   const done = isDone(entry);
-  const accent = entryColor(type);
+  const accent = entryKicker(type, scheme);
   const charged =
     !done &&
     isWhenCharged(daysUntil(entry.due_date ?? entry.scheduled_date ?? null));
-  const urgency = urgencyTag(entry);
+  const urgency = urgencyTag(entry, accent);
   const statColor = statusColor(entry.status);
 
   const handleMarkDone = (): void => {

@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import type { EntryType } from "@/components/atoms/entry-dot";
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { entryColor, useTheme, tokens } from "@/constants/theme";
+import { useEntryKicker, useTheme, tokens } from "@/constants/theme";
 import type { UpcomingEntry } from "@/hooks/use-calendar-data";
 
 dayjs.extend(customParseFormat);
@@ -52,6 +52,7 @@ export function UpcomingPreviewCard({
   const nextEntryType = getNextEntryType(upcomingEntries);
   const nextEntry = upcomingEntries[0];
   const daysAway = nextEntry ? getDaysAway(nextEntry.date) : 0;
+  const nextShade = useEntryKicker(nextEntryType);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surfaceSubtle }]}>
@@ -62,7 +63,7 @@ export function UpcomingPreviewCard({
               <ThemedText
                 style={[
                   styles.daysAwayNumber,
-                  { color: entryColor(nextEntryType) },
+                  { color: nextShade },
                 ]}
               >
                 {daysAway}

@@ -43,7 +43,7 @@ const color = {
   typeKicker: {
     light: {
       bills: "#AF3B51", // 4.74:1 on billsTint.light
-      ideas: "#8A6307", // 4.74:1 on ideasTint.light
+      ideas: "#b39f06", // 4.74:1 on ideasTint.light
       todo: "#0B7286", // 4.75:1 on todoTint.light
     },
     dark: {

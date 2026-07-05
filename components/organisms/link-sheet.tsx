@@ -13,7 +13,7 @@ import {
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { tokens, useTheme } from "@/constants/theme";
+import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 
 // Above this many ideas, a search field earns its place; below it, the list is
 // short enough to graze and a search box would just be chrome.
@@ -51,7 +51,7 @@ export function LinkSheet({
   onClose,
 }: LinkSheetProps): React.ReactElement {
   const { colors } = useTheme();
-  const idea = colors.type.ideas;
+  const idea = useEntryKicker("idea");
 
   const [query, setQuery] = useState("");
   const showSearch = ideas.length > SEARCH_THRESHOLD;

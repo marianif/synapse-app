@@ -1,6 +1,6 @@
 import { StyleSheet, View } from "react-native";
 
-import { entryColor } from "@/constants/theme";
+import { useEntryKicker } from "@/constants/theme";
 import { EntryType } from "@/lib/types";
 
 export type { EntryType };
@@ -11,13 +11,15 @@ interface EntryDotProps {
 }
 
 /**
- * 6px colored dot representing an entry type.
- * Color = categorization, not urgency (DESIGN.md principle).
+ * 6px colored dot representing an entry type. Uses the scheme-aware kicker shade
+ * so the dot reads AA-safe on both light paper and dark graphite — the electric
+ * type code is dark-mode-only; light mode gets the darkened AA-safe variant.
  */
 export function EntryDot({
   type,
   size = 6,
 }: EntryDotProps): React.ReactElement {
+  const dotColor = useEntryKicker(type);
   return (
     <View
       style={[
@@ -26,7 +28,7 @@ export function EntryDot({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: entryColor(type),
+          backgroundColor: dotColor,
         },
       ]}
     />

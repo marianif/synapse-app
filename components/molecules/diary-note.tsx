@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { useCallback, useEffect, useRef } from "react";
-import { findNodeHandle, StyleSheet, View } from "react-native";
+import { findNodeHandle, Pressable, StyleSheet, View } from "react-native";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -20,6 +20,9 @@ interface DiaryNoteProps {
   linkedTitle?: string;
   /** Kind of the linked target — picks the leading glyph. */
   linkedKind?: LinkableKind;
+  /** Tap the relatedness chip to re-link this note (pull it into a project or
+   *  idea). Omit to render the chip as a static label. */
+  onRelate?: () => void;
   onDelete: () => void;
 }
 
@@ -32,6 +35,7 @@ export function DiaryNote({
   entry,
   linkedTitle,
   linkedKind,
+  onRelate,
   onDelete,
 }: DiaryNoteProps): React.ReactElement {
   const { colors } = useTheme();
@@ -91,42 +95,11 @@ export function DiaryNote({
             {dayjs.unix(entry.created_at).format("HH:mm")}
           </ThemedText>
 
-          {linkedTitle ? (
-            <View
-              style={[
-                styles.relTag,
-                { backgroundColor: colors.surfaceSubtle },
-              ]}
-            >
-              {linkedKind === "project" ? (
-                <IconSymbol
-                  name="folder-outline"
-                  size={13}
-                  color={colors.inkMuted}
-                />
-              ) : (
-                <SketchIcon type="idea" size={13} />
-              )}
-              <ThemedText
-                type="micro"
-                numberOfLines={1}
-                style={[styles.relLabel, { color: colors.inkMuted }]}
-              >
-                {linkedTitle.toUpperCase()}
-              </ThemedText>
-            </View>
-          ) : (
-            <View
-              style={[styles.relTag, { backgroundColor: colors.surfaceSubtle }]}
-            >
-              <View
-                style={[styles.freeDot, { borderColor: colors.inkMuted }]}
-              />
-              <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-                Unlinked
-              </ThemedText>
-            </View>
-          )}
+          <Chip
+            onRelate={onRelate}
+            linkedTitle={linkedTitle}
+            linkedKind={linkedKind}
+          />
         </View>
 
         <ThemedText style={[styles.noteBody, { color: colors.ink }]}>
@@ -134,6 +107,81 @@ export function DiaryNote({
         </ThemedText>
       </View>
     </SwipeableRow>
+  );
+}
+
+/**
+ * The relatedness chip: ON · <target> when linked, "Unlinked" otherwise. When
+ * `onRelate` is provided the chip becomes a button that pulls the note into a
+ * project or idea (a trailing link glyph signals the affordance); otherwise it
+ * renders as a static label.
+ */
+function Chip({
+  onRelate,
+  linkedTitle,
+  linkedKind,
+}: {
+  onRelate?: () => void;
+  linkedTitle?: string;
+  linkedKind?: LinkableKind;
+}): React.ReactElement {
+  const { colors } = useTheme();
+
+  const content = linkedTitle ? (
+    <>
+      {linkedKind === "project" ? (
+        <IconSymbol name="folder-outline" size={13} color={colors.inkMuted} />
+      ) : (
+        <SketchIcon type="idea" size={13} />
+      )}
+      <ThemedText
+        type="micro"
+        numberOfLines={1}
+        style={[styles.relLabel, { color: colors.inkMuted }]}
+      >
+        {linkedTitle.toUpperCase()}
+      </ThemedText>
+    </>
+  ) : (
+    <>
+      <View style={[styles.freeDot, { borderColor: colors.inkMuted }]} />
+      <ThemedText type="micro" style={{ color: colors.inkMuted }}>
+        Unlinked
+      </ThemedText>
+    </>
+  );
+
+  if (!onRelate) {
+    return (
+      <View style={[styles.relTag, { backgroundColor: colors.surfaceSubtle }]}>
+        {content}
+      </View>
+    );
+  }
+
+  return (
+    <Pressable
+      onPress={onRelate}
+      hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel={
+        linkedTitle
+          ? `Related to ${linkedKind ?? "target"}: ${linkedTitle}. Tap to change.`
+          : "Unlinked note. Tap to pull into a project or idea."
+      }
+      style={({ pressed }) => [
+        styles.relTag,
+        { backgroundColor: colors.surfaceSubtle },
+        pressed && styles.pressed,
+      ]}
+    >
+      {content}
+      <IconSymbol
+        name="link-variant"
+        size={13}
+        color={colors.inkMuted}
+      />
+    </Pressable>
   );
 }
 
@@ -159,6 +207,9 @@ const styles = StyleSheet.create({
   },
   relLabel: {
     flexShrink: 1,
+  },
+  pressed: {
+    opacity: 0.7,
   },
   freeDot: {
     width: 10,

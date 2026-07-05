@@ -17,6 +17,9 @@ interface DiaryFeedProps {
   /** True when a filter is narrowing the feed — changes the empty-state copy so
    *  "nothing matches" never reads as "the notes tab is empty". */
   filtered?: boolean;
+  /** Open the link sheet to re-relate a note (pull it into a project/idea).
+   *  Omit to render notes with a static relatedness chip. */
+  onRelate?: (entry: DbDiaryEntry) => void;
   onDelete: (id: string) => void;
 }
 
@@ -51,6 +54,7 @@ export function DiaryFeed({
   ideaTitles,
   projectTitles,
   filtered = false,
+  onRelate,
   onDelete,
 }: DiaryFeedProps): React.ReactElement {
   const { colors } = useTheme();
@@ -103,6 +107,7 @@ export function DiaryFeed({
                 entry={e}
                 linkedTitle={title}
                 linkedKind={kind}
+                onRelate={onRelate ? () => onRelate(e) : undefined}
                 onDelete={() => onDelete(e.id)}
               />
             );

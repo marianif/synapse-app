@@ -23,8 +23,10 @@ import { tokens } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 
+import type { DbDiaryEntry } from "@/lib/types";
+
 export default function NotesScreen(): React.ReactElement {
-  const { entries, addEntry, removeEntry, refresh } = useDiary();
+  const { entries, addEntry, updateEntry, removeEntry, refresh } = useDiary();
   // Board entries + projects — read-only, used to resolve linked titles for the
   // feed chip and to offer targets in the composer's link sheet. Notes writes
   // never touch these stores.
@@ -35,6 +37,13 @@ export default function NotesScreen(): React.ReactElement {
   const [macro, setMacro] = useState<DiaryMacro>("all");
   const [target, setTarget] = useState<LinkSelection>(null);
   const [targetSheetOpen, setTargetSheetOpen] = useState(false);
+
+  // Pull-in: the note the user is re-relating. Tapping a feed row's relatedness
+  // chip opens the link sheet pre-selected to the note's current target; picking
+  // a new one re-links it (or picking "Free note" unlinks it). This is the notes
+  // tab's replacement for the project screen's batch pull-in sheet — the verb
+  // lives on each note now, so it works with or without an active project view.
+  const [relatingNote, setRelatingNote] = useState<DbDiaryEntry | null>(null);
 
   const ideaTitles = useMemo(() => {
     const map: Record<string, string> = {};
@@ -133,6 +142,29 @@ export default function NotesScreen(): React.ReactElement {
     if (selection === null) setMacro("free");
   }, []);
 
+  // The note-being-related's current link, mapped into the sheet's selection
+  // shape so the sheet opens with its existing target highlighted.
+  const relatingSelection: LinkSelection = relatingNote
+    ? relatingNote.linked_project_id
+      ? { kind: "project", id: relatingNote.linked_project_id }
+      : relatingNote.linked_entry_id
+        ? { kind: "idea", id: relatingNote.linked_entry_id }
+        : null
+    : null;
+
+  const handleRelink = useCallback(
+    (selection: LinkSelection) => {
+      if (!relatingNote) return;
+      // A note carries at most one link — writing one target clears the other.
+      void updateEntry(relatingNote.id, {
+        linkedEntryId: selection?.kind === "idea" ? selection.id : null,
+        linkedProjectId: selection?.kind === "project" ? selection.id : null,
+      });
+      setRelatingNote(null);
+    },
+    [relatingNote, updateEntry],
+  );
+
   useFocusEffect(
     useCallback(() => {
       refresh();
@@ -169,6 +201,7 @@ export default function NotesScreen(): React.ReactElement {
           ideaTitles={ideaTitles}
           projectTitles={projectTitles}
           filtered={target !== null || macro !== "all"}
+          onRelate={setRelatingNote}
           onDelete={removeEntry}
         />
         <View style={styles.bottomSpacer} />
@@ -180,6 +213,18 @@ export default function NotesScreen(): React.ReactElement {
         targets={filterTargets}
         onSelect={handlePickTarget}
         onClose={() => setTargetSheetOpen(false)}
+      />
+
+      {/* Pull-in sheet — re-relate a single note. Offers ALL projects & ideas
+          (unlike the filter sheet, which only lists targets that already have
+          notes), because pulling a note IN is exactly how a target gets its
+          first note. */}
+      <LinkSheet
+        visible={relatingNote !== null}
+        selected={relatingSelection}
+        targets={composerTargets}
+        onSelect={handleRelink}
+        onClose={() => setRelatingNote(null)}
       />
     </KeyboardAvoidingView>
   );

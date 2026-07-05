@@ -18,7 +18,6 @@ import { DirectRow } from "@/components/molecules/direct-row";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
 import { ProjectNoteComposerSheet } from "@/components/molecules/project-note-composer-sheet";
 import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sheet";
-import { ProjectPullInSheet } from "@/components/molecules/project-pull-in-sheet";
 import {
   CaptureBackdrop,
   CaptureComposer,
@@ -113,36 +112,23 @@ export default function ProjectScreen(): React.ReactElement {
     });
   };
 
-  const { spine, ideas, origin, notes, unfiledIdeas, unfiledNotes } =
-    useMemo(() => {
-      const filed = entries.filter((e) => e.project_id === id);
-      // Spine: open AND done todos/deadlines, sorted by sortDirect so done
-      // sinks to the bottom. DirectRow renders done lines with strikethrough +
-      // dimmed dot intrinsically; swipe-to-delete still works on done rows,
-      // which is what we want — the user can clear a done line if they're
-      // sure, or leave it as a record of completion.
-      const todoLike = filed.filter((e) => isTodoFamily(e.type));
-      return {
-        spine: sortDirect(todoLike),
-        ideas: filed.filter((e) => e.type === "idea" && !isDone(e)),
-        origin: entries.find(
-          (e) => e.type === "idea" && e.promoted_project_id === id,
-        ),
-        notes: diaryEntries.filter((n) => n.linked_project_id === id),
-        // Pull-in pool — loose thinking the user can attribute to THIS project.
-        // Ideas: open + unfiled. Notes: free (no entry link, no project link).
-        // Todos/deadlines are intentionally excluded — those were either
-        // captured into a project or live as standalone commitments; retro-
-        // attaching them is a re-categorization verb that doesn't belong here.
-        unfiledIdeas: entries.filter(
-          (e) => e.type === "idea" && !e.project_id && !isDone(e),
-        ),
-        unfiledNotes: diaryEntries.filter(
-          (n) => !n.linked_project_id && !n.linked_entry_id,
-        ),
-      };
-    }, [entries, diaryEntries, id]);
-  const [pullInOpen, setPullInOpen] = useState(false);
+  const { spine, ideas, origin, notes } = useMemo(() => {
+    const filed = entries.filter((e) => e.project_id === id);
+    // Spine: open AND done todos/deadlines, sorted by sortDirect so done
+    // sinks to the bottom. DirectRow renders done lines with strikethrough +
+    // dimmed dot intrinsically; swipe-to-delete still works on done rows,
+    // which is what we want — the user can clear a done line if they're
+    // sure, or leave it as a record of completion.
+    const todoLike = filed.filter((e) => isTodoFamily(e.type));
+    return {
+      spine: sortDirect(todoLike),
+      ideas: filed.filter((e) => e.type === "idea" && !isDone(e)),
+      origin: entries.find(
+        (e) => e.type === "idea" && e.promoted_project_id === id,
+      ),
+      notes: diaryEntries.filter((n) => n.linked_project_id === id),
+    };
+  }, [entries, diaryEntries, id]);
   const [noteOpen, setNoteOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<DbDiaryEntry | null>(null);
 
@@ -284,23 +270,6 @@ export default function ProjectScreen(): React.ReactElement {
     () => entries.find((e) => e.id === actionIdeaId) ?? null,
     [entries, actionIdeaId],
   );
-
-  // Pull-in handlers. Both keep the sheet open — chaining is the point.
-  // updateEntry / updateDiaryEntry update both DB and in-memory state, so
-  // the next render's `unfiledIdeas`/`unfiledNotes` won't include the chip
-  // the user just tapped (it vanishes from the strip automatically).
-  const handlePullInIdea = (idea: DbEntry): void => {
-    if (!id) return;
-    void updateEntry(idea.id, { projectId: id }).catch((err) =>
-      console.error("Failed to pull idea into project:", err),
-    );
-  };
-  const handlePullInNote = (note: import("@/lib/types").DbDiaryEntry): void => {
-    if (!id) return;
-    void updateDiaryEntry(note.id, { linkedProjectId: id }).catch((err) =>
-      console.error("Failed to pull note into project:", err),
-    );
-  };
 
   // Idea action handlers.
   const handleMakeTodoFromIdea = (idea: DbEntry): void => {
@@ -550,34 +519,6 @@ export default function ProjectScreen(): React.ReactElement {
           )}
         </View>
 
-        {/* PULL IN — intake button for loose ideas and notes. Hidden when
-            nothing is loose (no point dangling an empty verb). Sits right
-            after the open spine because pulling-in IS open work: it's the
-            verb that turns ambient capture into project content. */}
-        {!isEmpty && unfiledIdeas.length + unfiledNotes.length > 0 ? (
-          <Pressable
-            onPress={() => setPullInOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel={`Pull in ${unfiledIdeas.length} loose ideas and ${unfiledNotes.length} loose notes`}
-            style={({ pressed }) => [
-              styles.pullInButton,
-              pressed && styles.pressed,
-            ]}
-          >
-            <MaterialCommunityIcons
-              name="plus"
-              size={16}
-              color={colors.inkMuted}
-            />
-            <ThemedText
-              type="micro"
-              style={[styles.pullInLabel, { color: colors.inkMuted }]}
-            >
-              {`PULL SOMETHING IN · ${unfiledIdeas.length + unfiledNotes.length}`}
-            </ThemedText>
-          </Pressable>
-        ) : null}
-
         {/* IDEAS — recall layer, intentionally quieter than the spine. A
             wrapped pin-row, each idea a slim chip, so the volume is clearly
             below the line above. */}
@@ -720,14 +661,6 @@ export default function ProjectScreen(): React.ReactElement {
         onChangeEmoji={handleChangeEmoji}
         onToggleArchive={handleToggleArchive}
         onDelete={requestDelete}
-      />
-      <ProjectPullInSheet
-        visible={pullInOpen}
-        onClose={() => setPullInOpen(false)}
-        unfiledIdeas={unfiledIdeas}
-        unfiledNotes={unfiledNotes}
-        onAttachIdea={handlePullInIdea}
-        onAttachNote={handlePullInNote}
       />
       <IdeaActionSheet
         visible={actionIdea !== null}
@@ -931,22 +864,6 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   addNoteLabel: {
-    letterSpacing: tokens.type.micro.tracking,
-  },
-
-  // Pull-in button — quiet mono affordance, sits flush between spine and
-  // done-this-week. Reads as a verb (the "+" makes the intake meaning legible
-  // without needing the word "ADD"), tier-2 weight so it never competes with
-  // the DirectRow gestures above.
-  pullInButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.xs,
-    paddingVertical: tokens.space.sm,
-    paddingHorizontal: tokens.space.xs,
-    alignSelf: "flex-start",
-  },
-  pullInLabel: {
     letterSpacing: tokens.type.micro.tracking,
   },
 

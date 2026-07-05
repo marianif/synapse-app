@@ -1,10 +1,8 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import Animated, {
   Easing,
-  FadeOut,
-  SlideInDown,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -36,19 +34,22 @@ interface CaptureBarProps {
 }
 
 /**
- * The board's command line — the one always-on capture instrument. Field Lab is
- * an instrument panel (mono readouts, sharp corners, saturated edge-bars carrying
- * structure), and this is where anything enters the board: a todo, a deadline, an
- * idea, a note. It wears the NEUTRAL interface grammar (`accent.clay`, never a
- * type tint) because it belongs to no single type — dressing it in amber made it
- * read as "ideas only", the exact confusion we're undoing. Idle it's a live text
- * line you FILL: a neutral capture edge-bar, a softly breathing capture-mark, an
- * inline TextInput, and a first-class mic. Typing + ↵ (or the send key) drops the
- * thought onto the board and hands it to the capture resolver, which chooses the
- * destination (do it / by a date / keep as idea / note) — no navigation, no type
- * decided up front. The mic arms voice into the same flow. Recording rides the
- * same neutral action slab as the resolver — one interface object — with a live
- * waveform, the streaming transcript, and inline discard / keep.
+ * The board's command line — the capture readout inside the dock shell. Field
+ * Lab is an instrument panel (mono readouts, sharp corners, saturated edge-bars
+ * carrying structure), and this is where anything enters the board: a todo, a
+ * deadline, an idea, a note. It belongs to no single type, so it wears the
+ * NEUTRAL grammar (never a type tint) — dressing it in amber made it read as
+ * "ideas only", the exact confusion we're undoing.
+ *
+ * This component is now FRAMELESS: the surrounding frame, fill, radius,
+ * elevation, and entrance belong to `DockShell`. The bar renders only its row of
+ * controls on a transparent ground, so the shell can morph the panel in place
+ * (idle line ↔ recorder) without the bar popping between shapes. Idle it's a
+ * live text line you FILL (a breathing capture-mark, an inline TextInput, a
+ * first-class mic) on the shell's `surface` fill; recording, the shell flips to
+ * the neutral slab and the bar renders on-slab inks with a live waveform and
+ * inline discard / keep. Typing + ↵ (or the send key) hands the thought to the
+ * capture resolver — no navigation, no type decided up front.
  */
 export function CaptureBar({
   onSubmit,
@@ -61,24 +62,8 @@ export function CaptureBar({
   onDismissEmpty,
 }: CaptureBarProps): React.ReactElement {
   const { colors } = useTheme();
-  const reduced = useReducedMotion();
   const [draft, setDraft] = useState("");
   const hasText = draft.trim().length > 0;
-
-  // The dock's shared entrance — matches the ManualBar so composer, recorder,
-  // and manual bar all slide up from below as one instrument. The idle and
-  // recording states are two roots that swap in place; slide only the FIRST
-  // appearance so the composer→recorder mode-swap doesn't re-fire the slide
-  // and jump the bar mid-interaction. FadeOut on exit keeps the swap smooth.
-  const firstMount = useRef(true);
-  useEffect(() => {
-    firstMount.current = false;
-  }, []);
-  const entering =
-    reduced || !firstMount.current
-      ? undefined
-      : SlideInDown.duration(320).easing(Easing.out(Easing.cubic));
-  const exiting = reduced ? undefined : FadeOut.duration(110);
 
   const handleBlur = (): void => {
     if (!hasText) onDismissEmpty?.();
@@ -94,28 +79,15 @@ export function CaptureBar({
   // inkMuted tracks the scheme and clears AA on the surface in both.
   const signal = colors.inkMuted;
 
-  // The recorder rides the same NEUTRAL action slab as the capture resolver
-  // (`accent.clay` — slate in light, off-white in dark), never a type chrome.
-  // Capture is the app's core affordance across every type: the slab is the one
-  // surface that means "interface, not content", so recorder and resolver read
-  // as one object. The "listening" life lives in the moving waveform as a SIGNAL,
-  // tinted with the on-slab ink so it stays legible in both schemes without
-  // claiming any one type's color.
+  // Recording: the shell has flipped to the neutral action slab, so the bar
+  // renders on-slab — the same interface object as the resolver, never a type
+  // chrome. The "listening" life lives in the moving waveform as a SIGNAL,
+  // tinted with the on-slab ink so it stays legible in both schemes.
   if (isRecording) {
     const onSlab = colors.accent.onClay;
-    const waveTint = onSlab;
 
     return (
-      <Animated.View
-        entering={entering}
-        exiting={exiting}
-        style={[
-          styles.bar,
-          styles.recording,
-          { backgroundColor: colors.accent.clay },
-          tokens.elevation.capture,
-        ]}
-      >
+      <View style={[styles.bar, styles.recording]}>
         <Pressable
           onPress={onCancel}
           hitSlop={12}
@@ -136,7 +108,7 @@ export function CaptureBar({
               {transcript}
             </ThemedText>
           ) : (
-            <Waveform tint={waveTint} />
+            <Waveform tint={onSlab} />
           )}
         </View>
 
@@ -149,21 +121,12 @@ export function CaptureBar({
         >
           <MaterialCommunityIcons name="check" size={24} color={onSlab} />
         </Pressable>
-      </Animated.View>
+      </View>
     );
   }
 
   return (
-    <Animated.View
-      entering={entering}
-      exiting={exiting}
-      style={[
-        styles.bar,
-        styles.idle,
-        { backgroundColor: colors.surface },
-        tokens.elevation.capture,
-      ]}
-    >
+    <View style={[styles.bar, styles.idle]}>
       <View style={[styles.edge, { backgroundColor: colors.inkMuted }]} />
 
       {/* The line you FILL: a pulsing capture-mark + inline TextInput. ↵ drops the
@@ -219,7 +182,7 @@ export function CaptureBar({
           <MaterialCommunityIcons name="microphone" size={22} color={signal} />
         </Pressable>
       )}
-    </Animated.View>
+    </View>
   );
 }
 
@@ -311,20 +274,20 @@ function WaveformBar({
 }
 
 const styles = StyleSheet.create({
+  // Frameless: the DockShell owns radius, fill, clip, and elevation. The bar is
+  // just the row of controls; it sizes the shell via its minHeight.
   bar: {
     flexDirection: "row",
     alignItems: "center",
     minHeight: 56,
-    borderRadius: tokens.radius.pill,
-    overflow: "hidden",
   },
-  // Idle: a command line — left edge-bar, prompt, mic. Sharp instrument corner.
+  // Idle: a command line — left edge-bar, prompt, mic.
   idle: {
     paddingLeft: tokens.space.lg,
     paddingRight: tokens.space.xs,
   },
-  // Recording: the neutral action slab, symmetric, controls inline — the same
-  // interface object as the resolver. Amber rides only the live waveform signal.
+  // Recording: controls inline, symmetric — the same interface object as the
+  // resolver. The slab fill is the shell's; the waveform carries the live signal.
   recording: {
     gap: tokens.space.md,
     paddingHorizontal: tokens.space.lg,

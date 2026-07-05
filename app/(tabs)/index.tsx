@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -21,10 +20,12 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { CaptureBar } from "@/components/organisms/capture-bar";
+import {
+  CaptureBackdrop,
+  CaptureComposer,
+} from "@/components/organisms/capture-composer";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { DirectOverview } from "@/components/organisms/direct-overview";
-import { ManualBar } from "@/components/organisms/manual-bar";
 import { ProjectsOverview } from "@/components/organisms/projects-overview";
 
 import {
@@ -33,7 +34,6 @@ import {
   seasonalNote,
 } from "@/components/molecules/field-greeting";
 
-import { CaptureResolver } from "@/components/molecules/capture-resolver";
 import { tokens, useTheme } from "@/constants/theme";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useCapture } from "@/hooks/use-capture";
@@ -265,24 +265,6 @@ export default function HomeScreen(): React.ReactElement {
     transform: [{ translateY: -keyboardLift.value }],
   }));
 
-  // Is any dock surface up? The dock is summoned, so an outside tap should
-  // put it away — mirrors the empty-blur dismissal, but works even with text
-  // in the line (the tap is an explicit "not now"). The resolver is excluded:
-  // a pending thought is a caught idea we don't want to silently drop on a
-  // stray tap — it keeps its own explicit keep/discard controls.
-  const dockOpen =
-    manualOpen || cap.composerOpen || cap.isRecording;
-
-  // Dismiss whatever the outside tap landed behind. Recording is cancelled
-  // (discards the transcript without filing — same as the recorder's ✕);
-  // the composer and manual bar just close. Also drop the keyboard.
-  const dismissDock = useCallback(() => {
-    if (cap.isRecording) cap.cancelRecording();
-    setManualOpen(false);
-    cap.setComposerOpen(false);
-    Keyboard.dismiss();
-  }, [cap]);
-
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <ScrollView
@@ -326,56 +308,32 @@ export default function HomeScreen(): React.ReactElement {
       </ScrollView>
 
       {/* Outside-tap backdrop — a transparent full-screen catcher that only
-          exists while a dock surface is up. Tapping anywhere off the dock puts
-          it away (see dismissDock). Sits under the dock so the bars stay
-          interactive; the resolver is intentionally not covered so a caught
-          thought isn't dropped by a stray tap. */}
-      {dockOpen ? (
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={dismissDock}
-          accessibilityLabel="Dismiss capture"
-        />
-      ) : null}
+          exists while a dismissible dock surface is up. It's screen-level (not
+          inside the lifted dock) so it spans the whole field; the resolver is
+          intentionally not covered so a caught thought isn't dropped. */}
+      <CaptureBackdrop
+        cap={cap}
+        manualOpen={manualOpen}
+        onManualDismiss={() => setManualOpen(false)}
+      />
 
       {/* The capture dock is summoned, not always-on: the pen key (tab bar)
           opens the composer or starts voice; the dock vanishes when idle so the
           field stays clear. The resolver holds a captured thought until filed.
-          It rides above the keyboard via a UI-thread translate (see dockStyle). */}
+          It rides above the keyboard via a UI-thread translate (see dockStyle).
+          Home also carries the ManualBar (new-project) — the one surface the
+          project dock omits. */}
       <Animated.View
         style={[styles.captureDock, dockStyle]}
         pointerEvents="box-none"
       >
-        {manualOpen && cap.pendingThought === null && !cap.isRecording ? (
-          <ManualBar
-            onCreateProject={handleCreateProject}
-            onDismissEmpty={() => setManualOpen(false)}
-          />
-        ) : null}
-        {cap.pendingThought !== null ? (
-          <CaptureResolver
-            text={cap.pendingThought}
-            ideas={cap.recentIdeas}
-            projects={projects}
-            picking={cap.picking}
-            onTogglePicking={() => cap.setPicking(!cap.picking)}
-            onResolve={cap.resolveCapture}
-            onDismiss={cap.dismissPending}
-            seedType={cap.seedType}
-          />
-        ) : null}
-        {cap.composerOpen || cap.isRecording ? (
-          <CaptureBar
-            onSubmit={cap.capture}
-            onVoice={cap.startRecording}
-            isRecording={cap.isRecording}
-            transcript={cap.transcript}
-            onStop={cap.stopRecording}
-            onCancel={cap.cancelRecording}
-            autoFocus={cap.composerOpen}
-            onDismissEmpty={() => cap.setComposerOpen(false)}
-          />
-        ) : null}
+        <CaptureComposer
+          cap={cap}
+          projects={projects}
+          onManualCreate={handleCreateProject}
+          manualOpen={manualOpen}
+          onManualDismiss={() => setManualOpen(false)}
+        />
       </Animated.View>
 
       <DayDetailSheet

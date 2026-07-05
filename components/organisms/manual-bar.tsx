@@ -1,11 +1,5 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, TextInput } from "react-native";
-import Animated, {
-  Easing,
-  FadeOut,
-  SlideInDown,
-  useReducedMotion,
-} from "react-native-reanimated";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -25,11 +19,12 @@ import { tokens, useTheme } from "@/constants/theme";
  * rewrite.
  *
  * Anatomy mirrors the CaptureBar so the dock reads as one instrument: the same
- * pill radius, 56pt line, and capture-lift. But it rides the NEUTRAL action slab
- * (`accent.clay`), never a type tint — a project belongs to no entry type, and
- * the slab is the surface that means "interface, not content" (same object as
- * the capture resolver and the recording bar). A mono "NEW PROJECT" kicker is
- * the channel label, parallel to the amber edge-bar on the idea capture line.
+ * 56pt line inside the shared DockShell. It's FRAMELESS — the shell owns the
+ * radius, elevation, entrance, and the NEUTRAL slab fill (`accent.clay`); this
+ * bar renders only its row on-slab. The slab (never a type tint) is the surface
+ * that means "interface, not content" — a project belongs to no entry type. A
+ * mono "NEW PROJECT" kicker is the channel label, the instrument-panel parallel
+ * to the edge-bar on the idle capture line.
  */
 interface ManualBarProps {
   /** Create a project from the typed name and (typically) navigate to it. */
@@ -43,7 +38,6 @@ export function ManualBar({
   onDismissEmpty,
 }: ManualBarProps): React.ReactElement {
   const { colors } = useTheme();
-  const reduced = useReducedMotion();
 
   const [draft, setDraft] = useState("");
   const hasText = draft.trim().length > 0;
@@ -61,19 +55,7 @@ export function ManualBar({
   };
 
   return (
-    <Animated.View
-      entering={
-        reduced
-          ? undefined
-          : SlideInDown.duration(320).easing(Easing.out(Easing.cubic))
-      }
-      exiting={reduced ? undefined : FadeOut.duration(110)}
-      style={[
-        styles.bar,
-        { backgroundColor: colors.accent.clay },
-        tokens.elevation.capture,
-      ]}
-    >
+    <View style={styles.bar}>
       {/* The channel label — mono kicker reading what this line opens, the
           instrument-panel parallel to the capture line's amber edge-bar. */}
       <ThemedText type="label" style={[styles.kicker, { color: onSlab }]}>
@@ -121,7 +103,7 @@ export function ManualBar({
           <IconSymbol name="close" size={22} color={onSlab} />
         </Pressable>
       )}
-    </Animated.View>
+    </View>
   );
 }
 
@@ -132,16 +114,15 @@ function withDimmed(hex: string): string {
 }
 
 const styles = StyleSheet.create({
+  // Frameless: the DockShell owns radius, slab fill, clip, elevation, entrance.
+  // The bar is just the row on-slab; it sizes the shell via minHeight.
   bar: {
     flexDirection: "row",
     alignItems: "center",
     minHeight: 56,
-    borderRadius: tokens.radius.pill,
     paddingLeft: tokens.space.lg,
     paddingRight: tokens.space.xs,
     gap: tokens.space.md,
-    overflow: "hidden",
-    marginBottom: tokens.space.md,
   },
   kicker: {
     // The channel label sits flush left as a fixed prefix, not a growing word.

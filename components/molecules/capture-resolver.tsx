@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
-  FadeOut,
   LinearTransition,
-  SlideInDown,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -26,36 +24,63 @@ import type { Scheme } from "@/constants/theme";
 import { horizonEndDate, horizonLabel } from "@/lib/horizons";
 import type { DbProject, DueRange, EntryType } from "@/lib/types";
 
-// The resolver bar is the one surface in Field Lab that means "interface
-// affordance, not content": it lifts the resolver off the field as the doorway
-// it is, and can never be mistaken for a single type the way the old amber chrome
-// was (amber = idea everywhere else). The bar now follows the active scheme — a
-// light slab in light mode, a graphite slab in dark mode — so its inks track the
-// SAME scheme as the bar surface (otherwise an off-scheme ink would vanish on it).
+// The resolver rides the dock's ONE committed ground — the neutral action slab
+// (`accent.clay`: slate in light, off-white in dark), the same slab the recorder
+// and new-project bar use, so the dock morphs as one interface object with no
+// mid-hand-off color flip. It's the surface that means "interface, not content"
+// and can never be mistaken for a type the way the old amber chrome was. All its
+// on-bar inks and tonal steps are derived FROM the slab (onClay + clayPressed),
+// not from scheme paper — otherwise an off-slab ink would vanish on the slab.
 type BarPalette = {
-  bar: string; // chooser bar surface
-  ink: string; // primary on-bar text
-  inkMuted: string; // recessive on-bar text
-  panel: string; // recessed workbench well
-  chip: string; // raised pill on the workbench well
+  ink: string; // primary on-slab text/icon
+  inkMuted: string; // recessive on-slab text (onClay at reduced alpha)
+  panel: string; // recessed workbench well — a deeper step of the slab
+  chip: string; // raised pill on the well — a lifted onClay wash
 };
 
+// On-slab ink at reduced alpha: the recessive voice (echo line, value words'
+// muted state, kickers) without a new token — derived straight from onClay so it
+// tracks the scheme flip with the slab.
+function onSlabMuted(onClay: string): string {
+  return `${onClay}A6`; // ~65% — clears the slab in both schemes, reads recessive
+}
+
+// A lifted step ON the slab — the raised chip (free-note pill, idea chips). A
+// low-alpha onClay wash reads as "raised off the slab" in both schemes without
+// needing a scheme-paper color that would break the single-ground morph.
+function onSlabRaised(onClay: string): string {
+  return `${onClay}1F`; // ~12% wash
+}
+
 function barPalette(scheme: Scheme): BarPalette {
-  const c = tokens.color[scheme];
+  const a = tokens.accent[scheme];
   return {
-    bar: c.paper,
-    ink: c.ink,
-    inkMuted: c.inkMuted,
-    panel: c.surfaceSubtle,
-    chip: c.surface,
+    ink: a.onClay,
+    inkMuted: onSlabMuted(a.onClay),
+    panel: a.clayPressed, // the deeper slab step reads as a recessed well
+    chip: onSlabRaised(a.onClay),
   };
 }
 
-// Verb type-color on the bar — the bright electric codes clear AA on the graphite
-// dark surface; on the light paper surface the scheme-tuned kicker shades keep
-// the same legibility, so the verb color tracks the active scheme too.
-function verbColor(type: EntryType): string {
-  return entryColor(type);
+// Verb type-color on the slab — the one place a type hue appears on the dock;
+// everything else is neutral on-slab ink. The slab INVERTS per scheme (dark
+// slate in light mode, off-white in dark mode), so the AA-safe verb shade
+// inverts with it: the bright electric code reads on the dark slate slab
+// (light scheme), while on the off-white slab (dark scheme) the electric codes
+// wash out and the darker `typeKicker.light` shades are the ones that clear it.
+// Both directions verified ≥4.5:1 (deadline reaches AA-large on slate, fine for
+// the large bold verb text). This mirrors the system's existing rule that
+// type-colored TEXT uses kicker shades while dots/edge-bars use the raw code.
+const KICKER_LIGHT: Record<EntryType, string> = {
+  deadline: tokens.color.typeKicker.light.bills,
+  todo: tokens.color.typeKicker.light.todo,
+  idea: tokens.color.typeKicker.light.ideas,
+};
+
+function verbColor(type: EntryType, scheme: Scheme): string {
+  // Dark scheme → off-white slab → use the darker kicker shade; light scheme →
+  // dark slate slab → the electric code clears it.
+  return scheme === "dark" ? KICKER_LIGHT[type] : entryColor(type);
 }
 
 // A recent idea the captured thought can be filed under — same shape the link
@@ -176,11 +201,11 @@ export function CaptureResolver({
   const reduced = useReducedMotion();
   const { scheme } = useTheme();
 
-  // The bar surface + on-bar inks track the active scheme: a light paper slab in
-  // light mode, a graphite slab in dark mode. Resolved here so every readout on
-  // the bar stays legible against whichever surface the scheme picks.
+  // On-slab inks + tonal steps, all derived from the clay slab the shell paints
+  // under this content. The slab inverts per scheme (dark slate in light mode,
+  // off-white in dark), so these track it: primary/muted on-slab ink, a recessed
+  // workbench well, and a raised chip — every readout stays legible on the slab.
   const {
-    bar: BAR,
     ink: BAR_INK,
     inkMuted: BAR_INK_MUTED,
     panel: BAR_PANEL,
@@ -288,8 +313,8 @@ export function CaptureResolver({
     }
   }
 
-  // Detail-panel accent — the selected type's bright code (reads on the bar).
-  const accent = verbColor(selected ?? "todo");
+  // Detail-panel accent — the selected type's AA-safe verb shade on the slab.
+  const accent = verbColor(selected ?? "todo", scheme);
   // Immediacy over bounce: a quick eased reflow, no spring overshoot.
   const layout = reduced
     ? undefined
@@ -302,18 +327,13 @@ export function CaptureResolver({
 
   return (
     <Animated.View
-      // The whole resolver rises up from under the tab bar — one decisive slide.
-      entering={
-        reduced
-          ? undefined
-          : SlideInDown.duration(320).easing(Easing.out(Easing.cubic))
-      }
-      exiting={reduced ? undefined : FadeOut.duration(110)}
+      // FRAMELESS: the DockShell owns the frame, the clay slab fill, the radius,
+      // the elevation, and the single slide-up entrance — so the resolver just
+      // renders its content on the shared ground, and the dock morphs into it in
+      // place instead of a separate card sliding up over the bar. `layout` stays:
+      // it's the INTERNAL two-step carousel reflow, not the frame entrance.
       layout={layout}
-      // The scheme-aware interface slab — the one surface that reads as INTERFACE,
-      // lifted off the field. Light paper in light mode, graphite in dark; no type
-      // tint: nothing here belongs to one type.
-      style={[styles.card, { backgroundColor: BAR }, tokens.elevation.capture]}
+      style={styles.card}
     >
       {/* The viewport — clips the 2-wide track so only one step shows. Its width
           is measured to drive the slide distance; its height is animated to the
@@ -373,14 +393,14 @@ export function CaptureResolver({
               >
                 <ResolverVerb
                   label="Keep"
-                  color={verbColor("idea")}
+                  color={verbColor("idea", scheme)}
                   onPress={() => onResolve({ kind: "idea" })}
                   accessibilityLabel="Keep as idea"
                 />
                 <ResolverSep color={BAR_INK_MUTED} />
                 <ResolverVerb
                   label="do it"
-                  color={verbColor("todo")}
+                  color={verbColor("todo", scheme)}
                   selected={selected === "todo"}
                   onPress={() => selectDated("todo")}
                   accessibilityLabel="Make it a to-do"
@@ -389,7 +409,7 @@ export function CaptureResolver({
                 <ResolverSep color={BAR_INK_MUTED} />
                 <ResolverVerb
                   label="by a date"
-                  color={verbColor("deadline")}
+                  color={verbColor("deadline", scheme)}
                   selected={selected === "deadline"}
                   onPress={() => selectDated("deadline")}
                   accessibilityLabel="Make it a deadline"
@@ -677,13 +697,11 @@ function daysToWeekend(): number {
 }
 
 const styles = StyleSheet.create({
-  // The interface bar — one neutral object lifted off the field, scheme-aware
-  // (surface set at runtime). Sharp instrument corner, no type-tinted edge:
-  // nothing here belongs to one type.
+  // Frameless: the DockShell owns radius, the clay slab fill, elevation, and the
+  // entrance. This keeps only `overflow: hidden` so the internal two-step
+  // carousel stays clipped to the resolver's bounds as it slides.
   card: {
-    borderRadius: tokens.radius.lg,
     overflow: "hidden",
-    marginBottom: tokens.space.sm,
   },
   body: {
     paddingVertical: tokens.space.sm,

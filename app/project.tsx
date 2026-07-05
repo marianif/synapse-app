@@ -1,8 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,15 +12,18 @@ import {
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { CaptureResolver } from "@/components/molecules/capture-resolver";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DirectRow } from "@/components/molecules/direct-row";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
 import { ProjectNoteComposerSheet } from "@/components/molecules/project-note-composer-sheet";
 import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sheet";
 import { ProjectPullInSheet } from "@/components/molecules/project-pull-in-sheet";
-import { CaptureBar } from "@/components/organisms/capture-bar";
+import {
+  CaptureBackdrop,
+  CaptureComposer,
+} from "@/components/organisms/capture-composer";
 import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
+import { ProjectFab } from "@/components/organisms/project-fab";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { tokens, useTheme } from "@/constants/theme";
 import { useCapture } from "@/hooks/use-capture";
@@ -147,9 +149,7 @@ export default function ProjectScreen(): React.ReactElement {
   const cap = useCapture({ lockedProjectId: id ?? null });
 
   function lastActiveLabel(epochSeconds: number): string {
-    const diffDays = Math.floor(
-      (Date.now() / 1000 - epochSeconds) / 86400,
-    );
+    const diffDays = Math.floor((Date.now() / 1000 - epochSeconds) / 86400);
     if (diffDays <= 0) return "TODAY";
     if (diffDays === 1) return "YESTERDAY";
     if (diffDays < 7) return `${diffDays}D AGO`;
@@ -167,7 +167,7 @@ export default function ProjectScreen(): React.ReactElement {
     for (const n of notes) ts.push(n.updated_at);
     return ts.length > 0
       ? Math.max(...ts)
-      : project?.updated_at ?? Math.floor(Date.now() / 1000);
+      : (project?.updated_at ?? Math.floor(Date.now() / 1000));
   }, [project, spine, ideas, notes]);
 
   const openCount = useMemo(
@@ -211,9 +211,7 @@ export default function ProjectScreen(): React.ReactElement {
   }, [notes]);
 
   function ruleOpacity(epochSeconds: number): number {
-    const daysSince = Math.floor(
-      (Date.now() / 1000 - epochSeconds) / 86400,
-    );
+    const daysSince = Math.floor((Date.now() / 1000 - epochSeconds) / 86400);
     if (daysSince === 0) return 1.0;
     if (daysSince === 1) return 0.6;
     return 0.3;
@@ -290,17 +288,6 @@ export default function ProjectScreen(): React.ReactElement {
       );
     }
   };
-
-  // The capture dock is summoned, not always-on. An outside tap puts it away
-  // (mirrors the home board). The resolver is excluded from the backdrop: a
-  // pending thought is a caught idea we don't silently drop on a stray tap — it
-  // keeps its own explicit keep/discard controls.
-  const dockOpen = cap.composerOpen || cap.isRecording;
-  const dismissDock = useCallback((): void => {
-    if (cap.isRecording) void cap.cancelRecording();
-    cap.setComposerOpen(false);
-    Keyboard.dismiss();
-  }, [cap]);
 
   // DirectRow done/delete handlers — same shape as the home board, so a line
   // triaged here behaves exactly like the same line on the board.
@@ -465,26 +452,6 @@ export default function ProjectScreen(): React.ReactElement {
             Open count (primary), done ratio, and last-active label in the
             mono signal layer so the eye gets the project's vital signs
             without a dedicated hero section. */}
-        <View style={styles.statsBar}>
-          <ThemedText
-            type="mono"
-            style={[styles.statsPrimary, { color: colors.ink }]}
-          >
-            {openCount} OPEN
-          </ThemedText>
-          <ThemedText
-            type="mono"
-            style={[styles.statsSecondary, { color: colors.inkMuted }]}
-          >
-            {doneCount} / {spine.length} DONE
-          </ThemedText>
-          <ThemedText
-            type="mono"
-            style={[styles.statsSecondary, { color: colors.inkMuted }]}
-          >
-            {lastActiveLabel(lastActive)}
-          </ThemedText>
-        </View>
 
         {/* The actionable spine — open todos and deadlines filed here.
             Uses DirectRow so swipe-to-done and swipe-to-delete are the same
@@ -738,50 +705,25 @@ export default function ProjectScreen(): React.ReactElement {
         onConfirm={entryDeleteConfirm.confirm}
         onCancel={entryDeleteConfirm.cancel}
       />
-      {/* Outside-tap backdrop — only while a dock surface is up. Sits under the
-          dock so the bar stays interactive; the resolver is intentionally not
-          covered, so a caught thought isn't dropped by a stray tap. */}
-      {dockOpen ? (
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={dismissDock}
-          accessibilityLabel="Dismiss capture"
-        />
-      ) : null}
+      {/* Outside-tap backdrop — screen-level so it spans the whole surface while
+          the dock sits pinned below. Only exists while a dismissible surface is
+          up; the resolver is intentionally not covered. */}
+      <CaptureBackdrop cap={cap} />
       {/* The capture dock — the same instrument as the home board, pinned to the
-          bottom and pre-locked to this project. Only mounts a surface when
-          summoned: composer/recorder (bar) or the pending-thought resolver. */}
+          bottom and pre-locked to this project (no ManualBar: a project can't
+          birth a sibling project). Only mounts a surface when summoned. */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.dock}
         pointerEvents="box-none"
       >
-        {cap.pendingThought !== null ? (
-          <CaptureResolver
-            text={cap.pendingThought}
-            ideas={cap.recentIdeas}
-            projects={projects}
-            picking={cap.picking}
-            onTogglePicking={() => cap.setPicking(!cap.picking)}
-            onResolve={cap.resolveCapture}
-            onDismiss={cap.dismissPending}
-            lockedProjectId={cap.lockedProjectId}
-            seedType={cap.seedType}
-          />
-        ) : null}
-        {cap.composerOpen || cap.isRecording ? (
-          <CaptureBar
-            onSubmit={cap.capture}
-            onVoice={cap.startRecording}
-            isRecording={cap.isRecording}
-            transcript={cap.transcript}
-            onStop={cap.stopRecording}
-            onCancel={cap.cancelRecording}
-            autoFocus={cap.composerOpen}
-            onDismissEmpty={() => cap.setComposerOpen(false)}
-          />
-        ) : null}
+        <CaptureComposer cap={cap} projects={projects} />
       </KeyboardAvoidingView>
+      <ProjectFab
+        onAction={(key) => {
+          console.log("Project FAB action:", key);
+        }}
+      />
     </View>
   );
 }

@@ -3,10 +3,12 @@ import { useCallback, useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
+import Animated, {
+  useAnimatedScrollHandler,
+} from "react-native-reanimated";
 
 import { DiaryComposer } from "@/components/molecules/diary-composer";
 import {
@@ -22,6 +24,10 @@ import {
 import { tokens } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
+import {
+  TendrilRegistryProvider,
+  useTendrilRegistryOwner,
+} from "@/hooks/use-tendril-registry";
 
 export default function DiaryScreen(): React.ReactElement {
   const { entries, addEntry, removeEntry, refresh } = useDiary();
@@ -114,60 +120,94 @@ export default function DiaryScreen(): React.ReactElement {
     }, [refresh]),
   );
 
+  // Tendril registry — owns scrollY, the strip's bottom edge, and every note
+  // row's measured y. Consumed by the constellation to draw amber lines from
+  // a selected idea down to its diary notes as the user scrolls.
+  const registry = useTendrilRegistryOwner();
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      registry.scrollY.value = e.contentOffset.y;
+    },
+  });
+
+  const onStripLayout = useCallback(
+    (y: number, height: number) => {
+      registry.registerStripBottom(y + height);
+    },
+    [registry],
+  );
+
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView
+    <TendrilRegistryProvider value={registry}>
+      <KeyboardAvoidingView
         style={styles.flex}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <DiaryComposer ideas={ideas} onSave={handleSave} />
-
-        <IdeaConstellation
-          entries={boardEntries}
-          notes={entries}
-          selectedIdeaId={ideaId}
-          onSelectIdea={handleSelectIdea}
-          freeNoteCount={freeNoteCount}
-          onSelectFree={handleSelectFree}
-        />
-
-        <DiaryFilterBar
-          macro={macro}
-          onMacro={(m) => {
-            setMacro(m);
-            setIdeaId(null);
+        <Animated.ScrollView
+          style={styles.flex}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          onScroll={scrollHandler}
+          scrollEventThrottle={1}
+          ref={(node: unknown) => {
+            // Fan the AnimatedRef out to our loose registry ref so DiaryNote
+            // can measureLayout against the ScrollView. Callback ref bypasses
+            // Animated.ScrollView's strict AnimatedRef typing.
+            registry.contentRef.current = node;
           }}
-          ideaLabel={ideaLabel}
-          onOpenIdeaFilter={() => setIdeaSheetOpen(true)}
-          onClearIdea={() => setIdeaId(null)}
-        />
+        >
+          <DiaryComposer ideas={ideas} onSave={handleSave} />
 
-        <DiaryFeed
-          entries={visibleEntries}
-          linkedTitles={linkedTitles}
-          filtered={ideaId !== null || macro !== "all"}
-          onDelete={removeEntry}
-        />
-        <View style={styles.bottomSpacer} />
-      </ScrollView>
+          <View
+            onLayout={(e) => {
+              onStripLayout(e.nativeEvent.layout.y, e.nativeEvent.layout.height);
+            }}
+          >
+            <IdeaConstellation
+              entries={boardEntries}
+              notes={entries}
+              selectedIdeaId={ideaId}
+              onSelectIdea={handleSelectIdea}
+              freeNoteCount={freeNoteCount}
+              onSelectFree={handleSelectFree}
+            />
+          </View>
 
-      <LinkSheet
-        visible={ideaSheetOpen}
-        selected={ideaId}
-        ideas={ideasWithNotes}
-        onSelect={(id) => {
-          setIdeaId(id);
-          // Picking "Free note" (null) in the filter context means: show free.
-          if (id === null) setMacro("free");
-        }}
-        onClose={() => setIdeaSheetOpen(false)}
-      />
-    </KeyboardAvoidingView>
+          <DiaryFilterBar
+            macro={macro}
+            onMacro={(m) => {
+              setMacro(m);
+              setIdeaId(null);
+            }}
+            ideaLabel={ideaLabel}
+            onOpenIdeaFilter={() => setIdeaSheetOpen(true)}
+            onClearIdea={() => setIdeaId(null)}
+          />
+
+          <DiaryFeed
+            entries={visibleEntries}
+            linkedTitles={linkedTitles}
+            filtered={ideaId !== null || macro !== "all"}
+            onDelete={removeEntry}
+          />
+          <View style={styles.bottomSpacer} />
+        </Animated.ScrollView>
+
+        <LinkSheet
+          visible={ideaSheetOpen}
+          selected={ideaId}
+          ideas={ideasWithNotes}
+          onSelect={(id) => {
+            setIdeaId(id);
+            // Picking "Free note" (null) in the filter context means: show free.
+            if (id === null) setMacro("free");
+          }}
+          onClose={() => setIdeaSheetOpen(false)}
+        />
+      </KeyboardAvoidingView>
+    </TendrilRegistryProvider>
   );
 }
 

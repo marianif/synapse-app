@@ -108,9 +108,6 @@ function ThemedNavigationShell(): React.ReactElement | null {
               while still reading screen-local, param-driven title/kicker. */}
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="detail" />
-            <Stack.Screen name="projects" />
-            <Stack.Screen name="project" />
             <Stack.Screen name="modal" options={{ presentation: "modal" }} />
           </Stack>
         </ErrorBoundary>

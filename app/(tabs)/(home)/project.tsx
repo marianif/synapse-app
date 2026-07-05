@@ -26,6 +26,13 @@ import {
 import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
 import { ProjectComposer } from "@/components/organisms/project-composer";
 import type { ProjectComposerKind } from "@/components/organisms/project-composer";
+import {
+  ProjectEmptyFabPointer,
+  ProjectEmptyIdeasFrame,
+  ProjectEmptyNotesFrame,
+  ProjectEmptyOriginFrame,
+  ProjectEmptySpineFrame,
+} from "@/components/organisms/project-empty-sketch";
 import { ProjectFab } from "@/components/organisms/project-fab";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { tokens, useTheme } from "@/constants/theme";
@@ -508,7 +515,9 @@ export default function ProjectScreen(): React.ReactElement {
               Born from “{origin.title}”.
             </ThemedText>
           </Pressable>
-        ) : null}
+        ) : (
+          <ProjectEmptyOriginFrame visible={true} />
+        )}
 
         {/* Stats bar — compact instrument readout below provenance.
             Open count (primary), done ratio, and last-active label in the
@@ -522,12 +531,7 @@ export default function ProjectScreen(): React.ReactElement {
             already labels this section, so no duplicate kicker here. */}
         <View style={styles.section}>
           {spine.length === 0 ? (
-            <ThemedText
-              type="hand"
-              style={[styles.quiet, { color: colors.inkMuted }]}
-            >
-              Nothing on the line right now.
-            </ThemedText>
+            <ProjectEmptySpineFrame visible={true} />
           ) : (
             // Open lines first, then done lines (struck-through, dimmed dot —
             // DirectRow handles the styling intrinsically from entry.status).
@@ -587,7 +591,9 @@ export default function ProjectScreen(): React.ReactElement {
         {/* IDEAS — recall layer, intentionally quieter than the spine. A
             wrapped pin-row, each idea a slim chip, so the volume is clearly
             below the line above. */}
-        {ideas.length > 0 ? (
+        {ideas.length === 0 ? (
+          <ProjectEmptyIdeasFrame visible={true} />
+        ) : (
           <View style={styles.section}>
             <ThemedText
               type="micro"
@@ -628,7 +634,7 @@ export default function ProjectScreen(): React.ReactElement {
               ))}
             </View>
           </View>
-        ) : null}
+        )}
 
         {/* NOTES — the handwritten margin, now with session grouping so the
             margin reads like a dated journal. Each note is tappable to edit;
@@ -682,12 +688,7 @@ export default function ProjectScreen(): React.ReactElement {
             </View>
           ))}
           {notes.length === 0 ? (
-            <ThemedText
-              type="hand"
-              style={[styles.quiet, { color: colors.inkMuted }]}
-            >
-              No notes yet.
-            </ThemedText>
+            <ProjectEmptyNotesFrame visible={true} />
           ) : null}
           <Pressable
             onPress={() => {
@@ -800,11 +801,21 @@ export default function ProjectScreen(): React.ReactElement {
         />
       </View>
       {fabKind === null ? (
-        <ProjectFab
-          onAction={(key) => {
-            setFabKind(key as ProjectComposerKind);
-          }}
-        />
+        <>
+          <ProjectEmptyFabPointer
+            visible={
+              spine.length === 0 &&
+              ideas.length === 0 &&
+              notes.length === 0 &&
+              !origin
+            }
+          />
+          <ProjectFab
+            onAction={(key) => {
+              setFabKind(key as ProjectComposerKind);
+            }}
+          />
+        </>
       ) : null}
     </View>
   );

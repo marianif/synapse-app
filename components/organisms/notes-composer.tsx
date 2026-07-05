@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { WaveformVisualizer } from "@/components/atoms/waveform-bar";
@@ -40,14 +40,6 @@ export function NotesComposer({
   const inputRef = useRef<TextInput | null>(null);
   const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
 
-  // Explicit focus after mount — `autoFocus` doesn't fire reliably inside
-  // DockShell's opacity cross-fade.
-  useEffect(() => {
-    if (isRecording) return;
-    const t = setTimeout(() => inputRef.current?.focus(), 60);
-    return () => clearTimeout(t);
-  }, [isRecording]);
-
   const accent = colors.inkMuted;
   const hasText = draft.trim().length > 0;
 
@@ -77,6 +69,7 @@ export function NotesComposer({
 
   const handleSend = (): void => {
     if (!hasText) return;
+    Keyboard.dismiss();
     setLinkSheetOpen(true);
   };
 
@@ -88,7 +81,7 @@ export function NotesComposer({
 
   if (isRecording) {
     return (
-      <DockShell register="slab" contentKey="notes-composer-recording">
+      <DockShell register="surface" contentKey="notes-composer-recording">
         <View style={styles.recordingStage}>
           <Pressable
             onPress={handleCancelRecording}
@@ -133,10 +126,7 @@ export function NotesComposer({
       <DockShell register="surface" contentKey="notes-composer">
         <View style={styles.inputStage}>
           <View style={styles.kickerSlot}>
-            <ThemedText
-              type="micro"
-              style={[styles.kicker, { color: accent }]}
-            >
+            <ThemedText type="micro" style={[styles.kicker, { color: accent }]}>
               NOTE
             </ThemedText>
           </View>

@@ -24,7 +24,7 @@ export default function TabLayout(): React.ReactElement {
             tabBarButton: () => null,
           }}
         >
-          <Tabs.Screen name="index" />
+          <Tabs.Screen name="(home)" />
           <Tabs.Screen name="notes" />
         </Tabs>
         <CustomTabBar />

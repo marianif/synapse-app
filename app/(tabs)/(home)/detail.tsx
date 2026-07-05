@@ -1,4 +1,4 @@
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -303,9 +303,21 @@ export default function DetailScreen(): React.ReactElement {
     return (
       <SafeAreaView
         style={[styles.safeArea, { backgroundColor: colors.paper }]}
-        edges={["top", "bottom"]}
+        edges={["bottom"]}
       >
-        <ScreenHeader title="" onBack={() => router.back()} />
+        <Stack.Screen
+          options={{
+            headerShown: true,
+            header: () => (
+              <ScreenHeader
+                title=""
+                entryType={hintType}
+                onBack={() => router.back()}
+                inset
+              />
+            ),
+          }}
+        />
         <View style={styles.centered}>
           <ActivityIndicator color={entryKicker(hintType, scheme)} />
         </View>
@@ -319,8 +331,21 @@ export default function DetailScreen(): React.ReactElement {
     return (
       <SafeAreaView
         style={[styles.safeArea, { backgroundColor: colors.paper }]}
-        edges={["top", "bottom"]}
-      ></SafeAreaView>
+        edges={["bottom"]}
+      >
+        <Stack.Screen
+          options={{
+            headerShown: true,
+            header: () => (
+              <ScreenHeader
+                title="Not found"
+                onBack={() => router.back()}
+                inset
+              />
+            ),
+          }}
+        />
+      </SafeAreaView>
     );
   }
 
@@ -550,8 +575,23 @@ export default function DetailScreen(): React.ReactElement {
   return (
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: colors.paper }]}
-      edges={["top", "bottom"]}
+      edges={["bottom"]}
     >
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          header: () => (
+            <ScreenHeader
+              title={title}
+              kicker={STATUS_LABELS[effectiveStatus] ?? undefined}
+              entryType={type}
+              onBack={() => router.back()}
+              inset
+            />
+          ),
+        }}
+      />
+
       <KeyboardAvoidingView
         style={[styles.screen, { backgroundColor: colors.paper }]}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

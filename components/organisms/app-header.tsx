@@ -25,7 +25,7 @@ export function AppHeader({
 
   return (
     <>
-      <View style={styles.bar}>
+      <View style={[styles.bar, { backgroundColor: colors.paper }]}>
         <View style={styles.brand}>
           <EntryCluster
             types={["deadline", "todo", "idea"]}

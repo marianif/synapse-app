@@ -24,6 +24,7 @@ interface FabAction {
 
 interface ProjectFabProps {
   onAction?: (key: string) => void;
+  defaultOpen?: boolean;
 }
 
 // ─── Default actions per project screen ──────────────────────────────────────────
@@ -72,10 +73,13 @@ const STAGGER_MULTIPLIER = 1.6;
 
 // ─── Component ────────────────────────────────────────────────────────────────────
 
-export function ProjectFab({ onAction }: ProjectFabProps): React.ReactElement {
+export function ProjectFab({
+  onAction,
+  defaultOpen = false,
+}: ProjectFabProps): React.ReactElement {
   const { colors, scheme } = useTheme();
-  const [open, setOpen] = useState(false);
-  const isOpen = useSharedValue(0);
+  const [open, setOpen] = useState(defaultOpen);
+  const isOpen = useSharedValue(defaultOpen ? 1 : 0);
 
   const actions = getActions(colors, scheme);
 

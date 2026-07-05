@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/organisms/app-header";
 import { Stack } from "expo-router";
 
 // The home tab owns its own stack: the Field (index) is the only entry point,
@@ -7,7 +8,10 @@ import { Stack } from "expo-router";
 export default function HomeStackLayout(): React.ReactElement {
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
+      <Stack.Screen
+        name="index"
+        options={{ headerShown: true, header: () => <AppHeader /> }}
+      />
       <Stack.Screen name="detail" />
       <Stack.Screen name="projects" />
       <Stack.Screen name="project" />

@@ -26,13 +26,7 @@ import {
 import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
 import { ProjectComposer } from "@/components/organisms/project-composer";
 import type { ProjectComposerKind } from "@/components/organisms/project-composer";
-import {
-  ProjectEmptyFabPointer,
-  ProjectEmptyIdeasFrame,
-  ProjectEmptyNotesFrame,
-  ProjectEmptyOriginFrame,
-  ProjectEmptySpineFrame,
-} from "@/components/organisms/project-empty-sketch";
+import { ProjectEmptyFabPointer } from "@/components/organisms/project-empty-sketch";
 import { ProjectFab } from "@/components/organisms/project-fab";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { tokens, useTheme } from "@/constants/theme";
@@ -410,7 +404,6 @@ export default function ProjectScreen(): React.ReactElement {
               <ScreenHeader
                 title="Project"
                 onBack={() => router.back()}
-                inset
               />
             ),
           }}
@@ -426,6 +419,11 @@ export default function ProjectScreen(): React.ReactElement {
   }
 
   const archived = project.status === "archived";
+  const isEmpty =
+    spine.length === 0 &&
+    ideas.length === 0 &&
+    notes.length === 0 &&
+    !origin;
 
   // Archived projects: a hairline tonal wash on the paper, never a banner.
   // The kicker on the header says "ARCHIVED PROJECT"; the surface whispers it.
@@ -465,7 +463,6 @@ export default function ProjectScreen(): React.ReactElement {
                 </Pressable>
               }
               onBack={() => router.back()}
-              inset
               headerRight={
                 <Pressable
                   onPress={() => openOverflow("menu")}
@@ -515,9 +512,7 @@ export default function ProjectScreen(): React.ReactElement {
               Born from “{origin.title}”.
             </ThemedText>
           </Pressable>
-        ) : (
-          <ProjectEmptyOriginFrame visible={true} />
-        )}
+        ) : null}
 
         {/* Stats bar — compact instrument readout below provenance.
             Open count (primary), done ratio, and last-active label in the
@@ -531,7 +526,14 @@ export default function ProjectScreen(): React.ReactElement {
             already labels this section, so no duplicate kicker here. */}
         <View style={styles.section}>
           {spine.length === 0 ? (
-            <ProjectEmptySpineFrame visible={true} />
+            isEmpty ? null : (
+              <ThemedText
+                type="hand"
+                style={[styles.quiet, { color: colors.inkMuted }]}
+              >
+                Nothing on the line right now.
+              </ThemedText>
+            )
           ) : (
             // Open lines first, then done lines (struck-through, dimmed dot —
             // DirectRow handles the styling intrinsically from entry.status).
@@ -591,9 +593,7 @@ export default function ProjectScreen(): React.ReactElement {
         {/* IDEAS — recall layer, intentionally quieter than the spine. A
             wrapped pin-row, each idea a slim chip, so the volume is clearly
             below the line above. */}
-        {ideas.length === 0 ? (
-          <ProjectEmptyIdeasFrame visible={true} />
-        ) : (
+        {ideas.length > 0 ? (
           <View style={styles.section}>
             <ThemedText
               type="micro"
@@ -634,7 +634,7 @@ export default function ProjectScreen(): React.ReactElement {
               ))}
             </View>
           </View>
-        )}
+        ) : null}
 
         {/* NOTES — the handwritten margin, now with session grouping so the
             margin reads like a dated journal. Each note is tappable to edit;
@@ -687,33 +687,40 @@ export default function ProjectScreen(): React.ReactElement {
               </View>
             </View>
           ))}
-          {notes.length === 0 ? (
-            <ProjectEmptyNotesFrame visible={true} />
-          ) : null}
-          <Pressable
-            onPress={() => {
-              setEditingNote(null);
-              setNoteOpen(true);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="Write a note about this project"
-            style={({ pressed }) => [
-              styles.addNoteBtn,
-              pressed && styles.pressed,
-            ]}
-          >
-            <MaterialCommunityIcons
-              name="plus"
-              size={16}
-              color={colors.inkMuted}
-            />
+          {notes.length === 0 && !isEmpty ? (
             <ThemedText
-              type="micro"
-              style={[styles.addNoteLabel, { color: colors.inkMuted }]}
+              type="hand"
+              style={[styles.quiet, { color: colors.inkMuted }]}
             >
-              {notes.length === 0 ? "WRITE A NOTE" : "ADD A NOTE"}
+              No notes yet.
             </ThemedText>
-          </Pressable>
+          ) : null}
+          {isEmpty ? null : (
+            <Pressable
+              onPress={() => {
+                setEditingNote(null);
+                setNoteOpen(true);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Write a note about this project"
+              style={({ pressed }) => [
+                styles.addNoteBtn,
+                pressed && styles.pressed,
+              ]}
+            >
+              <MaterialCommunityIcons
+                name="plus"
+                size={16}
+                color={colors.inkMuted}
+              />
+              <ThemedText
+                type="micro"
+                style={[styles.addNoteLabel, { color: colors.inkMuted }]}
+              >
+                {notes.length === 0 ? "WRITE A NOTE" : "ADD A NOTE"}
+              </ThemedText>
+            </Pressable>
+          )}
         </View>
       </ScrollView>
       <ProjectOverflowSheet
@@ -802,15 +809,9 @@ export default function ProjectScreen(): React.ReactElement {
       </View>
       {fabKind === null ? (
         <>
-          <ProjectEmptyFabPointer
-            visible={
-              spine.length === 0 &&
-              ideas.length === 0 &&
-              notes.length === 0 &&
-              !origin
-            }
-          />
+          <ProjectEmptyFabPointer visible={isEmpty} />
           <ProjectFab
+            defaultOpen={isEmpty}
             onAction={(key) => {
               setFabKind(key as ProjectComposerKind);
             }}

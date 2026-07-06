@@ -568,7 +568,7 @@ export async function insertDiaryEntry(
   linkedEntryId: string | null = null,
   linkedProjectId: string | null = null,
 ): Promise<DbDiaryEntry> {
-  const db = getDb();
+  const db = await ensureDb();
   const id = generateId();
   const now = Math.floor(Date.now() / 1000);
   await db.runAsync(
@@ -594,7 +594,7 @@ export async function insertDiaryEntry(
 
 /** All diary entries, newest first. */
 export async function getDiaryEntries(): Promise<DbDiaryEntry[]> {
-  const db = getDb();
+  const db = await ensureDb();
   return db.getAllAsync<DbDiaryEntry>(
     'SELECT * FROM diary_entries ORDER BY created_at DESC',
   );
@@ -602,7 +602,7 @@ export async function getDiaryEntries(): Promise<DbDiaryEntry[]> {
 
 /** Delete a diary entry by id. */
 export async function deleteDiaryEntry(id: string): Promise<void> {
-  const db = getDb();
+  const db = await ensureDb();
   await db.runAsync('DELETE FROM diary_entries WHERE id = ?', id);
 }
 
@@ -619,7 +619,7 @@ export async function updateDiaryEntry(
     linkedProjectId?: string | null;
   },
 ): Promise<void> {
-  const db = getDb();
+  const db = await ensureDb();
   const updates: string[] = [];
   const values: (string | number | null)[] = [];
   if (data.body !== undefined) {
@@ -655,7 +655,7 @@ export async function updateDiaryEntry(
  * as autonomous notes instead of dangling.
  */
 export async function unlinkDiaryNotesForEntry(entryId: string): Promise<void> {
-  const db = getDb();
+  const db = await ensureDb();
   await db.runAsync(
     'UPDATE diary_entries SET linked_entry_id = NULL WHERE linked_entry_id = ?',
     entryId,
@@ -698,6 +698,21 @@ export function getDb(): SQLite.SQLiteDatabase {
     );
   }
   return dbInstance;
+}
+
+let initPromise: Promise<SQLite.SQLiteDatabase> | null = null;
+
+/**
+ * Awaits database initialization (memoized) and returns the instance. Unlike
+ * `getDb()`, safe to call from code that runs before `DatabaseProvider`'s own
+ * init effect has resolved — e.g. `useDiary`, which owns its own fetch cycle
+ * outside `DatabaseContext`.
+ */
+export function ensureDb(): Promise<SQLite.SQLiteDatabase> {
+  if (!initPromise) {
+    initPromise = initDatabase();
+  }
+  return initPromise;
 }
 
 /**

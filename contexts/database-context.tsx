@@ -2,17 +2,15 @@ import dayjs from "dayjs";
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import { AppState } from "react-native";
 
-import * as SQLite from "expo-sqlite";
-
 import {
   deleteProject as dbDeleteProject,
   insertProject as dbInsertProject,
   setProjectFeatured as dbSetProjectFeatured,
   touchProject as dbTouchProject,
   updateProject as dbUpdateProject,
+  ensureDb,
   generateId,
   getProjects,
-  initDatabase,
   seedDefaultProjectsOnce,
 } from "@/lib/database";
 import { seedDevDataIfEmpty } from "@/lib/dev-seed";
@@ -155,14 +153,7 @@ function toEntryPatch(data: UpdateEntryInput, now: number): Partial<DbEntry> {
   return patch;
 }
 
-let initPromise: Promise<SQLite.SQLiteDatabase> | null = null;
-
-async function getDb(): Promise<SQLite.SQLiteDatabase> {
-  if (!initPromise) {
-    initPromise = initDatabase();
-  }
-  return initPromise;
-}
+const getDb = ensureDb;
 
 interface DatabaseProviderProps {
   children: React.ReactNode;

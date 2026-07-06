@@ -115,7 +115,7 @@ export default function ProjectScreen(): React.ReactElement {
     });
   };
 
-  const { spine, ideas, origin, notes } = useMemo(() => {
+  const { spine, ideas, origin, notes, presentTypes } = useMemo(() => {
     const filed = entries.filter((e) => e.project_id === id);
     // Spine: open AND done todos/deadlines, sorted by sortDirect so done
     // sinks to the bottom. DirectRow renders done lines with strikethrough +
@@ -123,6 +123,12 @@ export default function ProjectScreen(): React.ReactElement {
     // which is what we want — the user can clear a done line if they're
     // sure, or leave it as a record of completion.
     const todoLike = filed.filter((e) => isTodoFamily(e.type));
+    // Which entry types this project already carries — drives which starter
+    // prompts survive. A starter for type T persists until T has a real entry,
+    // so each of the three channels retires independently (not all-or-nothing
+    // on the first capture). Counts entries of ANY status; a completed todo
+    // still means the todo channel has been used.
+    const present = new Set<EntryType>(filed.map((e) => e.type as EntryType));
     return {
       spine: sortDirect(todoLike),
       ideas: filed.filter((e) => e.type === "idea" && !isDone(e)),
@@ -130,6 +136,7 @@ export default function ProjectScreen(): React.ReactElement {
         (e) => e.type === "idea" && e.promoted_project_id === id,
       ),
       notes: diaryEntries.filter((n) => n.linked_project_id === id),
+      presentTypes: present,
     };
   }, [entries, diaryEntries, id]);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -471,29 +478,9 @@ export default function ProjectScreen(): React.ReactElement {
             to one life area, not a separate read-only view. The gauge above
             already labels this section, so no duplicate kicker here. */}
         <View style={styles.section}>
-          {spine.length === 0 ? (
-            isEmpty ? (
-              // Empty project: the instrument panel at rest. One starter row per
-              // channel — topic-suited lines for a seeded default (a real head-
-              // start), generic labels for a user-created project. Tapping arms
-              // the same composer the FAB opens, so there's one add-path.
-              <ProjectStarters
-                projectTitle={project.title}
-                onStart={handleStartFromStarter}
-              />
-            ) : (
-              <ThemedText
-                type="hand"
-                style={[styles.quiet, { color: colors.inkMuted }]}
-              >
-                Nothing on the line right now.
-              </ThemedText>
-            )
-          ) : (
-            // Open lines first, then done lines (struck-through, dimmed dot —
-            // DirectRow handles the styling intrinsically from entry.status).
-            // Swipe-to-delete still works on done rows; the user clears them
-            // if they want, or leaves them as the week's record of work.
+          {/* Real spine lines first. Open lines, then done (struck-through,
+              dimmed dot — DirectRow styles intrinsically from entry.status). */}
+          {spine.length > 0 ? (
             <>
               {spinePageItems.map((e) => (
                 <DirectRow
@@ -512,7 +499,19 @@ export default function ProjectScreen(): React.ReactElement {
                 }
               />
             </>
-          )}
+          ) : null}
+
+          {/* Starter prompts — the instrument panel's unlit channels. One row
+              per type the project doesn't yet carry (topic-suited on a seeded
+              default, generic on a user-created project). Persists PER TYPE:
+              after a todo lands it sits above, and the idea/deadline prompts
+              stay below until each is used. Renders null once all three types
+              exist. Decoupled from `isEmpty` so it coexists with real rows. */}
+          <ProjectStarters
+            projectTitle={project.title}
+            presentTypes={presentTypes}
+            onStart={handleStartFromStarter}
+          />
         </View>
 
         {/* IDEAS — recall layer, intentionally quieter than the spine. A

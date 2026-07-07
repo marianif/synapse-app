@@ -1,4 +1,3 @@
-import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -55,7 +54,6 @@ export function DirectOverview({
   entries,
   onCapture,
 }: DirectOverviewProps): React.ReactElement | null {
-  const router = useRouter();
   const { updateEntryStatus, deleteEntry, projects } = useDatabase();
   const { colors } = useTheme();
   // AA-safe type shades for the empty-state title + CTA. Hooks must resolve at
@@ -198,13 +196,6 @@ export function DirectOverview({
     });
   };
 
-  const handleEdit = (entry: DbEntry): void => {
-    router.push({
-      pathname: "/detail",
-      params: { id: entry.id, entryType: entry.type },
-    });
-  };
-
   return (
     <View style={styles.section}>
       <DirectFilterBar value={filter} counts={counts} onChange={changeFilter} />
@@ -250,7 +241,6 @@ export function DirectOverview({
         onClose={() => setSelectedEntry(null)}
         onMarkDone={handleMarkDone}
         onDelete={handleDelete}
-        onEdit={handleEdit}
       />
 
       <ConfirmSheet

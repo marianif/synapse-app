@@ -326,13 +326,6 @@ export default function ProjectScreen(): React.ReactElement {
     });
   };
 
-  const handleEditEntry = (entry: DbEntry): void => {
-    router.push({
-      pathname: "/detail",
-      params: { id: entry.id, entryType: entry.type },
-    });
-  };
-
   const handleRename = (next: string): void => {
     if (!project) return;
     void updateProject(project.id, { title: next }).catch((err) =>
@@ -691,7 +684,6 @@ export default function ProjectScreen(): React.ReactElement {
         onClose={() => setSelectedEntry(null)}
         onMarkDone={handleMarkDone}
         onDelete={handleDeleteEntry}
-        onEdit={handleEditEntry}
       />
       <ConfirmSheet
         visible={entryDeleteConfirm.visible}

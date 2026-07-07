@@ -1,24 +1,42 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
+  FadeIn,
   FadeInUp,
+  FadeOut,
+  LinearTransition,
   useReducedMotion,
 } from "react-native-reanimated";
 
+import DateInput from "@/components/atoms/DateInput";
 import { EntryDot } from "@/components/atoms/entry-dot";
+import { ChipRail, SelectChip } from "@/components/atoms/select-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
+import TimeInput from "@/components/atoms/TimeInput";
+import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
 import { entryKicker, tokens, useTheme } from "@/constants/theme";
-import {
-  daysUntil,
-  isDone,
-  isWhenCharged,
-  whenLabel,
-} from "@/lib/direct-when";
-import { horizonReadout } from "@/lib/horizons";
-import { humanizeRule } from "@/lib/recurrence";
+import { useDatabase } from "@/hooks/use-database/use-database";
+import { daysUntil, isDone, isWhenCharged, whenLabel } from "@/lib/direct-when";
+import { horizonEndDate, horizonReadout } from "@/lib/horizons";
+import { humanizeRule, parseRule } from "@/lib/recurrence";
 
-import type { DbEntry, DbProject, EntryType } from "@/lib/types";
+import type {
+  DbEntry,
+  DbProject,
+  DueRange,
+  EntryType,
+  RecurrenceFrequency,
+  RecurrenceRule,
+} from "@/lib/types";
 
 interface DirectDetailSheetProps {
   entry: DbEntry | null;
@@ -27,8 +45,46 @@ interface DirectDetailSheetProps {
   onClose: () => void;
   onMarkDone: (entry: DbEntry) => void;
   onDelete: (entry: DbEntry) => void;
-  onEdit: (entry: DbEntry) => void;
 }
+
+// ── Inline-edit draft ───────────────────────────────────────────
+// Mirrors the shape used by the detail screen's inline edit: date/time map to
+// whichever pair the type uses, dueRange holds a deadline horizon (null = a
+// precise day). Type itself is never editable here.
+interface EditDraft {
+  title: string;
+  date: string;
+  time: string;
+  dueRange: DueRange | null;
+  notes: string;
+  recurrenceFreq: RecurrenceFrequency | null;
+  recurrenceDays: number[];
+  recurrenceEndDate: string;
+}
+
+function draftFromEntry(entry: DbEntry): EditDraft {
+  const isDeadline = entry.type === "deadline";
+  const rule =
+    typeof entry.recurrence_rule === "string"
+      ? parseRule(entry.recurrence_rule)
+      : (entry.recurrence_rule as RecurrenceRule | null);
+  return {
+    title: entry.title,
+    date: (isDeadline ? entry.due_date : entry.scheduled_date) ?? "",
+    time: (isDeadline ? entry.due_time : entry.scheduled_time) ?? "",
+    dueRange: entry.due_range,
+    notes: entry.notes ?? "",
+    recurrenceFreq: rule?.freq ?? null,
+    recurrenceDays: rule?.days ?? [],
+    recurrenceEndDate: entry.recurrence_end_date ?? "",
+  };
+}
+
+const HORIZON_OPTIONS: { value: DueRange; label: string }[] = [
+  { value: "week", label: "This week" },
+  { value: "month", label: "This month" },
+  { value: "year", label: "This year" },
+];
 
 const STATUS_LABELS: Record<DbEntry["status"], string> = {
   scheduled: "Scheduled",
@@ -90,7 +146,11 @@ function urgencyTag(
 
   const days = daysUntil(entry.due_date ?? entry.scheduled_date ?? null);
   if (days !== null) {
-    if (days < 0) return { text: `Over by ${Math.abs(days)}d`, color: tokens.feedback.danger };
+    if (days < 0)
+      return {
+        text: `Over by ${Math.abs(days)}d`,
+        color: tokens.feedback.danger,
+      };
     if (days === 0) return { text: "Today", color: tokens.feedback.warning };
     return { text: `${days}d left`, color: typeShade };
   }
@@ -100,7 +160,8 @@ function urgencyTag(
 
 function statusColor(status: DbEntry["status"]): string | null {
   if (status === "overdue") return tokens.feedback.danger;
-  if (status === "completed" || status === "met") return tokens.feedback.success;
+  if (status === "completed" || status === "met")
+    return tokens.feedback.success;
   return null;
 }
 
@@ -111,10 +172,23 @@ export function DirectDetailSheet({
   onClose,
   onMarkDone,
   onDelete,
-  onEdit,
 }: DirectDetailSheetProps): React.ReactElement | null {
   const { colors, scheme } = useTheme();
   const reduced = useReducedMotion();
+  const { updateEntry } = useDatabase();
+
+  const [draft, setDraft] = useState<EditDraft | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const editing = draft !== null;
+
+  // Leaving the sheet (close, or the selected entry swaps under it) always
+  // drops any in-flight edit — reopening starts fresh in view mode.
+  useEffect(() => {
+    if (!visible) setDraft(null);
+  }, [visible]);
+  useEffect(() => {
+    setDraft(null);
+  }, [entry?.id]);
 
   if (!entry) return null;
 
@@ -126,16 +200,67 @@ export function DirectDetailSheet({
     isWhenCharged(daysUntil(entry.due_date ?? entry.scheduled_date ?? null));
   const urgency = urgencyTag(entry, accent);
   const statColor = statusColor(entry.status);
+  const isDeadlineType = type === "deadline";
 
   const handleMarkDone = (): void => {
     onMarkDone(entry);
     onClose();
   };
 
-  const handleEdit = (): void => {
-    onEdit(entry);
-    onClose();
+  const handleStartEdit = (): void => {
+    setDraft(draftFromEntry(entry));
   };
+
+  const handleCancelEdit = (): void => {
+    setDraft(null);
+  };
+
+  const patchDraft = (patch: Partial<EditDraft>): void => {
+    setDraft((d) => (d ? { ...d, ...patch } : d));
+  };
+
+  const handleSaveEdit = async (): Promise<void> => {
+    if (!draft || isSaving) return;
+    const trimmedTitle = draft.title.trim();
+    if (!trimmedTitle) return;
+
+    setIsSaving(true);
+    try {
+      const recurrenceRule: RecurrenceRule | null = draft.recurrenceFreq
+        ? {
+            freq: draft.recurrenceFreq,
+            days:
+              draft.recurrenceFreq === "weekly"
+                ? draft.recurrenceDays
+                : undefined,
+          }
+        : null;
+
+      const horizon = isDeadlineType ? draft.dueRange : null;
+      await updateEntry(entry.id, {
+        title: trimmedTitle,
+        scheduledDate: isDeadlineType ? null : draft.date.trim() || null,
+        scheduledTime: isDeadlineType ? null : draft.time.trim() || null,
+        dueDate: isDeadlineType
+          ? horizon
+            ? horizonEndDate(horizon)
+            : draft.date.trim() || null
+          : null,
+        dueTime: isDeadlineType && !horizon ? draft.time.trim() || null : null,
+        dueRange: horizon,
+        notes: draft.notes.trim() || null,
+        recurrenceRule,
+        recurrenceEndDate: draft.recurrenceEndDate.trim() || null,
+      });
+      setDraft(null);
+    } catch (error) {
+      console.error("[direct-detail-sheet] save edit failed:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const canSaveEdit = (draft?.title.trim().length ?? 0) > 0 && !isSaving;
 
   const handleDelete = (): void => {
     onDelete(entry);
@@ -178,8 +303,15 @@ export function DirectDetailSheet({
                     size={13}
                     color={colors.inkMuted}
                   />
-                  <ThemedText type="micro" muted numberOfLines={1} style={styles.breadcrumbText}>
-                    {project.emoji ? `${project.emoji} ${project.title}` : project.title}
+                  <ThemedText
+                    type="micro"
+                    muted
+                    numberOfLines={1}
+                    style={styles.breadcrumbText}
+                  >
+                    {project.emoji
+                      ? `${project.emoji} ${project.title}`
+                      : project.title}
                   </ThemedText>
                 </View>
               ) : null}
@@ -192,7 +324,12 @@ export function DirectDetailSheet({
                 </ThemedText>
 
                 {urgency ? (
-                  <View style={[styles.chip, { backgroundColor: urgency.color + "18" }]}>
+                  <View
+                    style={[
+                      styles.chip,
+                      { backgroundColor: urgency.color + "18" },
+                    ]}
+                  >
                     <ThemedText type="micro" style={{ color: urgency.color }}>
                       {urgency.text}
                     </ThemedText>
@@ -211,144 +348,336 @@ export function DirectDetailSheet({
               </View>
 
               {/* ── Identity ── */}
-              <ThemedText
-                type="title"
-                style={[
-                  styles.title,
-                  {
-                    color: colors.ink,
-                    textDecorationLine: done ? "line-through" : "none",
-                  },
-                ]}
-              >
-                {entry.title}
-              </ThemedText>
+              {editing ? (
+                <TextInput
+                  value={draft.title}
+                  onChangeText={(t) => patchDraft({ title: t })}
+                  placeholder="Title"
+                  placeholderTextColor={colors.inkMuted}
+                  style={[
+                    styles.titleInput,
+                    {
+                      color: colors.ink,
+                      borderBottomColor: colors.surfaceSubtle,
+                    },
+                  ]}
+                  multiline
+                  autoFocus
+                />
+              ) : (
+                <ThemedText
+                  type="title"
+                  style={[
+                    styles.title,
+                    {
+                      color: colors.ink,
+                      textDecorationLine: done ? "line-through" : "none",
+                    },
+                  ]}
+                >
+                  {entry.title}
+                </ThemedText>
+              )}
 
-              {entry.subtitle ? (
+              {!editing && entry.subtitle ? (
                 <ThemedText type="body" muted style={styles.subtitle}>
                   {entry.subtitle}
                 </ThemedText>
               ) : null}
 
-              {narrativeFor(entry) ? (
+              {!editing && narrativeFor(entry) ? (
                 <ThemedText type="mono" muted style={styles.narrative}>
                   {narrativeFor(entry)}
                 </ThemedText>
               ) : null}
 
               {/* ── Divider ── */}
-              <View style={[styles.divider, { backgroundColor: colors.surfaceSubtle }]} />
+              <View
+                style={[
+                  styles.divider,
+                  { backgroundColor: colors.surfaceSubtle },
+                ]}
+              />
 
-              {/* ── Temporal metadata ── */}
-              <View style={styles.meta}>
-                <View style={styles.metaRow}>
-                  <ThemedText type="micro" muted style={styles.metaLabel}>
+              {editing ? (
+                <Animated.View
+                  entering={reduced ? undefined : FadeIn.duration(180)}
+                  exiting={reduced ? undefined : FadeOut.duration(120)}
+                  layout={
+                    reduced
+                      ? undefined
+                      : LinearTransition.springify().damping(18).stiffness(220)
+                  }
+                  style={styles.editBlock}
+                >
+                  {/* ── WHEN (deadline: horizon or precise date; else date+time) ── */}
+                  <ThemedText type="micro" muted style={styles.editLabel}>
                     WHEN
                   </ThemedText>
-                  <ThemedText
-                    type="mono"
-                    style={[styles.metaValue, charged && { color: tokens.feedback.danger }]}
-                  >
-                    {whenValue(entry)}
-                  </ThemedText>
-                </View>
 
-                {entry.recurrence_rule ? (
-                  <View style={styles.metaRow}>
-                    <ThemedText type="micro" muted style={styles.metaLabel}>
-                      REPEATS
-                    </ThemedText>
-                    <ThemedText type="mono" style={styles.metaValue}>
-                      {recurrenceValue(entry)}
-                    </ThemedText>
-                  </View>
-                ) : null}
-              </View>
+                  {isDeadlineType ? (
+                    <ChipRail>
+                      {HORIZON_OPTIONS.map((opt) => (
+                        <SelectChip
+                          key={opt.value}
+                          label={opt.label}
+                          selected={draft.dueRange === opt.value}
+                          accentColor={accent}
+                          onPress={() =>
+                            patchDraft({
+                              dueRange:
+                                draft.dueRange === opt.value ? null : opt.value,
+                            })
+                          }
+                        />
+                      ))}
+                      <SelectChip
+                        label="Precise date"
+                        selected={draft.dueRange === null}
+                        accentColor={accent}
+                        onPress={() => patchDraft({ dueRange: null })}
+                      />
+                    </ChipRail>
+                  ) : null}
 
-              {/* ── Notes ── */}
-              {entry.inspiration ? (
-                <View style={[styles.noteBlock, { backgroundColor: colors.surfaceSubtle }]}>
-                  <ThemedText type="micro" muted>
-                    INSPIRATION
-                  </ThemedText>
-                  <ThemedText type="body" style={{ color: colors.ink }}>
-                    {entry.inspiration}
-                  </ThemedText>
-                </View>
-              ) : null}
+                  {!isDeadlineType || draft.dueRange === null ? (
+                    <View style={styles.dateTimeRow}>
+                      <DateInput
+                        value={draft.date}
+                        onChange={(v) => patchDraft({ date: v })}
+                        style={styles.dateInput}
+                      />
+                      <TimeInput
+                        value={draft.time}
+                        onChange={(v) => patchDraft({ time: v })}
+                        style={styles.timeInput}
+                      />
+                    </View>
+                  ) : null}
 
-              {entry.notes ? (
-                <View style={[styles.noteBlock, { backgroundColor: colors.surfaceSubtle }]}>
-                  <ThemedText type="micro" muted>
+                  {/* ── REPEAT (todo only, matches detail.tsx scope) ── */}
+                  {type === "todo" ? (
+                    <RecurrencePicker
+                      frequency={draft.recurrenceFreq}
+                      days={draft.recurrenceDays}
+                      endDate={draft.recurrenceEndDate}
+                      accentColor={accent}
+                      onFrequencyChange={(f) =>
+                        patchDraft({ recurrenceFreq: f })
+                      }
+                      onDaysChange={(d) => patchDraft({ recurrenceDays: d })}
+                      onEndDateChange={(d) =>
+                        patchDraft({ recurrenceEndDate: d })
+                      }
+                    />
+                  ) : null}
+
+                  {/* ── NOTES ── */}
+                  <ThemedText type="micro" muted style={styles.editLabel}>
                     NOTES
                   </ThemedText>
-                  <ThemedText type="body" style={{ color: colors.ink }}>
-                    {entry.notes}
-                  </ThemedText>
-                </View>
-              ) : null}
+                  <TextInput
+                    value={draft.notes}
+                    onChangeText={(t) => patchDraft({ notes: t })}
+                    placeholder="Add notes…"
+                    placeholderTextColor={colors.inkMuted}
+                    style={[
+                      styles.notesInput,
+                      {
+                        backgroundColor: colors.surfaceSubtle,
+                        color: colors.ink,
+                      },
+                    ]}
+                    multiline
+                    textAlignVertical="top"
+                  />
+                </Animated.View>
+              ) : (
+                <Animated.View
+                  entering={reduced ? undefined : FadeIn.duration(180)}
+                  exiting={reduced ? undefined : FadeOut.duration(120)}
+                >
+                  {/* ── Temporal metadata + inline actions ── */}
+                  <View style={styles.meta}>
+                    <View style={styles.metaRow}>
+                      <ThemedText type="micro" muted style={styles.metaLabel}>
+                        WHEN
+                      </ThemedText>
+                      <ThemedText
+                        type="mono"
+                        style={[
+                          styles.metaValue,
+                          charged && { color: tokens.feedback.danger },
+                        ]}
+                      >
+                        {whenValue(entry)}
+                      </ThemedText>
+
+                      <View style={styles.inlineActions}>
+                        <Pressable
+                          onPress={handleDelete}
+                          hitSlop={8}
+                          style={({ pressed }) => [
+                            styles.iconPill,
+                            {
+                              backgroundColor: tokens.feedback.danger + "18",
+                              opacity: pressed ? 0.7 : 1,
+                            },
+                          ]}
+                          accessibilityRole="button"
+                          accessibilityLabel="Delete"
+                        >
+                          <MaterialCommunityIcons
+                            name="trash-can-outline"
+                            size={15}
+                            color={tokens.feedback.danger}
+                          />
+                        </Pressable>
+
+                        <Pressable
+                          onPress={handleStartEdit}
+                          hitSlop={8}
+                          style={({ pressed }) => [
+                            styles.iconPill,
+                            {
+                              backgroundColor: accent + "18",
+                              opacity: pressed ? 0.7 : 1,
+                            },
+                          ]}
+                          accessibilityRole="button"
+                          accessibilityLabel="Edit"
+                        >
+                          <MaterialCommunityIcons
+                            name="pencil-outline"
+                            size={15}
+                            color={accent}
+                          />
+                        </Pressable>
+
+                        {!done ? (
+                          <Pressable
+                            onPress={handleMarkDone}
+                            style={({ pressed }) => [
+                              styles.completePill,
+                              {
+                                backgroundColor: tokens.feedback.success + "22",
+                                opacity: pressed ? 0.7 : 1,
+                              },
+                            ]}
+                            accessibilityRole="button"
+                            accessibilityLabel={doneLabel(type)}
+                          >
+                            <MaterialCommunityIcons
+                              name="check"
+                              size={14}
+                              color={tokens.feedback.success}
+                            />
+                            <ThemedText
+                              type="bodyBold"
+                              style={{
+                                color: tokens.feedback.success,
+                                fontSize: 13,
+                              }}
+                            >
+                              {doneLabel(type)}
+                            </ThemedText>
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    </View>
+
+                    {entry.recurrence_rule ? (
+                      <View style={styles.metaRow}>
+                        <ThemedText type="micro" muted style={styles.metaLabel}>
+                          REPEATS
+                        </ThemedText>
+                        <ThemedText type="mono" style={styles.metaValue}>
+                          {recurrenceValue(entry)}
+                        </ThemedText>
+                      </View>
+                    ) : null}
+                  </View>
+
+                  {/* ── Notes ── */}
+                  {entry.inspiration ? (
+                    <View
+                      style={[
+                        styles.noteBlock,
+                        { backgroundColor: colors.surfaceSubtle },
+                      ]}
+                    >
+                      <ThemedText type="micro" muted>
+                        INSPIRATION
+                      </ThemedText>
+                      <ThemedText type="body" style={{ color: colors.ink }}>
+                        {entry.inspiration}
+                      </ThemedText>
+                    </View>
+                  ) : null}
+
+                  {entry.notes ? (
+                    <View
+                      style={[
+                        styles.noteBlock,
+                        { backgroundColor: colors.surfaceSubtle },
+                      ]}
+                    >
+                      <ThemedText type="micro" muted>
+                        NOTES
+                      </ThemedText>
+                      <ThemedText type="body" style={{ color: colors.ink }}>
+                        {entry.notes}
+                      </ThemedText>
+                    </View>
+                  ) : null}
+                </Animated.View>
+              )}
 
               {/* ── Actions ── */}
-              <View style={styles.actions}>
-                {!done ? (
+              {editing ? (
+                <View style={styles.actions}>
                   <Pressable
-                    onPress={handleMarkDone}
+                    onPress={handleCancelEdit}
+                    disabled={isSaving}
                     style={({ pressed }) => [
                       styles.actionBtn,
-                      { backgroundColor: colors.surfaceSubtle, opacity: pressed ? 0.7 : 1 },
+                      {
+                        backgroundColor: colors.surfaceSubtle,
+                        opacity: pressed ? 0.7 : 1,
+                      },
                     ]}
                     accessibilityRole="button"
-                    accessibilityLabel={doneLabel(type)}
+                    accessibilityLabel="Cancel"
+                  >
+                    <ThemedText type="bodyBold" muted>
+                      Cancel
+                    </ThemedText>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={handleSaveEdit}
+                    disabled={!canSaveEdit}
+                    style={({ pressed }) => [
+                      styles.actionBtn,
+                      {
+                        backgroundColor: accent + "22",
+                        opacity: !canSaveEdit ? 0.5 : pressed ? 0.7 : 1,
+                      },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Save"
                   >
                     <MaterialCommunityIcons
                       name="check"
-                      size={18}
-                      color={tokens.feedback.success}
+                      size={16}
+                      color={accent}
                     />
-                    <ThemedText type="bodyBold" style={{ color: tokens.feedback.success }}>
-                      {doneLabel(type)}
+                    <ThemedText type="bodyBold" style={{ color: accent }}>
+                      {isSaving ? "Saving…" : "Save"}
                     </ThemedText>
                   </Pressable>
-                ) : null}
-
-                <Pressable
-                  onPress={handleEdit}
-                  style={({ pressed }) => [
-                    styles.actionBtn,
-                    { backgroundColor: colors.surfaceSubtle, opacity: pressed ? 0.7 : 1 },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel="Edit"
-                >
-                  <MaterialCommunityIcons
-                    name="pencil-outline"
-                    size={16}
-                    color={colors.inkMuted}
-                  />
-                  <ThemedText type="bodyBold" muted>
-                    Edit
-                  </ThemedText>
-                </Pressable>
-
-                <Pressable
-                  onPress={handleDelete}
-                  style={({ pressed }) => [
-                    styles.actionBtn,
-                    { backgroundColor: colors.surfaceSubtle, opacity: pressed ? 0.7 : 1 },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel="Delete"
-                >
-                  <MaterialCommunityIcons
-                    name="trash-can-outline"
-                    size={16}
-                    color={tokens.feedback.danger}
-                  />
-                  <ThemedText type="bodyBold" style={{ color: tokens.feedback.danger }}>
-                    Delete
-                  </ThemedText>
-                </Pressable>
-              </View>
+                </View>
+              ) : null}
             </Animated.View>
           </ScrollView>
         </View>
@@ -420,12 +749,48 @@ const styles = StyleSheet.create({
   narrative: {
     marginTop: tokens.space.xs,
   },
+  titleInput: {
+    marginBottom: tokens.space.xs,
+    fontFamily: tokens.type.fontInter.bold,
+    fontSize: tokens.type.title.size,
+    lineHeight: tokens.type.title.lineHeight,
+    paddingVertical: tokens.space.xs,
+    borderBottomWidth: 1,
+  },
 
   // ── Divider ──
   divider: {
     height: 1,
     marginTop: tokens.space.md,
     marginBottom: tokens.space.md,
+  },
+
+  // ── Inline edit ──
+  editBlock: {
+    gap: tokens.space.sm,
+    marginBottom: tokens.space.sm,
+  },
+  editLabel: {
+    letterSpacing: 0.5,
+    marginTop: tokens.space.xs,
+  },
+  dateTimeRow: {
+    flexDirection: "row",
+    gap: tokens.space.sm,
+  },
+  dateInput: {
+    flex: 1,
+  },
+  timeInput: {
+    flex: 1,
+  },
+  notesInput: {
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.space.lg,
+    paddingVertical: tokens.space.md,
+    fontSize: 15,
+    lineHeight: 22,
+    minHeight: 88,
   },
 
   // ── Metadata ──
@@ -435,7 +800,7 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "center",
     gap: tokens.space.sm,
   },
   metaLabel: {
@@ -443,6 +808,26 @@ const styles = StyleSheet.create({
   },
   metaValue: {
     flex: 1,
+  },
+  inlineActions: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: tokens.space.xs,
+  },
+  iconPill: {
+    width: 30,
+    height: 30,
+    borderRadius: tokens.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  completePill: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 4,
+    height: 30,
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.pill,
   },
 
   // ── Notes ──

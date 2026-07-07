@@ -1,4 +1,9 @@
-import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import {
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -334,10 +339,7 @@ export default function DetailScreen(): React.ReactElement {
         <Stack.Screen
           options={{
             header: () => (
-              <ScreenHeader
-                title="Not found"
-                onBack={() => router.back()}
-              />
+              <ScreenHeader title="Not found" onBack={() => router.back()} />
             ),
           }}
         />

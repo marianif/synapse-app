@@ -11,6 +11,7 @@ import {
   CaptureBackdrop,
   CaptureComposer,
 } from "@/components/organisms/capture-composer";
+import type { InputStageHandle } from "@/components/organisms/input-stage-view";
 import { tokens } from "@/constants/theme";
 import type { UseCaptureReturn } from "@/hooks/use-capture";
 import type { DbProject } from "@/lib/types";
@@ -36,20 +37,26 @@ export function CaptureDock({
   restOffset,
 }: CaptureDockProps): React.ReactElement {
   const keyboardLift = useSharedValue(0);
-  // The composer inside mounts fresh on every open (it's `null` while
-  // closed — there's no idle resting bar to keep it always mounted, unlike
-  // the notes screen's composer), and its content autofocuses immediately,
-  // so the keyboard's first "show" after opening lands while DockShell's own
-  // 320ms slide-in is still playing. Animating the lift at the same time
-  // races that entrance and reads as a rushed double-motion. Snapping that
-  // first lift instantly keeps exactly one thing animating at a time — the
-  // same feel as the notes composer, whose entrance always finishes long
-  // before the keyboard shows.
+  // The input never autofocuses on mount — only an explicit tap (the pen key,
+  // or a tap on the resting bar itself) focuses it, via the imperative ref
+  // registered through `registerDockFocus`. That keeps the keyboard's first
+  // "show" decoupled from DockShell's 320ms entrance slide, so the two never
+  // race into a rushed double-motion regardless of whether the dock just
+  // mounted (project screens) or was already resting (home).
   const isOpen = cap.composerOpen || cap.isRecording || cap.pendingThought !== null;
   const justOpened = useRef(isOpen);
   const wasOpen = useRef(isOpen);
   if (isOpen && !wasOpen.current) justOpened.current = true;
   wasOpen.current = isOpen;
+
+  // Park the input's focus handle with the capture hook so `requestCapture`
+  // can focus it on a pen-tap while the dock is already resting visible
+  // (home) instead of only firing at mount.
+  const inputRef = useRef<InputStageHandle | null>(null);
+  useEffect(
+    () => cap.registerDockFocus(() => inputRef.current?.focus()),
+    [cap],
+  );
 
   useEffect(() => {
     // iOS reports willShow/willHide with a duration we can match; Android only
@@ -97,7 +104,7 @@ export function CaptureDock({
         style={[styles.captureDock, { bottom: restOffset }, dockStyle]}
         pointerEvents="box-none"
       >
-        <CaptureComposer cap={cap} projects={projects} />
+        <CaptureComposer ref={inputRef} cap={cap} projects={projects} />
       </Animated.View>
     </>
   );

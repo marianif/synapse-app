@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
@@ -11,6 +11,7 @@ import Animated, {
 
 import { ClassifyStageView } from "@/components/organisms/classify-stage-view";
 import { DetailsStageView } from "@/components/organisms/details-stage-view";
+import type { InputStageHandle } from "@/components/organisms/input-stage-view";
 import { InputStage } from "@/components/organisms/input-stage-view";
 import { NoteLinkStageView } from "@/components/organisms/note-link-stage-view";
 import { RecordingStage } from "@/components/organisms/recording-stage-view";
@@ -27,10 +28,8 @@ interface CaptureFlowProps {
   projects: DbProject[];
 }
 
-export function CaptureFlow({
-  cap,
-  projects,
-}: CaptureFlowProps): React.ReactElement {
+export const CaptureFlow = forwardRef<InputStageHandle, CaptureFlowProps>(
+  function CaptureFlow({ cap, projects }, ref): React.ReactElement {
   const { colors, scheme } = useTheme();
   const reduced = useReducedMotion();
 
@@ -228,12 +227,12 @@ export function CaptureFlow({
               />
             ) : (
               <InputStage
+                ref={ref}
                 draft={draft}
                 onDraftChange={setDraft}
                 onSubmit={submitDraft}
                 onVoice={cap.startRecording}
                 onBlur={closeEmpty}
-                autoFocus={cap.composerOpen}
                 ink={onSlab}
                 muted={muted}
                 slab={colors.accent.clay}
@@ -344,7 +343,8 @@ export function CaptureFlow({
       </Animated.View>
     </Animated.View>
   );
-}
+  },
+);
 
 const styles = StyleSheet.create({
   root: {

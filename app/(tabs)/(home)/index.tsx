@@ -140,6 +140,18 @@ export default function HomeScreen(): React.ReactElement {
     }, [fetchEntries, refreshDiary]),
   );
 
+  // The Field is the one surface where the capture affordance stays resting
+  // and visible instead of appearing only on a pen-tap — it's the home screen,
+  // so the "put something in" bar should read as always-there. Scoped to this
+  // screen's focus so navigating into detail/project (pushed on the same
+  // stack) reverts the dock to its normal on-demand behavior there.
+  useFocusEffect(
+    useCallback(() => {
+      cap.setDockAlwaysVisible(true);
+      return () => cap.setDockAlwaysVisible(false);
+    }, [cap]),
+  );
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
 

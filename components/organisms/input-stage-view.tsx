@@ -1,42 +1,47 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { tokens } from "@/constants/theme";
 
-export function InputStage({
-  draft,
-  onDraftChange,
-  onSubmit,
-  onVoice,
-  onBlur,
-  autoFocus,
-  ink,
-  muted,
-  slab,
-  hasText,
-}: {
-  draft: string;
-  onDraftChange: (value: string) => void;
-  onSubmit: () => void;
-  onVoice: () => void;
-  onBlur: () => void;
-  autoFocus: boolean;
-  ink: string;
-  muted: string;
-  slab: string;
-  hasText: boolean;
-}): React.ReactElement {
+export interface InputStageHandle {
+  focus: () => void;
+}
+
+export const InputStage = forwardRef<
+  InputStageHandle,
+  {
+    draft: string;
+    onDraftChange: (value: string) => void;
+    onSubmit: () => void;
+    onVoice: () => void;
+    onBlur: () => void;
+    ink: string;
+    muted: string;
+    slab: string;
+    hasText: boolean;
+  }
+>(function InputStage(
+  { draft, onDraftChange, onSubmit, onVoice, onBlur, ink, muted, slab, hasText },
+  ref,
+): React.ReactElement {
+  const inputRef = useRef<TextInput | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+  }));
+
   return (
     <View style={styles.inputStage}>
       <View style={styles.inputSignal}>
         <MaterialCommunityIcons name="pen" size={16} color={muted} />
       </View>
       <TextInput
+        ref={inputRef}
         value={draft}
         onChangeText={onDraftChange}
         onSubmitEditing={onSubmit}
         onBlur={onBlur}
-        autoFocus={autoFocus}
         placeholder="Put something in"
         placeholderTextColor={muted}
         selectionColor={ink}
@@ -75,7 +80,7 @@ export function InputStage({
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   inputStage: {

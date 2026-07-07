@@ -86,6 +86,22 @@ export interface UseCaptureReturn {
   tabBarHeight: number;
   setTabBarHeight: (height: number) => void;
 
+  /**
+   * When true, the global dock stays mounted and resting even while idle
+   * (no composer/recording/pending-thought) — set by the home screen on
+   * focus so the capture affordance is always visible there, unfocused,
+   * instead of appearing only after a tap. Other screens leave this false,
+   * so the dock keeps its default on-demand (mount-on-tap) behavior.
+   */
+  dockAlwaysVisible: boolean;
+  setDockAlwaysVisible: (visible: boolean) => void;
+  /**
+   * The dock registers its focus handler here once mounted, so `requestCapture`
+   * can focus the TextInput when the dock is already resting visible (home) —
+   * autoFocus alone only fires on mount, not on a later pen-tap.
+   */
+  registerDockFocus: (focus: () => void) => () => void;
+
   // ── Screen-owned capture (the pen key delegates instead of opening) ─────
   /**
    * A screen with its OWN composer (e.g. the notes tab) registers handlers
@@ -151,6 +167,21 @@ export function useCapture(
   const [picking, setPicking] = useState(false);
   const [seedType, setSeedType] = useState<EntryType | null>(null);
   const [tabBarHeight, setTabBarHeight] = useState(0);
+  const [dockAlwaysVisible, setDockAlwaysVisible] = useState(false);
+
+  // The mounted dock parks its focus handler here (a ref, not state — the
+  // dock re-registers on every mount, and this must never trigger a re-render
+  // of the tab layout that owns this hook).
+  const dockFocus = useRef<(() => void) | null>(null);
+  const registerDockFocus = useCallback(
+    (focus: () => void): (() => void) => {
+      dockFocus.current = focus;
+      return () => {
+        if (dockFocus.current === focus) dockFocus.current = null;
+      };
+    },
+    [],
+  );
 
   // Recent ideas offered under "Note on…". Capped + newest-first; reading
   // off the in-memory entries (single source of truth) keeps this fresh
@@ -188,8 +219,14 @@ export function useCapture(
       captureTarget.current.focus();
       return;
     }
+    // The dock is already resting visible (home) — focus its input instead
+    // of re-opening it, since it's already open in the idle sense.
+    if (dockAlwaysVisible && dockFocus.current) {
+      dockFocus.current();
+      return;
+    }
     setComposerOpen(true);
-  }, []);
+  }, [dockAlwaysVisible]);
 
   const requestVoiceCapture = useCallback((): void => {
     if (captureTarget.current) {
@@ -323,6 +360,9 @@ export function useCapture(
     setSeedType,
     tabBarHeight,
     setTabBarHeight,
+    dockAlwaysVisible,
+    setDockAlwaysVisible,
+    registerDockFocus,
     registerCaptureTarget,
     requestCapture,
     requestVoiceCapture,

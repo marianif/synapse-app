@@ -80,7 +80,13 @@ export function CaptureFlow({
   }, [cap.pendingThought, cap.seedType, cap.lockedProjectId]);
 
   const stageIndex =
-    stage === "capture" ? 0 : stage === "classify" ? 1 : stage === "details" ? 2 : 3;
+    stage === "capture"
+      ? 0
+      : stage === "classify"
+        ? 1
+        : stage === "details"
+          ? 2
+          : 3;
 
   useEffect(() => {
     progress.value = reduced
@@ -96,7 +102,12 @@ export function CaptureFlow({
   }));
 
   const viewportStyle = useAnimatedStyle(() => {
-    const heights = [captureH.value, classifyH.value, detailsH.value, noteH.value];
+    const heights = [
+      captureH.value,
+      classifyH.value,
+      detailsH.value,
+      noteH.value,
+    ];
     const from = Math.floor(progress.value);
     const to = Math.min(from + 1, heights.length - 1);
     const localProgress = progress.value - from;
@@ -196,11 +207,12 @@ export function CaptureFlow({
     >
       <Animated.View style={[styles.viewport, viewportStyle]}>
         <Animated.View style={[styles.track, trackStyle]}>
-
           {/* ── Stage 0: Capture ─────────────────────────────────── */}
           <View
             style={[styles.stage, { width: trackWidthPx, left: 0 }]}
-            onLayout={(e) => { captureH.value = e.nativeEvent.layout.height; }}
+            onLayout={(e) => {
+              captureH.value = e.nativeEvent.layout.height;
+            }}
             accessibilityElementsHidden={stage !== "capture"}
             importantForAccessibility={
               stage === "capture" ? "auto" : "no-hide-descendants"
@@ -233,7 +245,9 @@ export function CaptureFlow({
           {/* ── Stage 1: Classify ────────────────────────────────── */}
           <View
             style={[styles.stage, { width: trackWidthPx, left: trackWidthPx }]}
-            onLayout={(e) => { classifyH.value = e.nativeEvent.layout.height; }}
+            onLayout={(e) => {
+              classifyH.value = e.nativeEvent.layout.height;
+            }}
             accessibilityElementsHidden={stage !== "classify"}
             importantForAccessibility={
               stage === "classify" ? "auto" : "no-hide-descendants"
@@ -257,7 +271,9 @@ export function CaptureFlow({
               styles.stage,
               { width: trackWidthPx, left: trackWidthPx * 2 },
             ]}
-            onLayout={(e) => { detailsH.value = e.nativeEvent.layout.height; }}
+            onLayout={(e) => {
+              detailsH.value = e.nativeEvent.layout.height;
+            }}
             accessibilityElementsHidden={stage !== "details"}
             importantForAccessibility={
               stage === "details" ? "auto" : "no-hide-descendants"
@@ -297,7 +313,9 @@ export function CaptureFlow({
               styles.stage,
               { width: trackWidthPx, left: trackWidthPx * 3 },
             ]}
-            onLayout={(e) => { noteH.value = e.nativeEvent.layout.height; }}
+            onLayout={(e) => {
+              noteH.value = e.nativeEvent.layout.height;
+            }}
             accessibilityElementsHidden={stage !== "note-link"}
             importantForAccessibility={
               stage === "note-link" ? "auto" : "no-hide-descendants"
@@ -322,7 +340,6 @@ export function CaptureFlow({
               }}
             />
           </View>
-
         </Animated.View>
       </Animated.View>
     </Animated.View>

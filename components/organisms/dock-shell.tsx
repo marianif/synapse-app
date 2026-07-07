@@ -72,7 +72,12 @@ export function DockShell({
 
   // Fill lerp: 0 = surface (idle, content register), 1 = slab (acting, interface
   // register). Animated so the register shift reads as a transition, not a cut.
-  const fill = useSharedValue(register === "slab" ? 1 : 0);
+  // Always starts from surface (0), even when the shell is summoned straight
+  // into slab register (e.g. the global capture dock, which has no idle
+  // surface state to sit in first) — otherwise the panel pops in already
+  // fully clay-colored and slides on top of that flat fill, which reads as a
+  // glitch next to the notes composer's calm surface-toned slide.
+  const fill = useSharedValue(0);
   useEffect(() => {
     const to = register === "slab" ? 1 : 0;
     fill.value = reduced

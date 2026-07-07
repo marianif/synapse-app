@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Keyboard, Platform, StyleSheet } from "react-native";
 import Animated, {
   Easing,
@@ -36,6 +36,21 @@ export function CaptureDock({
   restOffset,
 }: CaptureDockProps): React.ReactElement {
   const keyboardLift = useSharedValue(0);
+  // The composer inside mounts fresh on every open (it's `null` while
+  // closed — there's no idle resting bar to keep it always mounted, unlike
+  // the notes screen's composer), and its content autofocuses immediately,
+  // so the keyboard's first "show" after opening lands while DockShell's own
+  // 320ms slide-in is still playing. Animating the lift at the same time
+  // races that entrance and reads as a rushed double-motion. Snapping that
+  // first lift instantly keeps exactly one thing animating at a time — the
+  // same feel as the notes composer, whose entrance always finishes long
+  // before the keyboard shows.
+  const isOpen = cap.composerOpen || cap.isRecording || cap.pendingThought !== null;
+  const justOpened = useRef(isOpen);
+  const wasOpen = useRef(isOpen);
+  if (isOpen && !wasOpen.current) justOpened.current = true;
+  wasOpen.current = isOpen;
+
   useEffect(() => {
     // iOS reports willShow/willHide with a duration we can match; Android only
     // fires didShow/didHide, so we fall back to a quick eased timing.
@@ -45,6 +60,11 @@ export function CaptureDock({
       Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
     const show = Keyboard.addListener(showEvt, (e) => {
       const lift = Math.max(0, e.endCoordinates.height - restOffset);
+      if (justOpened.current) {
+        justOpened.current = false;
+        keyboardLift.value = lift;
+        return;
+      }
       keyboardLift.value = withTiming(lift, {
         duration: e.duration || 220,
         easing: Easing.out(Easing.cubic),

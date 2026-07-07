@@ -6,24 +6,8 @@ import {
   useRouter,
 } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Keyboard,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import { ScrollView, StyleSheet, View } from "react-native";
 
-import {
-  CaptureBackdrop,
-  CaptureComposer,
-} from "@/components/organisms/capture-composer";
 import { DayDetailSheet } from "@/components/organisms/day-detail-sheet";
 import { DirectOverview } from "@/components/organisms/direct-overview";
 import { ProjectsOverview } from "@/components/organisms/projects-overview";
@@ -35,8 +19,8 @@ import {
 } from "@/components/molecules/field-greeting";
 
 import { tokens, useTheme } from "@/constants/theme";
+import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useCalendarData } from "@/hooks/use-calendar-data";
-import { useCapture } from "@/hooks/use-capture";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
 import { useDiary } from "@/hooks/use-diary";
@@ -123,13 +107,11 @@ export default function HomeScreen(): React.ReactElement {
     recurrenceCompletions,
   );
 
-  // The capture state machine — composer/recorder/resolver mutex, pending
-  // thought, voice piping, recent-ideas pool, the resolveCapture switch.
-  // Shared with the project surface (via useCapture(projectId)) so the dock
-  // grammar stays identical across screens. The home dock catches thoughts only
-  // (ideas / notes / todos / deadlines); creating a project is a deliberate act
-  // that lives on the Project Shelf, not here.
-  const cap = useCapture();
+  // The capture state machine is owned by the tab layout (GlobalCaptureContext)
+  // so the tab bar's pen key can drive it from any tab. The home screen just
+  // consumes it — for the widget deep-link arming below, and to seed a type
+  // from the direct-zone's empty-state taps.
+  const cap = useGlobalCapture();
 
   // Arm the dock when summoned — by the widget deep link (voice / text) or the
   // tab-bar pen key (tap → text, long-press → voice). Guard with a ref so it
@@ -199,46 +181,6 @@ export default function HomeScreen(): React.ReactElement {
     [projects],
   );
 
-  // The dock is an absolute overlay; it doesn't rest at the screen bottom — it
-  // floats `space.lg` above the custom tab bar. So translating it up by the full
-  // keyboard height double-counts that resting offset and overshoots, leaving a
-  // big gap. We lift by (keyboard height − the dock's resting distance from the
-  // screen bottom) so its lower edge lands just on top of the keyboard.
-  //
-  // Resting distance ≈ tab-bar height (its paddingTop + add-button + paddingBottom)
-  // + the dock's own `bottom: space.lg`. Mirrors custom-tab-bar.tsx's constants.
-  const dockRestOffset = 8 + 52 + 20 + tokens.space.lg; // tab bar + dock bottom gap
-  const keyboardLift = useSharedValue(0);
-  useEffect(() => {
-    // iOS reports willShow/willHide with a duration we can match; Android only
-    // fires didShow/didHide, so we fall back to a quick eased timing.
-    const showEvt =
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvt =
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-    const show = Keyboard.addListener(showEvt, (e) => {
-      const lift = Math.max(0, e.endCoordinates.height - dockRestOffset);
-      keyboardLift.value = withTiming(lift, {
-        duration: e.duration || 220,
-        easing: Easing.out(Easing.cubic),
-      });
-    });
-    const hide = Keyboard.addListener(hideEvt, (e) => {
-      keyboardLift.value = withTiming(0, {
-        duration: e?.duration || 200,
-        easing: Easing.out(Easing.cubic),
-      });
-    });
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, [dockRestOffset, keyboardLift]);
-
-  const dockStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -keyboardLift.value }],
-  }));
-
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <ScrollView
@@ -280,23 +222,6 @@ export default function HomeScreen(): React.ReactElement {
         <View style={styles.captureSpacer} />
       </ScrollView>
 
-      {/* Outside-tap backdrop — a transparent full-screen catcher that only
-          exists while a dismissible dock surface is up. It's screen-level (not
-          inside the lifted dock) so it spans the whole field; the resolver is
-          intentionally not covered so a caught thought isn't dropped. */}
-      <CaptureBackdrop cap={cap} />
-
-      {/* The capture dock is summoned, not always-on: the pen key (tab bar)
-          opens the composer or starts voice; the dock vanishes when idle so the
-          field stays clear. The resolver holds a captured thought until filed.
-          It rides above the keyboard via a UI-thread translate (see dockStyle). */}
-      <Animated.View
-        style={[styles.captureDock, dockStyle]}
-        pointerEvents="box-none"
-      >
-        <CaptureComposer cap={cap} projects={projects} />
-      </Animated.View>
-
       <DayDetailSheet
         visible={sheetVisible}
         date={selectedDate}
@@ -323,11 +248,5 @@ const styles = StyleSheet.create({
   },
   captureSpacer: {
     height: 72,
-  },
-  captureDock: {
-    position: "absolute",
-    left: tokens.space.lg,
-    right: tokens.space.lg,
-    bottom: tokens.space.lg,
   },
 });

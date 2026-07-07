@@ -1,13 +1,12 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Keyboard, Platform, ScrollView, StyleSheet, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import {
   DiaryFilterBar,
@@ -19,15 +18,62 @@ import {
   type LinkSelection,
   type LinkableTarget,
 } from "@/components/organisms/link-sheet";
-import { NotesComposer } from "@/components/organisms/notes-composer";
+import {
+  NotesComposer,
+  type NotesComposerHandle,
+} from "@/components/organisms/notes-composer";
 import { tokens } from "@/constants/theme";
+import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 
 import type { DbDiaryEntry } from "@/lib/types";
 
 export default function NotesScreen(): React.ReactElement {
-  const insets = useSafeAreaInsets();
+  const cap = useGlobalCapture();
+  const composerRef = useRef<NotesComposerHandle | null>(null);
+
+  // The composer rests just above the tab bar and lifts with the keyboard.
+  // We drive this by hand (a Keyboard listener + reanimated translateY) rather
+  // than KeyboardAvoidingView: the notes screen sits inside the Tabs navigator
+  // UNDER the overlaid tab bar, so KAV mis-measures its own bottom and the
+  // composer ends up behind the keyboard. This is the same lift pattern the
+  // global CaptureDock uses.
+  //
+  // `restBottom` is the composer's distance from the SCREEN bottom at rest.
+  // The lift then raises it by `keyboardHeight - restBottom` so its bottom edge
+  // lands just on top of the keyboard (the tab bar is hidden behind the
+  // keyboard anyway, so we don't need to account for it in the lift).
+  const restBottom = tokens.space.lg;
+  const keyboardLift = useSharedValue(0);
+  useEffect(() => {
+    const showEvt =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const show = Keyboard.addListener(showEvt, (e) => {
+      const lift = Math.max(0, e.endCoordinates.height - restBottom);
+      keyboardLift.value = withTiming(lift, {
+        duration: e.duration || 220,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    const hide = Keyboard.addListener(hideEvt, (e) => {
+      keyboardLift.value = withTiming(0, {
+        duration: e?.duration || 200,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [restBottom, keyboardLift]);
+
+  const composerStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -keyboardLift.value }],
+  }));
+
   const { entries, addEntry, updateEntry, removeEntry, refresh } = useDiary();
   // Board entries + projects — read-only, used to resolve linked titles for the
   // feed chip and to offer targets in the composer's link sheet. Notes writes
@@ -166,14 +212,21 @@ export default function NotesScreen(): React.ReactElement {
   useFocusEffect(
     useCallback(() => {
       refresh();
-    }, [refresh]),
+      // While the notes tab is focused, the tab-bar pen key focuses THIS
+      // composer instead of raising the neutral global dock — the notes tab
+      // owns its own input, so the two capture bars never share the band.
+      // Unregister on blur so the pen key falls back to the global dock on
+      // every other tab.
+      const unregister = cap.registerCaptureTarget({
+        focus: () => composerRef.current?.focus(),
+        startVoice: () => composerRef.current?.startVoice(),
+      });
+      return unregister;
+    }, [refresh, cap]),
   );
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <View style={styles.flex}>
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.content}
@@ -203,12 +256,18 @@ export default function NotesScreen(): React.ReactElement {
         <View style={styles.bottomSpacer} />
       </ScrollView>
 
-      {/* Composer pinned to the bottom as a floating action bar — the feed
-          scrolls behind it, the KeyboardAvoidingView lifts it above the
-          keyboard when the input is focused. */}
-      <View style={[styles.composerBar, { paddingBottom: insets.bottom }]}>
-        <NotesComposer targets={composerTargets} onSave={handleSave} />
-      </View>
+      {/* Composer floating above the tab bar — the feed scrolls behind it, and
+          it rides up with the keyboard (hand-driven lift; see keyboardLift
+          above). Rests at `restBottom` so it clears the overlaid tab bar. */}
+      <Animated.View
+        style={[styles.composerBar, { bottom: restBottom }, composerStyle]}
+      >
+        <NotesComposer
+          ref={composerRef}
+          targets={composerTargets}
+          onSave={handleSave}
+        />
+      </Animated.View>
 
       <LinkSheet
         visible={targetSheetOpen}
@@ -229,7 +288,7 @@ export default function NotesScreen(): React.ReactElement {
         onSelect={handleRelink}
         onClose={() => setRelatingNote(null)}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -243,8 +302,12 @@ const styles = StyleSheet.create({
     gap: tokens.space.xxl,
   },
   composerBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    // `bottom` is supplied inline (restOffset) so the bar rests above the tab
+    // bar; it lifts from there with the keyboard.
     paddingHorizontal: tokens.space.lg,
-    paddingTop: tokens.space.md,
   },
   bottomSpacer: {
     height: 120,

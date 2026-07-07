@@ -1,5 +1,11 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -18,6 +24,13 @@ interface NotesComposerProps {
   onSave: (body: string, selection: LinkSelection) => Promise<void> | void;
 }
 
+/** Imperative handle so the tab-bar pen key can focus this composer (it's the
+ *  notes tab's own input — the pen delegates here instead of the global dock). */
+export interface NotesComposerHandle {
+  focus: () => void;
+  startVoice: () => void;
+}
+
 /**
  * The notes tab's command bar — a minimal capture surface armed for the "note"
  * kind, styled after ProjectComposer. Unlike the home dock's multi-kind capture,
@@ -29,10 +42,10 @@ interface NotesComposerProps {
  * instrument: kicker label → text → send/mic, and swaps to a recording readout
  * (waveform → close / confirm) when the mic is armed.
  */
-export function NotesComposer({
-  targets,
-  onSave,
-}: NotesComposerProps): React.ReactElement {
+export const NotesComposer = forwardRef<
+  NotesComposerHandle,
+  NotesComposerProps
+>(function NotesComposer({ targets, onSave }, ref): React.ReactElement {
   const { colors } = useTheme();
   const [draft, setDraft] = useState("");
   const [isRecording, setIsRecording] = useState(false);
@@ -52,6 +65,14 @@ export function NotesComposer({
     setIsRecording(true);
     void startRecording();
   };
+
+  // The tab-bar pen key delegates here while the notes tab is focused: tap →
+  // focus the input, long-press → arm this composer's own voice capture. Both
+  // stay inside the notes composer so neither ever races the global dock.
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+    startVoice: () => handleStartRecording(),
+  }));
 
   const handleStopRecording = (): void => {
     void stopRecording().then(() => {
@@ -193,7 +214,7 @@ export function NotesComposer({
       />
     </>
   );
-}
+});
 
 const styles = StyleSheet.create({
   inputStage: {

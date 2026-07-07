@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import type {
   CaptureResolution,
@@ -43,6 +43,13 @@ import type { EntryType } from "@/lib/types";
  *     `linked_project_id` on the diary entry, so reflections stay with the
  *     project they were written about.
  */
+/** A screen's own capture surface, driven by the tab-bar pen key while that
+ *  screen is focused (tap → focus, long-press → voice). */
+export interface CaptureTarget {
+  focus: () => void;
+  startVoice: () => void;
+}
+
 export interface UseCaptureOptions {
   /** When set, every captured entry is pre-attributed to this project and
    *  the resolver hides its PROJECT picker. */
@@ -71,6 +78,36 @@ export interface UseCaptureReturn {
    */
   seedType: EntryType | null;
   setSeedType: (type: EntryType | null) => void;
+
+  // ── Chrome geometry (shared so surfaces rest on the REAL bar, not a guess) ─
+  /** The tab bar's measured height, reported via onLayout by the tab bar and
+   *  consumed by any surface that rests above it (global dock, notes composer)
+   *  so nobody hardcodes an estimate that drifts per device. 0 until measured. */
+  tabBarHeight: number;
+  setTabBarHeight: (height: number) => void;
+
+  // ── Screen-owned capture (the pen key delegates instead of opening) ─────
+  /**
+   * A screen with its OWN composer (e.g. the notes tab) registers handlers
+   * here so the tab-bar pen key drives THAT composer instead of raising the
+   * neutral global dock — one pen key, but it means "put something in HERE"
+   * on a surface that owns its own input. `focus` handles a tap, `startVoice`
+   * a long-press. Returns an unregister fn; the screen calls it on blur/unmount
+   * so the pen key falls back to the global dock.
+   */
+  registerCaptureTarget: (target: CaptureTarget) => () => void;
+  /**
+   * The tab bar calls this on pen-tap. If a screen has registered a target,
+   * its focus handler runs (and the global dock stays closed); otherwise this
+   * opens the neutral global dock. Route-awareness lives in whoever registers,
+   * not in the chrome.
+   */
+  requestCapture: () => void;
+  /**
+   * The tab bar calls this on pen long-press. If a screen owns capture, its
+   * voice handler runs; otherwise the neutral global recorder arms.
+   */
+  requestVoiceCapture: () => void;
 
   // ── Voice piping ───────────────────────────────────────────────────────
   transcript: string;
@@ -113,6 +150,7 @@ export function useCapture(
   const [pendingThought, setPendingThought] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [seedType, setSeedType] = useState<EntryType | null>(null);
+  const [tabBarHeight, setTabBarHeight] = useState(0);
 
   // Recent ideas offered under "Note on…". Capped + newest-first; reading
   // off the in-memory entries (single source of truth) keeps this fresh
@@ -125,6 +163,45 @@ export function useCapture(
         .map((e) => ({ id: e.id, title: e.title })),
     [entries],
   );
+
+  // A screen that owns its own composer parks a focus handler here. Held in a
+  // ref (not state) so registering never re-renders the tab layout, and so the
+  // pen key always reads the latest handler without a stale closure.
+  const captureTarget = useRef<CaptureTarget | null>(null);
+
+  const registerCaptureTarget = useCallback(
+    (target: CaptureTarget): (() => void) => {
+      captureTarget.current = target;
+      return () => {
+        // Only clear if we're still the registered target — guards against a
+        // late unmount stomping a newer screen's registration.
+        if (captureTarget.current === target) captureTarget.current = null;
+      };
+    },
+    [],
+  );
+
+  const requestCapture = useCallback((): void => {
+    // A screen with its own composer wins — focus it, leave the global dock
+    // closed. Otherwise fall back to the neutral global dock.
+    if (captureTarget.current) {
+      captureTarget.current.focus();
+      return;
+    }
+    setComposerOpen(true);
+  }, []);
+
+  const requestVoiceCapture = useCallback((): void => {
+    if (captureTarget.current) {
+      captureTarget.current.startVoice();
+      return;
+    }
+    // No screen owns capture — arm the neutral global recorder (same as
+    // handleStartRecording below, inlined to avoid a forward reference).
+    setComposerOpen(false);
+    setIsRecording(true);
+    void startRecording();
+  }, [startRecording]);
 
   const capture = useCallback((text: string): void => {
     const trimmed = text.trim();
@@ -244,6 +321,11 @@ export function useCapture(
     dismissPending,
     seedType,
     setSeedType,
+    tabBarHeight,
+    setTabBarHeight,
+    registerCaptureTarget,
+    requestCapture,
+    requestVoiceCapture,
     recentIdeas,
     lockedProjectId,
   };

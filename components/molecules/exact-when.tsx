@@ -15,7 +15,7 @@ const STORE_FMT = "DD/MM/YYYY";
  * The precise day + time, compacted to a single instrument readout. The date and
  * time are big mono values; bare chevron steppers nudge them (±1 day, ±15 min),
  * press-and-hold to repeat. No wheel, no panel, no chips — the value is the
- * control. The relative quick-picks (a day / weekend) live at the top WHEN level,
+ * control. The relative quick-picks (tomorrow / weekend) live at the top WHEN level,
  * so they're deliberately absent here.
  *
  * `inkColor` / `mutedColor` are passed in because the resolver workbench is a

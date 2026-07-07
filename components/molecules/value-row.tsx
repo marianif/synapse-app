@@ -5,7 +5,7 @@ import { tokens } from "@/constants/theme";
 
 /**
  * A row of inline value words behind a mono kicker key — the resolver detail
- * readout that replaces chip rails. "WHEN  a day  weekend  exact". The chosen
+ * readout that replaces chip rails. "WHEN  tomorrow  weekend  exact". The chosen
  * value is colored + medium-weight; the rest are muted (handled by the child
  * `ResolverValue`s). The `keyColor` is passed in because the resolver workbench
  * is a fixed dark panel that doesn't follow the app scheme.

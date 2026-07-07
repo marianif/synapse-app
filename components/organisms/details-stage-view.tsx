@@ -17,7 +17,7 @@ type WhenOption =
   | { kind: "horizon"; label: string; range: DueRange };
 
 const WHEN_OPTIONS: WhenOption[] = [
-  { kind: "concrete", label: "a day", date: () => dateStr(0) },
+  { kind: "concrete", label: "tomorrow", date: () => dateStr(1) },
   { kind: "concrete", label: "weekend", date: () => dateStr(daysToWeekend()) },
   { kind: "horizon", label: "this week", range: "week" },
   { kind: "horizon", label: "this month", range: "month" },

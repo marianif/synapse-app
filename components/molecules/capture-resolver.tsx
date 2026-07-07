@@ -150,10 +150,10 @@ interface CaptureResolverProps {
 // destinations file on first tap — they have nothing to configure.
 type DatedKind = "todo" | "deadline";
 
-// One WHEN grammar shared by both dated verbs (todo + deadline). No today /
-// tomorrow — capture is for what's ahead, not what's now. Two flavors:
-//   • concrete — resolves to a single DD/MM/YYYY date (a day → today, weekend →
-//     coming Saturday). "a day" then invites the exact stepper to nudge off today.
+// One WHEN grammar shared by both dated verbs (todo + deadline). Two flavors:
+//   • concrete — resolves to a single DD/MM/YYYY date (tomorrow → next day,
+//     weekend → coming Saturday). "tomorrow" then invites the exact stepper
+//     to nudge off that date.
 //   • horizon — a DueRange window (this week / month / year); todos store the
 //     window's end date, deadlines additionally keep the range.
 type WhenOption =
@@ -161,7 +161,7 @@ type WhenOption =
   | { kind: "horizon"; label: string; range: DueRange };
 
 const WHEN_OPTIONS: WhenOption[] = [
-  { kind: "concrete", label: "a day", date: () => dateStr(0) },
+  { kind: "concrete", label: "tomorrow", date: () => dateStr(1) },
   { kind: "concrete", label: "weekend", date: () => dateStr(daysToWeekend()) },
   { kind: "horizon", label: "this week", range: "week" },
   { kind: "horizon", label: "this month", range: "month" },

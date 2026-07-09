@@ -136,9 +136,9 @@ const type = {
   },
   // mono signal layer — counts, status line, time, kickers. Instrument-panel feel.
   fontMono: {
-    regular: "JetBrainsMono_400Regular",
-    medium: "JetBrainsMono_500Medium",
-    bold: "JetBrainsMono_700Bold",
+    regular: "IBMPlexMono_400Regular",
+    medium: "IBMPlexMono_500Medium",
+    bold: "IBMPlexMono_700Bold",
   },
   // sans + mono + size + weight carries the hierarchy; no serif warmth.
   display: { size: 28, lineHeight: 34, weight: "700" as const, tracking: -0.2 }, // Host Grotesk — home greeting

@@ -11,10 +11,10 @@ import {
   useFonts,
 } from "@expo-google-fonts/host-grotesk";
 import {
-  JetBrainsMono_400Regular,
-  JetBrainsMono_500Medium,
-  JetBrainsMono_700Bold,
-} from "@expo-google-fonts/jetbrains-mono";
+  IBMPlexMono_400Regular,
+  IBMPlexMono_500Medium,
+  IBMPlexMono_700Bold,
+} from "@expo-google-fonts/ibm-plex-mono";
 import {
   DarkTheme,
   DefaultTheme,
@@ -60,9 +60,9 @@ function ThemedNavigationShell(): React.ReactElement | null {
     HostGrotesk_500Medium,
     HostGrotesk_600SemiBold,
     HostGrotesk_700Bold,
-    JetBrainsMono_400Regular,
-    JetBrainsMono_500Medium,
-    JetBrainsMono_700Bold,
+    IBMPlexMono_400Regular,
+    IBMPlexMono_500Medium,
+    IBMPlexMono_700Bold,
     Caveat_500Medium,
     Caveat_600SemiBold,
     Caveat_700Bold,

@@ -15,6 +15,7 @@ import type { InputStageHandle } from "@/components/organisms/input-stage-view";
 import { tokens } from "@/constants/theme";
 import type { UseCaptureReturn } from "@/hooks/use-capture";
 import type { DbProject } from "@/lib/types";
+import { useUIStore } from "@/stores/ui-store";
 
 interface CaptureDockProps {
   cap: UseCaptureReturn;
@@ -35,7 +36,8 @@ export function CaptureDock({
   cap,
   projects,
   restOffset,
-}: CaptureDockProps): React.ReactElement {
+}: CaptureDockProps): React.ReactElement | null {
+  const dockVisible = useUIStore((s) => s.captureDockVisible);
   const keyboardLift = useSharedValue(0);
   // The input never autofocuses on mount — only an explicit tap (the pen key,
   // or a tap on the resting bar itself) focuses it, via the imperative ref
@@ -66,6 +68,11 @@ export function CaptureDock({
     const hideEvt =
       Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
     const show = Keyboard.addListener(showEvt, (e) => {
+      // A keyboard opened by some OTHER surface (e.g. the detail sheet's
+      // inline edit) while the dock is suppressed must not lift the dock —
+      // it isn't rendered, but the shared value would still animate and jump
+      // once dockVisible flips back on.
+      if (!dockVisible) return;
       const lift = Math.max(0, e.endCoordinates.height - restOffset);
       if (justOpened.current) {
         justOpened.current = false;
@@ -87,11 +94,20 @@ export function CaptureDock({
       show.remove();
       hide.remove();
     };
-  }, [restOffset, keyboardLift]);
+  }, [restOffset, keyboardLift, dockVisible]);
 
   const dockStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: -keyboardLift.value }],
   }));
+
+  // Suppressing the dock unmounts it without a matching keyboardDidHide (the
+  // OTHER surface's keyboard fires that instead) — reset the lift so it isn't
+  // still offset from a stale value when it reappears.
+  useEffect(() => {
+    if (!dockVisible) keyboardLift.value = 0;
+  }, [dockVisible, keyboardLift]);
+
+  if (!dockVisible) return null;
 
   return (
     <>

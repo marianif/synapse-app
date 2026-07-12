@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import Animated, {
+  Easing,
   LinearTransition,
   useReducedMotion,
 } from "react-native-reanimated";
@@ -17,11 +18,6 @@ interface TaskChecklistProps {
   entryId: string;
   /** The parent's type shade; the open checkbox and the counter borrow it. */
   accent: string;
-  /**
-   * The sheet's edit mode. Delete affordances only exist here — destructive
-   * actions stay off the default reading surface (ACTIONS.md tier 3).
-   */
-  editing: boolean;
 }
 
 // ── Row ───────────────────────────────────────────────────────────────────────
@@ -133,11 +129,15 @@ function TaskRow({
  * Completing every task deliberately does NOT complete the parent: closing an
  * entry stays the user's call. The counter is the entire progress surface — no
  * bar, no ring, no celebration (see DESIGN.md: no gamification).
+ *
+ * Owns its own edit toggle (a pencil beside the kicker) rather than taking one
+ * from the parent sheet — rename/delete are per-task destructive actions
+ * (ACTIONS.md tier 3) that stay off the default reading surface regardless of
+ * whether the sheet's title/when are being edited.
  */
 export function TaskChecklist({
   entryId,
   accent,
-  editing,
 }: TaskChecklistProps): React.ReactElement {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
@@ -145,6 +145,7 @@ export function TaskChecklist({
     useDatabase();
 
   const [drafting, setDrafting] = useState("");
+  const [editing, setEditing] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   // `tasks` is the flat store of every entry's subtasks; the DB hands them back
@@ -166,9 +167,30 @@ export function TaskChecklist({
   return (
     <View style={styles.block}>
       <View style={styles.head}>
-        <ThemedText type="micro" muted style={styles.kicker}>
-          Tasks
-        </ThemedText>
+        <View style={styles.headLeft}>
+          <ThemedText type="micro" muted style={styles.kicker}>
+            Tasks
+          </ThemedText>
+          {mine.length > 0 ? (
+            <Pressable
+              onPress={() => setEditing((v) => !v)}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.editPill,
+                { backgroundColor: accent + (editing ? "22" : "18") },
+                pressed && styles.pressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={editing ? "Done editing tasks" : "Edit tasks"}
+            >
+              <MaterialCommunityIcons
+                name={editing ? "check" : "pencil-outline"}
+                size={13}
+                color={accent}
+              />
+            </Pressable>
+          ) : null}
+        </View>
         {mine.length > 0 ? (
           <ThemedText
             type="mono"
@@ -189,7 +211,7 @@ export function TaskChecklist({
         layout={
           reduced
             ? undefined
-            : LinearTransition.springify().damping(18).stiffness(220)
+            : LinearTransition.duration(220).easing(Easing.bezier(0.22, 1, 0.36, 1))
         }
       >
         {mine.map((task) => (
@@ -258,6 +280,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: tokens.space.xs,
+  },
+  headLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+  },
+  editPill: {
+    width: 26,
+    height: 26,
+    borderRadius: tokens.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
   },
   kicker: {
     letterSpacing: tokens.type.micro.tracking,

@@ -26,7 +26,7 @@ Three voices carry the typography: **Host Grotesk** (display/body — Inter was 
 - **The Someday Is A Badge Rule.** An undated todo keeps the cyan todo code and earns a small mono "SOMEDAY" badge — never a separate color. Datedness is a state, not a type.
 - Accent is a scheme-aware **neutral slab** (slate in light, off-white in dark), not a hue — so the action color can never be confused with a content category.
 - No 1px structural borders and no colored edge-bars — tonal layering, spacing, and the 6px EntryDot / mono kicker carry structure. Sharp radii (6–14): surgical, not soft.
-- Motion is expressive but earns its place: quick springs on re-flow; the stale-pulse on untouched ideas is the one sanctioned continuous motion.
+- Motion is expressive but earns its place: quick springs on re-flow; the stale-pulse on untouched ideas is the one sanctioned continuous motion. **List/feed entrances never spring** — a row printing itself in is a calm timing fade, not a bounce. Springs are reserved for direct manipulation feedback (re-flow, drag, press response), never for passive content appearing on screen.
 
 ## Tokens
 
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
 
 - **Do** route every color through `useTheme()` or the typed accessors (`entryColor`, `useEntryKicker`, `useEntryTint`, `chipInk`, `useSurfaceColor`). Components never branch on scheme.
 - **Do** keep every style in `StyleSheet.create`, including `renderItem` styles.
-- **Do** animate `transform` and `opacity` only; springs at `{damping:18, stiffness:220}`, timing on the `(0.22, 1, 0.36, 1)` bezier.
+- **Do** animate `transform` and `opacity` only; springs at `{damping:18, stiffness:220}` for direct-manipulation feedback (re-flow, drag, press), timing on the `(0.22, 1, 0.36, 1)` bezier for everything else — including all list/feed entrances.
 - **Do** check `useReducedMotion()`: resizing becomes instant, the stale-pulse becomes a static outline ring.
 - **Do** use `typeKicker` shades for any type-colored text on a tint; the electric codes are for dots and fills.
 - **Do** keep the mono layer for numbers, time, counts, and kickers — that contrast is the instrument-panel signature.
@@ -367,3 +367,4 @@ const styles = StyleSheet.create({
 - **Don't** show dead count-only tiles — every tile shows real, tappable items.
 - **Don't** add a FAB — capture is the always-on bar / center tab key.
 - **Don't** set anything in all-caps except the mono kicker and micro steps.
+- **Don't** use a springy/bouncy entrance (`.springify()`, overshoot, elastic) on list or feed items — rows and cards appear via a calm timing fade on the standard bezier (`Easing.bezier(0.22, 1, 0.36, 1)`), never a spring. A bounce on passive content reads as jittery/uncanny, not alive. This is a hard no, not a style preference: springs (`{damping:18, stiffness:220}`) are reserved for direct-manipulation feedback (re-flow after a delete, drag release, press response) — never for content simply entering the screen.

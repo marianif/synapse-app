@@ -1,13 +1,5 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   FadeInUp,
@@ -16,9 +8,12 @@ import Animated, {
 
 import { ProjectBreadcrumb } from "@/components/atoms/project-breadcrumb";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { DetailEditForm } from "@/components/molecules/detail-edit-form";
 import { DetailHeaderRow } from "@/components/molecules/detail-header-row";
-import { DetailViewMeta } from "@/components/molecules/detail-view-meta";
+import {
+  DetailViewMeta,
+  type EditingField,
+  type WhenDraft,
+} from "@/components/molecules/detail-view-meta";
 import { TaskChecklist } from "@/components/molecules/task-checklist";
 import { entryKicker, tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
@@ -26,13 +21,12 @@ import { daysUntil, isDone, isWhenCharged, whenLabel } from "@/lib/direct-when";
 import { horizonEndDate, horizonReadout } from "@/lib/horizons";
 import { humanizeRule, parseRule } from "@/lib/recurrence";
 import { isTaskable } from "@/lib/types";
+import { useUIStore } from "@/stores/ui-store";
 
 import type {
   DbEntry,
   DbProject,
-  DueRange,
   EntryType,
-  RecurrenceFrequency,
   RecurrenceRule,
 } from "@/lib/types";
 
@@ -45,33 +39,16 @@ interface DirectDetailSheetProps {
   onDelete: (entry: DbEntry) => void;
 }
 
-// ── Inline-edit draft ───────────────────────────────────────────
-// Mirrors the shape used by the detail screen's inline edit: date/time map to
-// whichever pair the type uses, dueRange holds a deadline horizon (null = a
-// precise day). Type itself is never editable here.
-interface EditDraft {
-  title: string;
-  date: string;
-  time: string;
-  dueRange: DueRange | null;
-  notes: string;
-  recurrenceFreq: RecurrenceFrequency | null;
-  recurrenceDays: number[];
-  recurrenceEndDate: string;
-}
-
-function draftFromEntry(entry: DbEntry): EditDraft {
+function whenDraftFromEntry(entry: DbEntry): WhenDraft {
   const isDeadline = entry.type === "deadline";
   const rule =
     typeof entry.recurrence_rule === "string"
       ? parseRule(entry.recurrence_rule)
       : (entry.recurrence_rule as RecurrenceRule | null);
   return {
-    title: entry.title,
     date: (isDeadline ? entry.due_date : entry.scheduled_date) ?? "",
     time: (isDeadline ? entry.due_time : entry.scheduled_time) ?? "",
     dueRange: entry.due_range,
-    notes: entry.notes ?? "",
     recurrenceFreq: rule?.freq ?? null,
     recurrenceDays: rule?.days ?? [],
     recurrenceEndDate: entry.recurrence_end_date ?? "",
@@ -168,19 +145,34 @@ export function DirectDetailSheet({
   const { colors, scheme } = useTheme();
   const reduced = useReducedMotion();
   const { updateEntry } = useDatabase();
+  const setCaptureDockVisible = useUIStore((s) => s.setCaptureDockVisible);
 
-  const [draft, setDraft] = useState<EditDraft | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const editing = draft !== null;
+  // Which single field is being edited in place, if any — replaces the old
+  // whole-sheet "editing" mode. Each field commits independently on blur/tap.
+  const [editingField, setEditingField] = useState<EditingField>(null);
+  const [titleDraft, setTitleDraft] = useState("");
+  const [whenDraft, setWhenDraft] = useState<WhenDraft | null>(null);
 
   // Leaving the sheet (close, or the selected entry swaps under it) always
   // drops any in-flight edit — reopening starts fresh in view mode.
   useEffect(() => {
-    if (!visible) setDraft(null);
+    if (!visible) setEditingField(null);
   }, [visible]);
   useEffect(() => {
-    setDraft(null);
+    setEditingField(null);
   }, [entry?.id]);
+
+  // The sheet's own inline title/when edit opens the keyboard directly over
+  // this Modal. The always-on capture dock lives at the tab-layout level and
+  // has no idea a different keyboard flow is active — left mounted, it lifts
+  // itself alongside the sheet's keyboard and visually stacks on top of it
+  // (see screenshot: "Put something in" floating over the edit fields). Hide
+  // it for the sheet's entire lifetime, not just while a field is mid-edit,
+  // since the sheet's own scroll + inline inputs already cover that need.
+  useEffect(() => {
+    setCaptureDockVisible(!visible);
+    return () => setCaptureDockVisible(true);
+  }, [visible, setCaptureDockVisible]);
 
   if (!entry) return null;
 
@@ -193,70 +185,62 @@ export function DirectDetailSheet({
   const urgency = urgencyTag(entry, accent);
   const statColor = statusColor(entry.status);
   const isDeadlineType = type === "deadline";
+  const isTodoType = type === "todo";
 
   const handleMarkDone = (): void => {
     onMarkDone(entry);
     onClose();
   };
 
-  const handleStartEdit = (): void => {
-    setDraft(draftFromEntry(entry));
-  };
-
-  const handleCancelEdit = (): void => {
-    setDraft(null);
-  };
-
-  const patchDraft = (patch: Partial<EditDraft>): void => {
-    setDraft((d) => (d ? { ...d, ...patch } : d));
-  };
-
-  const handleSaveEdit = async (): Promise<void> => {
-    if (!draft || isSaving) return;
-    const trimmedTitle = draft.title.trim();
-    if (!trimmedTitle) return;
-
-    setIsSaving(true);
-    try {
-      const recurrenceRule: RecurrenceRule | null = draft.recurrenceFreq
-        ? {
-            freq: draft.recurrenceFreq,
-            days:
-              draft.recurrenceFreq === "weekly"
-                ? draft.recurrenceDays
-                : undefined,
-          }
-        : null;
-
-      const horizon = isDeadlineType ? draft.dueRange : null;
-      await updateEntry(entry.id, {
-        title: trimmedTitle,
-        scheduledDate: isDeadlineType ? null : draft.date.trim() || null,
-        scheduledTime: isDeadlineType ? null : draft.time.trim() || null,
-        dueDate: isDeadlineType
-          ? horizon
-            ? horizonEndDate(horizon)
-            : draft.date.trim() || null
-          : null,
-        dueTime: isDeadlineType && !horizon ? draft.time.trim() || null : null,
-        dueRange: horizon,
-        notes: draft.notes.trim() || null,
-        recurrenceRule,
-        recurrenceEndDate: draft.recurrenceEndDate.trim() || null,
-      });
-      setDraft(null);
-    } catch (error) {
-      console.error("[direct-detail-sheet] save edit failed:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const canSaveEdit = (draft?.title.trim().length ?? 0) > 0 && !isSaving;
-
   const handleDelete = (): void => {
     onDelete(entry);
     onClose();
+  };
+
+  const handleEditField = (field: EditingField): void => {
+    if (field === "title") setTitleDraft(entry.title);
+    if (field === "when") setWhenDraft(whenDraftFromEntry(entry));
+    setEditingField(field);
+  };
+
+  const handleCommitTitle = (): void => {
+    const trimmed = titleDraft.trim();
+    setEditingField(null);
+    if (!trimmed || trimmed === entry.title) return;
+    updateEntry(entry.id, { title: trimmed }).catch((error: unknown) => {
+      console.error("[direct-detail-sheet] title save failed:", error);
+    });
+  };
+
+  const handleCommitWhen = (): void => {
+    const draft = whenDraft;
+    setEditingField(null);
+    if (!draft) return;
+
+    const horizon = isDeadlineType ? draft.dueRange : null;
+    const recurrenceRule: RecurrenceRule | null = draft.recurrenceFreq
+      ? {
+          freq: draft.recurrenceFreq,
+          days:
+            draft.recurrenceFreq === "weekly" ? draft.recurrenceDays : undefined,
+        }
+      : null;
+
+    updateEntry(entry.id, {
+      scheduledDate: isDeadlineType ? null : draft.date.trim() || null,
+      scheduledTime: isDeadlineType ? null : draft.time.trim() || null,
+      dueDate: isDeadlineType
+        ? horizon
+          ? horizonEndDate(horizon)
+          : draft.date.trim() || null
+        : null,
+      dueTime: isDeadlineType && !horizon ? draft.time.trim() || null : null,
+      dueRange: horizon,
+      recurrenceRule,
+      recurrenceEndDate: draft.recurrenceEndDate.trim() || null,
+    }).catch((error: unknown) => {
+      console.error("[direct-detail-sheet] when save failed:", error);
+    });
   };
 
   return (
@@ -277,6 +261,7 @@ export function DirectDetailSheet({
             style={styles.scroll}
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             <Animated.View
               entering={
@@ -289,7 +274,10 @@ export function DirectDetailSheet({
             >
               {/* ── Project breadcrumb ── */}
               {project ? (
-                <ProjectBreadcrumb emoji={project.emoji} title={project.title} />
+                <ProjectBreadcrumb
+                  emoji={project.emoji}
+                  title={project.title}
+                />
               ) : null}
 
               {/* ── Header: type + status ── */}
@@ -301,141 +289,46 @@ export function DirectDetailSheet({
                 statusColor={statColor}
               />
 
-              {/* ── Identity ── */}
-              {editing ? (
-                <TextInput
-                  value={draft.title}
-                  onChangeText={(t) => patchDraft({ title: t })}
-                  placeholder="Title"
-                  placeholderTextColor={colors.inkMuted}
-                  style={[
-                    styles.titleInput,
-                    {
-                      color: colors.ink,
-                      borderBottomColor: colors.surfaceSubtle,
-                    },
-                  ]}
-                  multiline
-                  autoFocus
-                />
-              ) : (
-                <ThemedText
-                  type="title"
-                  style={[
-                    styles.title,
-                    {
-                      color: colors.ink,
-                      textDecorationLine: done ? "line-through" : "none",
-                    },
-                  ]}
-                >
-                  {entry.title}
-                </ThemedText>
-              )}
-
-              {!editing && entry.subtitle ? (
-                <ThemedText type="body" muted style={styles.subtitle}>
-                  {entry.subtitle}
-                </ThemedText>
-              ) : null}
-
-              {!editing && narrativeFor(entry) ? (
+              {!editingField && narrativeFor(entry) ? (
                 <ThemedText type="mono" muted style={styles.narrative}>
                   {narrativeFor(entry)}
                 </ThemedText>
               ) : null}
 
-              {/* ── Divider ── */}
-              <View
-                style={[
-                  styles.divider,
-                  { backgroundColor: colors.surfaceSubtle },
-                ]}
+              {/* ── Identity + WHEN, each independently tap-to-edit ── */}
+              <DetailViewMeta
+                entry={entry}
+                accent={accent}
+                charged={charged}
+                whenText={whenValue(entry)}
+                recurrenceText={
+                  entry.recurrence_rule ? recurrenceValue(entry) : null
+                }
+                done={done}
+                doneLabel={doneLabel(type)}
+                reduced={reduced}
+                editingField={editingField}
+                onEditField={handleEditField}
+                titleDraft={titleDraft}
+                onTitleDraftChange={setTitleDraft}
+                onCommitTitle={handleCommitTitle}
+                whenDraft={whenDraft ?? whenDraftFromEntry(entry)}
+                onWhenDraftChange={(patch) =>
+                  setWhenDraft((d) => (d ? { ...d, ...patch } : d))
+                }
+                onCommitWhen={handleCommitWhen}
+                isDeadlineType={isDeadlineType}
+                isTodoType={isTodoType}
+                onDelete={handleDelete}
+                onMarkDone={handleMarkDone}
               />
-
-              {editing ? (
-                <DetailEditForm
-                  draft={draft}
-                  patchDraft={patchDraft}
-                  type={type}
-                  isDeadlineType={isDeadlineType}
-                  accent={accent}
-                  reduced={reduced}
-                />
-              ) : (
-                <DetailViewMeta
-                  entry={entry}
-                  accent={accent}
-                  charged={charged}
-                  whenText={whenValue(entry)}
-                  recurrenceText={
-                    entry.recurrence_rule ? recurrenceValue(entry) : null
-                  }
-                  done={done}
-                  doneLabel={doneLabel(type)}
-                  reduced={reduced}
-                  onDelete={handleDelete}
-                  onEdit={handleStartEdit}
-                  onMarkDone={handleMarkDone}
-                />
-              )}
 
               {/* ── Subtasks ── */}
               {/* Todo and deadline only. An idea that grows a checklist is a
                   project — `promoteIdeaToProject` is the path for that, and the
                   data layer's `isTaskable` guard rejects the write anyway. */}
               {isTaskable(type) ? (
-                <TaskChecklist
-                  entryId={entry.id}
-                  accent={accent}
-                  editing={editing}
-                />
-              ) : null}
-
-              {/* ── Actions ── */}
-              {editing ? (
-                <View style={styles.actions}>
-                  <Pressable
-                    onPress={handleCancelEdit}
-                    disabled={isSaving}
-                    style={({ pressed }) => [
-                      styles.actionBtn,
-                      {
-                        backgroundColor: colors.surfaceSubtle,
-                        opacity: pressed ? 0.7 : 1,
-                      },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel="Cancel"
-                  >
-                    <ThemedText type="bodyBold" muted>
-                      Cancel
-                    </ThemedText>
-                  </Pressable>
-
-                  <Pressable
-                    onPress={handleSaveEdit}
-                    disabled={!canSaveEdit}
-                    style={({ pressed }) => [
-                      styles.actionBtn,
-                      {
-                        backgroundColor: accent + "22",
-                        opacity: !canSaveEdit ? 0.5 : pressed ? 0.7 : 1,
-                      },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel="Save"
-                  >
-                    <MaterialCommunityIcons
-                      name="check"
-                      size={16}
-                      color={accent}
-                    />
-                    <ThemedText type="bodyBold" style={{ color: accent }}>
-                      {isSaving ? "Saving…" : "Save"}
-                    </ThemedText>
-                  </Pressable>
-                </View>
+                <TaskChecklist entryId={entry.id} accent={accent} />
               ) : null}
             </Animated.View>
           </ScrollView>
@@ -475,44 +368,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space.lg,
     paddingBottom: tokens.space.lg,
   },
-
-  // ── Identity ──
-  title: {
-    marginBottom: tokens.space.xs,
-  },
-  subtitle: {},
   narrative: {
-    marginTop: tokens.space.xs,
-  },
-  titleInput: {
-    marginBottom: tokens.space.xs,
-    fontFamily: tokens.type.fontInter.bold,
-    fontSize: tokens.type.title.size,
-    lineHeight: tokens.type.title.lineHeight,
-    paddingVertical: tokens.space.xs,
-    borderBottomWidth: 1,
-  },
-
-  // ── Divider ──
-  divider: {
-    height: 1,
-    marginTop: tokens.space.md,
-    marginBottom: tokens.space.md,
-  },
-
-  // ── Actions ──
-  actions: {
-    flexDirection: "row",
-    gap: tokens.space.sm,
-    marginTop: tokens.space.md,
-  },
-  actionBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: tokens.space.sm,
-    minHeight: 44,
-    borderRadius: tokens.radius.md,
+    marginBottom: tokens.space.sm,
   },
 });

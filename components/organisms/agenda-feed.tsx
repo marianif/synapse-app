@@ -1,5 +1,9 @@
 import { FlatList, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, useReducedMotion } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeInDown,
+  useReducedMotion,
+} from "react-native-reanimated";
 
 import { DispatchRow } from "@/components/molecules/dispatch-row";
 import { EmptyState } from "@/components/molecules/empty-state";
@@ -47,14 +51,14 @@ export function AgendaFeed({
       renderItem={({ item, index }) => (
         <Animated.View
           // The feed prints itself in, line by line, like a page being written.
-          // Reduced motion gets the finished page instead.
+          // A calm timing fade on the standard exit bezier — no spring, no
+          // overshoot. Reduced motion gets the finished page instead.
           entering={
             reduced
               ? undefined
               : FadeInDown.delay(Math.min(index, STAGGER_CAP) * STAGGER_MS)
                   .duration(tokens.motion.duration.base)
-                  .springify()
-                  .damping(tokens.motion.spring.damping)
+                  .easing(Easing.bezier(...tokens.motion.bezier))
           }
         >
           <DispatchRow dispatch={item} onPress={onSelect} />

@@ -73,16 +73,25 @@ export default function AgendaScreen(): React.ReactElement {
 
   const handleSelect = useCallback(
     (d: Dispatch) => {
-      if (d.target.kind === "entry") {
-        const entry = entries.find((e) => e.id === d.target.id);
-        if (entry) setSelected(entry);
-        return;
+      const target = d.target;
+      switch (target.kind) {
+        case "entry": {
+          const entry = entries.find((e) => e.id === target.id);
+          if (entry) setSelected(entry);
+          return;
+        }
+        case "project":
+          router.push({ pathname: "/project", params: { id: target.id } });
+          return;
+        case "note":
+          router.push("/(tabs)/notes");
+          return;
+        case "board":
+          // A board-level line (a collision, a silence, the orphan count) is
+          // about the whole field, so it hands you back to the field itself.
+          router.push("/");
+          return;
       }
-      if (d.target.kind === "project") {
-        router.push({ pathname: "/project", params: { id: d.target.id } });
-        return;
-      }
-      router.push("/(tabs)/notes");
     },
     [entries, router],
   );

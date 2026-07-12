@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
+  Easing,
   FadeIn,
   FadeOut,
   LinearTransition,
@@ -126,7 +127,7 @@ export function RecurrencePicker({
         <Animated.View
           entering={FadeIn.duration(180)}
           exiting={FadeOut.duration(120)}
-          layout={LinearTransition.springify().damping(18).stiffness(220)}
+          layout={LinearTransition.duration(220).easing(Easing.bezier(0.22, 1, 0.36, 1))}
           style={styles.railWrap}
         >
           <ChipRow>
@@ -149,7 +150,7 @@ export function RecurrencePicker({
         <Animated.View
           entering={FadeIn.duration(180)}
           exiting={FadeOut.duration(120)}
-          layout={LinearTransition.springify().damping(18).stiffness(220)}
+          layout={LinearTransition.duration(220).easing(Easing.bezier(0.22, 1, 0.36, 1))}
         >
           <Pressable
             onPress={() => setEndOpen((v) => !v)}

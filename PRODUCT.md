@@ -57,6 +57,7 @@ The board is built from four things, plus projects and the diary:
 - **Idea** — an autonomous capture, promotable into a project. It shows both as a direct row in the overview (undated, so it rests in the calm band) and, when stale and unpromoted, as a resurfaced line in the narrative voice.
 - **Todo** — the actionable spine; autonomous or project-linked. **Deadline** is a flavor of todo that keeps its strong color identity and takes a date or a horizon. A todo with **no date** is the "someday" case: recognizable by a **badge, never by a separate color**.
 - **Diary note** — reflective, never actionable, never on the board. Linkable to an idea or a project, or free.
+- **Task (subtask)** — a checklist line owned by a todo or deadline (never an idea). It has no date, no status enum, no project of its own — it's crossed in or crossed out. The UI surfaces progress (e.g. "3/5") only. **Completing every subtask does not complete the parent** — closing the entry stays a deliberate user decision, never automated.
 
 **Events are not part of the model.** The persona does not live event-to-event; the calendar of social plans is out of scope. Any prior event concept is removed.
 

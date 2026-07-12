@@ -25,6 +25,7 @@ Useful services. Discoverable but not promoted.
 | Reflect in the diary | `notes.tsx` + `notes-composer` bottom bar | Peer tab + floating composer | Reflective, deliberately isolated from the actionable board |
 | Link a note to a project or idea | Note detail → `link-sheet` / `note-link-stage-view` | Inline action inside the note | Enriches capture; not the capture itself |
 | Complete / skip / edit an entry | Board rows via `swipeable-row` + `direct-detail-sheet` | Swipe action + tap-through to detail | Board grooming — necessary but not why you open |
+| Check off / add / reorder subtasks | `direct-detail-sheet` via `task-checklist` (todo/deadline only) | Inline checklist with progress readout (e.g. "3/5") | Refinement inside an already-captured entry; completing every subtask never auto-completes the parent |
 | Pull an entry into a project | Notes screen + project screen | Inline row action | Post-capture curation |
 | Promote an idea to a project | Idea detail / `idea-constellation` | Inline action | Advancement flow, rare relative to capture |
 | Set a date or horizon on a todo | Detail sheet + `recurrence-picker` | Inline picker inside detail | Refinement of a captured thing |

@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -28,6 +27,7 @@ import type { ProjectComposerKind } from "@/components/organisms/project-compose
 import { ProjectComposer } from "@/components/organisms/project-composer";
 import { ProjectFab } from "@/components/organisms/project-fab";
 import { ScreenHeader } from "@/components/organisms/screen-header";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useCapture } from "@/hooks/use-capture";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -404,11 +404,7 @@ export default function ProjectScreen(): React.ReactElement {
                       {project.emoji}
                     </ThemedText>
                   ) : (
-                    <MaterialCommunityIcons
-                      name="folder-outline"
-                      size={22}
-                      color={colors.inkMuted}
-                    />
+                    <IconSymbol name="Folder" size={22} color={colors.inkMuted} />
                   )}
                 </Pressable>
               }
@@ -421,11 +417,7 @@ export default function ProjectScreen(): React.ReactElement {
                   accessibilityLabel="Project actions"
                   style={styles.overflowBtn}
                 >
-                  <MaterialCommunityIcons
-                    name="dots-horizontal"
-                    size={24}
-                    color={colors.ink}
-                  />
+                  <IconSymbol name="MoreH" size={24} color={colors.ink} />
                 </Pressable>
               }
             />
@@ -629,11 +621,7 @@ export default function ProjectScreen(): React.ReactElement {
                 pressed && styles.pressed,
               ]}
             >
-              <MaterialCommunityIcons
-                name="plus"
-                size={16}
-                color={colors.inkMuted}
-              />
+              <IconSymbol name="Plus" size={16} color={colors.inkMuted} />
               <ThemedText
                 type="micro"
                 style={[styles.addNoteLabel, { color: colors.inkMuted }]}

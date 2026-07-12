@@ -22,6 +22,11 @@ import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 interface NotesComposerProps {
   targets: LinkableTarget[];
   onSave: (body: string, selection: LinkSelection) => Promise<void> | void;
+  /** Fires whenever the composer transitions between resting and actively
+   *  lifted (focused or recording), so the screen can show a backdrop scrim
+   *  behind the bar — its surface tone otherwise fuses with the feed cards
+   *  scrolling behind it once it's the thing being acted on. */
+  onActivityChange?: (active: boolean) => void;
 }
 
 /** Imperative handle so the tab-bar pen key can focus this composer (it's the
@@ -29,6 +34,13 @@ interface NotesComposerProps {
 export interface NotesComposerHandle {
   focus: () => void;
   startVoice: () => void;
+}
+
+/** Whether the composer is actively lifted — focused for text entry or
+ *  recording — vs. resting as an idle bar. Callers use this to decide when to
+ *  show a backdrop scrim behind the bar (see notes.tsx). */
+export interface NotesComposerActivity {
+  active: boolean;
 }
 
 /**
@@ -45,13 +57,21 @@ export interface NotesComposerHandle {
 export const NotesComposer = forwardRef<
   NotesComposerHandle,
   NotesComposerProps
->(function NotesComposer({ targets, onSave }, ref): React.ReactElement {
+>(function NotesComposer(
+  { targets, onSave, onActivityChange },
+  ref,
+): React.ReactElement {
   const { colors } = useTheme();
   const [draft, setDraft] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const [linkSheetOpen, setLinkSheetOpen] = useState(false);
   const inputRef = useRef<TextInput | null>(null);
   const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
+
+  useEffect(() => {
+    onActivityChange?.(isFocused || isRecording);
+  }, [isFocused, isRecording, onActivityChange]);
 
   const accent = colors.inkMuted;
   const hasText = draft.trim().length > 0;
@@ -155,6 +175,8 @@ export const NotesComposer = forwardRef<
             ref={inputRef}
             value={draft}
             onChangeText={setDraft}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             onSubmitEditing={handleSend}
             placeholder="Write a note, capture a thought…"
             placeholderTextColor={colors.inkMuted}

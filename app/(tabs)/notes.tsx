@@ -1,8 +1,17 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Keyboard, Platform, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Keyboard,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
+  FadeIn,
+  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -92,6 +101,11 @@ export default function NotesScreen(): React.ReactElement {
   // tab's replacement for the project screen's batch pull-in sheet — the verb
   // lives on each note now, so it works with or without an active project view.
   const [relatingNote, setRelatingNote] = useState<DbDiaryEntry | null>(null);
+
+  // Whether the composer is actively lifted (focused or recording) — drives
+  // the backdrop scrim so its surface tone doesn't fuse with the feed cards
+  // scrolling behind it once it's the thing being acted on.
+  const [composerActive, setComposerActive] = useState(false);
 
   const ideaTitles = useMemo(() => {
     const map: Record<string, string> = {};
@@ -256,6 +270,25 @@ export default function NotesScreen(): React.ReactElement {
         <View style={styles.bottomSpacer} />
       </ScrollView>
 
+      {/* Backdrop scrim — only while the composer is actively lifted (focused
+          or recording). The bar shares `colors.surface` with the feed cards
+          behind it, so without a scrim an active composer visually fuses with
+          the content it's floating over. Tapping it blurs/dismisses, same as
+          the global capture dock's backdrop. */}
+      {composerActive ? (
+        <Animated.View
+          entering={FadeIn.duration(tokens.motion.duration.fast)}
+          exiting={FadeOut.duration(tokens.motion.duration.fast)}
+          style={StyleSheet.absoluteFill}
+        >
+          <Pressable
+            style={[StyleSheet.absoluteFill, styles.scrim]}
+            onPress={() => Keyboard.dismiss()}
+            accessibilityLabel="Dismiss note composer"
+          />
+        </Animated.View>
+      ) : null}
+
       {/* Composer floating above the tab bar — the feed scrolls behind it, and
           it rides up with the keyboard (hand-driven lift; see keyboardLift
           above). Rests at `restBottom` so it clears the overlaid tab bar. */}
@@ -266,6 +299,7 @@ export default function NotesScreen(): React.ReactElement {
           ref={composerRef}
           targets={composerTargets}
           onSave={handleSave}
+          onActivityChange={setComposerActive}
         />
       </Animated.View>
 
@@ -311,5 +345,8 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 120,
+  },
+  scrim: {
+    backgroundColor: tokens.color.scrim.medium,
   },
 });

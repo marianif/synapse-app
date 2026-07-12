@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 12;
+export const SCHEMA_VERSION = 13;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -67,6 +67,44 @@ export const CREATE_DIARY_TABLE = `
   );
 `;
 
+/**
+ * Subtasks: the checklist under a todo or a deadline. Deliberately the lightest
+ * entity in the model — a title, a done flag, an order. No dates, no notes, no
+ * project, no status enum. A task is crossed in or crossed out; anything richer
+ * is an entry, and an entry that needs entries under it is a project.
+ *
+ * Not allowed on ideas: an idea with a checklist is a project, and the
+ * promotion path (entries.promoted_project_id) already exists for that. The
+ * parent-type rule can't live in a CHECK (it spans tables), so it's enforced in
+ * the mutation layer (`insertTask`).
+ *
+ * The CASCADE below is aspirational: expo-sqlite opens connections with
+ * `PRAGMA foreign_keys` OFF by default, so it does not actually fire. Tasks are
+ * deleted app-side alongside their parent (`deleteTasksForEntry`), mirroring
+ * the `unlinkDiaryNotesForEntry` pattern. The clause documents intent and would
+ * become live if the pragma is ever switched on.
+ */
+export const CREATE_TASKS_TABLE = `
+  CREATE TABLE IF NOT EXISTS tasks (
+    id TEXT PRIMARY KEY NOT NULL,
+    entry_id TEXT NOT NULL REFERENCES entries(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    -- SQLite has no boolean; 0/1, same convention as projects.is_featured.
+    done INTEGER NOT NULL DEFAULT 0 CHECK(done IN (0, 1)),
+    -- Manual ordering within a parent. Sparse and never renumbered on delete;
+    -- new tasks land at max(position) + 1.
+    position INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+  );
+`;
+
+/** Every read is "the tasks of one entry, in order" — index the access path. */
+export const CREATE_TASKS_ENTRY_INDEX = `
+  CREATE INDEX IF NOT EXISTS idx_tasks_entry_position
+    ON tasks(entry_id, position);
+`;
+
 export const CREATE_SCHEMA_META_TABLE = `
   CREATE TABLE IF NOT EXISTS schema_meta (
     key TEXT PRIMARY KEY,
@@ -90,5 +128,7 @@ export const ALL_STATEMENTS = [
   CREATE_ENTRIES_TABLE,
   CREATE_DIARY_TABLE,
   CREATE_PROJECTS_TABLE,
+  CREATE_TASKS_TABLE,
+  CREATE_TASKS_ENTRY_INDEX,
   CREATE_SCHEMA_META_TABLE,
 ];

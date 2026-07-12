@@ -4,13 +4,20 @@ import { AppState } from "react-native";
 
 import {
   deleteProject as dbDeleteProject,
+  deleteTask as dbDeleteTask,
+  deleteTasksForEntry as dbDeleteTasksForEntry,
   insertProject as dbInsertProject,
+  insertTask as dbInsertTask,
+  reorderTasks as dbReorderTasks,
   setProjectFeatured as dbSetProjectFeatured,
+  setTaskDone as dbSetTaskDone,
   touchProject as dbTouchProject,
   updateProject as dbUpdateProject,
+  updateTaskTitle as dbUpdateTaskTitle,
   ensureDb,
   generateId,
   getProjects,
+  getTasks,
   seedDefaultProjectsOnce,
 } from "@/lib/database";
 import { seedDevDataIfEmpty } from "@/lib/dev-seed";
@@ -24,6 +31,7 @@ import type {
   DbEntry,
   DbProject,
   DbRecurrenceCompletion,
+  DbTask,
   DueRange,
   RecurrenceRule,
 } from "@/lib/types";
@@ -52,6 +60,8 @@ function syncEntriesToWidget(entries: DbEntry[]): void {
 interface DatabaseContextValue {
   entries: DbEntry[];
   projects: DbProject[];
+  /** Every subtask across every entry. Filter by `entry_id` at the call site. */
+  tasks: DbTask[];
   recurrenceCompletions: DbRecurrenceCompletion[];
   isLoading: boolean;
   isCreating: boolean;
@@ -61,6 +71,14 @@ interface DatabaseContextValue {
   deleteEntry: (id: string) => Promise<void>;
   refetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
   refetchProjects: () => Promise<void>;
+  /** Append a subtask. Throws if the parent is an idea — promote it instead. */
+  createTask: (entryId: string, title: string) => Promise<DbTask>;
+  /** Cross a task in or out. Deliberately does NOT bump the parent's updated_at. */
+  setTaskDone: (id: string, done: boolean) => Promise<void>;
+  updateTaskTitle: (id: string, title: string) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
+  /** Persist a drag-reorder. `orderedIds` is one entry's checklist, top to bottom. */
+  reorderTasks: (orderedIds: string[]) => Promise<void>;
   createProject: (title: string, emoji?: string | null) => Promise<DbProject>;
   updateProject: (
     id: string,
@@ -164,6 +182,7 @@ export function DatabaseProvider({
 }: DatabaseProviderProps): React.ReactElement {
   const [entries, setEntries] = useState<DbEntry[]>([]);
   const [projects, setProjects] = useState<DbProject[]>([]);
+  const [tasks, setTasks] = useState<DbTask[]>([]);
   const [recurrenceCompletions, setRecurrenceCompletions] = useState<
     DbRecurrenceCompletion[]
   >([]);
@@ -208,6 +227,15 @@ export function DatabaseProvider({
     }
   }, []);
 
+  const fetchTasks = useCallback(async (): Promise<void> => {
+    try {
+      await getDb(); // ensure initDatabase (and migrations) completed
+      setTasks(await getTasks());
+    } catch (error) {
+      console.error("[DatabaseContext] fetchTasks failed:", error);
+    }
+  }, []);
+
   const fetchRecurrenceCompletions = useCallback(async (): Promise<void> => {
     try {
       const db = await getDb();
@@ -243,9 +271,10 @@ export function DatabaseProvider({
       }
       fetchEntries();
       fetchProjects();
+      fetchTasks();
       fetchRecurrenceCompletions();
     })();
-  }, [fetchEntries, fetchProjects, fetchRecurrenceCompletions]);
+  }, [fetchEntries, fetchProjects, fetchTasks, fetchRecurrenceCompletions]);
 
   // After the initial load, rebuild all scheduled notifications from scratch.
   // This self-heals any stale state from a previous launch.
@@ -599,12 +628,17 @@ export function DatabaseProvider({
         "UPDATE diary_entries SET linked_entry_id = NULL WHERE linked_entry_id = ?",
         id,
       );
+      // App-side ON DELETE CASCADE for subtasks: expo-sqlite leaves
+      // `PRAGMA foreign_keys` off, so the clause on `tasks` never fires and the
+      // rows would outlive their parent, unreachable.
+      await dbDeleteTasksForEntry(id);
       await db.runAsync("DELETE FROM entries WHERE id = ?", id);
       setEntries((prev) => {
         const next = prev.filter((e) => e.id !== id);
         syncEntriesToWidget(next);
         return next;
       });
+      setTasks((prev) => prev.filter((t) => t.entry_id !== id));
 
       // Cancel any pending notification — failures must not block
       cancelNotificationForEntry(id).catch((err) => {
@@ -615,6 +649,127 @@ export function DatabaseProvider({
       throw error;
     }
   }, []);
+
+  // ─── Tasks ────────────────────────────────────────────────────────────────
+  //
+  // On `updated_at`: adding, renaming, and deleting a task are edits to the
+  // parent's shape, so they bump `entries.updated_at`. Crossing a task in or
+  // out is not — it's the same distinction `setProjectFeatured` and
+  // `touchProject` already draw. If ticking a checkbox bumped the parent, every
+  // tick would silently reorder anything sorting on recency.
+
+  /** Bump one entry's updated_at in SQLite and in memory. Widget payload is unaffected. */
+  const touchEntry = useCallback(async (entryId: string): Promise<void> => {
+    const db = await getDb();
+    const now = Math.floor(Date.now() / 1000);
+    await db.runAsync(
+      "UPDATE entries SET updated_at = ? WHERE id = ?",
+      now,
+      entryId,
+    );
+    setEntries((prev) =>
+      prev.map((e) => (e.id === entryId ? { ...e, updated_at: now } : e)),
+    );
+  }, []);
+
+  const createTask = useCallback(
+    async (entryId: string, title: string): Promise<DbTask> => {
+      try {
+        await getDb();
+        const task = await dbInsertTask(entryId, title);
+        setTasks((prev) => [...prev, task]);
+        await touchEntry(entryId);
+        return task;
+      } catch (error) {
+        console.error("[DatabaseContext] createTask failed:", error);
+        throw error;
+      }
+    },
+    [touchEntry],
+  );
+
+  const setTaskDone = useCallback(
+    async (id: string, done: boolean): Promise<void> => {
+      try {
+        await getDb();
+        await dbSetTaskDone(id, done);
+        const now = Math.floor(Date.now() / 1000);
+        setTasks((prev) =>
+          prev.map((t) =>
+            t.id === id ? { ...t, done: done ? 1 : 0, updated_at: now } : t,
+          ),
+        );
+      } catch (error) {
+        console.error("[DatabaseContext] setTaskDone failed:", error);
+        throw error;
+      }
+    },
+    [],
+  );
+
+  const updateTaskTitle = useCallback(
+    async (id: string, title: string): Promise<void> => {
+      try {
+        await getDb();
+        await dbUpdateTaskTitle(id, title);
+        const now = Math.floor(Date.now() / 1000);
+        let entryId: string | undefined;
+        setTasks((prev) =>
+          prev.map((t) => {
+            if (t.id !== id) return t;
+            entryId = t.entry_id;
+            return { ...t, title, updated_at: now };
+          }),
+        );
+        if (entryId) await touchEntry(entryId);
+      } catch (error) {
+        console.error("[DatabaseContext] updateTaskTitle failed:", error);
+        throw error;
+      }
+    },
+    [touchEntry],
+  );
+
+  const deleteTask = useCallback(
+    async (id: string): Promise<void> => {
+      try {
+        await getDb();
+        // Read the parent before the row is gone — after the delete there is
+        // nothing left to tell us which entry to touch.
+        const entryId = tasks.find((t) => t.id === id)?.entry_id;
+        await dbDeleteTask(id);
+        setTasks((prev) => prev.filter((t) => t.id !== id));
+        if (entryId) await touchEntry(entryId);
+      } catch (error) {
+        console.error("[DatabaseContext] deleteTask failed:", error);
+        throw error;
+      }
+    },
+    [tasks, touchEntry],
+  );
+
+  const reorderTasks = useCallback(
+    async (orderedIds: string[]): Promise<void> => {
+      try {
+        await getDb();
+        await dbReorderTasks(orderedIds);
+        const now = Math.floor(Date.now() / 1000);
+        const rank = new Map(orderedIds.map((id, i) => [id, i]));
+        setTasks((prev) =>
+          prev.map((t) => {
+            const position = rank.get(t.id);
+            return position === undefined
+              ? t
+              : { ...t, position, updated_at: now };
+          }),
+        );
+      } catch (error) {
+        console.error("[DatabaseContext] reorderTasks failed:", error);
+        throw error;
+      }
+    },
+    [],
+  );
 
   const completeRecurringInstance = useCallback(
     async (
@@ -743,12 +898,14 @@ export function DatabaseProvider({
           "UPDATE diary_entries SET linked_entry_id = NULL WHERE linked_entry_id = ?",
           entryId,
         );
+        await dbDeleteTasksForEntry(entryId);
         await db.runAsync("DELETE FROM entries WHERE id = ?", entryId);
         setEntries((prev) => {
           const next = prev.filter((e) => e.id !== entryId);
           syncEntriesToWidget(next);
           return next;
         });
+        setTasks((prev) => prev.filter((t) => t.entry_id !== entryId));
         setRecurrenceCompletions((prev) =>
           prev.filter((c) => c.entry_id !== entryId),
         );
@@ -907,6 +1064,7 @@ export function DatabaseProvider({
   const value: DatabaseContextValue = {
     entries,
     projects,
+    tasks,
     recurrenceCompletions,
     isLoading,
     isCreating,
@@ -916,6 +1074,11 @@ export function DatabaseProvider({
     deleteEntry,
     refetchEntries: fetchEntries,
     refetchProjects: fetchProjects,
+    createTask,
+    setTaskDone,
+    updateTaskTitle,
+    deleteTask,
+    reorderTasks,
     createProject,
     updateProject,
     deleteProject,

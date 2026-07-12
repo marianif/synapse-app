@@ -6,11 +6,18 @@ import {
   type CreateEntryInput,
   type UpdateEntryInput,
 } from "@/contexts/database-context";
-import type { DbEntry, DbProject, DbRecurrenceCompletion } from "@/lib/types";
+import type {
+  DbEntry,
+  DbProject,
+  DbRecurrenceCompletion,
+  DbTask,
+} from "@/lib/types";
 
 export interface UseDatabaseReturn {
   entries: DbEntry[];
   projects: DbProject[];
+  /** Every subtask across every entry. Filter by `entry_id` at the call site. */
+  tasks: DbTask[];
   recurrenceCompletions: DbRecurrenceCompletion[];
   isLoading: boolean;
   isCreating: boolean;
@@ -20,6 +27,14 @@ export interface UseDatabaseReturn {
   deleteEntry: (id: string) => Promise<void>;
   fetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
   fetchProjects: () => Promise<void>;
+  /** Append a subtask. Throws if the parent is an idea — promote it instead. */
+  createTask: (entryId: string, title: string) => Promise<DbTask>;
+  /** Cross a task in or out. Deliberately does NOT bump the parent's updated_at. */
+  setTaskDone: (id: string, done: boolean) => Promise<void>;
+  updateTaskTitle: (id: string, title: string) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
+  /** Persist a drag-reorder. `orderedIds` is one entry's checklist, top to bottom. */
+  reorderTasks: (orderedIds: string[]) => Promise<void>;
   createProject: (title: string, emoji?: string | null) => Promise<DbProject>;
   updateProject: (
     id: string,
@@ -60,6 +75,7 @@ export function useDatabase(): UseDatabaseReturn {
   return {
     entries: context.entries,
     projects: context.projects,
+    tasks: context.tasks,
     recurrenceCompletions: context.recurrenceCompletions,
     isLoading: context.isLoading,
     isCreating: context.isCreating,
@@ -69,6 +85,11 @@ export function useDatabase(): UseDatabaseReturn {
     deleteEntry: context.deleteEntry,
     fetchEntries: context.refetchEntries,
     fetchProjects: context.refetchProjects,
+    createTask: context.createTask,
+    setTaskDone: context.setTaskDone,
+    updateTaskTitle: context.updateTaskTitle,
+    deleteTask: context.deleteTask,
+    reorderTasks: context.reorderTasks,
     createProject: context.createProject,
     updateProject: context.updateProject,
     deleteProject: context.deleteProject,

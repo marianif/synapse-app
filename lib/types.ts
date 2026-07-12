@@ -62,6 +62,35 @@ export interface DbProject {
   updated_at: number;
 }
 
+/** Entry types that may own a checklist. An idea with subtasks is a project. */
+export const TASKABLE_TYPES = ["todo", "deadline"] as const;
+export type TaskableType = (typeof TASKABLE_TYPES)[number];
+
+export function isTaskable(type: EntryType): type is TaskableType {
+  return (TASKABLE_TYPES as readonly EntryType[]).includes(type);
+}
+
+/**
+ * A subtask: one line of a checklist under a todo or deadline. The lightest
+ * entity in the model — it has no date, no status enum, no project, no detail
+ * view. It is crossed in or crossed out.
+ *
+ * Completing every task does NOT complete the parent; closing an entry stays a
+ * decision the user makes. The UI surfaces progress (`3/5`) and nothing more.
+ */
+export interface DbTask {
+  id: string;
+  /** Owning entry. Always a 'todo' or a 'deadline' — never an 'idea'. */
+  entry_id: string;
+  title: string;
+  /** SQLite stores booleans as 0/1. `done === 1` is the only completion state. */
+  done: 0 | 1;
+  /** Manual order within the parent. Sparse; never renumbered on delete. */
+  position: number;
+  created_at: number;
+  updated_at: number;
+}
+
 /** A small, calm affective layer for diary entries. Optional. */
 export type DiaryMood = "calm" | "low" | "charged" | "tired" | "bright";
 

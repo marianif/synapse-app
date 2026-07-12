@@ -1,7 +1,8 @@
 import * as SQLite from 'expo-sqlite';
 
-import { ALL_STATEMENTS, CREATE_DIARY_TABLE, CREATE_PROJECTS_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, SCHEMA_VERSION } from './schema';
-import type { DbDiaryEntry, DbProject, DiaryMood } from './types';
+import { ALL_STATEMENTS, CREATE_DIARY_TABLE, CREATE_PROJECTS_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, CREATE_TASKS_ENTRY_INDEX, CREATE_TASKS_TABLE, SCHEMA_VERSION } from './schema';
+import { isTaskable } from './types';
+import type { DbDiaryEntry, DbProject, DbTask, DiaryMood, EntryType } from './types';
 
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 let isInitialized = false;
@@ -346,6 +347,20 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       await addColumn('ALTER TABLE projects ADD COLUMN last_opened_at INTEGER');
       await db.runAsync(
         "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        '12',
+      );
+    });
+  }
+
+  if (currentVersion < 13) {
+    // Migration 13: subtasks. A standalone `tasks` table — no CHECK-constraint
+    // rebuild of `entries`, no new column, purely additive. Existing installs
+    // simply gain an empty table.
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(CREATE_TASKS_TABLE);
+      await db.execAsync(CREATE_TASKS_ENTRY_INDEX);
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
         String(SCHEMA_VERSION),
       );
     });
@@ -555,6 +570,132 @@ export async function deleteProject(id: string): Promise<void> {
   });
 }
 
+// ─── Task helpers ───────────────────────────────────────────────────────────────
+
+/** Every task in the database, grouped-by-parent order. The context holds them all. */
+export async function getTasks(): Promise<DbTask[]> {
+  const db = await ensureDb();
+  return db.getAllAsync<DbTask>(
+    'SELECT * FROM tasks ORDER BY entry_id, position',
+  );
+}
+
+/**
+ * Append a task to an entry's checklist. Rejects ideas: an idea that needs a
+ * checklist is a project, and `promoteIdeaToProject` is the path there. The
+ * rule can't be a CHECK constraint (it spans tables), so it lives here.
+ *
+ * Position is `max(position) + 1` within the parent, computed in the same
+ * transaction as the insert so two rapid adds can't collide on one slot.
+ */
+export async function insertTask(
+  entryId: string,
+  title: string,
+): Promise<DbTask> {
+  const db = await ensureDb();
+  const parent = await db.getFirstAsync<{ type: string }>(
+    'SELECT type FROM entries WHERE id = ?',
+    entryId,
+  );
+  if (!parent) throw new Error(`Entry ${entryId} not found`);
+  if (!isTaskable(parent.type as EntryType)) {
+    throw new Error(
+      `Cannot add a task to a '${parent.type}'. Promote it to a project instead.`,
+    );
+  }
+
+  const id = generateId();
+  const now = Math.floor(Date.now() / 1000);
+  let position = 0;
+  await db.withTransactionAsync(async () => {
+    const last = await db.getFirstAsync<{ max_position: number | null }>(
+      'SELECT MAX(position) AS max_position FROM tasks WHERE entry_id = ?',
+      entryId,
+    );
+    position = (last?.max_position ?? -1) + 1;
+    await db.runAsync(
+      'INSERT INTO tasks (id, entry_id, title, done, position, created_at, updated_at) VALUES (?, ?, ?, 0, ?, ?, ?)',
+      id,
+      entryId,
+      title,
+      position,
+      now,
+      now,
+    );
+  });
+
+  return {
+    id,
+    entry_id: entryId,
+    title,
+    done: 0,
+    position,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+/** Cross a task in or out. Bumps the task's own updated_at, never the parent's. */
+export async function setTaskDone(id: string, done: boolean): Promise<void> {
+  const db = await ensureDb();
+  await db.runAsync(
+    'UPDATE tasks SET done = ?, updated_at = ? WHERE id = ?',
+    done ? 1 : 0,
+    Math.floor(Date.now() / 1000),
+    id,
+  );
+}
+
+/** Rename a task. The only editable field — a task has nothing else to edit. */
+export async function updateTaskTitle(
+  id: string,
+  title: string,
+): Promise<void> {
+  const db = await ensureDb();
+  await db.runAsync(
+    'UPDATE tasks SET title = ?, updated_at = ? WHERE id = ?',
+    title,
+    Math.floor(Date.now() / 1000),
+    id,
+  );
+}
+
+/** Delete a task. Positions are left sparse — order survives, gaps are harmless. */
+export async function deleteTask(id: string): Promise<void> {
+  const db = await ensureDb();
+  await db.runAsync('DELETE FROM tasks WHERE id = ?', id);
+}
+
+/**
+ * Persist a full reordering: `orderedIds` is the checklist top-to-bottom.
+ * Renumbers densely from 0 in one transaction.
+ */
+export async function reorderTasks(orderedIds: string[]): Promise<void> {
+  const db = await ensureDb();
+  const now = Math.floor(Date.now() / 1000);
+  await db.withTransactionAsync(async () => {
+    for (let i = 0; i < orderedIds.length; i++) {
+      await db.runAsync(
+        'UPDATE tasks SET position = ?, updated_at = ? WHERE id = ?',
+        i,
+        now,
+        orderedIds[i],
+      );
+    }
+  });
+}
+
+/**
+ * Delete every task belonging to an entry — the app-side stand-in for the
+ * table's `ON DELETE CASCADE`, which does not fire because expo-sqlite leaves
+ * `PRAGMA foreign_keys` off. Call before deleting an entry, or its tasks
+ * outlive it as unreachable rows. Same pattern as `unlinkDiaryNotesForEntry`.
+ */
+export async function deleteTasksForEntry(entryId: string): Promise<void> {
+  const db = await ensureDb();
+  await db.runAsync('DELETE FROM tasks WHERE entry_id = ?', entryId);
+}
+
 // ─── Diary helpers ──────────────────────────────────────────────────────────────
 
 /**
@@ -665,8 +806,8 @@ export async function unlinkDiaryNotesForEntry(entryId: string): Promise<void> {
 /**
  * Wipes every row from the data tables, leaving the schema (and schema_version)
  * intact. Starts from a genuine first-run slate. Order respects FK references —
- * diary first (it points at entries/projects), then completions, then the
- * entries themselves, then projects.
+ * diary first (it points at entries/projects), then completions and tasks
+ * (both point at entries), then the entries themselves, then projects.
  *
  * Also clears the `did_seed_default_projects` flag so "clear everything" truly
  * resets to first-run state: the caller (or the next launch) re-runs
@@ -679,6 +820,7 @@ export async function clearAllData(): Promise<void> {
   await db.withTransactionAsync(async () => {
     await db.execAsync('DELETE FROM diary_entries');
     await db.execAsync('DELETE FROM recurrence_completions');
+    await db.execAsync('DELETE FROM tasks');
     await db.execAsync('DELETE FROM entries');
     await db.execAsync('DELETE FROM projects');
     await db.execAsync(

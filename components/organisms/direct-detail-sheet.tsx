@@ -23,11 +23,13 @@ import { ChipRail, SelectChip } from "@/components/atoms/select-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import TimeInput from "@/components/atoms/TimeInput";
 import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
+import { TaskChecklist } from "@/components/molecules/task-checklist";
 import { entryKicker, tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { daysUntil, isDone, isWhenCharged, whenLabel } from "@/lib/direct-when";
 import { horizonEndDate, horizonReadout } from "@/lib/horizons";
 import { humanizeRule, parseRule } from "@/lib/recurrence";
+import { isTaskable } from "@/lib/types";
 
 import type {
   DbEntry,
@@ -632,6 +634,18 @@ export function DirectDetailSheet({
                   ) : null}
                 </Animated.View>
               )}
+
+              {/* ── Subtasks ── */}
+              {/* Todo and deadline only. An idea that grows a checklist is a
+                  project — `promoteIdeaToProject` is the path for that, and the
+                  data layer's `isTaskable` guard rejects the write anyway. */}
+              {isTaskable(type) ? (
+                <TaskChecklist
+                  entryId={entry.id}
+                  accent={accent}
+                  editing={editing}
+                />
+              ) : null}
 
               {/* ── Actions ── */}
               {editing ? (

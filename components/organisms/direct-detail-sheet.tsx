@@ -1,9 +1,20 @@
 import { useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Keyboard,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
   FadeInUp,
+  useAnimatedStyle,
   useReducedMotion,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 import { ProjectBreadcrumb } from "@/components/atoms/project-breadcrumb";
@@ -11,7 +22,6 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { DetailHeaderRow } from "@/components/molecules/detail-header-row";
 import {
   DetailViewMeta,
-  type EditingField,
   type WhenDraft,
 } from "@/components/molecules/detail-view-meta";
 import { TaskChecklist } from "@/components/molecules/task-checklist";
@@ -70,16 +80,13 @@ function doneLabel(type: EntryType): string {
   return "Complete";
 }
 
+// Only surfaces a narrative line when it adds information the header chip and
+// the WHEN row don't already carry — both of those already read off the same
+// `daysUntil` count, so restating "due in N days" here is pure repetition.
+// This line exists for the two things that live nowhere else: a settled
+// entry's closure, and a stale idea's age.
 function narrativeFor(entry: DbEntry): string | null {
   if (isDone(entry)) return "Settled";
-
-  const dateStr = entry.due_date ?? entry.scheduled_date ?? null;
-  const days = daysUntil(dateStr);
-  if (days !== null) {
-    if (days < 0) return `${Math.abs(days)} days overdue`;
-    if (days === 0) return "Due today";
-    if (days <= 7) return `Due in ${days} days`;
-  }
 
   if (entry.type === "idea") {
     const age = Math.floor((Date.now() - entry.created_at) / 86_400_000);
@@ -120,8 +127,9 @@ function urgencyTag(
         text: `Over by ${Math.abs(days)}d`,
         color: tokens.feedback.danger,
       };
-    if (days === 0) return { text: "Today", color: tokens.feedback.warning };
-    return { text: `${days}d left`, color: typeShade };
+    // days === 0 is skipped here — the WHEN row already reads "Today" in the
+    // same danger color, so a chip saying the same word would just repeat it.
+    if (days > 0) return { text: `${days}d left`, color: typeShade };
   }
 
   return null;
@@ -147,19 +155,30 @@ export function DirectDetailSheet({
   const { updateEntry } = useDatabase();
   const setCaptureDockVisible = useUIStore((s) => s.setCaptureDockVisible);
 
-  // Which single field is being edited in place, if any — replaces the old
-  // whole-sheet "editing" mode. Each field commits independently on blur/tap.
-  const [editingField, setEditingField] = useState<EditingField>(null);
+  // One edit toggle drives title + when together — a single pencil (on the
+  // title) opens both, a single check commits both. Per-field edit toggles
+  // read as two separate controls doing the same job; the sheet has exactly
+  // one editable identity (what it is + when it's due), not two.
+  const [editing, setEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
   const [whenDraft, setWhenDraft] = useState<WhenDraft | null>(null);
+
+  // The sheet itself rides up over the keyboard by the same amount as its
+  // height, matching CaptureDock's own listener pattern: iOS reports
+  // willShow/willHide with a duration we can match; Android only fires
+  // didShow/didHide, so we fall back to a quick eased timing.
+  const keyboardLift = useSharedValue(0);
 
   // Leaving the sheet (close, or the selected entry swaps under it) always
   // drops any in-flight edit — reopening starts fresh in view mode.
   useEffect(() => {
-    if (!visible) setEditingField(null);
-  }, [visible]);
+    if (!visible) {
+      setEditing(false);
+      keyboardLift.value = 0;
+    }
+  }, [visible, keyboardLift]);
   useEffect(() => {
-    setEditingField(null);
+    setEditing(false);
   }, [entry?.id]);
 
   // The sheet's own inline title/when edit opens the keyboard directly over
@@ -173,6 +192,37 @@ export function DirectDetailSheet({
     setCaptureDockVisible(!visible);
     return () => setCaptureDockVisible(true);
   }, [visible, setCaptureDockVisible]);
+
+  useEffect(() => {
+    const showEvt =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const show = Keyboard.addListener(showEvt, (e) => {
+      keyboardLift.value = withTiming(e.endCoordinates.height, {
+        duration: e.duration || 220,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    const hide = Keyboard.addListener(hideEvt, (e) => {
+      keyboardLift.value = withTiming(0, {
+        duration: e?.duration || 200,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [keyboardLift]);
+
+  // Growing the sheet's own height (via marginBottom) rather than
+  // translateY — a translate would carry the sheet's top edge off past the
+  // safe area on a small screen; shrinking the margin instead lets the sheet
+  // grow upward exactly by the keyboard's height and never over-travels.
+  const sheetAnimatedStyle = useAnimatedStyle(() => ({
+    marginBottom: keyboardLift.value,
+  }));
 
   if (!entry) return null;
 
@@ -197,24 +247,23 @@ export function DirectDetailSheet({
     onClose();
   };
 
-  const handleEditField = (field: EditingField): void => {
-    if (field === "title") setTitleDraft(entry.title);
-    if (field === "when") setWhenDraft(whenDraftFromEntry(entry));
-    setEditingField(field);
+  const handleStartEdit = (): void => {
+    setTitleDraft(entry.title);
+    setWhenDraft(whenDraftFromEntry(entry));
+    setEditing(true);
   };
 
-  const handleCommitTitle = (): void => {
-    const trimmed = titleDraft.trim();
-    setEditingField(null);
-    if (!trimmed || trimmed === entry.title) return;
-    updateEntry(entry.id, { title: trimmed }).catch((error: unknown) => {
-      console.error("[direct-detail-sheet] title save failed:", error);
-    });
-  };
-
-  const handleCommitWhen = (): void => {
+  const handleCommitEdit = (): void => {
     const draft = whenDraft;
-    setEditingField(null);
+    setEditing(false);
+
+    const trimmedTitle = titleDraft.trim();
+    if (trimmedTitle && trimmedTitle !== entry.title) {
+      updateEntry(entry.id, { title: trimmedTitle }).catch((error: unknown) => {
+        console.error("[direct-detail-sheet] title save failed:", error);
+      });
+    }
+
     if (!draft) return;
 
     const horizon = isDeadlineType ? draft.dueRange : null;
@@ -254,7 +303,13 @@ export function DirectDetailSheet({
       <View style={styles.container}>
         <Pressable style={styles.backdrop} onPress={onClose} />
 
-        <View style={[styles.sheet, { backgroundColor: colors.surface }]}>
+        <Animated.View
+          style={[
+            styles.sheet,
+            { backgroundColor: colors.surface },
+            sheetAnimatedStyle,
+          ]}
+        >
           <View style={[styles.handle, { backgroundColor: colors.inkMuted }]} />
 
           <ScrollView
@@ -289,13 +344,13 @@ export function DirectDetailSheet({
                 statusColor={statColor}
               />
 
-              {!editingField && narrativeFor(entry) ? (
+              {!editing && narrativeFor(entry) ? (
                 <ThemedText type="mono" muted style={styles.narrative}>
                   {narrativeFor(entry)}
                 </ThemedText>
               ) : null}
 
-              {/* ── Identity + WHEN, each independently tap-to-edit ── */}
+              {/* ── Identity + WHEN — one pencil (on the title) opens both ── */}
               <DetailViewMeta
                 entry={entry}
                 accent={accent}
@@ -307,16 +362,15 @@ export function DirectDetailSheet({
                 done={done}
                 doneLabel={doneLabel(type)}
                 reduced={reduced}
-                editingField={editingField}
-                onEditField={handleEditField}
+                editing={editing}
+                onStartEdit={handleStartEdit}
                 titleDraft={titleDraft}
                 onTitleDraftChange={setTitleDraft}
-                onCommitTitle={handleCommitTitle}
                 whenDraft={whenDraft ?? whenDraftFromEntry(entry)}
                 onWhenDraftChange={(patch) =>
                   setWhenDraft((d) => (d ? { ...d, ...patch } : d))
                 }
-                onCommitWhen={handleCommitWhen}
+                onCommitEdit={handleCommitEdit}
                 isDeadlineType={isDeadlineType}
                 isTodoType={isTodoType}
                 onDelete={handleDelete}
@@ -332,7 +386,7 @@ export function DirectDetailSheet({
               ) : null}
             </Animated.View>
           </ScrollView>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );

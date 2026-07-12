@@ -19,6 +19,8 @@ export function CustomTabBar(): React.ReactElement {
   const isHome = pathname === "/" || pathname === "/(tabs)";
   const isNotes = pathname === "/(tabs)/notes" || pathname === "/notes";
   const isAgenda = pathname === "/(tabs)/agenda" || pathname === "/agenda";
+  const isProjects =
+    pathname === "/(tabs)/(projects)" || pathname.startsWith("/(projects)");
 
   const active = (on: boolean): string =>
     on ? colors.accent.clay : colors.inkMuted;
@@ -113,10 +115,18 @@ export function CustomTabBar(): React.ReactElement {
             <TabIcon name="waveform" color={active(isAgenda)} />
           </Pressable>
 
-          {/* The right pair is deliberately one destination + one spacer: a
-              fourth tab would crowd the pen key, and Projects already lives one
-              tap from the Field. The spacer keeps the pen optically centered. */}
-          <View style={styles.tabButton} />
+          <Pressable
+            onPress={() => router.push("/(projects)")}
+            accessibilityRole="button"
+            accessibilityLabel="Projects"
+            accessibilityState={{ selected: isProjects }}
+            style={({ pressed }) => [
+              styles.tabButton,
+              pressed && styles.tabButtonPressed,
+            ]}
+          >
+            <TabIcon name="folder-outline" color={active(isProjects)} />
+          </Pressable>
         </View>
       </View>
     </View>

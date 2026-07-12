@@ -24,11 +24,8 @@ const HORIZON_OPTIONS: { value: DueRange; label: string }[] = [
   { value: "year", label: "This year" },
 ];
 
-export type EditingField = "title" | "when" | null;
-
 // The when-cluster draft: date/time map to whichever pair the type uses,
-// dueRange holds a deadline horizon (null = a precise day). Kept separate
-// from the title so each field commits independently.
+// dueRange holds a deadline horizon (null = a precise day).
 export interface WhenDraft {
   date: string;
   time: string;
@@ -47,24 +44,22 @@ type DetailViewMetaProps = {
   done: boolean;
   doneLabel: string;
   reduced: boolean;
-  editingField: EditingField;
-  onEditField: (field: EditingField) => void;
+  editing: boolean;
+  onStartEdit: () => void;
   titleDraft: string;
   onTitleDraftChange: (text: string) => void;
-  onCommitTitle: () => void;
   whenDraft: WhenDraft;
   onWhenDraftChange: (patch: Partial<WhenDraft>) => void;
-  onCommitWhen: () => void;
+  onCommitEdit: () => void;
   isDeadlineType: boolean;
   isTodoType: boolean;
   onDelete: () => void;
   onMarkDone: () => void;
 };
 
-// View-mode body of the sheet: the title (tap to rename in place), the WHEN
-// row (tap to edit its date/horizon/recurrence in place, same row shape),
-// and read-only inspiration/notes blocks. There is no separate "edit mode" —
-// each field commits on its own the moment you leave it.
+// View-mode body of the sheet: the title and the WHEN row, together, as one
+// editable identity. A single pencil on the title opens both into edit mode;
+// a single check commits both and returns to view mode.
 export function DetailViewMeta({
   entry,
   accent,
@@ -74,14 +69,13 @@ export function DetailViewMeta({
   done,
   doneLabel,
   reduced,
-  editingField,
-  onEditField,
+  editing,
+  onStartEdit,
   titleDraft,
   onTitleDraftChange,
-  onCommitTitle,
   whenDraft,
   onWhenDraftChange,
-  onCommitWhen,
+  onCommitEdit,
   isDeadlineType,
   isTodoType,
   onDelete,
@@ -89,8 +83,6 @@ export function DetailViewMeta({
 }: DetailViewMetaProps): React.ReactElement {
   const { colors } = useTheme();
   const titleInputRef = useRef<TextInput>(null);
-  const editingTitle = editingField === "title";
-  const editingWhen = editingField === "when";
   const precise = whenDraft.dueRange === null;
 
   return (
@@ -101,8 +93,8 @@ export function DetailViewMeta({
           : LinearTransition.duration(220).easing(Easing.bezier(0.22, 1, 0.36, 1))
       }
     >
-      {/* ── Title ── */}
-      {editingTitle ? (
+      {/* ── Title — the one edit trigger for the whole identity+when block ── */}
+      {editing ? (
         <View
           style={[styles.titleEditRow, { backgroundColor: colors.surfaceSubtle }]}
         >
@@ -110,8 +102,7 @@ export function DetailViewMeta({
             ref={titleInputRef}
             value={titleDraft}
             onChangeText={onTitleDraftChange}
-            onBlur={onCommitTitle}
-            onSubmitEditing={onCommitTitle}
+            onSubmitEditing={onCommitEdit}
             placeholder="Title"
             placeholderTextColor={colors.inkMuted}
             style={[styles.titleInput, { color: colors.ink }]}
@@ -122,17 +113,17 @@ export function DetailViewMeta({
           <IconPill
             icon="check"
             color={accent}
-            onPress={onCommitTitle}
-            accessibilityLabel="Done editing title"
+            onPress={onCommitEdit}
+            accessibilityLabel="Done editing"
           />
         </View>
       ) : (
         <View style={styles.titleRow}>
           <Pressable
-            onPress={() => onEditField("title")}
+            onPress={onStartEdit}
             style={styles.titleTapArea}
             accessibilityRole="button"
-            accessibilityLabel={`Edit title: ${entry.title}`}
+            accessibilityLabel={`Edit: ${entry.title}`}
             hitSlop={4}
           >
             <ThemedText
@@ -148,8 +139,8 @@ export function DetailViewMeta({
           <IconPill
             icon="pencil-outline"
             color={accent}
-            onPress={() => onEditField("title")}
-            accessibilityLabel="Edit title"
+            onPress={onStartEdit}
+            accessibilityLabel="Edit"
           />
         </View>
       )}
@@ -163,9 +154,9 @@ export function DetailViewMeta({
       {/* ── Divider ── */}
       <View style={[styles.divider, { backgroundColor: colors.surfaceSubtle }]} />
 
-      {/* ── WHEN (tap to edit in place) ── */}
+      {/* ── WHEN — opens together with the title, no row-level edit trigger ── */}
       <View style={styles.meta}>
-        {editingWhen ? (
+        {editing ? (
           <Animated.View
             entering={
               reduced
@@ -179,19 +170,9 @@ export function DetailViewMeta({
             }
             style={styles.whenEdit}
           >
-            <View style={styles.metaRow}>
-              <ThemedText type="micro" muted style={styles.metaLabel}>
-                WHEN
-              </ThemedText>
-              <View style={styles.whenEditActions}>
-                <IconPill
-                  icon="check"
-                  color={accent}
-                  onPress={onCommitWhen}
-                  accessibilityLabel="Done editing when"
-                />
-              </View>
-            </View>
+            <ThemedText type="micro" muted style={styles.metaLabel}>
+              WHEN
+            </ThemedText>
 
             {isDeadlineType ? (
               <ChipRail>
@@ -246,13 +227,7 @@ export function DetailViewMeta({
           </Animated.View>
         ) : (
           <View style={styles.metaRow}>
-            <Pressable
-              onPress={() => onEditField("when")}
-              style={styles.whenTapArea}
-              accessibilityRole="button"
-              accessibilityLabel={`Edit when: ${whenText}`}
-              hitSlop={4}
-            >
+            <View style={styles.whenReadout}>
               <ThemedText type="micro" muted style={styles.metaLabel}>
                 WHEN
               </ThemedText>
@@ -262,7 +237,7 @@ export function DetailViewMeta({
               >
                 {whenText}
               </ThemedText>
-            </Pressable>
+            </View>
 
             <View style={styles.inlineActions}>
               <IconPill
@@ -270,13 +245,6 @@ export function DetailViewMeta({
                 color={tokens.feedback.danger}
                 onPress={onDelete}
                 accessibilityLabel="Delete"
-              />
-
-              <IconPill
-                icon="pencil-outline"
-                color={accent}
-                onPress={() => onEditField("when")}
-                accessibilityLabel="Edit when"
               />
 
               {!done ? (
@@ -292,7 +260,7 @@ export function DetailViewMeta({
           </View>
         )}
 
-        {!editingWhen && recurrenceText ? (
+        {!editing && recurrenceText ? (
           <View style={styles.metaRow}>
             <ThemedText type="micro" muted style={styles.metaLabel}>
               REPEATS
@@ -364,14 +332,14 @@ const styles = StyleSheet.create({
     gap: tokens.space.sm,
     minHeight: 44,
   },
-  whenTapArea: {
+  whenReadout: {
     flex: 1,
     flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.sm,
+    alignItems: "baseline",
+    gap: tokens.space.xs,
   },
   metaLabel: {
-    width: 64,
+    letterSpacing: 0.5,
   },
   metaValue: {
     flex: 1,
@@ -383,10 +351,6 @@ const styles = StyleSheet.create({
   },
   whenEdit: {
     gap: tokens.space.sm,
-  },
-  whenEditActions: {
-    flex: 1,
-    flexDirection: "row-reverse",
   },
   dateTimeRow: {
     flexDirection: "row",

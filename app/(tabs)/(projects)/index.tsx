@@ -46,7 +46,8 @@ function isSortMode(value: string | null): value is SortMode {
 }
 
 /**
- * The Project Shelf — `app/projects.tsx`.
+ * The Project Shelf — `app/(tabs)/projects/index.tsx`, the Projects tab's
+ * root screen.
  *
  * Three verbs live here and nowhere else:
  *   1. FIND a project (the sort chip cycles RECENT / BUSY / A–Z)
@@ -146,7 +147,10 @@ export default function ProjectsScreen(): React.ReactElement {
     setComposing(false);
     createProject(name)
       .then((project) =>
-        router.push({ pathname: "/project", params: { id: project.id } }),
+        router.push({
+          pathname: "/(projects)/project",
+          params: { id: project.id },
+        }),
       )
       .catch((err) => console.error("Failed to create project:", err));
   };
@@ -327,7 +331,7 @@ export default function ProjectsScreen(): React.ReactElement {
                         colors={colors}
                         onOpen={() =>
                           router.push({
-                            pathname: "/project",
+                            pathname: "/(projects)/project",
                             params: { id: project.id },
                           })
                         }

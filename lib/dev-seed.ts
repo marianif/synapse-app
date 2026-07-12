@@ -7,8 +7,8 @@ import {
 } from "@/lib/database";
 import { serializeRule } from "@/lib/recurrence";
 
-import type * as SQLite from "expo-sqlite";
 import type { RecurrenceFrequency } from "@/lib/types";
+import type * as SQLite from "expo-sqlite";
 
 /**
  * DEV-ONLY mock data. The pivot introduced a projects hierarchy with a
@@ -118,36 +118,117 @@ const MIXED_PRESSURE: Fixture = {
   ],
   entries: [
     // Bills & precise deadlines — overdue → distant.
-    { title: "Electricity bill", type: "deadline", due_date: d(-2), status: "overdue", createdDaysAgo: 12 },
+    {
+      title: "Electricity bill",
+      type: "deadline",
+      due_date: d(-2),
+      status: "overdue",
+      createdDaysAgo: 12,
+    },
     { title: "Rent", type: "deadline", due_date: d(1), due_time: "09:00 AM" },
     { title: "Phone bill", type: "deadline", due_date: d(4) },
     { title: "Car insurance renewal", type: "deadline", due_date: d(23) },
     { title: "Passport expires", type: "deadline", due_date: d(180) },
 
     // Horizon deadlines — at least one inside a project so the Workshop has a HOT row.
-    { title: "Book the dentist", type: "deadline", due_range: "week", due_date: endOfWeek(), createdDaysAgo: 10, project: "studio" },
-    { title: "File the quarterly taxes", type: "deadline", due_range: "month", due_date: endOfMonth(), project: "studio" },
-    { title: "Renew the studio lease", type: "deadline", due_range: "year", due_date: endOfYear(), project: "studio" },
+    {
+      title: "Book the dentist",
+      type: "deadline",
+      due_range: "week",
+      due_date: endOfWeek(),
+      createdDaysAgo: 10,
+      project: "studio",
+    },
+    {
+      title: "File the quarterly taxes",
+      type: "deadline",
+      due_range: "month",
+      due_date: endOfMonth(),
+      project: "studio",
+    },
+    {
+      title: "Renew the studio lease",
+      type: "deadline",
+      due_range: "year",
+      due_date: endOfYear(),
+      project: "studio",
+    },
 
     // Ideas — staggered freshness; one already promoted.
-    { title: "Newsletter about small tools", type: "idea", subtitle: "weekly, short", touchedDaysAgo: 0, createdDaysAgo: 0 },
-    { title: "An app that names your plants", type: "idea", touchedDaysAgo: 1, createdDaysAgo: 1 },
-    { title: "Tiny zine on city benches", type: "idea", touchedDaysAgo: 2, createdDaysAgo: 2, project: "collective" },
-    { title: "A font made from my handwriting", type: "idea", touchedDaysAgo: 9, createdDaysAgo: 11 },
-    { title: "Map every good espresso in town", type: "idea", touchedDaysAgo: 13, createdDaysAgo: 16 },
-    { title: "A shared sketch wall", type: "idea", touchedDaysAgo: 20, createdDaysAgo: 40, promoted: "collective" },
+    {
+      title: "Newsletter about small tools",
+      type: "idea",
+      subtitle: "weekly, short",
+      touchedDaysAgo: 0,
+      createdDaysAgo: 0,
+    },
+    {
+      title: "An app that names your plants",
+      type: "idea",
+      touchedDaysAgo: 1,
+      createdDaysAgo: 1,
+    },
+    {
+      title: "Tiny zine on city benches",
+      type: "idea",
+      touchedDaysAgo: 2,
+      createdDaysAgo: 2,
+      project: "collective",
+    },
+    {
+      title: "A font made from my handwriting",
+      type: "idea",
+      touchedDaysAgo: 9,
+      createdDaysAgo: 11,
+    },
+    {
+      title: "Map every good espresso in town",
+      type: "idea",
+      touchedDaysAgo: 13,
+      createdDaysAgo: 16,
+    },
+    {
+      title: "A shared sketch wall",
+      type: "idea",
+      touchedDaysAgo: 20,
+      createdDaysAgo: 40,
+      promoted: "collective",
+    },
 
     // To-dos — today → next week. One overdue todo inside `synapse` makes it HOT via the todo lane.
     { title: "Reply to Marco", type: "todo", scheduled_date: d(0) },
-    { title: "Export the new logo set", type: "todo", scheduled_date: d(0), project: "studio" },
+    {
+      title: "Export the new logo set",
+      type: "todo",
+      scheduled_date: d(0),
+      project: "studio",
+    },
     { title: "Pick up dry cleaning", type: "todo", scheduled_date: d(3) },
-    { title: "Draft the migration plan", type: "todo", scheduled_date: d(-1), project: "synapse" },
+    {
+      title: "Draft the migration plan",
+      type: "todo",
+      scheduled_date: d(-1),
+      project: "synapse",
+    },
     { title: "Water the plants", type: "todo", scheduled_date: d(5) },
     { title: "Deep-clean the kitchen", type: "todo", scheduled_date: d(12) },
 
     // Recently cleared.
-    { title: "Send the invoices", type: "todo", scheduled_date: d(-1), status: "completed", touchedDaysAgo: 1, project: "studio" },
-    { title: "Pay the water bill", type: "deadline", due_date: d(-3), status: "met", touchedDaysAgo: 2 },
+    {
+      title: "Send the invoices",
+      type: "todo",
+      scheduled_date: d(-1),
+      status: "completed",
+      touchedDaysAgo: 1,
+      project: "studio",
+    },
+    {
+      title: "Pay the water bill",
+      type: "deadline",
+      due_date: d(-3),
+      status: "met",
+      touchedDaysAgo: 2,
+    },
 
     // Someday todos.
     { title: "Visit the Dolomites", type: "todo", touchedDaysAgo: 2 },
@@ -161,7 +242,11 @@ const MIXED_PRESSURE: Fixture = {
       project: "studio",
       createdDaysAgo: 1,
     },
-    { body: "Quiet day. Read on the balcony and let the to-do list wait.", mood: "calm", createdDaysAgo: 3 },
+    {
+      body: "Quiet day. Read on the balcony and let the to-do list wait.",
+      mood: "calm",
+      createdDaysAgo: 3,
+    },
   ],
 };
 
@@ -185,10 +270,34 @@ const NOTHING_PRESSING: Fixture = {
   ],
   // All work is comfortably outside the 7-day window and no overdue todos.
   entries: [
-    { title: "Move the logo set into Figma", type: "todo", scheduled_date: d(14), project: "studio", touchedDaysAgo: 1 },
-    { title: "Pick a venue for the show", type: "deadline", due_date: d(40), project: "collective", touchedDaysAgo: 3 },
-    { title: "Migrate to schema v10", type: "todo", scheduled_date: d(21), project: "synapse", touchedDaysAgo: 0 },
-    { title: "Repot the basil", type: "todo", scheduled_date: d(10), project: "garden", touchedDaysAgo: 14 },
+    {
+      title: "Move the logo set into Figma",
+      type: "todo",
+      scheduled_date: d(14),
+      project: "studio",
+      touchedDaysAgo: 1,
+    },
+    {
+      title: "Pick a venue for the show",
+      type: "deadline",
+      due_date: d(40),
+      project: "collective",
+      touchedDaysAgo: 3,
+    },
+    {
+      title: "Migrate to schema v10",
+      type: "todo",
+      scheduled_date: d(21),
+      project: "synapse",
+      touchedDaysAgo: 0,
+    },
+    {
+      title: "Repot the basil",
+      type: "todo",
+      scheduled_date: d(10),
+      project: "garden",
+      touchedDaysAgo: 14,
+    },
   ],
   diary: [],
 };
@@ -206,11 +315,30 @@ const ALL_HOT: Fixture = {
   ],
   entries: [
     // studio — overdue deadline (deadline tint, top of HOT band)
-    { title: "Send the new logo to print", type: "deadline", due_date: d(-3), status: "overdue", project: "studio", createdDaysAgo: 10 },
+    {
+      title: "Send the new logo to print",
+      type: "deadline",
+      due_date: d(-3),
+      status: "overdue",
+      project: "studio",
+      createdDaysAgo: 10,
+    },
     // collective — deadline tomorrow (deadline tint)
-    { title: "Submit the show proposal", type: "deadline", due_date: d(1), project: "collective", createdDaysAgo: 6 },
+    {
+      title: "Submit the show proposal",
+      type: "deadline",
+      due_date: d(1),
+      project: "collective",
+      createdDaysAgo: 6,
+    },
     // synapse — only an overdue todo (todo tint, cyan)
-    { title: "Draft the migration plan", type: "todo", scheduled_date: d(-2), project: "synapse", touchedDaysAgo: 0 },
+    {
+      title: "Draft the migration plan",
+      type: "todo",
+      scheduled_date: d(-2),
+      project: "synapse",
+      touchedDaysAgo: 0,
+    },
   ],
   diary: [],
 };
@@ -223,15 +351,52 @@ const ARCHIVED_HEAVY: Fixture = {
   projects: [
     { key: "studio", title: "Studio rebrand", emoji: "🪩" },
     { key: "synapse", title: "Synapse app", emoji: "🧠" },
-    { key: "old-zine", title: "City benches zine", emoji: "📖", status: "archived" },
-    { key: "old-fest", title: "Summer festival run", emoji: "🎪", status: "archived" },
-    { key: "old-pod", title: "Two-person podcast", emoji: "🎙️", status: "archived" },
-    { key: "old-shop", title: "Etsy shop experiment", emoji: "🛍️", status: "archived" },
-    { key: "old-newsletter", title: "Daily letters", emoji: "✉️", status: "archived" },
+    {
+      key: "old-zine",
+      title: "City benches zine",
+      emoji: "📖",
+      status: "archived",
+    },
+    {
+      key: "old-fest",
+      title: "Summer festival run",
+      emoji: "🎪",
+      status: "archived",
+    },
+    {
+      key: "old-pod",
+      title: "Two-person podcast",
+      emoji: "🎙️",
+      status: "archived",
+    },
+    {
+      key: "old-shop",
+      title: "Etsy shop experiment",
+      emoji: "🛍️",
+      status: "archived",
+    },
+    {
+      key: "old-newsletter",
+      title: "Daily letters",
+      emoji: "✉️",
+      status: "archived",
+    },
   ],
   entries: [
-    { title: "Move the logo set into Figma", type: "todo", scheduled_date: d(14), project: "studio", touchedDaysAgo: 1 },
-    { title: "Migrate to schema v10", type: "todo", scheduled_date: d(21), project: "synapse", touchedDaysAgo: 0 },
+    {
+      title: "Move the logo set into Figma",
+      type: "todo",
+      scheduled_date: d(14),
+      project: "studio",
+      touchedDaysAgo: 1,
+    },
+    {
+      title: "Migrate to schema v10",
+      type: "todo",
+      scheduled_date: d(21),
+      project: "synapse",
+      touchedDaysAgo: 0,
+    },
   ],
   diary: [],
 };
@@ -255,13 +420,38 @@ const FRESHNESS_LADDER: Fixture = {
   entries: [
     // fresh-new: no entries → passage label = "NEW"
     // fresh-today: scheduled comfortably in the future, touched today
-    { title: "Outline the kickoff", type: "todo", scheduled_date: d(30), project: "fresh-today", touchedDaysAgo: 0 },
+    {
+      title: "Outline the kickoff",
+      type: "todo",
+      scheduled_date: d(30),
+      project: "fresh-today",
+      touchedDaysAgo: 0,
+    },
     // fresh-3d: touched 3 days ago
-    { title: "Iterate on the sketches", type: "todo", scheduled_date: d(40), project: "fresh-3d", touchedDaysAgo: 3 },
+    {
+      title: "Iterate on the sketches",
+      type: "todo",
+      scheduled_date: d(40),
+      project: "fresh-3d",
+      touchedDaysAgo: 3,
+    },
     // fresh-2w: touched 14 days ago
-    { title: "Reach out to the printer", type: "todo", scheduled_date: d(60), project: "fresh-2w", touchedDaysAgo: 14 },
+    {
+      title: "Reach out to the printer",
+      type: "todo",
+      scheduled_date: d(60),
+      project: "fresh-2w",
+      touchedDaysAgo: 14,
+    },
     // fresh-quiet: touched 95 days ago → "QUIET 3M"
-    { title: "Initial research", type: "todo", scheduled_date: d(120), project: "fresh-quiet", touchedDaysAgo: 95, createdDaysAgo: 95 },
+    {
+      title: "Initial research",
+      type: "todo",
+      scheduled_date: d(120),
+      project: "fresh-quiet",
+      touchedDaysAgo: 95,
+      createdDaysAgo: 95,
+    },
   ],
   diary: [],
 };
@@ -298,7 +488,7 @@ const EMPTY_PROJECT_STARTERS: Fixture = {
  *
  * Ideas are NOT tappable into the sheet from the project screen (it only
  * routes todo/deadline rows there — see components/organisms/direct-row use
- * in app/(tabs)/(home)/project.tsx) but ARE tappable from the home board's
+ * in app/(tabs)/(projects)/project.tsx) but ARE tappable from the home board's
  * direct zone (components/organisms/direct-overview.tsx). Open the ideas in
  * this scenario from Home, not from the "Detail sheet lab" project page.
  */
@@ -309,28 +499,79 @@ const DETAIL_SHEET_SHOWCASE: Fixture = {
   ],
   entries: [
     // ── Todo: baseline, precise date+time today, charged ──
-    { title: "Reply to Marco", type: "todo", scheduled_date: d(0), scheduled_time: "5:00 PM", project: "lab" },
+    {
+      title: "Reply to Marco",
+      type: "todo",
+      scheduled_date: d(0),
+      scheduled_time: "5:00 PM",
+      project: "lab",
+    },
 
     // ── Todo: overdue, danger urgency chip + charged red WHEN ──
-    { title: "Send the invoice", type: "todo", scheduled_date: d(-4), status: "overdue", project: "lab", createdDaysAgo: 10 },
+    {
+      title: "Send the invoice",
+      type: "todo",
+      scheduled_date: d(-4),
+      status: "overdue",
+      project: "lab",
+      createdDaysAgo: 10,
+    },
 
     // ── Todo: distant, not charged, muted WHEN (day 8, just past the <7 threshold) ──
-    { title: "Deep-clean the studio", type: "todo", scheduled_date: d(8), project: "lab" },
+    {
+      title: "Deep-clean the studio",
+      type: "todo",
+      scheduled_date: d(8),
+      project: "lab",
+    },
 
     // ── Todo: completed — strikethrough title, no complete pill, "Settled" narrative ──
-    { title: "Pay the electricity bill", type: "todo", scheduled_date: d(-2), status: "completed", touchedDaysAgo: 1, project: "lab" },
+    {
+      title: "Pay the electricity bill",
+      type: "todo",
+      scheduled_date: d(-2),
+      status: "completed",
+      touchedDaysAgo: 1,
+      project: "lab",
+    },
 
     // ── Todo: recurring weekly on Mon/Wed/Fri, with an end date ──
-    { title: "Water the plants", type: "todo", scheduled_date: d(1), project: "lab", recurrenceFreq: "weekly", recurrenceDays: [1, 3, 5], recurrenceEndDate: endOfYear() },
+    {
+      title: "Water the plants",
+      type: "todo",
+      scheduled_date: d(1),
+      project: "lab",
+      recurrenceFreq: "weekly",
+      recurrenceDays: [1, 3, 5],
+      recurrenceEndDate: endOfYear(),
+    },
 
     // ── Todo: recurring daily, no end date ──
-    { title: "Morning pages", type: "todo", scheduled_date: d(0), project: "lab", recurrenceFreq: "daily" },
+    {
+      title: "Morning pages",
+      type: "todo",
+      scheduled_date: d(0),
+      project: "lab",
+      recurrenceFreq: "daily",
+    },
 
     // ── Todo: recurring weekdays ──
-    { title: "Stand-up notes", type: "todo", scheduled_date: d(0), project: "lab", recurrenceFreq: "weekdays" },
+    {
+      title: "Stand-up notes",
+      type: "todo",
+      scheduled_date: d(0),
+      project: "lab",
+      recurrenceFreq: "weekdays",
+    },
 
     // ── Todo: recurring monthly ──
-    { title: "Review the budget", type: "todo", scheduled_date: d(0), project: "lab", recurrenceFreq: "monthly" },
+    {
+      title: "Review the budget",
+      type: "todo",
+      scheduled_date: d(0),
+      project: "lab",
+      recurrenceFreq: "monthly",
+    },
 
     // ── Todo: subtasks, mixed done/open, plus a subtitle ──
     {
@@ -351,29 +592,68 @@ const DETAIL_SHEET_SHOWCASE: Fixture = {
     { title: "Buy stamps", type: "todo", scheduled_date: d(3) },
 
     // ── Deadline: precise date, distant, muted ──
-    { title: "Car insurance renewal", type: "deadline", due_date: d(30), project: "lab" },
+    {
+      title: "Car insurance renewal",
+      type: "deadline",
+      due_date: d(30),
+      project: "lab",
+    },
 
     // ── Deadline: horizon window (this week) — horizonReadout instead of a date ──
-    { title: "Book the dentist", type: "deadline", due_range: "week", due_date: endOfWeek(), project: "lab", createdDaysAgo: 5 },
+    {
+      title: "Book the dentist",
+      type: "deadline",
+      due_range: "week",
+      due_date: endOfWeek(),
+      project: "lab",
+      createdDaysAgo: 5,
+    },
 
     // ── Deadline: horizon window (this month) ──
-    { title: "File the quarterly taxes", type: "deadline", due_range: "month", due_date: endOfMonth(), project: "lab" },
+    {
+      title: "File the quarterly taxes",
+      type: "deadline",
+      due_range: "month",
+      due_date: endOfMonth(),
+      project: "lab",
+    },
 
     // ── Deadline: horizon window (this year) ──
-    { title: "Renew the studio lease", type: "deadline", due_range: "year", due_date: endOfYear(), project: "lab" },
+    {
+      title: "Renew the studio lease",
+      type: "deadline",
+      due_range: "year",
+      due_date: endOfYear(),
+      project: "lab",
+    },
 
     // ── Deadline: met — "Mark met" done-label variant, strikethrough ──
-    { title: "Pay the water bill", type: "deadline", due_date: d(-5), status: "met", touchedDaysAgo: 2, project: "lab" },
+    {
+      title: "Pay the water bill",
+      type: "deadline",
+      due_date: d(-5),
+      status: "met",
+      touchedDaysAgo: 2,
+      project: "lab",
+    },
 
     // ── Deadline: overdue, danger chip ──
-    { title: "Passport renewal paperwork", type: "deadline", due_date: d(-1), status: "overdue", project: "lab", createdDaysAgo: 20 },
+    {
+      title: "Passport renewal paperwork",
+      type: "deadline",
+      due_date: d(-1),
+      status: "overdue",
+      project: "lab",
+      createdDaysAgo: 20,
+    },
 
     // ── Deadline: subtasks + notes block ──
     {
       title: "Studio lease renewal",
       type: "deadline",
       due_date: d(14),
-      notes: "Landlord wants the deposit wired by the 1st. Ask about the parking spot clause before signing.",
+      notes:
+        "Landlord wants the deposit wired by the 1st. Ask about the parking spot clause before signing.",
       project: "lab",
       tasks: [
         { title: "Review redlines", done: true },
@@ -382,16 +662,30 @@ const DETAIL_SHEET_SHOWCASE: Fixture = {
     },
 
     // ── Idea: fresh (today), open from Home — no "Sketched…" narrative yet ──
-    { title: "Newsletter about small tools", type: "idea", subtitle: "weekly, short", touchedDaysAgo: 0, createdDaysAgo: 0, project: "lab" },
+    {
+      title: "Newsletter about small tools",
+      type: "idea",
+      subtitle: "weekly, short",
+      touchedDaysAgo: 0,
+      createdDaysAgo: 0,
+      project: "lab",
+    },
 
     // ── Idea: old (>7 days) — "Sketched Nd ago" narrative ──
-    { title: "A font made from my handwriting", type: "idea", touchedDaysAgo: 12, createdDaysAgo: 18, project: "lab" },
+    {
+      title: "A font made from my handwriting",
+      type: "idea",
+      touchedDaysAgo: 12,
+      createdDaysAgo: 18,
+      project: "lab",
+    },
 
     // ── Idea: inspiration block ──
     {
       title: "Tiny zine on city benches",
       type: "idea",
-      inspiration: "Saw someone reading alone on a bench in the rain and thought: every bench has a story if you sit long enough.",
+      inspiration:
+        "Saw someone reading alone on a bench in the rain and thought: every bench has a story if you sit long enough.",
       touchedDaysAgo: 3,
       createdDaysAgo: 3,
       project: "lab",
@@ -401,14 +695,21 @@ const DETAIL_SHEET_SHOWCASE: Fixture = {
     {
       title: "Map every good espresso in town",
       type: "idea",
-      notes: "Start with the three places near the studio. Rate on a 1-5 scale: crema, temperature, seating.",
+      notes:
+        "Start with the three places near the studio. Rate on a 1-5 scale: crema, temperature, seating.",
       touchedDaysAgo: 6,
       createdDaysAgo: 9,
       project: "lab",
     },
 
     // ── Idea: filed in the no-emoji project — breadcrumb with plain folder glyph ──
-    { title: "A shared sketch wall", type: "idea", touchedDaysAgo: 4, createdDaysAgo: 4, project: "quiet" },
+    {
+      title: "A shared sketch wall",
+      type: "idea",
+      touchedDaysAgo: 4,
+      createdDaysAgo: 4,
+      project: "quiet",
+    },
   ],
   diary: [],
 };
@@ -417,7 +718,8 @@ const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
   empty: {
     key: "empty",
     label: "Empty",
-    description: "No projects at all. Home shows the first-run \"Name a project\" tile.",
+    description:
+      'No projects at all. Home shows the first-run "Name a project" tile.',
     fixture: EMPTY,
   },
   "default-projects": {
@@ -433,31 +735,35 @@ const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
   "mixed-pressure": {
     key: "mixed-pressure",
     label: "Mixed pressure",
-    description: "HOT + STEADY bands both populated. NOW LINE: \"BELOW THE LINE · QUIET FOR NOW\".",
+    description:
+      'HOT + STEADY bands both populated. NOW LINE: "BELOW THE LINE · QUIET FOR NOW".',
     fixture: MIXED_PRESSURE,
   },
   "nothing-pressing": {
     key: "nothing-pressing",
     label: "Nothing pressing",
-    description: "All projects calm. NOW LINE: \"NOTHING PRESSING\".",
+    description: 'All projects calm. NOW LINE: "NOTHING PRESSING".',
     fixture: NOTHING_PRESSING,
   },
   "all-hot": {
     key: "all-hot",
     label: "All hot",
-    description: "Every project pressing, none steady. NOW LINE: \"AND THAT'S ALL\".",
+    description:
+      'Every project pressing, none steady. NOW LINE: "AND THAT\'S ALL".',
     fixture: ALL_HOT,
   },
   "archived-heavy": {
     key: "archived-heavy",
     label: "Archived heavy",
-    description: "Five archived projects + two active. Exercises the ARCHIVED band.",
+    description:
+      "Five archived projects + two active. Exercises the ARCHIVED band.",
     fixture: ARCHIVED_HEAVY,
   },
   "freshness-ladder": {
     key: "freshness-ladder",
     label: "Freshness ladder",
-    description: "One STEADY project at each passage rung: NEW / TODAY / 3D / 2W / QUIET 3M.",
+    description:
+      "One STEADY project at each passage rung: NEW / TODAY / 3D / 2W / QUIET 3M.",
     fixture: FRESHNESS_LADDER,
   },
   "empty-project-starters": {
@@ -516,12 +822,12 @@ async function insertFixture(
 
   for (const s of fixture.entries) {
     const touched = now - (s.touchedDaysAgo ?? 0) * DAY_SECS;
-    const created = now - (s.createdDaysAgo ?? s.touchedDaysAgo ?? 0) * DAY_SECS;
+    const created =
+      now - (s.createdDaysAgo ?? s.touchedDaysAgo ?? 0) * DAY_SECS;
     const entryId = generateId();
-    const recurrenceRule =
-      s.recurrenceFreq
-        ? serializeRule({ freq: s.recurrenceFreq, days: s.recurrenceDays })
-        : null;
+    const recurrenceRule = s.recurrenceFreq
+      ? serializeRule({ freq: s.recurrenceFreq, days: s.recurrenceDays })
+      : null;
     await db.runAsync(
       `INSERT INTO entries
        (id, title, type, subtitle, inspiration, scheduled_date, scheduled_time, due_date, due_time, notes, status, recurrence_rule, recurrence_end_date, project_id, due_range, promoted_project_id, created_at, updated_at)
@@ -539,9 +845,9 @@ async function insertFixture(
       s.status ?? (s.type === "deadline" ? "pending" : "scheduled"),
       recurrenceRule,
       s.recurrenceEndDate ?? null,
-      s.project ? projectId[s.project] ?? null : null,
+      s.project ? (projectId[s.project] ?? null) : null,
       s.due_range ?? null,
-      s.promoted ? projectId[s.promoted] ?? null : null,
+      s.promoted ? (projectId[s.promoted] ?? null) : null,
       created,
       touched,
     );
@@ -571,7 +877,7 @@ async function insertFixture(
       n.body,
       n.mood ?? null,
       null,
-      n.project ? projectId[n.project] ?? null : null,
+      n.project ? (projectId[n.project] ?? null) : null,
       created,
       created,
     );

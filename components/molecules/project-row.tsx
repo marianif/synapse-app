@@ -50,7 +50,10 @@ export function ProjectRow({
 
   const open = (): void => {
     void touchProject(project.id);
-    router.push({ pathname: "/project", params: { id: project.id } });
+    router.push({
+      pathname: "/(projects)/project",
+      params: { id: project.id },
+    });
   };
 
   return (

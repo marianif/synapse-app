@@ -145,19 +145,9 @@ export function ProjectsOverview({
     );
   }
 
-  // Count line on the section header doubles as the see-more affordance.
-  // The shelf is where the user picks WHAT to feature here; the link reads
-  // "all projects" so the relationship is honest.
-  const allLabel = `${projects.length === 0 ? "See all projects" : `See all ${projects.length}`}`;
-
   return (
     <View style={styles.section}>
-      <SectionHeader
-        title="Projects and Life Areas"
-        seeMoreHref="/projects"
-        seeMoreText={allLabel}
-        seeMoreA11yLabel="See all projects"
-      />
+      <SectionHeader title="Projects and Life Areas" />
       <View style={styles.grid}>
         <View style={styles.gridColumn}>
           {leftColumn.map((p) => (

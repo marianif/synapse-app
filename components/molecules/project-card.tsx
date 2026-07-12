@@ -91,18 +91,17 @@ export function ProjectCard({
     // Side effect: bump last_opened_at so the Project Shelf's RECENT sort
     // reflects the navigation. Fire-and-forget — never block the route.
     void touchProject(project.id);
-    router.push({ pathname: "/project", params: { id: project.id } });
+    router.push({
+      pathname: "/(projects)/project",
+      params: { id: project.id },
+    });
   };
   const expand = (): void => setMode("preview");
   const collapse = (): void => setMode("numeric");
 
   // Header tap: quiet cards open the project; collapsed cards expand; expanded
   // cards collapse. Items area: only meaningful when expanded, opens project.
-  const onHeaderPress = isQuiet
-    ? openProject
-    : isExpanded
-      ? collapse
-      : expand;
+  const onHeaderPress = isQuiet ? openProject : isExpanded ? collapse : expand;
   const headerA11yHint = isQuiet
     ? "Opens project"
     : isExpanded

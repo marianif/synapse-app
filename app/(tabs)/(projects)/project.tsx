@@ -92,7 +92,11 @@ export default function ProjectScreen(): React.ReactElement {
   const entryDeleteConfirm = useConfirm({
     confirmKey: ConfirmKey.deleteEntry,
   });
-  const [selectedEntry, setSelectedEntry] = useState<DbEntry | null>(null);
+  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
+  const selectedEntry = useMemo(
+    () => entries.find((e) => e.id === selectedEntryId) ?? null,
+    [entries, selectedEntryId],
+  );
   const [spinePage, setSpinePage] = useState(0);
 
   // Overflow sheet — every tier-3 verb (rename, change emoji, archive, delete)
@@ -479,7 +483,7 @@ export default function ProjectScreen(): React.ReactElement {
                 <DirectRow
                   key={e.id}
                   entry={e}
-                  onPress={setSelectedEntry}
+                  onPress={(entry) => setSelectedEntryId(entry.id)}
                   onMarkDone={handleMarkDone}
                   onDelete={handleDeleteEntry}
                 />
@@ -681,7 +685,7 @@ export default function ProjectScreen(): React.ReactElement {
         entry={selectedEntry}
         project={project ?? null}
         visible={selectedEntry !== null}
-        onClose={() => setSelectedEntry(null)}
+        onClose={() => setSelectedEntryId(null)}
         onMarkDone={handleMarkDone}
         onDelete={handleDeleteEntry}
       />

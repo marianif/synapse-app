@@ -63,7 +63,7 @@ export function DirectOverview({
   const ideaShade = useEntryKicker("idea");
   const [filter, setFilter] = useState<DirectFilter>("all");
   const [page, setPage] = useState(0);
-  const [selectedEntry, setSelectedEntry] = useState<DbEntry | null>(null);
+  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteEntry });
 
   // Live counts off the unfiltered set so the header reads the true field, not
@@ -177,6 +177,11 @@ export function DirectOverview({
     setPage(0); // a new cut always opens on its most pressing page
   };
 
+  const selectedEntry = useMemo(
+    () => entries.find((e) => e.id === selectedEntryId) ?? null,
+    [entries, selectedEntryId],
+  );
+
   const selectedProject = useMemo(
     () => projects.find((p) => p.id === selectedEntry?.project_id) ?? null,
     [projects, selectedEntry?.project_id],
@@ -219,7 +224,7 @@ export function DirectOverview({
               <DirectRow
                 key={entry.id}
                 entry={entry}
-                onPress={setSelectedEntry}
+                onPress={(entry) => setSelectedEntryId(entry.id)}
                 onMarkDone={handleMarkDone}
                 onDelete={handleDelete}
               />
@@ -238,7 +243,7 @@ export function DirectOverview({
         entry={selectedEntry}
         project={selectedProject}
         visible={selectedEntry !== null}
-        onClose={() => setSelectedEntry(null)}
+        onClose={() => setSelectedEntryId(null)}
         onMarkDone={handleMarkDone}
         onDelete={handleDelete}
       />

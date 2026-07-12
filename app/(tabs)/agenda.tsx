@@ -64,7 +64,12 @@ export default function AgendaScreen(): React.ReactElement {
   // The feed is a pointer into the board, never a dead end: an entry line opens
   // its detail sheet in place, a project line pushes the project, a note line
   // hands off to the Notes tab where that trace lives.
-  const [selected, setSelected] = useState<DbEntry | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const selected = useMemo(
+    () => entries.find((e) => e.id === selectedId) ?? null,
+    [entries, selectedId],
+  );
 
   const selectedProject = useMemo(
     () => projects.find((p) => p.id === selected?.project_id) ?? null,
@@ -77,11 +82,14 @@ export default function AgendaScreen(): React.ReactElement {
       switch (target.kind) {
         case "entry": {
           const entry = entries.find((e) => e.id === target.id);
-          if (entry) setSelected(entry);
+          if (entry) setSelectedId(entry.id);
           return;
         }
         case "project":
-          router.push({ pathname: "/project", params: { id: target.id } });
+          router.push({
+            pathname: "/(projects)/project",
+            params: { id: target.id },
+          });
           return;
         case "note":
           router.push("/(tabs)/notes");
@@ -98,16 +106,17 @@ export default function AgendaScreen(): React.ReactElement {
 
   const handleMarkDone = useCallback(
     (entry: DbEntry): void => {
-      void updateEntryStatus(entry.id, doneStatus(entry.type as EntryType)).catch(
-        (err) => console.error("Failed to mark entry done:", err),
-      );
+      void updateEntryStatus(
+        entry.id,
+        doneStatus(entry.type as EntryType),
+      ).catch((err) => console.error("Failed to mark entry done:", err));
     },
     [updateEntryStatus],
   );
 
   const handleDelete = useCallback(
     (entry: DbEntry): void => {
-      setSelected(null);
+      setSelectedId(null);
       void deleteEntry(entry.id).catch((err) =>
         console.error("Failed to delete entry:", err),
       );
@@ -137,7 +146,7 @@ export default function AgendaScreen(): React.ReactElement {
         entry={selected}
         project={selectedProject}
         visible={selected !== null}
-        onClose={() => setSelected(null)}
+        onClose={() => setSelectedId(null)}
         onMarkDone={handleMarkDone}
         onDelete={handleDelete}
       />

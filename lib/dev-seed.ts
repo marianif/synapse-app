@@ -5,8 +5,10 @@ import {
   generateId,
   seedDefaultProjectsOnce,
 } from "@/lib/database";
+import { serializeRule } from "@/lib/recurrence";
 
 import type * as SQLite from "expo-sqlite";
+import type { RecurrenceFrequency } from "@/lib/types";
 
 /**
  * DEV-ONLY mock data. The pivot introduced a projects hierarchy with a
@@ -40,20 +42,32 @@ type ProjectSeed = {
   emoji?: string;
 };
 
+type TaskSeed = {
+  title: string;
+  done?: boolean;
+};
+
 type EntrySeed = {
   title: string;
   type: "todo" | "deadline" | "idea";
   subtitle?: string;
+  inspiration?: string;
+  notes?: string;
   scheduled_date?: string;
   scheduled_time?: string;
   due_date?: string;
   due_time?: string;
   due_range?: "week" | "month" | "year";
   status?: string;
+  recurrenceFreq?: RecurrenceFrequency;
+  recurrenceDays?: number[];
+  recurrenceEndDate?: string;
   project?: string;
   promoted?: string;
   touchedDaysAgo?: number;
   createdDaysAgo?: number;
+  /** Todo/deadline only — an idea with tasks is a project (see lib/types.ts). */
+  tasks?: TaskSeed[];
 };
 
 type DiarySeed = {
@@ -77,7 +91,8 @@ export type ScenarioKey =
   | "all-hot"
   | "archived-heavy"
   | "freshness-ladder"
-  | "empty-project-starters";
+  | "empty-project-starters"
+  | "detail-sheet-showcase";
 
 export type Scenario = {
   key: ScenarioKey;
@@ -273,6 +288,131 @@ const EMPTY_PROJECT_STARTERS: Fixture = {
   diary: [],
 };
 
+/**
+ * One project ("Detail sheet lab") holding an entry per DirectDetailSheet
+ * branch: urgency states, done states, horizon vs. precise deadlines, every
+ * recurrence frequency, inspiration/notes/subtitle text blocks, subtasks in
+ * mixed completion, and idea-narrative aging. Plus one deliberately unfiled
+ * todo (open from Home, not the project screen) so the no-breadcrumb path
+ * shows too.
+ *
+ * Ideas are NOT tappable into the sheet from the project screen (it only
+ * routes todo/deadline rows there — see components/organisms/direct-row use
+ * in app/(tabs)/(home)/project.tsx) but ARE tappable from the home board's
+ * direct zone (components/organisms/direct-overview.tsx). Open the ideas in
+ * this scenario from Home, not from the "Detail sheet lab" project page.
+ */
+const DETAIL_SHEET_SHOWCASE: Fixture = {
+  projects: [
+    { key: "lab", title: "Detail sheet lab", emoji: "🔬" },
+    { key: "quiet", title: "No emoji project" },
+  ],
+  entries: [
+    // ── Todo: baseline, precise date+time today, charged ──
+    { title: "Reply to Marco", type: "todo", scheduled_date: d(0), scheduled_time: "5:00 PM", project: "lab" },
+
+    // ── Todo: overdue, danger urgency chip + charged red WHEN ──
+    { title: "Send the invoice", type: "todo", scheduled_date: d(-4), status: "overdue", project: "lab", createdDaysAgo: 10 },
+
+    // ── Todo: distant, not charged, muted WHEN (day 8, just past the <7 threshold) ──
+    { title: "Deep-clean the studio", type: "todo", scheduled_date: d(8), project: "lab" },
+
+    // ── Todo: completed — strikethrough title, no complete pill, "Settled" narrative ──
+    { title: "Pay the electricity bill", type: "todo", scheduled_date: d(-2), status: "completed", touchedDaysAgo: 1, project: "lab" },
+
+    // ── Todo: recurring weekly on Mon/Wed/Fri, with an end date ──
+    { title: "Water the plants", type: "todo", scheduled_date: d(1), project: "lab", recurrenceFreq: "weekly", recurrenceDays: [1, 3, 5], recurrenceEndDate: endOfYear() },
+
+    // ── Todo: recurring daily, no end date ──
+    { title: "Morning pages", type: "todo", scheduled_date: d(0), project: "lab", recurrenceFreq: "daily" },
+
+    // ── Todo: recurring weekdays ──
+    { title: "Stand-up notes", type: "todo", scheduled_date: d(0), project: "lab", recurrenceFreq: "weekdays" },
+
+    // ── Todo: recurring monthly ──
+    { title: "Review the budget", type: "todo", scheduled_date: d(0), project: "lab", recurrenceFreq: "monthly" },
+
+    // ── Todo: subtasks, mixed done/open, plus a subtitle ──
+    {
+      title: "Ship the release",
+      type: "todo",
+      subtitle: "v2.4 — widget sync fix",
+      scheduled_date: d(2),
+      project: "lab",
+      tasks: [
+        { title: "Bump version number", done: true },
+        { title: "Write changelog", done: true },
+        { title: "Submit to TestFlight", done: false },
+        { title: "Smoke-test the widget", done: false },
+      ],
+    },
+
+    // ── Todo: unfiled (no project) — no breadcrumb in the sheet ──
+    { title: "Buy stamps", type: "todo", scheduled_date: d(3) },
+
+    // ── Deadline: precise date, distant, muted ──
+    { title: "Car insurance renewal", type: "deadline", due_date: d(30), project: "lab" },
+
+    // ── Deadline: horizon window (this week) — horizonReadout instead of a date ──
+    { title: "Book the dentist", type: "deadline", due_range: "week", due_date: endOfWeek(), project: "lab", createdDaysAgo: 5 },
+
+    // ── Deadline: horizon window (this month) ──
+    { title: "File the quarterly taxes", type: "deadline", due_range: "month", due_date: endOfMonth(), project: "lab" },
+
+    // ── Deadline: horizon window (this year) ──
+    { title: "Renew the studio lease", type: "deadline", due_range: "year", due_date: endOfYear(), project: "lab" },
+
+    // ── Deadline: met — "Mark met" done-label variant, strikethrough ──
+    { title: "Pay the water bill", type: "deadline", due_date: d(-5), status: "met", touchedDaysAgo: 2, project: "lab" },
+
+    // ── Deadline: overdue, danger chip ──
+    { title: "Passport renewal paperwork", type: "deadline", due_date: d(-1), status: "overdue", project: "lab", createdDaysAgo: 20 },
+
+    // ── Deadline: subtasks + notes block ──
+    {
+      title: "Studio lease renewal",
+      type: "deadline",
+      due_date: d(14),
+      notes: "Landlord wants the deposit wired by the 1st. Ask about the parking spot clause before signing.",
+      project: "lab",
+      tasks: [
+        { title: "Review redlines", done: true },
+        { title: "Sign and scan", done: false },
+      ],
+    },
+
+    // ── Idea: fresh (today), open from Home — no "Sketched…" narrative yet ──
+    { title: "Newsletter about small tools", type: "idea", subtitle: "weekly, short", touchedDaysAgo: 0, createdDaysAgo: 0, project: "lab" },
+
+    // ── Idea: old (>7 days) — "Sketched Nd ago" narrative ──
+    { title: "A font made from my handwriting", type: "idea", touchedDaysAgo: 12, createdDaysAgo: 18, project: "lab" },
+
+    // ── Idea: inspiration block ──
+    {
+      title: "Tiny zine on city benches",
+      type: "idea",
+      inspiration: "Saw someone reading alone on a bench in the rain and thought: every bench has a story if you sit long enough.",
+      touchedDaysAgo: 3,
+      createdDaysAgo: 3,
+      project: "lab",
+    },
+
+    // ── Idea: notes block (distinct from inspiration) ──
+    {
+      title: "Map every good espresso in town",
+      type: "idea",
+      notes: "Start with the three places near the studio. Rate on a 1-5 scale: crema, temperature, seating.",
+      touchedDaysAgo: 6,
+      createdDaysAgo: 9,
+      project: "lab",
+    },
+
+    // ── Idea: filed in the no-emoji project — breadcrumb with plain folder glyph ──
+    { title: "A shared sketch wall", type: "idea", touchedDaysAgo: 4, createdDaysAgo: 4, project: "quiet" },
+  ],
+  diary: [],
+};
+
 const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
   empty: {
     key: "empty",
@@ -327,6 +467,13 @@ const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
       "Empty Body / Money (tailored starters) + a user-named project (generic starters). Open each to see the starter rows.",
     fixture: EMPTY_PROJECT_STARTERS,
   },
+  "detail-sheet-showcase": {
+    key: "detail-sheet-showcase",
+    label: "Detail sheet showcase",
+    description:
+      "One entry per DirectDetailSheet state: urgency, done, horizons, every recurrence, subtasks, inspiration/notes, unfiled. Ideas open from Home, not the project page.",
+    fixture: DETAIL_SHEET_SHOWCASE,
+  },
 };
 
 /** Ordered list for the dev-menu picker. */
@@ -338,6 +485,7 @@ export const SCENARIOS: Scenario[] = [
   SCENARIOS_BY_KEY["archived-heavy"],
   SCENARIOS_BY_KEY["freshness-ladder"],
   SCENARIOS_BY_KEY["empty-project-starters"],
+  SCENARIOS_BY_KEY["detail-sheet-showcase"],
   SCENARIOS_BY_KEY.empty,
 ];
 
@@ -369,29 +517,48 @@ async function insertFixture(
   for (const s of fixture.entries) {
     const touched = now - (s.touchedDaysAgo ?? 0) * DAY_SECS;
     const created = now - (s.createdDaysAgo ?? s.touchedDaysAgo ?? 0) * DAY_SECS;
+    const entryId = generateId();
+    const recurrenceRule =
+      s.recurrenceFreq
+        ? serializeRule({ freq: s.recurrenceFreq, days: s.recurrenceDays })
+        : null;
     await db.runAsync(
       `INSERT INTO entries
        (id, title, type, subtitle, inspiration, scheduled_date, scheduled_time, due_date, due_time, notes, status, recurrence_rule, recurrence_end_date, project_id, due_range, promoted_project_id, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      generateId(),
+      entryId,
       s.title,
       s.type,
       s.subtitle ?? null,
-      null,
+      s.inspiration ?? null,
       s.scheduled_date ?? null,
       s.scheduled_time ?? null,
       s.due_date ?? null,
       s.due_time ?? null,
-      null,
+      s.notes ?? null,
       s.status ?? (s.type === "deadline" ? "pending" : "scheduled"),
-      null,
-      null,
+      recurrenceRule,
+      s.recurrenceEndDate ?? null,
       s.project ? projectId[s.project] ?? null : null,
       s.due_range ?? null,
       s.promoted ? projectId[s.promoted] ?? null : null,
       created,
       touched,
     );
+
+    for (const [i, t] of (s.tasks ?? []).entries()) {
+      await db.runAsync(
+        `INSERT INTO tasks (id, entry_id, title, done, position, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        generateId(),
+        entryId,
+        t.title,
+        t.done ? 1 : 0,
+        i,
+        created,
+        touched,
+      );
+    }
   }
 
   for (const n of fixture.diary) {

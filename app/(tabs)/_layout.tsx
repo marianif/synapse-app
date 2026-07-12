@@ -41,6 +41,7 @@ export default function TabLayout(): React.ReactElement {
           >
             <Tabs.Screen name="(home)" />
             <Tabs.Screen name="notes" />
+            <Tabs.Screen name="agenda" />
           </Tabs>
 
           <CustomTabBar />

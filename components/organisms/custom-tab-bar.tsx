@@ -18,6 +18,7 @@ export function CustomTabBar(): React.ReactElement {
 
   const isHome = pathname === "/" || pathname === "/(tabs)";
   const isNotes = pathname === "/(tabs)/notes" || pathname === "/notes";
+  const isAgenda = pathname === "/(tabs)/agenda" || pathname === "/agenda";
 
   const active = (on: boolean): string =>
     on ? colors.accent.clay : colors.inkMuted;
@@ -31,17 +32,22 @@ export function CustomTabBar(): React.ReactElement {
       onLayout={(e) => cap.setTabBarHeight(e.nativeEvent.layout.height)}
     >
       <View style={styles.tabBar}>
-        <Pressable
-          onPress={() => router.push("/")}
-          accessibilityRole="button"
-          accessibilityLabel="Field"
-          style={({ pressed }) => [
-            styles.tabButton,
-            pressed && styles.tabButtonPressed,
-          ]}
-        >
-          <TabIcon name="view-grid" color={active(isHome)} />
-        </Pressable>
+        {/* Two destinations per side so the pen key stays optically centered.
+            Field is the board itself; Notes is the reflective layer. */}
+        <View style={styles.side}>
+          <Pressable
+            onPress={() => router.push("/")}
+            accessibilityRole="button"
+            accessibilityLabel="Field"
+            accessibilityState={{ selected: isHome }}
+            style={({ pressed }) => [
+              styles.tabButton,
+              pressed && styles.tabButtonPressed,
+            ]}
+          >
+            <TabIcon name="view-grid" color={active(isHome)} />
+          </Pressable>
+        </View>
 
         {/* The pen key — one thumb gesture from anywhere, two registers. TAP
             opens the "Put something in" capture bar: type a thought, the
@@ -78,17 +84,40 @@ export function CustomTabBar(): React.ReactElement {
           <IconSymbol name="creation" size={26} color={colors.surface} />
         </Pressable>
 
-        <Pressable
-          onPress={() => router.push("/(tabs)/notes")}
-          accessibilityRole="button"
-          accessibilityLabel="Notes"
-          style={({ pressed }) => [
-            styles.tabButton,
-            pressed && styles.tabButtonPressed,
-          ]}
-        >
-          <TabIcon name="notebook-outline" color={active(isNotes)} />
-        </Pressable>
+        <View style={styles.side}>
+          {/* The board's voice — a waveform, because this tab is the board
+              talking, not another place to put things. */}
+          <Pressable
+            onPress={() => router.push("/(tabs)/notes")}
+            accessibilityRole="button"
+            accessibilityLabel="Notes"
+            accessibilityState={{ selected: isNotes }}
+            style={({ pressed }) => [
+              styles.tabButton,
+              pressed && styles.tabButtonPressed,
+            ]}
+          >
+            <TabIcon name="notebook-outline" color={active(isNotes)} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/(tabs)/agenda")}
+            accessibilityRole="button"
+            accessibilityLabel="Agenda"
+            accessibilityHint="What the board has to say about your open items."
+            accessibilityState={{ selected: isAgenda }}
+            style={({ pressed }) => [
+              styles.tabButton,
+              pressed && styles.tabButtonPressed,
+            ]}
+          >
+            <TabIcon name="waveform" color={active(isAgenda)} />
+          </Pressable>
+
+          {/* The right pair is deliberately one destination + one spacer: a
+              fourth tab would crowd the pen key, and Projects already lives one
+              tap from the Field. The spacer keeps the pen optically centered. */}
+          <View style={styles.tabButton} />
+        </View>
       </View>
     </View>
   );
@@ -103,8 +132,15 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-around",
     paddingHorizontal: tokens.space.lg,
+  },
+  // Equal-weight flanks: the pen key sits in the true center of the bar no
+  // matter how many destinations each side carries.
+  side: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-evenly",
   },
   tabButton: {
     width: 44,

@@ -10,19 +10,15 @@ import {
 } from "react-native";
 import Animated, {
   Easing,
-  FadeIn,
   FadeInUp,
-  FadeOut,
-  LinearTransition,
   useReducedMotion,
 } from "react-native-reanimated";
 
-import DateInput from "@/components/atoms/DateInput";
-import { EntryDot } from "@/components/atoms/entry-dot";
-import { ChipRail, SelectChip } from "@/components/atoms/select-chip";
+import { ProjectBreadcrumb } from "@/components/atoms/project-breadcrumb";
 import { ThemedText } from "@/components/atoms/themed-text";
-import TimeInput from "@/components/atoms/TimeInput";
-import { RecurrencePicker } from "@/components/molecules/recurrence-picker";
+import { DetailEditForm } from "@/components/molecules/detail-edit-form";
+import { DetailHeaderRow } from "@/components/molecules/detail-header-row";
+import { DetailViewMeta } from "@/components/molecules/detail-view-meta";
 import { TaskChecklist } from "@/components/molecules/task-checklist";
 import { entryKicker, tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
@@ -81,12 +77,6 @@ function draftFromEntry(entry: DbEntry): EditDraft {
     recurrenceEndDate: entry.recurrence_end_date ?? "",
   };
 }
-
-const HORIZON_OPTIONS: { value: DueRange; label: string }[] = [
-  { value: "week", label: "This week" },
-  { value: "month", label: "This month" },
-  { value: "year", label: "This year" },
-];
 
 const STATUS_LABELS: Record<DbEntry["status"], string> = {
   scheduled: "Scheduled",
@@ -299,55 +289,17 @@ export function DirectDetailSheet({
             >
               {/* ── Project breadcrumb ── */}
               {project ? (
-                <View style={styles.breadcrumb}>
-                  <MaterialCommunityIcons
-                    name="folder-outline"
-                    size={13}
-                    color={colors.inkMuted}
-                  />
-                  <ThemedText
-                    type="micro"
-                    muted
-                    numberOfLines={1}
-                    style={styles.breadcrumbText}
-                  >
-                    {project.emoji
-                      ? `${project.emoji} ${project.title}`
-                      : project.title}
-                  </ThemedText>
-                </View>
+                <ProjectBreadcrumb emoji={project.emoji} title={project.title} />
               ) : null}
 
               {/* ── Header: type + status ── */}
-              <View style={styles.header}>
-                <EntryDot type={type} size={8} />
-                <ThemedText type="label" style={{ color: accent }}>
-                  {type}
-                </ThemedText>
-
-                {urgency ? (
-                  <View
-                    style={[
-                      styles.chip,
-                      { backgroundColor: urgency.color + "18" },
-                    ]}
-                  >
-                    <ThemedText type="micro" style={{ color: urgency.color }}>
-                      {urgency.text}
-                    </ThemedText>
-                  </View>
-                ) : null}
-
-                {statColor ? (
-                  <ThemedText type="micro" style={{ color: statColor }}>
-                    {STATUS_LABELS[entry.status].toUpperCase()}
-                  </ThemedText>
-                ) : (
-                  <ThemedText type="micro" muted>
-                    {STATUS_LABELS[entry.status].toUpperCase()}
-                  </ThemedText>
-                )}
-              </View>
+              <DetailHeaderRow
+                type={type}
+                accent={accent}
+                urgency={urgency}
+                statusLabel={STATUS_LABELS[entry.status].toUpperCase()}
+                statusColor={statColor}
+              />
 
               {/* ── Identity ── */}
               {editing ? (
@@ -402,237 +354,30 @@ export function DirectDetailSheet({
               />
 
               {editing ? (
-                <Animated.View
-                  entering={reduced ? undefined : FadeIn.duration(180)}
-                  exiting={reduced ? undefined : FadeOut.duration(120)}
-                  layout={
-                    reduced
-                      ? undefined
-                      : LinearTransition.springify().damping(18).stiffness(220)
-                  }
-                  style={styles.editBlock}
-                >
-                  {/* ── WHEN (deadline: horizon or precise date; else date+time) ── */}
-                  <ThemedText type="micro" muted style={styles.editLabel}>
-                    WHEN
-                  </ThemedText>
-
-                  {isDeadlineType ? (
-                    <ChipRail>
-                      {HORIZON_OPTIONS.map((opt) => (
-                        <SelectChip
-                          key={opt.value}
-                          label={opt.label}
-                          selected={draft.dueRange === opt.value}
-                          accentColor={accent}
-                          onPress={() =>
-                            patchDraft({
-                              dueRange:
-                                draft.dueRange === opt.value ? null : opt.value,
-                            })
-                          }
-                        />
-                      ))}
-                      <SelectChip
-                        label="Precise date"
-                        selected={draft.dueRange === null}
-                        accentColor={accent}
-                        onPress={() => patchDraft({ dueRange: null })}
-                      />
-                    </ChipRail>
-                  ) : null}
-
-                  {!isDeadlineType || draft.dueRange === null ? (
-                    <View style={styles.dateTimeRow}>
-                      <DateInput
-                        value={draft.date}
-                        onChange={(v) => patchDraft({ date: v })}
-                        style={styles.dateInput}
-                      />
-                      <TimeInput
-                        value={draft.time}
-                        onChange={(v) => patchDraft({ time: v })}
-                        style={styles.timeInput}
-                      />
-                    </View>
-                  ) : null}
-
-                  {/* ── REPEAT (todo only, matches detail.tsx scope) ── */}
-                  {type === "todo" ? (
-                    <RecurrencePicker
-                      frequency={draft.recurrenceFreq}
-                      days={draft.recurrenceDays}
-                      endDate={draft.recurrenceEndDate}
-                      accentColor={accent}
-                      onFrequencyChange={(f) =>
-                        patchDraft({ recurrenceFreq: f })
-                      }
-                      onDaysChange={(d) => patchDraft({ recurrenceDays: d })}
-                      onEndDateChange={(d) =>
-                        patchDraft({ recurrenceEndDate: d })
-                      }
-                    />
-                  ) : null}
-
-                  {/* ── NOTES ── */}
-                  <ThemedText type="micro" muted style={styles.editLabel}>
-                    NOTES
-                  </ThemedText>
-                  <TextInput
-                    value={draft.notes}
-                    onChangeText={(t) => patchDraft({ notes: t })}
-                    placeholder="Add notes…"
-                    placeholderTextColor={colors.inkMuted}
-                    style={[
-                      styles.notesInput,
-                      {
-                        backgroundColor: colors.surfaceSubtle,
-                        color: colors.ink,
-                      },
-                    ]}
-                    multiline
-                    textAlignVertical="top"
-                  />
-                </Animated.View>
+                <DetailEditForm
+                  draft={draft}
+                  patchDraft={patchDraft}
+                  type={type}
+                  isDeadlineType={isDeadlineType}
+                  accent={accent}
+                  reduced={reduced}
+                />
               ) : (
-                <Animated.View
-                  entering={reduced ? undefined : FadeIn.duration(180)}
-                  exiting={reduced ? undefined : FadeOut.duration(120)}
-                >
-                  {/* ── Temporal metadata + inline actions ── */}
-                  <View style={styles.meta}>
-                    <View style={styles.metaRow}>
-                      <ThemedText type="micro" muted style={styles.metaLabel}>
-                        WHEN
-                      </ThemedText>
-                      <ThemedText
-                        type="mono"
-                        style={[
-                          styles.metaValue,
-                          charged && { color: tokens.feedback.danger },
-                        ]}
-                      >
-                        {whenValue(entry)}
-                      </ThemedText>
-
-                      <View style={styles.inlineActions}>
-                        <Pressable
-                          onPress={handleDelete}
-                          hitSlop={8}
-                          style={({ pressed }) => [
-                            styles.iconPill,
-                            {
-                              backgroundColor: tokens.feedback.danger + "18",
-                              opacity: pressed ? 0.7 : 1,
-                            },
-                          ]}
-                          accessibilityRole="button"
-                          accessibilityLabel="Delete"
-                        >
-                          <MaterialCommunityIcons
-                            name="trash-can-outline"
-                            size={15}
-                            color={tokens.feedback.danger}
-                          />
-                        </Pressable>
-
-                        <Pressable
-                          onPress={handleStartEdit}
-                          hitSlop={8}
-                          style={({ pressed }) => [
-                            styles.iconPill,
-                            {
-                              backgroundColor: accent + "18",
-                              opacity: pressed ? 0.7 : 1,
-                            },
-                          ]}
-                          accessibilityRole="button"
-                          accessibilityLabel="Edit"
-                        >
-                          <MaterialCommunityIcons
-                            name="pencil-outline"
-                            size={15}
-                            color={accent}
-                          />
-                        </Pressable>
-
-                        {!done ? (
-                          <Pressable
-                            onPress={handleMarkDone}
-                            style={({ pressed }) => [
-                              styles.completePill,
-                              {
-                                backgroundColor: tokens.feedback.success + "22",
-                                opacity: pressed ? 0.7 : 1,
-                              },
-                            ]}
-                            accessibilityRole="button"
-                            accessibilityLabel={doneLabel(type)}
-                          >
-                            <MaterialCommunityIcons
-                              name="check"
-                              size={14}
-                              color={tokens.feedback.success}
-                            />
-                            <ThemedText
-                              type="bodyBold"
-                              style={{
-                                color: tokens.feedback.success,
-                                fontSize: 13,
-                              }}
-                            >
-                              {doneLabel(type)}
-                            </ThemedText>
-                          </Pressable>
-                        ) : null}
-                      </View>
-                    </View>
-
-                    {entry.recurrence_rule ? (
-                      <View style={styles.metaRow}>
-                        <ThemedText type="micro" muted style={styles.metaLabel}>
-                          REPEATS
-                        </ThemedText>
-                        <ThemedText type="mono" style={styles.metaValue}>
-                          {recurrenceValue(entry)}
-                        </ThemedText>
-                      </View>
-                    ) : null}
-                  </View>
-
-                  {/* ── Notes ── */}
-                  {entry.inspiration ? (
-                    <View
-                      style={[
-                        styles.noteBlock,
-                        { backgroundColor: colors.surfaceSubtle },
-                      ]}
-                    >
-                      <ThemedText type="micro" muted>
-                        INSPIRATION
-                      </ThemedText>
-                      <ThemedText type="body" style={{ color: colors.ink }}>
-                        {entry.inspiration}
-                      </ThemedText>
-                    </View>
-                  ) : null}
-
-                  {entry.notes ? (
-                    <View
-                      style={[
-                        styles.noteBlock,
-                        { backgroundColor: colors.surfaceSubtle },
-                      ]}
-                    >
-                      <ThemedText type="micro" muted>
-                        NOTES
-                      </ThemedText>
-                      <ThemedText type="body" style={{ color: colors.ink }}>
-                        {entry.notes}
-                      </ThemedText>
-                    </View>
-                  ) : null}
-                </Animated.View>
+                <DetailViewMeta
+                  entry={entry}
+                  accent={accent}
+                  charged={charged}
+                  whenText={whenValue(entry)}
+                  recurrenceText={
+                    entry.recurrence_rule ? recurrenceValue(entry) : null
+                  }
+                  done={done}
+                  doneLabel={doneLabel(type)}
+                  reduced={reduced}
+                  onDelete={handleDelete}
+                  onEdit={handleStartEdit}
+                  onMarkDone={handleMarkDone}
+                />
               )}
 
               {/* ── Subtasks ── */}
@@ -731,30 +476,6 @@ const styles = StyleSheet.create({
     paddingBottom: tokens.space.lg,
   },
 
-  // ── Breadcrumb ──
-  breadcrumb: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.xs,
-    marginBottom: tokens.space.md,
-  },
-  breadcrumbText: {
-    flexShrink: 1,
-  },
-
-  // ── Header ──
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.sm,
-    marginBottom: tokens.space.sm,
-  },
-  chip: {
-    borderRadius: tokens.radius.sm,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-
   // ── Identity ──
   title: {
     marginBottom: tokens.space.xs,
@@ -777,79 +498,6 @@ const styles = StyleSheet.create({
     height: 1,
     marginTop: tokens.space.md,
     marginBottom: tokens.space.md,
-  },
-
-  // ── Inline edit ──
-  editBlock: {
-    gap: tokens.space.sm,
-    marginBottom: tokens.space.sm,
-  },
-  editLabel: {
-    letterSpacing: 0.5,
-    marginTop: tokens.space.xs,
-  },
-  dateTimeRow: {
-    flexDirection: "row",
-    gap: tokens.space.sm,
-  },
-  dateInput: {
-    flex: 1,
-  },
-  timeInput: {
-    flex: 1,
-  },
-  notesInput: {
-    borderRadius: tokens.radius.md,
-    paddingHorizontal: tokens.space.lg,
-    paddingVertical: tokens.space.md,
-    fontSize: 15,
-    lineHeight: 22,
-    minHeight: 88,
-  },
-
-  // ── Metadata ──
-  meta: {
-    gap: tokens.space.sm,
-    marginBottom: tokens.space.sm,
-  },
-  metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.sm,
-  },
-  metaLabel: {
-    width: 64,
-  },
-  metaValue: {
-    flex: 1,
-  },
-  inlineActions: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    gap: tokens.space.xs,
-  },
-  iconPill: {
-    width: 30,
-    height: 30,
-    borderRadius: tokens.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  completePill: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    gap: 4,
-    height: 30,
-    paddingHorizontal: tokens.space.sm,
-    borderRadius: tokens.radius.pill,
-  },
-
-  // ── Notes ──
-  noteBlock: {
-    borderRadius: tokens.radius.md,
-    padding: tokens.space.md,
-    gap: tokens.space.xs,
-    marginTop: tokens.space.sm,
   },
 
   // ── Actions ──

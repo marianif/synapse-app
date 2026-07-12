@@ -124,7 +124,7 @@ export function CustomTabBar(): React.ReactElement {
               pressed && styles.tabButtonPressed,
             ]}
           >
-            <TabIcon name="Soundwave" color={active(isAgenda)} />
+            <TabIcon name="DirectNotification2" color={active(isAgenda)} />
           </Pressable>
         </View>
       </View>

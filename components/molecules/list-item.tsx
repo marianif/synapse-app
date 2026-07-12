@@ -75,7 +75,7 @@ export function ListItem({
           {/* Sparkle icon slot */}
           <View style={styles.sparkleSlot}>
             <IconSymbol
-              name="star-four-points"
+              name="Sparkles"
               size={18}
               color={ideaAccent}
             />

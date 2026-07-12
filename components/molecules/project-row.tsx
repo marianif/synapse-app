@@ -101,7 +101,7 @@ export function ProjectRow({
         style={styles.starButton}
       >
         <IconSymbol
-          name={isFeatured ? "lock" : "lock-open"}
+          name={isFeatured ? "Lock" : "Unlock"}
           size={22}
           color={isFeatured ? colors.feedback.success : colors.inkMuted}
         />

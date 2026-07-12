@@ -85,7 +85,7 @@ export function ConfirmSheet({
               >
                 {dontAsk ? (
                   <IconSymbol
-                    name="check"
+                    name="Check"
                     size={14}
                     color={colors.accent.onClay}
                   />

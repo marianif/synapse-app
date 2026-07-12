@@ -56,7 +56,7 @@ export function CompactCalendar({
           hitSlop={12}
           style={styles.navButton}
         >
-          <IconSymbol name="chevron-left" size={18} color={colors.inkMuted} />
+          <IconSymbol name="ChevronLeft" size={18} color={colors.inkMuted} />
         </Pressable>
         <ThemedText type="bodyBold" style={styles.monthLabel}>
           {MONTH_ABBRS[cursor.month()]} {cursor.year()}
@@ -66,7 +66,7 @@ export function CompactCalendar({
           hitSlop={12}
           style={styles.navButton}
         >
-          <IconSymbol name="chevron-right" size={18} color={colors.inkMuted} />
+          <IconSymbol name="ChevronRight" size={18} color={colors.inkMuted} />
         </Pressable>
       </View>
 

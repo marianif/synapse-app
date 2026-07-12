@@ -56,7 +56,7 @@ export function SectionHeader({
             >
               {seeMoreText ?? "see more"}
               <IconSymbol
-                name="chevron-right"
+                name="ChevronRight"
                 size={14}
                 color={colors.inkMuted}
               />

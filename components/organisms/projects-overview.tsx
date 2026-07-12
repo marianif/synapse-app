@@ -125,7 +125,7 @@ export function ProjectsOverview({
             pressed && styles.pressed,
           ]}
         >
-          <IconSymbol name="plus" size={20} color={colors.ink} />
+          <IconSymbol name="Plus" size={20} color={colors.ink} />
           <View style={styles.firstRunCopy}>
             <ThemedText
               type="body"
@@ -195,7 +195,7 @@ function AddProjectTile({
         pressed && styles.pressed,
       ]}
     >
-      <IconSymbol name="plus" size={22} color={colors.inkMuted} />
+      <IconSymbol name="Plus" size={22} color={colors.inkMuted} />
       <ThemedText type="body" style={{ color: colors.inkMuted }}>
         New project
       </ThemedText>

@@ -38,6 +38,18 @@ export function CustomTabBar(): React.ReactElement {
             Field is the board itself; Notes is the reflective layer. */}
         <View style={styles.side}>
           <Pressable
+            onPress={() => router.push("/(tabs)/(projects)")}
+            accessibilityRole="button"
+            accessibilityLabel="Projects"
+            accessibilityState={{ selected: isProjects }}
+            style={({ pressed }) => [
+              styles.tabButton,
+              pressed && styles.tabButtonPressed,
+            ]}
+          >
+            <TabIcon name="Folder" color={active(isProjects)} />
+          </Pressable>
+          <Pressable
             onPress={() => router.push("/")}
             accessibilityRole="button"
             accessibilityLabel="Field"
@@ -47,7 +59,7 @@ export function CustomTabBar(): React.ReactElement {
               pressed && styles.tabButtonPressed,
             ]}
           >
-            <TabIcon name="view-grid" color={active(isHome)} />
+            <TabIcon name="Grid" color={active(isHome)} />
           </Pressable>
         </View>
 
@@ -83,7 +95,7 @@ export function CustomTabBar(): React.ReactElement {
               it doesn't "add a row." Rendered in the surface tone on the clay
               accent so it stays the one neutral, type-agnostic control in the
               chrome (no entry-code color leaking into the headline verb). */}
-          <IconSymbol name="creation" size={26} color={colors.surface} />
+          <IconSymbol name="Sparkles" size={26} color={colors.surface} />
         </Pressable>
 
         <View style={styles.side}>
@@ -99,7 +111,7 @@ export function CustomTabBar(): React.ReactElement {
               pressed && styles.tabButtonPressed,
             ]}
           >
-            <TabIcon name="notebook-outline" color={active(isNotes)} />
+            <TabIcon name="Notebook" color={active(isNotes)} />
           </Pressable>
           <Pressable
             onPress={() => router.push("/(tabs)/agenda")}
@@ -112,20 +124,7 @@ export function CustomTabBar(): React.ReactElement {
               pressed && styles.tabButtonPressed,
             ]}
           >
-            <TabIcon name="waveform" color={active(isAgenda)} />
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.push("/(projects)")}
-            accessibilityRole="button"
-            accessibilityLabel="Projects"
-            accessibilityState={{ selected: isProjects }}
-            style={({ pressed }) => [
-              styles.tabButton,
-              pressed && styles.tabButtonPressed,
-            ]}
-          >
-            <TabIcon name="folder-outline" color={active(isProjects)} />
+            <TabIcon name="Soundwave" color={active(isAgenda)} />
           </Pressable>
         </View>
       </View>
@@ -141,7 +140,7 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
     paddingHorizontal: tokens.space.lg,
   },
   // Equal-weight flanks: the pen key sits in the true center of the bar no
@@ -149,7 +148,7 @@ const styles = StyleSheet.create({
   side: {
     flex: 1,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
     justifyContent: "space-evenly",
   },
   tabButton: {

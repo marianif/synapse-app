@@ -175,11 +175,11 @@ export function RecurrencePicker({
                 accessibilityLabel="Clear end date"
                 style={styles.clear}
               >
-                <IconSymbol name="close" size={16} color={colors.inkMuted} />
+                <IconSymbol name="X" size={16} color={colors.inkMuted} />
               </Pressable>
             ) : (
               <IconSymbol
-                name={endOpen ? "chevron-up" : "chevron-down"}
+                name={endOpen ? "ChevronUp" : "ChevronDown"}
                 size={18}
                 color={colors.inkMuted}
               />

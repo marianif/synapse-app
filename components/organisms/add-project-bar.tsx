@@ -102,7 +102,7 @@ export function AddProjectBar({
             pressed && styles.pressed,
           ]}
         >
-          <IconSymbol name="arrow-up" size={22} color={colors.accent.clay} />
+          <IconSymbol name="ArrowUp" size={22} color={colors.accent.clay} />
         </Pressable>
       ) : (
         <Pressable
@@ -112,7 +112,7 @@ export function AddProjectBar({
           accessibilityLabel="Close"
           style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
         >
-          <IconSymbol name="close" size={22} color={onSlab} />
+          <IconSymbol name="X" size={22} color={onSlab} />
         </Pressable>
       )}
     </Animated.View>

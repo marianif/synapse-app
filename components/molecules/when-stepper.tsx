@@ -33,7 +33,7 @@ export function WhenStepper({
         onRepeat={onLeftHold}
         accessibilityLabel="Decrease"
       >
-        <IconSymbol name="chevron-left" size={22} color={accent} />
+        <IconSymbol name="ChevronLeft" size={22} color={accent} />
       </RepeatButton>
       {children}
       <RepeatButton
@@ -41,7 +41,7 @@ export function WhenStepper({
         onRepeat={onRightHold}
         accessibilityLabel="Increase"
       >
-        <IconSymbol name="chevron-right" size={22} color={accent} />
+        <IconSymbol name="ChevronRight" size={22} color={accent} />
       </RepeatButton>
     </View>
   );

@@ -29,7 +29,7 @@ export function StageHeader({
         accessibilityLabel="Back"
         style={styles.headerButton}
       >
-        <IconSymbol name="chevron-left" size={18} color={muted} />
+        <IconSymbol name="ChevronLeft" size={18} color={muted} />
       </Pressable>
       <ThemedText type="label" style={[styles.stageLabel, { color: muted }]}>
         {label}
@@ -41,7 +41,7 @@ export function StageHeader({
           accessibilityLabel="Save"
           style={styles.headerButton}
         >
-          <IconSymbol name="check" size={18} color={accent ?? ink} />
+          <IconSymbol name="Check" size={18} color={accent ?? ink} />
         </Pressable>
       ) : (
         <Pressable
@@ -50,7 +50,7 @@ export function StageHeader({
           accessibilityLabel="Discard"
           style={styles.headerButton}
         >
-          <IconSymbol name="close" size={16} color={muted} />
+          <IconSymbol name="X" size={16} color={muted} />
         </Pressable>
       )}
     </View>

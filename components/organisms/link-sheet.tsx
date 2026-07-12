@@ -124,7 +124,7 @@ export function LinkSheet({
               <View
                 style={[styles.search, { backgroundColor: colors.surface }]}
               >
-                <IconSymbol name="magnify" size={18} color={colors.inkMuted} />
+                <IconSymbol name="Search" size={18} color={colors.inkMuted} />
                 <TextInput
                   value={query}
                   onChangeText={setQuery}
@@ -143,7 +143,7 @@ export function LinkSheet({
                     accessibilityRole="button"
                     accessibilityLabel="Clear search"
                   >
-                    <IconSymbol name="close" size={16} color={colors.inkMuted} />
+                    <IconSymbol name="X" size={16} color={colors.inkMuted} />
                   </Pressable>
                 ) : null}
               </View>
@@ -286,7 +286,7 @@ function TargetRow({
       {target.kind === "idea" ? (
         <SketchIcon type="idea" size={22} />
       ) : (
-        <IconSymbol name="folder-outline" size={22} color={colors.inkMuted} />
+        <IconSymbol name="Folder" size={22} color={colors.inkMuted} />
       )}
       <ThemedText
         style={[

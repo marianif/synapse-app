@@ -130,7 +130,7 @@ function Chip({
   const content = linkedTitle ? (
     <>
       {linkedKind === "project" ? (
-        <IconSymbol name="folder-outline" size={13} color={colors.inkMuted} />
+        <IconSymbol name="Folder" size={13} color={colors.inkMuted} />
       ) : (
         <SketchIcon type="idea" size={13} />
       )}
@@ -177,7 +177,7 @@ function Chip({
     >
       {content}
       <IconSymbol
-        name="link-variant"
+        name="Link"
         size={13}
         color={colors.inkMuted}
       />

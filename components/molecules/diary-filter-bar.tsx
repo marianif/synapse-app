@@ -53,7 +53,7 @@ export function DiaryFilterBar({
             <SketchIcon type="idea" size={22} />
           ) : (
             <IconSymbol
-              name="folder-outline"
+              name="Folder"
               size={22}
               color={colors.inkMuted}
             />
@@ -74,7 +74,7 @@ export function DiaryFilterBar({
             accessibilityLabel={`Clear filter: ${targetLabel}`}
             style={styles.clearKey}
           >
-            <IconSymbol name="close" size={18} color={colors.inkMuted} />
+            <IconSymbol name="X" size={18} color={colors.inkMuted} />
           </Pressable>
         </View>
       </View>
@@ -122,7 +122,7 @@ export function DiaryFilterBar({
         accessibilityLabel="Filter by a specific project or idea"
         style={styles.filterKey}
       >
-        <IconSymbol name="filter-variant" size={20} color={colors.inkMuted} />
+        <IconSymbol name="Filters" size={20} color={colors.inkMuted} />
       </Pressable>
     </View>
   );

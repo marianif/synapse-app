@@ -377,7 +377,7 @@ export function CaptureResolver({
                     pressed && { opacity: 0.5 },
                   ]}
                 >
-                  <IconSymbol name="close" size={16} color={BAR_INK_MUTED} />
+                  <IconSymbol name="X" size={16} color={BAR_INK_MUTED} />
                 </Pressable>
               </View>
 
@@ -472,7 +472,7 @@ export function CaptureResolver({
                 ]}
               >
                 <IconSymbol
-                  name="chevron-left"
+                  name="ChevronLeft"
                   size={20}
                   color={BAR_INK_MUTED}
                 />
@@ -497,7 +497,7 @@ export function CaptureResolver({
                     pressed && { opacity: 0.5 },
                   ]}
                 >
-                  <IconSymbol name="check" size={20} color={accent} />
+                  <IconSymbol name="Check" size={20} color={accent} />
                 </Pressable>
               ) : (
                 <View style={styles.corner} />

@@ -164,7 +164,7 @@ export function WhenPicker({
           ]}
         >
           <IconSymbol
-            name={wheelOpen ? "chevron-up" : "tune-variant"}
+            name={wheelOpen ? "ChevronUp" : "SliderH"}
             size={18}
             color={wheelOpen ? accentColor : colors.inkMuted}
           />

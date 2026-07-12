@@ -221,7 +221,7 @@ export default function ProjectsScreen(): React.ReactElement {
                 { backgroundColor: colors.surfaceSubtle },
               ]}
             >
-              <IconSymbol name="magnify" size={18} color={colors.inkMuted} />
+              <IconSymbol name="Search" size={18} color={colors.inkMuted} />
               <TextInput
                 value={query}
                 onChangeText={setQuery}
@@ -241,7 +241,7 @@ export default function ProjectsScreen(): React.ReactElement {
                   accessibilityLabel="Clear search"
                 >
                   <IconSymbol
-                    name="close-circle"
+                    name="CloseSquare2"
                     size={18}
                     color={colors.inkMuted}
                   />
@@ -270,11 +270,7 @@ export default function ProjectsScreen(): React.ReactElement {
               >
                 {`SORTED · ${SORT_LABEL[sort]}`}
               </ThemedText>
-              <IconSymbol
-                name="swap-vertical"
-                size={14}
-                color={colors.inkMuted}
-              />
+              <IconSymbol name="ArrowSwap2" size={14} color={colors.inkMuted} />
             </Pressable>
 
             {/* The shelf itself. */}
@@ -311,7 +307,7 @@ export default function ProjectsScreen(): React.ReactElement {
                   style={styles.archivedHeader}
                 >
                   <IconSymbol
-                    name={archivedOpen ? "chevron-down" : "chevron-right"}
+                    name={archivedOpen ? "ChevronDown" : "ChevronRight"}
                     size={16}
                     color={colors.inkMuted}
                   />
@@ -368,7 +364,7 @@ export default function ProjectsScreen(): React.ReactElement {
                 pressed && styles.pressed,
               ]}
             >
-              <IconSymbol name="plus" size={28} color={colors.accent.onClay} />
+              <IconSymbol name="Plus" size={28} color={colors.accent.onClay} />
             </Pressable>
           )}
         </Animated.View>
@@ -416,7 +412,7 @@ function CreateRow({
             pressed && styles.pressed,
           ]}
         >
-          <IconSymbol name="arrow-up" size={20} color={colors.accent.onClay} />
+          <IconSymbol name="ArrowUp" size={20} color={colors.accent.onClay} />
         </Pressable>
       ) : null}
     </View>

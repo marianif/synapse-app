@@ -48,7 +48,7 @@ export function NoteLinkStageView({
             pressed && styles.pressed,
           ]}
         >
-          <IconSymbol name="note-text-outline" size={14} color={ink} />
+          <IconSymbol name="Note2" size={14} color={ink} />
           <ThemedText type="bodyBold" style={{ color: ink }}>
             Free note
           </ThemedText>

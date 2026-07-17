@@ -4,10 +4,7 @@ import SwiftUI
 @main
 struct exportWidgets: WidgetBundle {
     var body: some Widget {
-        widget()
         entriesWidget()
         voiceInputWidget()
-        widgetControl()
-        WidgetLiveActivity()
     }
 }

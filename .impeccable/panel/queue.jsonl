@@ -1,0 +1,2 @@
+{"id":"5c1bf4f1882f","command":"/flow polish App.tsx","findingId":"token-bypass-speech-recognizer-example-app-tsx","source":"panel","at":"2026-07-12T19:23:01.624Z","status":"drained","drainedAt":"2026-07-12T20:34:36.210Z"}
+{"id":"3ddca846938b","command":"/flow polish capture-bar.tsx","findingId":"token-bypass-components-organisms-capture-bar-tsx","source":"panel","at":"2026-07-16T18:15:12.497Z","status":"pending"}

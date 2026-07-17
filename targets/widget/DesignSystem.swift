@@ -1,13 +1,14 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Design System Tokens (The Field)
+// MARK: - Design System Tokens (Field Lab)
 //
-// "The New Yorker organizing your life." Warm oat-cream paper in light, warm
-// soot-brown in dark — never pure #FFF/#000. One clay action color. Entry types
-// carry a soft tile-tint + a saturated edge-code. No gradients, no glows, no
-// neon. Mirrors `constants/theme.ts`; light/dark parity via a dynamic provider
-// so the widget follows the system scheme like the app's `useTheme()`.
+// Your whole brain as a living instrument panel: cool graphite paper, three
+// electric type-colors that glow at equal volume, a neutral accent slab, sharp
+// edges. Never pure #FFF/#000. Mirrors `constants/theme.ts` — this file is a
+// hand-maintained Swift copy since the widget extension can't import RN code;
+// keep it in sync by hand whenever theme.ts's `color`/`accent`/`feedback`/
+// `radius` tokens change.
 
 extension Color {
     /// Resolve a light/dark hex pair to a single scheme-aware Color.
@@ -17,35 +18,41 @@ extension Color {
         })
     }
 
-    // Surfaces — warm paper, not cold slate.
-    static let paper = Color.dynamic(light: "F4EFE6", dark: "16140F")          // root background
-    static let surface = Color.dynamic(light: "FBF7F0", dark: "211E18")        // tile body
-    static let surfaceSubtle = Color.dynamic(light: "EFE8DB", dark: "1C1A14")  // recessed / gutter
+    // Surfaces — cool graphite paper, not warm cream.
+    static let paper = Color.dynamic(light: "EEF1F5", dark: "171A20")          // root background
+    static let surface = Color.dynamic(light: "F8FAFC", dark: "1F242C")        // tile body
+    static let surfaceSubtle = Color.dynamic(light: "E4E8EE", dark: "15181D")  // recessed / gutter
 
-    // Text — warm near-black brown / warm cream.
-    static let ink = Color.dynamic(light: "2A2622", dark: "F0EAE0")            // primary
-    static let inkMuted = Color.dynamic(light: "6B6358", dark: "A39B8C")       // secondary / metadata
+    // Text — cool near-black / cool near-white.
+    static let ink = Color.dynamic(light: "1A1E25", dark: "E9EDF3")            // primary
+    static let inkMuted = Color.dynamic(light: "5A6473", dark: "8A93A3")       // secondary / metadata
 
-    // The one action color — clay terracotta. Used sparingly.
-    static let clay = Color(hex: "D86B3C")
-    static let clayPressed = Color(hex: "BE5730")
+    // Primary action color — a scheme-aware NEUTRAL slab, not a hue, so it can
+    // never be confused with a saturated entry-type code.
+    static let clay = Color.dynamic(light: "3A4250", dark: "E9EDF3")
+    static let clayPressed = Color.dynamic(light: "2B313C", dark: "CDD5E0")
+    static let onClay = Color.dynamic(light: "EEF1F5", dark: "171A20")
 
-    // Entry-type codes (dots / edge-bars / fills). Shared across schemes.
-    static let typeBills = Color(hex: "D98C6A")   // peach
-    static let typeIdea = Color(hex: "5B86A8")    // powder-blue
-    static let typeTodo = Color(hex: "6E9466")    // sage
+    // Entry-type codes (dots / fills). Shared across schemes — equal volume.
+    static let typeBills = Color(hex: "FB7185")   // coral — deadline
+    static let typeIdea = Color(hex: "FBBF24")    // amber — idea
+    static let typeTodo = Color(hex: "22D3EE")    // electric cyan — todo (never green)
+
+    // AA-safe kicker shades — scheme-aware because the tints sit at opposite
+    // lightness ends (dark hue on light tint, bright hue on dark tint).
+    static let kickerBills = Color.dynamic(light: "AF3B51", dark: "FB7185")
+    static let kickerIdea = Color.dynamic(light: "B39F06", dark: "FBBF24")
+    static let kickerTodo = Color.dynamic(light: "0B7286", dark: "22D3EE")
 
     // Entry-type tile-tints (soft fills). Scheme-aware.
-    static let tintBills = Color.dynamic(light: "F7E3D6", dark: "3A2A22")
-    static let tintIdea = Color.dynamic(light: "DDE7F0", dark: "22303A")
-    static let tintTodo = Color.dynamic(light: "DCE7D6", dark: "26331F")
-    static let tintEvent = Color.dynamic(light: "E6DCEC", dark: "2E2638")
-    static let tintSomeday = Color.dynamic(light: "F2E6C9", dark: "352B14")
+    static let tintBills = Color.dynamic(light: "FCE0E4", dark: "2E1C20")
+    static let tintIdea = Color.dynamic(light: "FBEFCF", dark: "2E2611")
+    static let tintTodo = Color.dynamic(light: "D6F2F7", dark: "102A30")
 
-    // Feedback — warm even when signalling.
-    static let success = Color(hex: "6E9466")
-    static let warning = Color(hex: "C09A4B")
-    static let danger = Color(hex: "C8553D")
+    // Feedback — success is the ONLY green, and it means completion only.
+    static let success = Color(hex: "34D399")
+    static let warning = Color(hex: "FBBF24")
+    static let danger = Color(hex: "F43F5E")
 
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -72,12 +79,12 @@ extension Color {
     }
 }
 
-// MARK: - Radius Tokens — large soft corners, "cards you could pick up".
+// MARK: - Radius Tokens — sharp, instrument-panel edges.
 
 enum Radius {
-    static let sm: CGFloat = 10
-    static let md: CGFloat = 14
-    static let lg: CGFloat = 18
+    static let sm: CGFloat = 6
+    static let md: CGFloat = 10
+    static let lg: CGFloat = 14
     static let pill: CGFloat = 999
 }
 

@@ -221,12 +221,12 @@ struct WidgetHeader: View {
     var icon: String = "" // retained for call-site compatibility; no longer rendered
 
     var body: some View {
-        // The kicker is the only all-caps element, and it carries the clay code —
-        // no decorative icon. Structure comes from type, not chrome.
+        // The kicker is the only all-caps element — mono signal layer, muted
+        // ink (the neutral accent is reserved for the primary action, not chrome).
         Text(title.uppercased())
-            .font(.system(size: 11, weight: .semibold))
-            .tracking(0.6)
-            .foregroundStyle(Color.clay)
+            .font(.system(size: 11, weight: .semibold, design: .monospaced))
+            .tracking(0.8)
+            .foregroundStyle(Color.inkMuted)
     }
 }
 
@@ -289,7 +289,7 @@ struct EntryRow: View {
         case "done", "completed":
             return .success
         case "in-progress", "inprogress":
-            return .clay
+            return .typeTodo
         case "deadline", "urgent":
             return .typeBills
         default:
@@ -315,18 +315,18 @@ struct EntryRow: View {
         case "done", "completed":
             return .success
         case "in-progress", "inprogress":
-            return .clay
+            return .typeTodo
         default:
             return .inkMuted
         }
     }
-    
+
     private var statusBgColor: Color {
         switch entry.status.lowercased() {
         case "done", "completed":
             return .success.opacity(0.15)
         case "in-progress", "inprogress":
-            return .clay.opacity(0.15)
+            return .typeTodo.opacity(0.15)
         default:
             return .surfaceSubtle
         }
@@ -342,7 +342,7 @@ struct StatsCard: View {
         VStack(spacing: Spacing.sm) {
             StatItem(count: stats.done, label: "Done", color: .success)
             StatItem(count: stats.pending, label: "Pending", color: .inkMuted)
-            StatItem(count: stats.inProgress, label: "Active", color: .clay)
+            StatItem(count: stats.inProgress, label: "Active", color: .typeTodo)
         }
         .padding(Spacing.md)
         .background(
@@ -368,7 +368,7 @@ struct WidgetStatsRow: View {
                 .foregroundStyle(Color.success)
             
             Text("\(doneCount)/\(entries.count)")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .foregroundStyle(Color.inkMuted)
         }
         .padding(.horizontal, Spacing.sm)
@@ -389,13 +389,13 @@ struct StatItem: View {
 
     var body: some View {
         VStack(spacing: 2) {
-            // Display numeral — editorial serif, not rounded.
+            // Display numeral — mono signal layer, tabular.
             Text("\(count)")
-                .font(.system(size: 18, weight: .semibold, design: .serif))
+                .font(.system(size: 18, weight: .semibold, design: .monospaced))
                 .foregroundStyle(color)
 
             Text(label.uppercased())
-                .font(.system(size: 8, weight: .semibold))
+                .font(.system(size: 8, weight: .semibold, design: .monospaced))
                 .tracking(0.4)
                 .foregroundStyle(Color.inkMuted)
         }
@@ -407,10 +407,10 @@ struct StatItem: View {
 
 struct EmptyStateView: View {
     var body: some View {
-        // Warm, plain, editorial — no sparkles, no mascot. Teach the next move.
+        // Plain, instrument-panel — no sparkles, no mascot. Teach the next move.
         VStack(alignment: .leading, spacing: Spacing.xs) {
             Text("Nothing yet")
-                .font(.system(size: 16, weight: .semibold, design: .serif))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(Color.ink)
 
             Text("Capture a thought to fill the field.")

@@ -31,7 +31,7 @@ struct VoiceInputProvider: AppIntentTimelineProvider {
     }
 }
 
-// MARK: - Shared: Clay mic disc
+// MARK: - Shared: neutral mic disc
 //
 // The one action color, solid — no gradient, no glow. Color categorizes and
 // activates; it never decorates. The disc IS the affordance.
@@ -47,7 +47,7 @@ private struct MicButton: View {
             .overlay(
                 Image(systemName: "mic.fill")
                     .font(.system(size: iconSize, weight: .semibold))
-                    .foregroundStyle(Color.paper)
+                    .foregroundStyle(Color.onClay)
             )
     }
 }
@@ -73,23 +73,23 @@ struct VoiceInputWidgetEntryView: View {
     }
 }
 
-// MARK: - Shared: clay kicker (the only all-caps element)
+// MARK: - Shared: kicker (the only all-caps element) — mono signal layer.
 
 private struct Kicker: View {
     let text: String
 
     var body: some View {
         Text(text)
-            .font(.system(size: 11, weight: .semibold))
-            .tracking(0.6)
-            .foregroundStyle(Color.clay)
+            .font(.system(size: 11, weight: .semibold, design: .monospaced))
+            .tracking(0.8)
+            .foregroundStyle(Color.typeTodo)
     }
 }
 
-// MARK: - Shared: warm tile with a saturated clay edge-bar
+// MARK: - Shared: tonal tile
 //
-// Structure without a 1px border — a tonal surface lifted off the paper, coded
-// down its leading edge in clay. The signature Field move.
+// Structure without a 1px border, without a colored edge-bar — a tonal surface
+// lifted off the paper. The 6px dot / mono kicker carry structure, not chrome.
 
 private struct FieldTile<Content: View>: View {
     @ViewBuilder let content: () -> Content
@@ -98,15 +98,8 @@ private struct FieldTile<Content: View>: View {
         content()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .background(
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: Radius.lg, style: .continuous)
-                        .fill(Color.surface)
-                    // Clay edge-code, inset and pill-capped so it reads as a mark, not a rule.
-                    Capsule()
-                        .fill(Color.clay)
-                        .frame(width: 4)
-                        .padding(.vertical, Spacing.md)
-                }
+                RoundedRectangle(cornerRadius: Radius.lg, style: .continuous)
+                    .fill(Color.surface)
             )
     }
 }
@@ -125,9 +118,8 @@ struct SmallVoiceWidgetView: View {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Kicker(text: "VOICE")
 
-                        // Editorial serif headline — the New Yorker greeting you.
                         Text("Capture\na thought")
-                            .font(.system(size: 19, weight: .semibold, design: .serif))
+                            .font(.system(size: 19, weight: .semibold))
                             .foregroundStyle(Color.ink)
                             .lineSpacing(1)
                             .fixedSize(horizontal: false, vertical: true)
@@ -150,7 +142,7 @@ struct MediumVoiceWidgetView: View {
                         Kicker(text: "VOICE")
 
                         Text("Capture a thought")
-                            .font(.system(size: 24, weight: .semibold, design: .serif))
+                            .font(.system(size: 24, weight: .semibold))
                             .foregroundStyle(Color.ink)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)

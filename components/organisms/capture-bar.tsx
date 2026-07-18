@@ -1,20 +1,11 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from "react-native-reanimated";
 
+import { CapturePulse } from "@/components/atoms/capture-pulse";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { Waveform } from "@/components/atoms/waveform";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
-
-const WAVEFORM_BARS = 9;
 
 interface CaptureBarProps {
   /** Save a typed thought inline. The destination (todo / deadline / idea /
@@ -46,11 +37,17 @@ interface CaptureBarProps {
  * controls on a transparent ground, so the shell can morph the panel in place
  * (idle line ↔ recorder) without the bar popping between shapes. It rides the
  * neutral clay slab in BOTH states — the same slab as the AddProjectBar, so the
- * two read as one instrument family — with all inks on-slab (`onClay`). Idle
- * it's a live text line you FILL (a breathing capture-mark, an inline TextInput,
- * a first-class mic, an off-slab send key); recording swaps in a live waveform
- * and inline discard / keep. Typing + ↵ (or the send key) hands the thought to
- * the capture resolver — no navigation, no type decided up front.
+ * two read as one instrument family — with all inks on-slab (`onClay`).
+ *
+ * Idle is now a SPLIT DOCK: the text line lives in one slab, voice capture in
+ * its own slab. Voice was getting lost as a trailing 22×22 icon at the end of a
+ * bar; giving it a dedicated tonal slab makes it the equal partner it is. When
+ * text is entered, the voice slab swaps for the send slab using the same shape
+ * and position. Recording keeps the two-slab grammar (discard | live readout |
+ * keep), but the keep key is now the same prominent inverse slab as send.
+ *
+ * Typing + ↵ (or the send key) hands the thought to the capture resolver — no
+ * navigation, no type decided up front.
  */
 export function CaptureBar({
   onSubmit,
@@ -82,6 +79,11 @@ export function CaptureBar({
   // placeholder) at reduced alpha, AA-safe on the slab in both schemes.
   const onSlab = colors.accent.onClay;
   const signal = `${onSlab}A6`; // ~65% — recessive on-slab affordance ink
+  // Voice slab sits one tonal layer below/above the clay slab so it reads as a
+  // distinct object, not a trailing icon. `clayPressed` is the neutral pressed
+  // surface — darker in light mode, lighter in dark mode — so the split is
+  // visible in both schemes without introducing a hue.
+  const voiceSlabFill = colors.accent.clayPressed;
 
   // Recording: same neutral slab, controls on-slab — never a type chrome. The
   // "listening" life lives in the moving waveform as a SIGNAL, tinted with the
@@ -94,9 +96,9 @@ export function CaptureBar({
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Discard recording"
-          style={styles.iconBtn}
+          style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
         >
-          <MaterialCommunityIcons name="close" size={22} color={onSlab} />
+          <IconSymbol name="X" size={22} color={onSlab} />
         </Pressable>
 
         <View style={styles.center}>
@@ -118,9 +120,14 @@ export function CaptureBar({
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Save capture"
-          style={styles.iconBtn}
+          style={({ pressed }) => [
+            styles.actionSlab,
+            styles.inverseSlab,
+            { backgroundColor: onSlab },
+            pressed && styles.pressed,
+          ]}
         >
-          <MaterialCommunityIcons name="check" size={24} color={onSlab} />
+          <IconSymbol name="Check" size={24} color={colors.accent.clay} />
         </Pressable>
       </View>
     );
@@ -131,7 +138,7 @@ export function CaptureBar({
       {/* The line you FILL: a pulsing capture-mark + inline TextInput. ↵ drops the
           thought onto the board; the mark hides once typing starts (the cursor
           takes over). */}
-      <View style={styles.prompt}>
+      <View style={styles.textSlab}>
         {!hasText ? <CapturePulse tint={signal} /> : null}
         <TextInput
           value={draft}
@@ -150,8 +157,10 @@ export function CaptureBar({
         />
       </View>
 
-      {/* With text: the send key drops it onto the board. Empty: the mic arms
-          voice — both routes hand off to the resolver, neither leaves the board. */}
+      {/* With text: the send key drops it onto the board. Empty: the mic slab arms
+          voice — both routes hand off to the resolver, neither leaves the board.
+          The voice slab is a distinct tonal surface so it reads as a first-class
+          capture instrument, not a trailing accessory. */}
       {hasText ? (
         <Pressable
           onPress={submit}
@@ -159,116 +168,30 @@ export function CaptureBar({
           accessibilityRole="button"
           accessibilityLabel="Put it in"
           style={({ pressed }) => [
-            styles.sendBtn,
+            styles.actionSlab,
+            styles.inverseSlab,
             { backgroundColor: onSlab },
             pressed && styles.pressed,
           ]}
         >
-          <MaterialCommunityIcons
-            name="arrow-up"
-            size={22}
-            color={colors.accent.clay}
-          />
+          <IconSymbol name="ArrowUp" size={22} color={colors.accent.clay} />
         </Pressable>
       ) : (
         <Pressable
           onPress={onVoice}
-          hitSlop={8}
+          hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Capture by voice"
-          style={({ pressed }) => [styles.micBtn, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.actionSlab,
+            { backgroundColor: voiceSlabFill },
+            pressed && styles.pressed,
+          ]}
         >
-          <MaterialCommunityIcons name="microphone" size={22} color={signal} />
+          <IconSymbol name="Microphone" size={22} color={onSlab} />
         </Pressable>
       )}
     </View>
-  );
-}
-
-/**
- * The capture prompt — a neutral capture-mark (a plus) marking "fill this line."
- * Type-agnostic: the bar no longer belongs to ideas, so the mark is a plain
- * interface glyph, not a type glyph. It breathes rather than blinks: one long,
- * slow sine-eased opacity swell between 0.6 and 1, no snap or hold, so it reads
- * as a calm presence, not a compulsive pulse. The breath fades opacity, never
- * the hue — tinted with the passed-in neutral signal.
- */
-function CapturePulse({ tint }: { tint: string }): React.ReactElement {
-  const reduced = useReducedMotion();
-  const breath = useSharedValue(1);
-
-  useEffect(() => {
-    if (reduced) {
-      breath.value = 1;
-      return;
-    }
-    // One slow, symmetric swell — withRepeat reverses it, so a single eased
-    // timing gives a smooth in-out with no perceptible edges.
-    breath.value = withRepeat(
-      withTiming(0.6, {
-        duration: 2200,
-        easing: Easing.inOut(Easing.sin),
-      }),
-      -1,
-      true,
-    );
-  }, [breath, reduced]);
-
-  const style = useAnimatedStyle(() => ({ opacity: breath.value }));
-
-  return (
-    <Animated.View style={style}>
-      <MaterialCommunityIcons name="plus" size={22} color={tint} />
-    </Animated.View>
-  );
-}
-
-function Waveform({ tint }: { tint: string }): React.ReactElement {
-  return (
-    <View style={styles.waveform}>
-      {Array.from({ length: WAVEFORM_BARS }).map((_, i) => (
-        <WaveformBar key={i} index={i} tint={tint} />
-      ))}
-    </View>
-  );
-}
-
-function WaveformBar({
-  index,
-  tint,
-}: {
-  index: number;
-  tint: string;
-}): React.ReactElement {
-  const h = useSharedValue(6);
-  const reduced = useReducedMotion();
-
-  useEffect(() => {
-    if (reduced) {
-      h.value = 14;
-      return;
-    }
-    // deterministic per-bar phase (no Math.random in render path)
-    const a = 10 + (index % 4) * 4;
-    const b = 6 + (index % 3) * 3;
-    h.value = withRepeat(
-      withSequence(
-        withTiming(20, { duration: 300 + a * 12 }),
-        withTiming(b, { duration: 220 + b * 10 }),
-        withTiming(16, { duration: 260 }),
-        withTiming(6, { duration: 200 }),
-      ),
-      -1,
-      false,
-    );
-  }, [h, index, reduced]);
-
-  const style = useAnimatedStyle(() => ({ height: h.value }));
-
-  return (
-    <Animated.View
-      style={[styles.waveformBar, { backgroundColor: tint }, style]}
-    />
   );
 }
 
@@ -280,11 +203,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minHeight: 56,
   },
-  // Idle: a command line — flush + capture-mark, prompt, mic. No left edge-bar,
-  // so the line starts clean and matches AddProjectBar's flush-left start.
+  // Idle: split dock — text slab + voice slab. A small gap separates the two
+  // so voice reads as its own instrument, not a trailing icon. Padding keeps
+  // both slabs inset from the shell's clipped edge.
   idle: {
-    paddingLeft: tokens.space.lg,
-    paddingRight: tokens.space.xs,
+    padding: tokens.space.xs,
+    gap: tokens.space.sm,
   },
   // Recording: controls inline, symmetric — the same interface object as the
   // resolver. The slab fill is the shell's; the waveform carries the live signal.
@@ -292,12 +216,15 @@ const styles = StyleSheet.create({
     gap: tokens.space.md,
     paddingHorizontal: tokens.space.lg,
   },
-  prompt: {
+  // The text slab carries the capture-mark + input. It stays transparent so the
+  // DockShell's clay shows through; its left inset aligns with AddProjectBar.
+  textSlab: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.sm,
-    minHeight: 56,
+    minHeight: 48,
+    paddingLeft: tokens.space.md,
   },
   input: {
     flex: 1,
@@ -306,22 +233,19 @@ const styles = StyleSheet.create({
     lineHeight: tokens.type.item.size,
     fontFamily: tokens.type.fontInter.medium,
   },
-  micBtn: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  // Send key — the off-slab key, identical to AddProjectBar's send: a filled
-  // onSlab pill (36pt, radius.pill) with the clay glyph inside. hitSlop carries
-  // it to the 44pt target so the two slab bars share one send grammar.
-  sendBtn: {
-    width: 36,
-    height: 36,
-    marginRight: tokens.space.xs,
+  // Shared shape for the right-hand action slab (voice / send). 48×48 visual,
+  // pill radius, 44pt touch target carried by hitSlop. The voice slab uses the
+  // neutral pressed surface so it reads as a distinct slab; send uses the
+  // inverse (onSlab fill, clay glyph).
+  actionSlab: {
+    width: 48,
+    height: 48,
     borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
+  },
+  inverseSlab: {
+    // backgroundColor applied at call-site.
   },
   pressed: {
     opacity: 0.6,
@@ -339,15 +263,5 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: "center",
     justifyContent: "center",
-  },
-  waveform: {
-    flexDirection: "row",
-    alignItems: "center",
-    height: 24,
-    gap: 4,
-  },
-  waveformBar: {
-    width: 3,
-    borderRadius: 2,
   },
 });

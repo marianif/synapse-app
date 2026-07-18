@@ -1,7 +1,7 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens } from "@/constants/theme";
 
 export interface InputStageHandle {
@@ -33,49 +33,58 @@ export const InputStage = forwardRef<
 
   return (
     <View style={styles.inputStage}>
-      <View style={styles.inputSignal}>
-        <MaterialCommunityIcons name="pen" size={16} color={muted} />
+      {/* Left slab: the text line you fill. It stays transparent so the
+          DockShell's clay surface shows through. */}
+      <View style={styles.textSlab}>
+        <View style={styles.inputSignal}>
+          <IconSymbol name="Pen" size={16} color={muted} />
+        </View>
+        <TextInput
+          ref={inputRef}
+          value={draft}
+          onChangeText={onDraftChange}
+          onSubmitEditing={onSubmit}
+          onBlur={onBlur}
+          placeholder="Put something in"
+          placeholderTextColor={muted}
+          selectionColor={ink}
+          returnKeyType="done"
+          submitBehavior="submit"
+          accessibilityLabel="Put something in"
+          style={[styles.input, { color: ink }]}
+        />
       </View>
-      <TextInput
-        ref={inputRef}
-        value={draft}
-        onChangeText={onDraftChange}
-        onSubmitEditing={onSubmit}
-        onBlur={onBlur}
-        placeholder="Put something in"
-        placeholderTextColor={muted}
-        selectionColor={ink}
-        returnKeyType="done"
-        submitBehavior="submit"
-        accessibilityLabel="Put something in"
-        style={[styles.input, { color: ink }]}
-      />
+
+      {/* Right slab: the primary action. Empty = voice (a distinct tonal slab
+          so recording is no longer a trailing icon). With text = send. */}
       {hasText ? (
         <Pressable
           onPress={onSubmit}
-          hitSlop={10}
+          hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Continue"
           style={({ pressed }) => [
-            styles.primaryRound,
+            styles.actionSlab,
+            styles.inverseSlab,
             { backgroundColor: ink },
             pressed && styles.pressed,
           ]}
         >
-          <MaterialCommunityIcons name="arrow-right" size={20} color={slab} />
+          <IconSymbol name="ArrowRight" size={20} color={slab} />
         </Pressable>
       ) : (
         <Pressable
           onPress={onVoice}
-          hitSlop={8}
+          hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Capture by voice"
           style={({ pressed }) => [
-            styles.secondaryRound,
+            styles.actionSlab,
+            { backgroundColor: ink + "22" },
             pressed && styles.pressed,
           ]}
         >
-          <MaterialCommunityIcons name="microphone" size={20} color={muted} />
+          <IconSymbol name="Microphone" size={20} color={ink} />
         </Pressable>
       )}
     </View>
@@ -84,12 +93,19 @@ export const InputStage = forwardRef<
 
 const styles = StyleSheet.create({
   inputStage: {
-    minHeight: 52,
+    minHeight: 56,
     flexDirection: "row",
     alignItems: "center",
-    paddingLeft: tokens.space.sm,
-    paddingRight: tokens.space.xs,
+    padding: tokens.space.xs,
+    gap: tokens.space.sm,
+  },
+  textSlab: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
     gap: tokens.space.xs,
+    minHeight: 48,
+    paddingLeft: tokens.space.sm,
   },
   inputSignal: {
     width: 28,
@@ -104,18 +120,17 @@ const styles = StyleSheet.create({
     lineHeight: tokens.type.body.lineHeight,
     fontFamily: tokens.type.fontInter.medium,
   },
-  primaryRound: {
-    width: 36,
-    height: 36,
+  // Shared action slab — 40pt visual, pill radius, 44pt touch target via hitSlop.
+  // Voice uses a tonal ink tint so it reads as its own slab; send uses the inverse.
+  actionSlab: {
+    width: 40,
+    height: 40,
     borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
   },
-  secondaryRound: {
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
+  inverseSlab: {
+    // backgroundColor applied at call-site.
   },
   pressed: {
     opacity: 0.62,

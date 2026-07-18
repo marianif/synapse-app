@@ -2,10 +2,12 @@ import { StyleSheet, View } from "react-native";
 
 import { StageHeader } from "@/components/molecules/stage-header";
 import { TypeLane } from "@/components/molecules/type-lane";
+import type { Scheme } from "@/constants/theme";
 import { tokens } from "@/constants/theme";
 import type { EntryType } from "@/lib/types";
 
 export interface ClassifyStageViewProps {
+  scheme: Scheme;
   ink: string;
   muted: string;
   raised: string;
@@ -15,6 +17,7 @@ export interface ClassifyStageViewProps {
 }
 
 export function ClassifyStageView({
+  scheme,
   ink,
   muted,
   raised,
@@ -35,6 +38,7 @@ export function ClassifyStageView({
         <TypeLane
           variant="idea"
           label="Idea"
+          scheme={scheme}
           ink={ink}
           raised={raised}
           onPress={() => onSelectType("idea")}
@@ -42,6 +46,7 @@ export function ClassifyStageView({
         <TypeLane
           variant="todo"
           label="Todo"
+          scheme={scheme}
           ink={ink}
           raised={raised}
           onPress={() => onSelectType("todo")}
@@ -49,6 +54,7 @@ export function ClassifyStageView({
         <TypeLane
           variant="deadline"
           label="Deadline"
+          scheme={scheme}
           ink={ink}
           raised={raised}
           onPress={() => onSelectType("deadline")}
@@ -56,6 +62,7 @@ export function ClassifyStageView({
         <TypeLane
           variant="note"
           label="Note"
+          scheme={scheme}
           ink={ink}
           raised={raised}
           onPress={() => onSelectType("note")}

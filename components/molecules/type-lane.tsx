@@ -2,7 +2,14 @@ import { Pressable, StyleSheet } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
-import { tokens, useTheme } from "@/constants/theme";
+import {
+  entryKicker,
+  entryTint,
+  reverseEntryKicker,
+  tokens,
+  useTheme,
+  type Scheme,
+} from "@/constants/theme";
 import type { EntryType } from "@/lib/types";
 
 function typeIcon(variant: EntryType | "note"): IconSymbolName {
@@ -21,19 +28,25 @@ function typeIcon(variant: EntryType | "note"): IconSymbolName {
 export function TypeLane({
   variant,
   label,
+  scheme,
   ink,
   raised,
   onPress,
 }: {
   variant: EntryType | "note";
   label: string;
+  scheme: Scheme;
   ink: string;
   raised: string;
   onPress: () => void;
 }): React.ReactElement {
   const { colors } = useTheme();
   const clay = colors.accent.clay;
+  const isNote = variant === "note";
   const icon = typeIcon(variant);
+  const foreground = isNote ? ink : reverseEntryKicker(variant, scheme);
+  const pressedBackground = isNote ? ink : entryTint(variant, scheme);
+  const pressedForeground = isNote ? clay : entryKicker(variant, scheme);
 
   return (
     <Pressable
@@ -43,7 +56,7 @@ export function TypeLane({
       style={({ pressed }) => [
         styles.chip,
         {
-          backgroundColor: pressed ? ink : raised,
+          backgroundColor: pressed ? pressedBackground : raised,
         },
         pressed && styles.pressed,
       ]}
@@ -53,15 +66,18 @@ export function TypeLane({
           <IconSymbol
             name={icon}
             size={12}
-            color={pressed ? clay : ink}
+            color={pressed ? pressedForeground : foreground}
           />
-          <ThemedText type="label" style={{ color: pressed ? clay : ink }}>
+          <ThemedText
+            type="label"
+            style={{ color: pressed ? pressedForeground : foreground }}
+          >
             {label}
           </ThemedText>
           <IconSymbol
             name="ChevronRight"
             size={10}
-            color={pressed ? clay : ink}
+            color={pressed ? pressedForeground : foreground}
           />
         </>
       )}

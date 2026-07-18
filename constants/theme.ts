@@ -288,6 +288,11 @@ export function entryKicker(type: EntryType, scheme: Scheme): string {
   return color.typeKicker[scheme][ENTRY_TO_TYPE_KEY[type] ?? "todo"];
 }
 
+export function reverseEntryKicker(type: EntryType, scheme: Scheme): string {
+  const reverseScheme = scheme === "light" ? "dark" : "light";
+  return color.typeKicker[reverseScheme][ENTRY_TO_TYPE_KEY[type] ?? "todo"];
+}
+
 export function useEntryKicker(type: EntryType): string {
   const { scheme } = useTheme();
   return entryKicker(type, scheme);

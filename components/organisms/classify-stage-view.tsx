@@ -2,12 +2,10 @@ import { StyleSheet, View } from "react-native";
 
 import { StageHeader } from "@/components/molecules/stage-header";
 import { TypeLane } from "@/components/molecules/type-lane";
-import type { Scheme } from "@/constants/theme";
 import { tokens } from "@/constants/theme";
 import type { EntryType } from "@/lib/types";
 
 export interface ClassifyStageViewProps {
-  scheme: Scheme;
   ink: string;
   muted: string;
   raised: string;
@@ -17,9 +15,9 @@ export interface ClassifyStageViewProps {
 }
 
 export function ClassifyStageView({
-  scheme,
   ink,
   muted,
+  raised,
   onBack,
   onDiscard,
   onSelectType,
@@ -37,37 +35,29 @@ export function ClassifyStageView({
         <TypeLane
           variant="idea"
           label="Idea"
-          caption="keep it alive"
-          scheme={scheme}
           ink={ink}
-          muted={muted}
+          raised={raised}
           onPress={() => onSelectType("idea")}
         />
         <TypeLane
           variant="todo"
           label="Todo"
-          caption="make it actionable"
-          scheme={scheme}
           ink={ink}
-          muted={muted}
+          raised={raised}
           onPress={() => onSelectType("todo")}
         />
         <TypeLane
           variant="deadline"
           label="Deadline"
-          caption="give it a horizon"
-          scheme={scheme}
           ink={ink}
-          muted={muted}
+          raised={raised}
           onPress={() => onSelectType("deadline")}
         />
         <TypeLane
           variant="note"
           label="Note"
-          caption="diary trace"
-          scheme={scheme}
           ink={ink}
-          muted={muted}
+          raised={raised}
           onPress={() => onSelectType("note")}
         />
       </View>
@@ -77,14 +67,13 @@ export function ClassifyStageView({
 
 const styles = StyleSheet.create({
   classifyStage: {
-    paddingHorizontal: tokens.space.sm,
-    paddingTop: 6,
-    paddingBottom: tokens.space.sm,
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.sm,
     gap: tokens.space.xs,
   },
   typeGrid: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    justifyContent: "center",
     gap: tokens.space.xs,
   },
 });

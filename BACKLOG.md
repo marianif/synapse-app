@@ -16,6 +16,7 @@
 - [ ] `ciao questo è un todo` —  (added 2026-07-16) <!-- flow:panel:p947f4570b9 -->
 
 ### Tier 2
+- [ ] `ciao cosew` —  (added 2026-07-18) <!-- flow:panel:pe895f7ba64 -->
 
 
 ## Closed

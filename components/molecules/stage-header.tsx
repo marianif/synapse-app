@@ -31,7 +31,10 @@ export function StageHeader({
       >
         <IconSymbol name="ChevronLeft" size={18} color={muted} />
       </Pressable>
-      <ThemedText type="label" style={[styles.stageLabel, { color: muted }]}>
+      <ThemedText
+        type="label"
+        style={[styles.stageLabel, { color: accent ?? muted }]}
+      >
         {label}
       </ThemedText>
       {onCommit ? (

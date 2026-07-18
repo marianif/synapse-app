@@ -1,23 +1,28 @@
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
-import { chipInk, tokens } from "@/constants/theme";
+import { tokens, useTheme } from "@/constants/theme";
 
 export function OptionChip({
   label,
+  emoji,
   selected,
-  color,
   muted,
   raised,
+  ink,
   onPress,
 }: {
   label: string;
+  emoji?: string | null;
   selected: boolean;
-  color: string;
   muted: string;
   raised: string;
+  ink: string;
   onPress: () => void;
 }): React.ReactElement {
+  const { colors } = useTheme();
+  const clay = colors.accent.clay;
+
   return (
     <Pressable
       onPress={onPress}
@@ -25,31 +30,45 @@ export function OptionChip({
       accessibilityState={{ selected }}
       style={({ pressed }) => [
         styles.optionChip,
-        { backgroundColor: selected ? color : raised },
+        {
+          backgroundColor: selected || pressed ? ink : raised,
+        },
         pressed && styles.pressed,
       ]}
     >
-      <ThemedText
-        type="mono"
-        numberOfLines={1}
-        style={{ color: selected ? chipInk() : muted }}
-      >
-        {label}
-      </ThemedText>
+      {({ pressed }) => (
+        <>
+          {emoji ? <Text style={styles.emoji}>{emoji}</Text> : null}
+          <ThemedText
+            type="label"
+            numberOfLines={1}
+            style={{ color: selected || pressed ? clay : muted }}
+          >
+            {label}
+          </ThemedText>
+        </>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   optionChip: {
-    minHeight: 28,
+    minHeight: 32,
     maxWidth: 160,
-    borderRadius: tokens.radius.sm,
+    borderRadius: tokens.radius.pill,
     paddingHorizontal: tokens.space.sm,
+    paddingVertical: 2,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: tokens.space.xs,
+  },
+  emoji: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   pressed: {
-    opacity: 0.62,
+    transform: [{ scale: 0.96 }],
   },
 });

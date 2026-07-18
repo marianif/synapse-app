@@ -31,10 +31,10 @@ export function OptionRow({
 
 const styles = StyleSheet.create({
   optionRow: {
-    gap: 2,
+    gap: tokens.space.xs,
   },
   optionLabel: {
-    paddingLeft: 2,
+    paddingLeft: tokens.space.xs,
   },
   optionRail: {
     flexDirection: "row",

@@ -57,11 +57,12 @@ const styles = StyleSheet.create({
   exactInput: {
     flex: 1,
     minHeight: 32,
-    borderRadius: tokens.radius.sm,
+    borderRadius: tokens.radius.pill,
     paddingHorizontal: tokens.space.sm,
     fontFamily: tokens.type.fontMono.medium,
     fontSize: tokens.type.mono.size,
     lineHeight: tokens.type.mono.lineHeight,
+    textAlign: "center",
   },
   timeInput: {
     flex: 0.56,

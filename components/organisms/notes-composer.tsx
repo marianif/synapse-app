@@ -34,6 +34,11 @@ interface NotesComposerProps {
 export interface NotesComposerHandle {
   focus: () => void;
   startVoice: () => void;
+  /** Pre-fill the draft and focus, so a shared link/text (iOS share sheet →
+   *  synapseapp:///notes?shared=…) lands as an editable note the user can
+   *  annotate before saving. Appends to any in-progress draft rather than
+   *  clobbering it. */
+  seed: (text: string) => void;
 }
 
 /** Whether the composer is actively lifted — focused for text entry or
@@ -92,6 +97,10 @@ export const NotesComposer = forwardRef<
   useImperativeHandle(ref, () => ({
     focus: () => inputRef.current?.focus(),
     startVoice: () => handleStartRecording(),
+    seed: (text: string) => {
+      setDraft((prev) => (prev.trim() ? `${prev}\n${text}` : text));
+      inputRef.current?.focus();
+    },
   }));
 
   const handleStopRecording = (): void => {

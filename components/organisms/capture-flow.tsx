@@ -254,7 +254,6 @@ export const CaptureFlow = forwardRef<InputStageHandle, CaptureFlowProps>(
             pointerEvents={stage === "classify" ? "auto" : "none"}
           >
             <ClassifyStageView
-              scheme={scheme}
               ink={onSlab}
               muted={muted}
               raised={raised}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>NSExtension</key>
+    <dict>
+      <key>NSExtensionAttributes</key>
+      <dict>
+        <!-- When Synapse appears in the share sheet: sharing a link (Safari,
+             articles) or a selection of text. One URL is enough; text is the
+             secondary path for highlighted passages. -->
+        <key>NSExtensionActivationRule</key>
+        <dict>
+          <key>NSExtensionActivationSupportsWebURLWithMaxCount</key>
+          <integer>1</integer>
+          <key>NSExtensionActivationSupportsText</key>
+          <true/>
+        </dict>
+      </dict>
+      <key>NSExtensionPointIdentifier</key>
+      <string>com.apple.share-services</string>
+      <key>NSExtensionPrincipalClass</key>
+      <string>ShareViewController</string>
+    </dict>
+  </dict>
+</plist>

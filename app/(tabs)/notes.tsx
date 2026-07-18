@@ -1,4 +1,4 @@
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
@@ -35,12 +35,40 @@ import { tokens } from "@/constants/theme";
 import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
+import { useSharedIntake } from "@/hooks/use-shared-intake";
 
 import type { DbDiaryEntry } from "@/lib/types";
 
 export default function NotesScreen(): React.ReactElement {
   const cap = useGlobalCapture();
+  const router = useRouter();
   const composerRef = useRef<NotesComposerHandle | null>(null);
+
+  // Shared payloads from the iOS share extension. A link shared from Safari
+  // arrives as "title\nurl" (or a bare text selection) via the App Group
+  // container. We seed the composer so it lands as an editable note the user
+  // annotates before saving — sharing IS note-taking, so it flows through the
+  // normal composer path rather than a silent write.
+  //
+  // The share can arrive while the user is on another tab, so we route to notes
+  // first and seed once the composer has mounted.
+  useSharedIntake((payload) => {
+    if (composerRef.current) {
+      composerRef.current.seed(payload);
+      return;
+    }
+    router.navigate("/notes");
+    pendingShare.current.push(payload);
+  });
+
+  // Drains anything queued above once the composer is available.
+  const pendingShare = useRef<string[]>([]);
+  useEffect(() => {
+    if (!composerRef.current || pendingShare.current.length === 0) return;
+    const queued = pendingShare.current;
+    pendingShare.current = [];
+    for (const payload of queued) composerRef.current.seed(payload);
+  });
 
   // The composer rests just above the tab bar and lifts with the keyboard.
   // We drive this by hand (a Keyboard listener + reanimated translateY) rather

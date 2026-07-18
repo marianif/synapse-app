@@ -44,7 +44,7 @@ export interface DetailsStageViewProps {
   setProjectId: (
     v: ((prev: string | null) => string | null) | string | null,
   ) => void;
-  activeProjects: { id: string; title: string }[];
+  activeProjects: { id: string; title: string; emoji: string | null }[];
   lockedProjectId: string | null;
   projectName: string;
   onBack: () => void;
@@ -94,7 +94,7 @@ export function DetailsStageView({
                 key={option.label}
                 label={option.label}
                 selected={!exact && dueRange === null && date === option.date()}
-                color={accent}
+                ink={ink}
                 muted={muted}
                 raised={quiet}
                 onPress={() => {
@@ -109,7 +109,7 @@ export function DetailsStageView({
                 key={option.label}
                 label={option.label}
                 selected={!exact && dueRange === option.range}
-                color={accent}
+                ink={ink}
                 muted={muted}
                 raised={quiet}
                 onPress={() => {
@@ -124,7 +124,7 @@ export function DetailsStageView({
           <OptionChip
             label="exact"
             selected={exact}
-            color={accent}
+            ink={ink}
             muted={muted}
             raised={quiet}
             onPress={() => {
@@ -156,7 +156,7 @@ export function DetailsStageView({
             <OptionChip
               label="unfiled"
               selected={projectId === null}
-              color={accent}
+              ink={ink}
               muted={muted}
               raised={quiet}
               onPress={() => setProjectId(null)}
@@ -165,8 +165,9 @@ export function DetailsStageView({
               <OptionChip
                 key={project.id}
                 label={project.title}
+                emoji={project.emoji}
                 selected={projectId === project.id}
-                color={accent}
+                ink={ink}
                 muted={muted}
                 raised={quiet}
                 onPress={() =>
@@ -208,20 +209,19 @@ function daysToWeekend(): number {
 
 const styles = StyleSheet.create({
   detailStage: {
-    paddingHorizontal: tokens.space.sm,
-    paddingTop: 6,
-    paddingBottom: tokens.space.sm,
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.sm,
     gap: tokens.space.xs,
   },
   detailStack: {
-    gap: tokens.space.xs,
+    gap: tokens.space.sm,
   },
   commitReadout: {
     minHeight: 24,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: tokens.space.xs,
-    paddingLeft: 2,
   },
   commitDot: {
     width: 6,

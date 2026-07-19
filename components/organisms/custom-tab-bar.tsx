@@ -1,29 +1,58 @@
 import * as Haptics from "expo-haptics";
-import { router, usePathname } from "expo-router";
+import { TabTrigger } from "expo-router/ui";
+import { forwardRef } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import type { View as RNView } from "react-native";
 
 import type { IconSymbolName } from "@/components/ui/icon-symbol";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useGlobalCapture } from "@/contexts/global-capture-context";
 
-function TabIcon({ name, color }: { name: IconSymbolName; color: string }) {
-  return <IconSymbol name={name} size={24} color={color} />;
-}
+type TabButtonProps = {
+  icon: IconSymbolName;
+  label: string;
+  hint?: string;
+  // Injected by <TabTrigger asChild> — the focused state comes from real
+  // navigator state, so the bar never has to guess from the URL. It must stay
+  // optional: TypeScript can't see the prop the Slot forwards at runtime.
+  isFocused?: boolean;
+};
+
+// A trigger's child must forward its ref and the press handlers the Slot
+// injects, so the button is a forwardRef component rather than an inline
+// render — otherwise TabTrigger has nothing to attach its press behavior to.
+const TabButton = forwardRef<RNView, TabButtonProps>(function TabButton(
+  { icon, label, hint, isFocused, ...pressProps },
+  ref,
+) {
+  const { colors } = useTheme();
+
+  return (
+    <Pressable
+      ref={ref}
+      {...pressProps}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={hint}
+      accessibilityState={{ selected: isFocused }}
+      style={({ pressed }) => [
+        styles.tabButton,
+        pressed && styles.tabButtonPressed,
+      ]}
+    >
+      <IconSymbol
+        name={icon}
+        size={24}
+        color={isFocused ? colors.accent.clay : colors.inkMuted}
+      />
+    </Pressable>
+  );
+});
 
 export function CustomTabBar(): React.ReactElement {
   const { colors } = useTheme();
-  const pathname = usePathname();
   const cap = useGlobalCapture();
-
-  const isHome = pathname === "/" || pathname === "/(tabs)";
-  const isNotes = pathname === "/(tabs)/notes" || pathname === "/notes";
-  const isAgenda = pathname === "/(tabs)/agenda" || pathname === "/agenda";
-  const isProjects =
-    pathname === "/(tabs)/(projects)" || pathname.startsWith("/(projects)");
-
-  const active = (on: boolean): string =>
-    on ? colors.accent.clay : colors.inkMuted;
 
   return (
     <View
@@ -36,31 +65,21 @@ export function CustomTabBar(): React.ReactElement {
       <View style={styles.tabBar}>
         {/* Two destinations per side so the pen key stays optically centered.
             Field is the board itself; Notes is the reflective layer. */}
+        {/* Name-only triggers: the hidden <TabList> in the tab layout owns the
+            href definitions. A TabTrigger switches tabs without performing a
+            navigation action, so tapping the same icon repeatedly can never
+            stack duplicate screens the way router.push did.
+
+            resetOnFocus returns a tab's nested stack to its root when you tap
+            an already-focused tab — so Projects → a project → Projects lands
+            back on the shelf, not on the open project. */}
         <View style={styles.side}>
-          <Pressable
-            onPress={() => router.push("/(tabs)/(projects)")}
-            accessibilityRole="button"
-            accessibilityLabel="Projects"
-            accessibilityState={{ selected: isProjects }}
-            style={({ pressed }) => [
-              styles.tabButton,
-              pressed && styles.tabButtonPressed,
-            ]}
-          >
-            <TabIcon name="Folder" color={active(isProjects)} />
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/")}
-            accessibilityRole="button"
-            accessibilityLabel="Field"
-            accessibilityState={{ selected: isHome }}
-            style={({ pressed }) => [
-              styles.tabButton,
-              pressed && styles.tabButtonPressed,
-            ]}
-          >
-            <TabIcon name="Grid" color={active(isHome)} />
-          </Pressable>
+          <TabTrigger name="projects" asChild resetOnFocus>
+            <TabButton icon="Folder" label="Projects" />
+          </TabTrigger>
+          <TabTrigger name="home" asChild resetOnFocus>
+            <TabButton icon="Grid" label="Field" />
+          </TabTrigger>
         </View>
 
         {/* The pen key — one thumb gesture from anywhere, two registers. TAP
@@ -101,31 +120,16 @@ export function CustomTabBar(): React.ReactElement {
         <View style={styles.side}>
           {/* The board's voice — a waveform, because this tab is the board
               talking, not another place to put things. */}
-          <Pressable
-            onPress={() => router.push("/(tabs)/notes")}
-            accessibilityRole="button"
-            accessibilityLabel="Notes"
-            accessibilityState={{ selected: isNotes }}
-            style={({ pressed }) => [
-              styles.tabButton,
-              pressed && styles.tabButtonPressed,
-            ]}
-          >
-            <TabIcon name="Notebook" color={active(isNotes)} />
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/(tabs)/agenda")}
-            accessibilityRole="button"
-            accessibilityLabel="Agenda"
-            accessibilityHint="What the board has to say about your open items."
-            accessibilityState={{ selected: isAgenda }}
-            style={({ pressed }) => [
-              styles.tabButton,
-              pressed && styles.tabButtonPressed,
-            ]}
-          >
-            <TabIcon name="DirectNotification2" color={active(isAgenda)} />
-          </Pressable>
+          <TabTrigger name="notes" asChild resetOnFocus>
+            <TabButton icon="Notebook" label="Notes" />
+          </TabTrigger>
+          <TabTrigger name="agenda" asChild resetOnFocus>
+            <TabButton
+              icon="DirectNotification2"
+              label="Agenda"
+              hint="What the board has to say about your open items."
+            />
+          </TabTrigger>
         </View>
       </View>
     </View>

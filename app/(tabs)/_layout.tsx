@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { TabList, TabSlot, TabTrigger, Tabs } from "expo-router/ui";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -29,25 +29,33 @@ export default function TabLayout(): React.ReactElement {
         edges={["top"]}
       >
         <View style={[styles.container, { backgroundColor: colors.paper }]}>
-          <Tabs
-            screenOptions={{
-              headerShown: false,
+          {/* Headless tabs from expo-router/ui. The previous setup rendered a
+              React Navigation <Tabs> with its bar hidden and drove it with
+              router.push from a sibling bar — but push is a navigation action,
+              so every tap appended a screen and tabs stacked on repeat taps.
+              TabTrigger switches tabs without navigating, which is the
+              sanctioned way to back a custom bar. */}
+          <Tabs>
+            <TabSlot />
 
-              tabBarStyle: {
-                display: "none",
-              },
-              tabBarButton: () => null,
-            }}
-          >
-            <Tabs.Screen name="(home)" />
-            <Tabs.Screen name="notes" />
-            <Tabs.Screen name="agenda" />
-            <Tabs.Screen name="(projects)" />
+            <CustomTabBar />
+
+            {/* Route definitions for the triggers in CustomTabBar, which
+                reference these by name. Hidden because the visible bar is our
+                own; this list exists only to declare the tabs.
+
+                The hrefs are group-qualified on purpose: (home) and (projects)
+                are both anonymous groups wrapping an index, so both resolve to
+                a bare "/" and would be ambiguous. */}
+            <TabList style={styles.hiddenTabList}>
+              <TabTrigger name="projects" href="/(tabs)/(projects)" />
+              <TabTrigger name="home" href="/(tabs)/(home)" />
+              <TabTrigger name="notes" href="/(tabs)/notes" />
+              <TabTrigger name="agenda" href="/(tabs)/agenda" />
+            </TabList>
           </Tabs>
 
-          <CustomTabBar />
-
-          {/* Rendered AFTER the tab bar so it paints on top — the dock rests in
+          {/* Rendered AFTER the tabs so it paints on top — the dock rests in
               the band above the bar (restOffset), and its keyboard-lift and
               backdrop must sit over the chrome, not behind it. */}
           <CaptureDock
@@ -69,5 +77,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  hiddenTabList: {
+    display: "none",
   },
 });

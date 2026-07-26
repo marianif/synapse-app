@@ -6,7 +6,20 @@ import {
   useRef,
   useState,
 } from "react";
-import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  Keyboard,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { WaveformVisualizer } from "@/components/atoms/waveform-bar";
@@ -27,6 +40,11 @@ interface NotesComposerProps {
    *  behind the bar — its surface tone otherwise fuses with the feed cards
    *  scrolling behind it once it's the thing being acted on. */
   onActivityChange?: (active: boolean) => void;
+  /** Measured height of the overlaid tab bar. The composer visually rests
+   *  `tokens.space.lg` above the tab bar, but the keyboard lift is calculated
+   *  from the screen bottom, so we need the bar's full height to compute the
+   *  correct offset. Matches CaptureDock's restOffset math. */
+  tabBarHeight: number;
 }
 
 /** Imperative handle so the tab-bar pen key can focus this composer (it's the
@@ -63,7 +81,7 @@ export const NotesComposer = forwardRef<
   NotesComposerHandle,
   NotesComposerProps
 >(function NotesComposer(
-  { targets, onSave, onActivityChange },
+  { targets, onSave, onActivityChange, tabBarHeight },
   ref,
 ): React.ReactElement {
   const { colors } = useTheme();
@@ -77,6 +95,43 @@ export const NotesComposer = forwardRef<
   useEffect(() => {
     onActivityChange?.(isFocused || isRecording);
   }, [isFocused, isRecording, onActivityChange]);
+
+  // The composer lives inside the tab slot, so its visual bottom is only
+  // `tokens.space.lg` above the tab bar. But the keyboard reports its height
+  // from the screen bottom, below the tab bar. To lift the bar so it lands on
+  // top of the keyboard (and not a full tab-bar-height above it), we subtract
+  // the bar's full height plus the gap from the keyboard height. The 1.05
+  // multiplier matches CaptureDock: it leaves a tiny gap above the keyboard
+  // instead of sitting flush against it.
+  const restOffset = tabBarHeight + tokens.space.lg;
+  const keyboardLift = useSharedValue(0);
+  useEffect(() => {
+    const showEvt =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const show = Keyboard.addListener(showEvt, (e) => {
+      const lift = Math.max(0, e.endCoordinates.height - restOffset);
+      keyboardLift.value = withTiming(lift, {
+        duration: e.duration || 220,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    const hide = Keyboard.addListener(hideEvt, (e) => {
+      keyboardLift.value = withTiming(0, {
+        duration: e?.duration || 200,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [restOffset, keyboardLift]);
+
+  const liftStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -keyboardLift.value * 1.05 }],
+  }));
 
   const accent = colors.inkMuted;
   const hasText = draft.trim().length > 0;
@@ -131,48 +186,50 @@ export const NotesComposer = forwardRef<
 
   if (isRecording) {
     return (
-      <DockShell register="surface" contentKey="notes-composer-recording">
-        <View style={styles.recordingStage}>
-          <Pressable
-            onPress={handleCancelRecording}
-            accessibilityRole="button"
-            accessibilityLabel="Discard recording"
-            style={styles.roundButton}
-          >
-            <MaterialCommunityIcons name="close" size={20} color={colors.ink} />
-          </Pressable>
-          <View style={styles.recordingCenter}>
-            {transcript ? (
-              <ThemedText
-                type="item"
-                numberOfLines={1}
-                style={[styles.transcript, { color: colors.ink }]}
-              >
-                {transcript}
-              </ThemedText>
-            ) : (
-              <WaveformVisualizer barCount={9} color={accent} />
-            )}
+      <Animated.View style={[styles.composerContainer, liftStyle]}>
+        <DockShell register="surface" contentKey="notes-composer-recording">
+          <View style={styles.recordingStage}>
+            <Pressable
+              onPress={handleCancelRecording}
+              accessibilityRole="button"
+              accessibilityLabel="Discard recording"
+              style={styles.roundButton}
+            >
+              <MaterialCommunityIcons name="close" size={20} color={colors.ink} />
+            </Pressable>
+            <View style={styles.recordingCenter}>
+              {transcript ? (
+                <ThemedText
+                  type="item"
+                  numberOfLines={1}
+                  style={[styles.transcript, { color: colors.ink }]}
+                >
+                  {transcript}
+                </ThemedText>
+              ) : (
+                <WaveformVisualizer barCount={9} color={accent} />
+              )}
+            </View>
+            <Pressable
+              onPress={handleStopRecording}
+              accessibilityRole="button"
+              accessibilityLabel="Save recording"
+              style={[styles.primaryRound, { backgroundColor: accent }]}
+            >
+              <MaterialCommunityIcons
+                name="arrow-right"
+                size={20}
+                color={colors.surface}
+              />
+            </Pressable>
           </View>
-          <Pressable
-            onPress={handleStopRecording}
-            accessibilityRole="button"
-            accessibilityLabel="Save recording"
-            style={[styles.primaryRound, { backgroundColor: accent }]}
-          >
-            <MaterialCommunityIcons
-              name="arrow-right"
-              size={20}
-              color={colors.surface}
-            />
-          </Pressable>
-        </View>
-      </DockShell>
+        </DockShell>
+      </Animated.View>
     );
   }
 
   return (
-    <>
+    <Animated.View style={[styles.composerContainer, liftStyle]}>
       <DockShell register="surface" contentKey="notes-composer">
         <View style={styles.inputStage}>
           <View style={styles.kickerSlot}>
@@ -243,11 +300,14 @@ export const NotesComposer = forwardRef<
         onSelect={handleLink}
         onClose={() => setLinkSheetOpen(false)}
       />
-    </>
+    </Animated.View>
   );
 });
 
 const styles = StyleSheet.create({
+  composerContainer: {
+    width: "100%",
+  },
   inputStage: {
     minHeight: 52,
     flexDirection: "row",

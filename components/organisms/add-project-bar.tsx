@@ -1,10 +1,19 @@
-import { useState } from "react";
-import { Pressable, StyleSheet, TextInput } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  Keyboard,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+} from "react-native";
 import Animated, {
   Easing,
   FadeOut,
   SlideInDown,
+  useAnimatedStyle,
   useReducedMotion,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -31,14 +40,57 @@ interface AddProjectBarProps {
   onCreateProject: (title: string) => void;
   /** The input blurred with nothing typed — close the bar. */
   onDismissEmpty: () => void;
+  /** Measured height of the overlaid tab bar. The bar visually rests
+   *  `tokens.space.lg` above the tab bar, but the keyboard lift is calculated
+   *  from the screen bottom, so we need the bar's full height to compute the
+   *  correct offset. Matches CaptureDock's restOffset math. */
+  tabBarHeight: number;
 }
 
 export function AddProjectBar({
   onCreateProject,
   onDismissEmpty,
+  tabBarHeight,
 }: AddProjectBarProps): React.ReactElement {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
+
+  // The bar lives inside the tab slot, so its visual bottom is only
+  // `tokens.space.lg` above the tab bar. But the keyboard reports its height
+  // from the screen bottom, below the tab bar. To lift the bar so it lands on
+  // top of the keyboard (and not a full tab-bar-height above it), we subtract
+  // the bar's full height plus the gap from the keyboard height. The 1.05
+  // multiplier matches CaptureDock: it leaves a tiny gap above the keyboard
+  // instead of sitting flush against it.
+  const restOffset = tabBarHeight + tokens.space.lg;
+  const keyboardLift = useSharedValue(0);
+  useEffect(() => {
+    const showEvt =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const show = Keyboard.addListener(showEvt, (e) => {
+      const lift = Math.max(0, e.endCoordinates.height - restOffset);
+      keyboardLift.value = withTiming(lift, {
+        duration: e.duration || 220,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    const hide = Keyboard.addListener(hideEvt, (e) => {
+      keyboardLift.value = withTiming(0, {
+        duration: e?.duration || 200,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [restOffset, keyboardLift]);
+
+  const liftStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -keyboardLift.value * 1.05 }],
+  }));
 
   const [draft, setDraft] = useState("");
   const hasText = draft.trim().length > 0;
@@ -56,65 +108,67 @@ export function AddProjectBar({
   };
 
   return (
-    <Animated.View
-      entering={
-        reduced
-          ? undefined
-          : SlideInDown.duration(320).easing(Easing.out(Easing.cubic))
-      }
-      exiting={reduced ? undefined : FadeOut.duration(110)}
-      style={[
-        styles.bar,
-        { backgroundColor: colors.accent.clay },
-        tokens.elevation.capture,
-      ]}
-    >
-      {/* The channel label — mono kicker reading what this line opens. */}
-      <ThemedText type="label" style={[styles.kicker, { color: onSlab }]}>
-        NEW PROJECT
-      </ThemedText>
+    <Animated.View style={[styles.liftContainer, liftStyle]}>
+      <Animated.View
+        entering={
+          reduced
+            ? undefined
+            : SlideInDown.duration(320).easing(Easing.out(Easing.cubic))
+        }
+        exiting={reduced ? undefined : FadeOut.duration(110)}
+        style={[
+          styles.bar,
+          { backgroundColor: colors.accent.clay },
+          tokens.elevation.capture,
+        ]}
+      >
+        {/* The channel label — mono kicker reading what this line opens. */}
+        <ThemedText type="label" style={[styles.kicker, { color: onSlab }]}>
+          NEW PROJECT
+        </ThemedText>
 
-      <TextInput
-        value={draft}
-        onChangeText={setDraft}
-        onSubmitEditing={submit}
-        onBlur={handleBlur}
-        autoFocus
-        placeholder="Name a life area"
-        placeholderTextColor={withDimmed(onSlab)}
-        selectionColor={onSlab}
-        returnKeyType="done"
-        submitBehavior="submit"
-        accessibilityLabel="New project name"
-        accessibilityHint="Type a project name and submit to create it."
-        style={[styles.input, { color: onSlab }]}
-      />
+        <TextInput
+          value={draft}
+          onChangeText={setDraft}
+          onSubmitEditing={submit}
+          onBlur={handleBlur}
+          autoFocus
+          placeholder="Name a life area"
+          placeholderTextColor={withDimmed(onSlab)}
+          selectionColor={onSlab}
+          returnKeyType="done"
+          submitBehavior="submit"
+          accessibilityLabel="New project name"
+          accessibilityHint="Type a project name and submit to create it."
+          style={[styles.input, { color: onSlab }]}
+        />
 
-      {hasText ? (
-        <Pressable
-          onPress={submit}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="Create project"
-          style={({ pressed }) => [
-            styles.sendBtn,
-            { backgroundColor: onSlab },
-            pressed && styles.pressed,
-          ]}
-        >
-          <IconSymbol name="ArrowUp" size={22} color={colors.accent.clay} />
-        </Pressable>
-      ) : (
-        <Pressable
-          onPress={onDismissEmpty}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="Close"
-          style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
-        >
-          <IconSymbol name="X" size={22} color={onSlab} />
-        </Pressable>
-      )}
+        {hasText ? (
+          <Pressable
+            onPress={submit}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Create project"
+            style={({ pressed }) => [
+              styles.sendBtn,
+              { backgroundColor: onSlab },
+              pressed && styles.pressed,
+            ]}
+          >
+            <IconSymbol name="ArrowUp" size={22} color={colors.accent.clay} />
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={onDismissEmpty}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
+          >
+            <IconSymbol name="X" size={22} color={onSlab} />
+          </Pressable>
+        )}
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -126,6 +180,9 @@ function withDimmed(hex: string): string {
 }
 
 const styles = StyleSheet.create({
+  liftContainer: {
+    width: "100%",
+  },
   bar: {
     flexDirection: "row",
     alignItems: "center",

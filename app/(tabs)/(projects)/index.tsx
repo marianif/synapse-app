@@ -8,11 +8,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import Animated, {
-  useAnimatedKeyboard,
-  useAnimatedStyle,
-} from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ProjectRow } from "@/components/molecules/project-row";
@@ -20,6 +15,7 @@ import { AddProjectBar } from "@/components/organisms/add-project-bar";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
+import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useUiPreference } from "@/hooks/use-ui-preference";
 
@@ -64,21 +60,15 @@ function isSortMode(value: string | null): value is SortMode {
 export default function ProjectsScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
+  const cap = useGlobalCapture();
   const { projects, entries, createProject, setProjectFeatured } =
     useDatabase();
 
-  // Lift the floating composer band above the keyboard. The band sits at
-  // bottom: 28, so we translate it up by (keyboardHeight − that offset − safe
-  // inset) whenever the keyboard is open. Reanimated's keyboard value tracks
-  // the show/hide animation, so the band rides up in sync.
-  const keyboard = useAnimatedKeyboard();
-  const composerLift = useAnimatedStyle(() => {
-    // Dock rests at bottom: space.lg. Lift it by the keyboard height minus the
-    // safe-area inset the keyboard already covers, so the bar sits just above.
-    const overlap = keyboard.height.value - insets.bottom;
-    return { transform: [{ translateY: -Math.max(overlap, 0) }] };
-  });
+  // AddProjectBar handles its own keyboard lift to match CaptureDock. The
+  // screen only supplies the measured tab bar height (with a fallback for the
+  // first frame before the tab bar reports its real height).
+  const TAB_BAR_HEIGHT_FALLBACK = 8 + 52 + 20;
+
   const [draft, setDraft] = useState("");
   const [archivedOpen, setArchivedOpen] = useState(false);
   // Search query filters the active shelf by title. Empty string = show all.
@@ -344,14 +334,15 @@ export default function ProjectsScreen(): React.ReactElement {
       {/* Create affordance — a FAB, not an inline row. Hidden on fresh install
           (the inception band owns that state). Tapping it raises the
           AddProjectBar — the "NEW PROJECT" instrument that lives here on the
-          shelf — which rides above the keyboard via the dock's UI-thread
-          translate. */}
+          shelf — which rides above the keyboard via its own CaptureDock-style
+          lift. */}
       {projects.length > 0 ? (
-        <Animated.View style={[styles.composerDock, composerLift]}>
+        <View style={styles.composerDock}>
           {composing ? (
             <AddProjectBar
               onCreateProject={handleCreateProject}
               onDismissEmpty={() => setComposing(false)}
+              tabBarHeight={cap.tabBarHeight || TAB_BAR_HEIGHT_FALLBACK}
             />
           ) : (
             <Pressable
@@ -367,7 +358,7 @@ export default function ProjectsScreen(): React.ReactElement {
               <IconSymbol name="Plus" size={28} color={colors.accent.onClay} />
             </Pressable>
           )}
-        </Animated.View>
+        </View>
       ) : null}
     </View>
   );
@@ -632,9 +623,9 @@ const styles = StyleSheet.create({
   },
   archivedTitle: { flex: 1 },
 
-  // Composer dock — full-width, resting at bottom: space.lg, lifted above the
-  // keyboard by composerLift. Holds either the raised AddProjectBar (full width)
-  // or, idle, the "+" FAB pinned right.
+  // Composer dock — full-width, resting at bottom: space.lg. The raised
+  // AddProjectBar handles its own keyboard lift; idle, the "+" FAB is pinned
+  // right.
   composerDock: {
     position: "absolute",
     left: tokens.space.lg,

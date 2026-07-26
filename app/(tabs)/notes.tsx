@@ -2,20 +2,12 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
-import Animated, {
-  Easing,
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import {
   DiaryFilterBar,
@@ -71,45 +63,9 @@ export default function NotesScreen(): React.ReactElement {
   });
 
   // The composer rests just above the tab bar and lifts with the keyboard.
-  // We drive this by hand (a Keyboard listener + reanimated translateY) rather
-  // than KeyboardAvoidingView: the notes screen sits inside the Tabs navigator
-  // UNDER the overlaid tab bar, so KAV mis-measures its own bottom and the
-  // composer ends up behind the keyboard. This is the same lift pattern the
-  // global CaptureDock uses.
-  //
-  // `restBottom` is the composer's distance from the SCREEN bottom at rest.
-  // The lift then raises it by `keyboardHeight - restBottom` so its bottom edge
-  // lands just on top of the keyboard (the tab bar is hidden behind the
-  // keyboard anyway, so we don't need to account for it in the lift).
-  const restBottom = tokens.space.lg;
-  const keyboardLift = useSharedValue(0);
-  useEffect(() => {
-    const showEvt =
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvt =
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-    const show = Keyboard.addListener(showEvt, (e) => {
-      const lift = Math.max(0, e.endCoordinates.height - restBottom);
-      keyboardLift.value = withTiming(lift, {
-        duration: e.duration || 220,
-        easing: Easing.out(Easing.cubic),
-      });
-    });
-    const hide = Keyboard.addListener(hideEvt, (e) => {
-      keyboardLift.value = withTiming(0, {
-        duration: e?.duration || 200,
-        easing: Easing.out(Easing.cubic),
-      });
-    });
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, [restBottom, keyboardLift]);
-
-  const composerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -keyboardLift.value }],
-  }));
+  // NotesComposer handles the lift itself (matching CaptureDock), so the screen
+  // only positions the bar visually and feeds it the measured tab bar height.
+  const TAB_BAR_HEIGHT_FALLBACK = 8 + 52 + 20;
 
   const { entries, addEntry, updateEntry, removeEntry, refresh } = useDiary();
   // Board entries + projects — read-only, used to resolve linked titles for the
@@ -318,16 +274,17 @@ export default function NotesScreen(): React.ReactElement {
       ) : null}
 
       {/* Composer floating above the tab bar — the feed scrolls behind it, and
-          it rides up with the keyboard (hand-driven lift; see keyboardLift
-          above). Rests at `restBottom` so it clears the overlaid tab bar. */}
+          it rides up with the keyboard (NotesComposer handles the lift to match
+          CaptureDock). Rests `tokens.space.lg` above the tab bar. */}
       <Animated.View
-        style={[styles.composerBar, { bottom: restBottom }, composerStyle]}
+        style={[styles.composerBar, { bottom: tokens.space.lg }]}
       >
         <NotesComposer
           ref={composerRef}
           targets={composerTargets}
           onSave={handleSave}
           onActivityChange={setComposerActive}
+          tabBarHeight={cap.tabBarHeight || TAB_BAR_HEIGHT_FALLBACK}
         />
       </Animated.View>
 

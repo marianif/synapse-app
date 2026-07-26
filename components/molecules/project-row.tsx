@@ -50,8 +50,10 @@ export function ProjectRow({
 
   const open = (): void => {
     void touchProject(project.id);
+    // ProjectRow only renders on the Projects shelf, so the shared project
+    // route is pushed onto the PROJECTS stack — Back returns to the shelf.
     router.push({
-      pathname: "/(projects)/project",
+      pathname: "/(tabs)/(projects)/project",
       params: { id: project.id },
     });
   };

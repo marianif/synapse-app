@@ -91,8 +91,11 @@ export function ProjectCard({
     // Side effect: bump last_opened_at so the Project Shelf's RECENT sort
     // reflects the navigation. Fire-and-forget — never block the route.
     void touchProject(project.id);
+    // Group-qualified on purpose: ProjectCard only ever renders on the Field
+    // (via ProjectsOverview), so it pushes the shared project route onto the
+    // HOME stack. That's what makes Back return to the Field.
     router.push({
-      pathname: "/(projects)/project",
+      pathname: "/(tabs)/(home)/project",
       params: { id: project.id },
     });
   };

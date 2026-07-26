@@ -16,10 +16,10 @@ import type { Dispatch } from "@/lib/agenda-voice";
 import type { DbEntry, EntryType } from "@/lib/types";
 
 /**
- * AGENDA — the board's voice.
+ * AGENDA — the board's dispatch.
  *
- * The Field shows you WHAT is on the board. This is the board talking about
- * what has HAPPENED to it: the deadline that ran out, the idea that has sat a
+ * The Field shows you WHAT is on the board. This is a ranked stream of what
+ * has HAPPENED to it: the deadline that ran out, the idea that has sat a
  * week, the checklist you stopped halfway, last night's note. An RSS feed of
  * your own life, in your own handwriting, newest and loudest first.
  *
@@ -86,8 +86,13 @@ export default function AgendaScreen(): React.ReactElement {
           return;
         }
         case "project":
+          // Agenda is its own tab, in neither shared group, so it has to pick a
+          // stack to land the project in. Projects is the honest home for it:
+          // following a dispatch about a project and then hitting Back leaves
+          // you on the shelf, alongside the rest of your projects — whereas
+          // landing on the Field would imply you'd come from there.
           router.push({
-            pathname: "/(projects)/project",
+            pathname: "/(tabs)/(projects)/project",
             params: { id: target.id },
           });
           return;
@@ -128,7 +133,7 @@ export default function AgendaScreen(): React.ReactElement {
     <View style={styles.header}>
       <Text style={[styles.kicker, { color: colors.inkMuted }]}>AGENDA</Text>
       <ThemedText type="display" style={styles.title}>
-        The voice of the board
+        The board's dispatch
       </ThemedText>
     </View>
   );

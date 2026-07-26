@@ -148,7 +148,7 @@ export default function ProjectsScreen(): React.ReactElement {
     createProject(name)
       .then((project) =>
         router.push({
-          pathname: "/(projects)/project",
+          pathname: "/(tabs)/(projects)/project",
           params: { id: project.id },
         }),
       )
@@ -327,7 +327,7 @@ export default function ProjectsScreen(): React.ReactElement {
                         colors={colors}
                         onOpen={() =>
                           router.push({
-                            pathname: "/(projects)/project",
+                            pathname: "/(tabs)/(projects)/project",
                             params: { id: project.id },
                           })
                         }

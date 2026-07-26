@@ -45,7 +45,8 @@ export function CaptureDock({
   // "show" decoupled from DockShell's 320ms entrance slide, so the two never
   // race into a rushed double-motion regardless of whether the dock just
   // mounted (project screens) or was already resting (home).
-  const isOpen = cap.composerOpen || cap.isRecording || cap.pendingThought !== null;
+  const isOpen =
+    cap.composerOpen || cap.isRecording || cap.pendingThought !== null;
   const justOpened = useRef(isOpen);
   const wasOpen = useRef(isOpen);
   if (isOpen && !wasOpen.current) justOpened.current = true;
@@ -97,7 +98,7 @@ export function CaptureDock({
   }, [restOffset, keyboardLift, dockVisible]);
 
   const dockStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -keyboardLift.value }],
+    transform: [{ translateY: -keyboardLift.value * 1.05 }],
   }));
 
   // Suppressing the dock unmounts it without a matching keyboardDidHide (the

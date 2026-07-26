@@ -214,7 +214,7 @@ export default function HomeScreen(): React.ReactElement {
           // Creating a project is a deliberate act that lives on the Project
           // Shelf, not in the home capture dock — so "add project" navigates
           // there rather than raising a home-dock bar.
-          onAddProject={() => router.push("/projects")}
+          onAddProject={() => router.push("/(tabs)/(projects)")}
         />
         <DirectOverview
           entries={directEntries}

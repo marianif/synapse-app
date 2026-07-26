@@ -1,0 +1,1 @@
+1. the problem: if a user goes to project detail from home and then comes back, it doesnt come back in home but in project route. this how navigation with current expor router approach works. we need to use "expo shared routes" paradigm to fix this, since a user can navigate to project detail both from project tabs and home tab.

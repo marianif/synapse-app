@@ -72,8 +72,9 @@ export interface NotesComposerActivity {
  * this composer always writes notes and presents the LinkSheet on commit so the
  * note can be filed onto a project, an idea, or left free.
  *
- * The shell (DockShell) carries the scheme-aware neutral surface; the accent is
- * inkMuted — notes have no entry-code color. The bar reads as a single
+ * The shell (DockShell) carries the neutral action slab (`accent.clay`) so the
+ * bar reads as chrome, not as another note card — notes have no entry-code color,
+ * so all ink/icons sit on-slab (`accent.onClay`). The bar reads as a single
  * instrument: kicker label → text → send/mic, and swaps to a recording readout
  * (waveform → close / confirm) when the mic is armed.
  */
@@ -133,7 +134,8 @@ export const NotesComposer = forwardRef<
     transform: [{ translateY: -keyboardLift.value * 1.05 }],
   }));
 
-  const accent = colors.inkMuted;
+  const onSlab = colors.accent.onClay;
+  const onSlabMuted = `${onSlab}A6`;
   const hasText = draft.trim().length > 0;
 
   // Voice: the live transcript streams into the draft while recording.
@@ -187,7 +189,7 @@ export const NotesComposer = forwardRef<
   if (isRecording) {
     return (
       <Animated.View style={[styles.composerContainer, liftStyle]}>
-        <DockShell register="surface" contentKey="notes-composer-recording">
+        <DockShell register="slab" contentKey="notes-composer-recording">
           <View style={styles.recordingStage}>
             <Pressable
               onPress={handleCancelRecording}
@@ -195,31 +197,31 @@ export const NotesComposer = forwardRef<
               accessibilityLabel="Discard recording"
               style={styles.roundButton}
             >
-              <MaterialCommunityIcons name="close" size={20} color={colors.ink} />
+              <MaterialCommunityIcons name="close" size={20} color={onSlab} />
             </Pressable>
             <View style={styles.recordingCenter}>
               {transcript ? (
                 <ThemedText
                   type="item"
                   numberOfLines={1}
-                  style={[styles.transcript, { color: colors.ink }]}
+                  style={[styles.transcript, { color: onSlab }]}
                 >
                   {transcript}
                 </ThemedText>
               ) : (
-                <WaveformVisualizer barCount={9} color={accent} />
+                <WaveformVisualizer barCount={9} color={onSlab} />
               )}
             </View>
             <Pressable
               onPress={handleStopRecording}
               accessibilityRole="button"
               accessibilityLabel="Save recording"
-              style={[styles.primaryRound, { backgroundColor: accent }]}
+              style={[styles.primaryRound, { backgroundColor: onSlab }]}
             >
               <MaterialCommunityIcons
                 name="arrow-right"
                 size={20}
-                color={colors.surface}
+                color={colors.accent.clay}
               />
             </Pressable>
           </View>
@@ -230,10 +232,10 @@ export const NotesComposer = forwardRef<
 
   return (
     <Animated.View style={[styles.composerContainer, liftStyle]}>
-      <DockShell register="surface" contentKey="notes-composer">
+      <DockShell register="slab" contentKey="notes-composer">
         <View style={styles.inputStage}>
           <View style={styles.kickerSlot}>
-            <ThemedText type="micro" style={[styles.kicker, { color: accent }]}>
+            <ThemedText type="micro" style={[styles.kicker, { color: onSlab }]}>
               NOTE
             </ThemedText>
           </View>
@@ -245,13 +247,13 @@ export const NotesComposer = forwardRef<
             onBlur={() => setIsFocused(false)}
             onSubmitEditing={handleSend}
             placeholder="Write a note, capture a thought…"
-            placeholderTextColor={colors.inkMuted}
-            selectionColor={accent}
+            placeholderTextColor={onSlabMuted}
+            selectionColor={onSlab}
             returnKeyType="done"
             submitBehavior="submit"
             accessibilityLabel="Write a diary note"
             multiline
-            style={[styles.input, { color: colors.ink }]}
+            style={[styles.input, { color: onSlab }]}
           />
           {hasText ? (
             <Pressable
@@ -261,14 +263,14 @@ export const NotesComposer = forwardRef<
               accessibilityLabel="Save note"
               style={({ pressed }) => [
                 styles.primaryRound,
-                { backgroundColor: accent },
+                { backgroundColor: onSlab },
                 pressed && styles.pressed,
               ]}
             >
               <MaterialCommunityIcons
                 name="arrow-right"
                 size={20}
-                color={colors.surface}
+                color={colors.accent.clay}
               />
             </Pressable>
           ) : (
@@ -279,14 +281,14 @@ export const NotesComposer = forwardRef<
               accessibilityLabel="Capture by voice"
               style={({ pressed }) => [
                 styles.secondaryRound,
-                { borderColor: accent },
+                { borderColor: onSlab },
                 pressed && styles.pressed,
               ]}
             >
               <MaterialCommunityIcons
                 name="microphone"
                 size={20}
-                color={accent}
+                color={onSlab}
               />
             </Pressable>
           )}

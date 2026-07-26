@@ -255,10 +255,10 @@ export default function NotesScreen(): React.ReactElement {
       </ScrollView>
 
       {/* Backdrop scrim — only while the composer is actively lifted (focused
-          or recording). The bar shares `colors.surface` with the feed cards
-          behind it, so without a scrim an active composer visually fuses with
-          the content it's floating over. Tapping it blurs/dismisses, same as
-          the global capture dock's backdrop. */}
+          or recording). The bar now rides the clay slab so it no longer fuses
+          with the feed, but the scrim still isolates the active instrument and
+          gives the user an outside-tap dismiss target, same as the global
+          capture dock's backdrop. */}
       {composerActive ? (
         <Animated.View
           entering={FadeIn.duration(tokens.motion.duration.fast)}

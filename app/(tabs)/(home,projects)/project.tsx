@@ -8,6 +8,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -161,6 +162,10 @@ export default function ProjectScreen(): React.ReactElement {
   // Text the composer opens pre-filled with. The FAB arms it empty; the empty-
   // project starter rows arm it with a suggested line the user can send or edit.
   const [starterSeed, setStarterSeed] = useState("");
+
+  // Whether the FAB-armed ProjectComposer is up — drives a backdrop scrim so
+  // the composer doesn't visually fuse with the project content behind it.
+  const [composerActive, setComposerActive] = useState(false);
 
   // Manual keyboard-lift for the pinned dock. KeyboardAvoidingView doesn't
   // reliably lift an absolutely-positioned child on iOS (KAV measures its own
@@ -690,6 +695,23 @@ export default function ProjectScreen(): React.ReactElement {
           the dock sits pinned below. Only exists while a dismissible surface is
           up; the resolver is intentionally not covered. */}
       <CaptureBackdrop cap={cap} />
+
+      {/* ProjectComposer backdrop — screen-level so the FAB-armed composer
+          doesn't visually fuse with the project content behind it. */}
+      {composerActive ? (
+        <Animated.View
+          entering={FadeIn.duration(tokens.motion.duration.fast)}
+          exiting={FadeOut.duration(tokens.motion.duration.fast)}
+          style={StyleSheet.absoluteFill}
+        >
+          <Pressable
+            style={[StyleSheet.absoluteFill, styles.scrim]}
+            onPress={() => Keyboard.dismiss()}
+            accessibilityLabel="Dismiss project composer"
+          />
+        </Animated.View>
+      ) : null}
+
       {/* The capture dock — the same instrument as the home board, pinned to the
           bottom and pre-locked to this project (no ManualBar: a project can't
           birth a sibling project). Only mounts a surface when summoned. */}
@@ -706,6 +728,7 @@ export default function ProjectScreen(): React.ReactElement {
             setStarterSeed("");
           }}
           onSubmit={handleFabSubmit}
+          onActivityChange={setComposerActive}
         />
       </View>
       {fabKind === null ? (
@@ -869,5 +892,8 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
+  },
+  scrim: {
+    backgroundColor: tokens.color.scrim.medium,
   },
 });

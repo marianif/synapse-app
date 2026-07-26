@@ -2,12 +2,14 @@ import * as Haptics from "expo-haptics";
 import { Stack, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
+  Keyboard,
   Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
   View,
 } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ProjectRow } from "@/components/molecules/project-row";
@@ -77,6 +79,10 @@ export default function ProjectsScreen(): React.ReactElement {
   // projects an inline "name a project" row would push the shelf down. Tapping
   // the FAB reveals a single-purpose composer band above it.
   const [composing, setComposing] = useState(false);
+
+  // Whether the AddProjectBar is actively up — drives the backdrop scrim so
+  // the clay slab doesn't fuse with the project rows scrolling behind it.
+  const [composerActive, setComposerActive] = useState(false);
 
   const [sort, setSort] = useUiPreference<SortMode>(
     "projects.sort",
@@ -170,7 +176,6 @@ export default function ProjectsScreen(): React.ReactElement {
             <ScreenHeader
               title="Projects"
               kicker={`${featuredCount} FEATURED · ${active.length} TOTAL`}
-              onBack={() => router.back()}
             />
           ),
         }}
@@ -331,6 +336,23 @@ export default function ProjectsScreen(): React.ReactElement {
         )}
       </ScrollView>
 
+      {/* Backdrop scrim — only while AddProjectBar is up. The bar rides the
+          clay slab so it no longer fuses with the shelf, but the scrim still
+          isolates the active instrument and gives an outside-tap dismiss target. */}
+      {composerActive ? (
+        <Animated.View
+          entering={FadeIn.duration(tokens.motion.duration.fast)}
+          exiting={FadeOut.duration(tokens.motion.duration.fast)}
+          style={StyleSheet.absoluteFill}
+        >
+          <Pressable
+            style={[StyleSheet.absoluteFill, styles.scrim]}
+            onPress={() => Keyboard.dismiss()}
+            accessibilityLabel="Dismiss new project bar"
+          />
+        </Animated.View>
+      ) : null}
+
       {/* Create affordance — a FAB, not an inline row. Hidden on fresh install
           (the inception band owns that state). Tapping it raises the
           AddProjectBar — the "NEW PROJECT" instrument that lives here on the
@@ -343,6 +365,7 @@ export default function ProjectsScreen(): React.ReactElement {
               onCreateProject={handleCreateProject}
               onDismissEmpty={() => setComposing(false)}
               tabBarHeight={cap.tabBarHeight || TAB_BAR_HEIGHT_FALLBACK}
+              onActivityChange={setComposerActive}
             />
           ) : (
             <Pressable
@@ -645,4 +668,7 @@ const styles = StyleSheet.create({
   },
 
   pressed: { opacity: 0.7 },
+  scrim: {
+    backgroundColor: tokens.color.scrim.medium,
+  },
 });

@@ -44,6 +44,9 @@ interface ProjectComposerProps {
    * as-is or edit. Empty string (the FAB's path) opens a blank composer.
    */
   initialText?: string;
+  /** Fires whenever the composer becomes active (mounted) or inactive, so the
+   *  screen can render a backdrop scrim behind it. */
+  onActivityChange?: (active: boolean) => void;
 }
 
 /**
@@ -61,7 +64,16 @@ export function ProjectComposer({
   onClose,
   onSubmit,
   initialText,
+  onActivityChange,
 }: ProjectComposerProps): React.ReactElement | null {
+  // The composer is only meaningful while a flavour is chosen; report activity
+  // only in that window so the parent doesn't show a scrim when `kind` is null.
+  useEffect(() => {
+    if (kind === null) return;
+    onActivityChange?.(true);
+    return () => onActivityChange?.(false);
+  }, [kind, onActivityChange]);
+
   if (kind === null) return null;
   return (
     // contentKey includes the seed so switching starter rows (todo → idea)

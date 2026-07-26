@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-26T13:14:04.915Z",
+  "surface": "mobile",
+  "componentsDir": "components",
+  "register": null,
+  "members": [
+    {
+      "name": "DateInput",
+      "file": "components/atoms/DateInput.tsx",
+      "line": 12,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onChange",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "style",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [
+        "value",
+        "onChange",
+        "style"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "inline-style",
+      "composed": [],
+      "consumers": [
+        "components/molecules/detail-view-meta.tsx"
+      ],
+      "depth": 0
+    },
+    {
+      "name": "TimeInput",
+      "file": "components/atoms/TimeInput.tsx",
+      "line": 12,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onChange",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "style",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [
+        "value",
+        "onChange",
+        "style"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "inline-style",
+      "composed": [],
+      "consumers": [
+        "components/molecules/detail-view-meta.tsx"
+      ],
+      "depth": 0
+    }
+  ],
+  "consumers": {
+    "DateInput": [
+      "components/molecules/detail-view-meta.tsx"
+    ],
+    "TimeInput": [
+      "components/molecules/detail-view-meta.tsx"
+    ]
+  },
+  "candidates": [
+    {
+      "name": "SpeechRecognizerView",
+      "file": "speech-recognizer/src/SpeechRecognizerView.tsx",
+      "declarations": [
+        "SpeechRecognizerView"
+      ],
+      "usageCount": 1,
+      "consumers": [
+        "speech-recognizer/example/App.tsx"
+      ],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
+      "name": "App",
+      "file": "speech-recognizer/example/App.tsx",
+      "declarations": [
+        "App",
+        "Group"
+      ],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
+      "name": "App",
+      "file": "speech-recognizer/speech-recognizer-example/App.tsx",
+      "declarations": [
+        "App"
+      ],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
+      "name": "SpeechRecognizerView.web",
+      "file": "speech-recognizer/src/SpeechRecognizerView.web.tsx",
+      "declarations": [
+        "SpeechRecognizerView"
+      ],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    }
+  ],
+  "unused": [],
+  "duplicates": [],
+  "summary": {
+    "memberCount": 2,
+    "consumerCount": 2,
+    "candidateCount": 4,
+    "unusedCount": 0,
+    "duplicateCount": 0
+  }
+}

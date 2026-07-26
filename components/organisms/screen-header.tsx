@@ -77,19 +77,21 @@ export function ScreenHeader({
         },
       ]}
     >
-      <Pressable
-        onPress={onBack}
-        hitSlop={12}
-        style={styles.iconButton}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <MaterialCommunityIcons
-          name="chevron-left"
-          size={28}
-          color={colors.ink}
-        />
-      </Pressable>
+      {onBack && (
+        <Pressable
+          onPress={onBack}
+          hitSlop={12}
+          style={styles.iconButton}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <MaterialCommunityIcons
+            name="chevron-left"
+            size={28}
+            color={colors.ink}
+          />
+        </Pressable>
+      )}
 
       <View style={styles.identity}>
         <View style={styles.glyphSlot}>

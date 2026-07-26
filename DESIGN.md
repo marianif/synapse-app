@@ -25,7 +25,7 @@ Three voices carry the typography: **Host Grotesk** (display/body — Inter was 
 - **The Green Is Done Rule.** Green appears only as `feedback.success`. Todo is cyan, never green — green on an open todo would lie.
 - **The Someday Is A Badge Rule.** An undated todo keeps the cyan todo code and earns a small mono "SOMEDAY" badge — never a separate color. Datedness is a state, not a type.
 - Accent is a scheme-aware **neutral slab** (slate in light, off-white in dark), not a hue — so the action color can never be confused with a content category.
-- No 1px structural borders and no colored edge-bars — tonal layering, spacing, and the 6px EntryDot / mono kicker carry structure. Sharp radii (6–14): surgical, not soft.
+- No 1px structural borders and no colored edge-bars — tonal layering, spacing, and the 6px EntryDot / mono kicker carry structure. Sharp radii (6–14) for tiles and cards: surgical, not soft. Floating dock composers (capture bar, notes composer, add-project bar) use `radius.pill` so they read as a single capsule instrument above the feed.
 - Motion is expressive but earns its place: quick springs on re-flow; the stale-pulse on untouched ideas is the one sanctioned continuous motion. **List/feed entrances never spring** — a row printing itself in is a calm timing fade, not a bounce. Springs are reserved for direct manipulation feedback (re-flow, drag, press response), never for passive content appearing on screen.
 
 ## Tokens

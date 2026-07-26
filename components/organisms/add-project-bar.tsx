@@ -45,12 +45,16 @@ interface AddProjectBarProps {
    *  from the screen bottom, so we need the bar's full height to compute the
    *  correct offset. Matches CaptureDock's restOffset math. */
   tabBarHeight: number;
+  /** Fires whenever the bar becomes active (mounted/focused) or inactive, so
+   *  the screen can render a backdrop scrim behind it. */
+  onActivityChange?: (active: boolean) => void;
 }
 
 export function AddProjectBar({
   onCreateProject,
   onDismissEmpty,
   tabBarHeight,
+  onActivityChange,
 }: AddProjectBarProps): React.ReactElement {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
@@ -94,6 +98,13 @@ export function AddProjectBar({
 
   const [draft, setDraft] = useState("");
   const hasText = draft.trim().length > 0;
+
+  // The bar is only mounted while the user is actively creating a project, so
+  // its mounted lifetime is the right activity window for the screen's scrim.
+  useEffect(() => {
+    onActivityChange?.(true);
+    return () => onActivityChange?.(false);
+  }, [onActivityChange]);
 
   const onSlab = colors.accent.onClay;
 

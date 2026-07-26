@@ -39,7 +39,7 @@ interface DockShellProps {
  * single instrument that receives a thought and unfolds to file it — NOT three
  * widgets (bar / recorder / resolver) that each slide in with their own radius,
  * fill, and entrance. Before this shell those three read as "a bunch of things
- * anchored together"; the shell gives them one silhouette (`radius.lg`, one
+ *  anchored together"; the shell gives them one silhouette (`radius.pill`, one
  * elevation), one entrance (a single slide-up on first summon, never re-fired on
  * an inner swap), one animated fill (surface↔slab), and an animated height so
  * the panel grows and shrinks in place as its readout changes.
@@ -153,11 +153,11 @@ export function DockShell({
 }
 
 const styles = StyleSheet.create({
-  // One silhouette for the whole dock: a single sharp instrument radius, one
+  // One silhouette for the whole dock: a single full-rounded radius, one
   // clipped frame, one elevation. No per-surface radius/fill/margin — the shell
   // is the only frame.
   shell: {
-    borderRadius: tokens.radius.lg,
+    borderRadius: tokens.radius.pill,
     overflow: "hidden",
   },
   body: {

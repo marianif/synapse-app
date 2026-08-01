@@ -483,11 +483,7 @@ export function DatePickerSheet({
                   wheelHeight={WHEEL_HEIGHT}
                   wheelWidth={WHEEL_WIDTH}
                 />
-                <ThemedText
-                  type="title"
-                  muted
-                  style={styles.wheelColon}
-                >
+                <ThemedText type="title" muted style={styles.wheelColon}>
                   :
                 </ThemedText>
                 <VerticalWheel
@@ -515,7 +511,10 @@ export function DatePickerSheet({
                 accessibilityRole="button"
                 accessibilityLabel="Confirm date and time"
               >
-                <ThemedText type="label" style={{ color: colors.accent.onClay }}>
+                <ThemedText
+                  type="label"
+                  style={{ color: colors.accent.onClay }}
+                >
                   Done
                 </ThemedText>
               </Pressable>

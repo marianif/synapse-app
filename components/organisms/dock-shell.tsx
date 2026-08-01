@@ -3,8 +3,8 @@ import { StyleSheet } from "react-native";
 import Animated, {
   Easing,
   FadeInDown,
-  LinearTransition,
   interpolateColor,
+  LinearTransition,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -58,14 +58,10 @@ export function DockShell({
   const { colors } = useTheme();
   const reduced = useReducedMotion();
 
-  // Single entrance: a soft fade paired with a short rise from below (not a
-  // full slide from off-screen) on the first summon of this dock session.
-  // Held in a ref so an inner content swap (bar → resolver) never re-triggers
-  // it and jumps the panel mid-interaction — the frame is already on screen.
-  // FadeInDown genuinely animates translateY back to 0 (unlike plain FadeIn,
-  // which only fades and leaves any transform pinned at its initial value);
-  // the shortened 16px travel + fade reads as a gentle rise into place rather
-  // than a slide-up, which felt mechanical at the full distance.
+  // Single entrance: a slide up from below on the first summon of this dock
+  // session — same instrument-arriving read as the add-project bar. Held in a
+  // ref so an inner content swap (bar → resolver) never re-triggers it and
+  // jumps the panel mid-interaction — the frame is already on screen.
   const firstMount = useRef(true);
   useEffect(() => {
     firstMount.current = false;
@@ -73,9 +69,7 @@ export function DockShell({
   const entering =
     reduced || !firstMount.current
       ? undefined
-      : FadeInDown.duration(420)
-          .easing(Easing.out(Easing.quad))
-          .withInitialValues({ transform: [{ translateY: 16 }] });
+      : FadeInDown.duration(320).easing(Easing.out(Easing.cubic));
 
   // Fill lerp: 0 = surface (idle, content register), 1 = slab (acting, interface
   // register). Animated so the register shift reads as a transition, not a cut.

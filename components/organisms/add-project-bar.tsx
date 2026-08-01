@@ -1,4 +1,10 @@
-import { useEffect, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import {
   Keyboard,
   Platform,
@@ -21,9 +27,11 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 
 /**
- * The add-project bar — project creation, and ONLY project creation. It lives on
- * the Project Shelf (`app/projects.tsx`), raised by that screen's create FAB. It
- * is deliberately NOT part of the home capture dock: the home dock is for
+ * The add-project bar — project creation, and ONLY project creation. It lives
+ * on the Project Shelf (`app/(tabs)/(projects)/index.tsx`), always mounted
+ * above the shelf — same pattern as the Notes tab's `NotesComposer`. The tab
+ * bar's pen key focuses it directly via its imperative handle. It is
+ * deliberately NOT part of the home capture dock: the home dock is for
  * catching thoughts (ideas / notes / todos / deadlines via the capture bar and
  * resolver), and a project is a macro life-area container, not a caught thought
  * or a board item. Naming a new life area is a slower, deliberate act that
@@ -38,7 +46,7 @@ import { tokens, useTheme } from "@/constants/theme";
 interface AddProjectBarProps {
   /** Create a project from the typed name and (typically) navigate to it. */
   onCreateProject: (title: string) => void;
-  /** The input blurred with nothing typed — close the bar. */
+  /** The close (X) button was pressed with nothing typed. */
   onDismissEmpty: () => void;
   /** Measured height of the overlaid tab bar. The bar visually rests
    *  `tokens.space.lg` above the tab bar, but the keyboard lift is calculated
@@ -50,14 +58,27 @@ interface AddProjectBarProps {
   onActivityChange?: (active: boolean) => void;
 }
 
-export function AddProjectBar({
-  onCreateProject,
-  onDismissEmpty,
-  tabBarHeight,
-  onActivityChange,
-}: AddProjectBarProps): React.ReactElement {
+/** Imperative handle so the tab bar's pen key can focus this bar directly —
+ *  same delegation shape as `NotesComposerHandle`. Projects has no voice
+ *  capture or share-intake seeding, so only `focus` is exposed. */
+export interface AddProjectBarHandle {
+  focus: () => void;
+}
+
+export const AddProjectBar = forwardRef<
+  AddProjectBarHandle,
+  AddProjectBarProps
+>(function AddProjectBar(
+  { onCreateProject, onDismissEmpty, tabBarHeight, onActivityChange },
+  ref,
+) {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
+  const inputRef = useRef<TextInput | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+  }));
 
   // The bar lives inside the tab slot, so its visual bottom is only
   // `tokens.space.lg` above the tab bar. But the keyboard reports its height
@@ -97,20 +118,21 @@ export function AddProjectBar({
   }));
 
   const [draft, setDraft] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const hasText = draft.trim().length > 0;
 
-  // The bar is only mounted while the user is actively creating a project, so
-  // its mounted lifetime is the right activity window for the screen's scrim.
+  // The bar is always mounted (same as NotesComposer), so activity tracks
+  // focus rather than mounted lifetime — the scrim should only rise while the
+  // user is actually typing a project name.
   useEffect(() => {
-    onActivityChange?.(true);
-    return () => onActivityChange?.(false);
-  }, [onActivityChange]);
+    onActivityChange?.(isFocused);
+  }, [isFocused, onActivityChange]);
 
   const onSlab = colors.accent.onClay;
 
-  const handleBlur = (): void => {
-    if (!hasText) onDismissEmpty();
-  };
+  const handleFocus = (): void => setIsFocused(true);
+
+  const handleBlur = (): void => setIsFocused(false);
 
   const submit = (): void => {
     if (!hasText) return;
@@ -139,11 +161,12 @@ export function AddProjectBar({
         </ThemedText>
 
         <TextInput
+          ref={inputRef}
           value={draft}
           onChangeText={setDraft}
           onSubmitEditing={submit}
+          onFocus={handleFocus}
           onBlur={handleBlur}
-          autoFocus
           placeholder="Name a life area"
           placeholderTextColor={withDimmed(onSlab)}
           selectionColor={onSlab}
@@ -170,7 +193,10 @@ export function AddProjectBar({
           </Pressable>
         ) : (
           <Pressable
-            onPress={onDismissEmpty}
+            onPress={() => {
+              Keyboard.dismiss();
+              onDismissEmpty();
+            }}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Close"
@@ -182,7 +208,7 @@ export function AddProjectBar({
       </Animated.View>
     </Animated.View>
   );
-}
+});
 
 // The placeholder reads on the slab without competing with typed text: the
 // same on-slab ink at reduced alpha (no new token — derived from onClay).

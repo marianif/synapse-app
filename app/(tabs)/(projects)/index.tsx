@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
-import { Stack, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   Pressable,
@@ -13,7 +13,10 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ProjectRow } from "@/components/molecules/project-row";
-import { AddProjectBar } from "@/components/organisms/add-project-bar";
+import {
+  AddProjectBar,
+  type AddProjectBarHandle,
+} from "@/components/organisms/add-project-bar";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
@@ -65,6 +68,7 @@ export default function ProjectsScreen(): React.ReactElement {
   const cap = useGlobalCapture();
   const { projects, entries, createProject, setProjectFeatured } =
     useDatabase();
+  const addProjectBarRef = useRef<AddProjectBarHandle | null>(null);
 
   // AddProjectBar handles its own keyboard lift to match CaptureDock. The
   // screen only supplies the measured tab bar height (with a fallback for the
@@ -75,10 +79,6 @@ export default function ProjectsScreen(): React.ReactElement {
   const [archivedOpen, setArchivedOpen] = useState(false);
   // Search query filters the active shelf by title. Empty string = show all.
   const [query, setQuery] = useState("");
-  // The create affordance is a FAB, not an always-visible input — with many
-  // projects an inline "name a project" row would push the shelf down. Tapping
-  // the FAB reveals a single-purpose composer band above it.
-  const [composing, setComposing] = useState(false);
 
   // Whether the AddProjectBar is actively up — drives the backdrop scrim so
   // the clay slab doesn't fuse with the project rows scrolling behind it.
@@ -135,12 +135,11 @@ export default function ProjectsScreen(): React.ReactElement {
   }, [sortedActive, query]);
 
   // Create + navigate. Shared by the fresh-install inception band (CreateRow)
-  // and the FAB-raised AddProjectBar.
+  // and the always-mounted AddProjectBar.
   const handleCreateProject = (title: string): void => {
     const name = title.trim();
     if (!name) return;
     setDraft("");
-    setComposing(false);
     createProject(name)
       .then((project) =>
         router.push({
@@ -153,11 +152,6 @@ export default function ProjectsScreen(): React.ReactElement {
 
   const submitDraft = (): void => handleCreateProject(draft);
 
-  const openComposer = (): void => {
-    void Haptics.selectionAsync();
-    setComposing(true);
-  };
-
   const toggleFeatured = (project: DbProject): void => {
     void Haptics.selectionAsync();
     setProjectFeatured(project.id, project.is_featured !== 1).catch((err) =>
@@ -166,6 +160,21 @@ export default function ProjectsScreen(): React.ReactElement {
   };
 
   const cycleSort = (): void => setSort(SORT_NEXT[sort]);
+
+  // While the Projects tab is focused, the tab-bar pen key focuses the
+  // AddProjectBar instead of raising the neutral global dock — same pattern
+  // as the Notes tab's composer. Projects has no voice capture, so only the
+  // tap gesture is meaningful here; a long-press still falls through to the
+  // global dock's voice capture on this tab since `startVoice` isn't offered.
+  useFocusEffect(
+    useCallback(() => {
+      const unregister = cap.registerCaptureTarget({
+        focus: () => addProjectBarRef.current?.focus(),
+        startVoice: () => {},
+      });
+      return unregister;
+    }, [cap]),
+  );
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
@@ -353,34 +362,20 @@ export default function ProjectsScreen(): React.ReactElement {
         </Animated.View>
       ) : null}
 
-      {/* Create affordance — a FAB, not an inline row. Hidden on fresh install
-          (the inception band owns that state). Tapping it raises the
-          AddProjectBar — the "NEW PROJECT" instrument that lives here on the
-          shelf — which rides above the keyboard via its own CaptureDock-style
-          lift. */}
+      {/* Create affordance — always-mounted, same as the Notes tab's composer.
+          The tab bar's pen key focuses it directly (registered above via
+          `registerCaptureTarget`); tapping the bar itself works too. Hidden on
+          fresh install, where the inception band's CreateRow owns the same
+          job. */}
       {projects.length > 0 ? (
         <View style={styles.composerDock}>
-          {composing ? (
-            <AddProjectBar
-              onCreateProject={handleCreateProject}
-              onDismissEmpty={() => setComposing(false)}
-              tabBarHeight={cap.tabBarHeight || TAB_BAR_HEIGHT_FALLBACK}
-              onActivityChange={setComposerActive}
-            />
-          ) : (
-            <Pressable
-              onPress={openComposer}
-              accessibilityRole="button"
-              accessibilityLabel="New project"
-              style={({ pressed }) => [
-                styles.createFab,
-                { backgroundColor: colors.accent.clay },
-                pressed && styles.pressed,
-              ]}
-            >
-              <IconSymbol name="Plus" size={28} color={colors.accent.onClay} />
-            </Pressable>
-          )}
+          <AddProjectBar
+            ref={addProjectBarRef}
+            onCreateProject={handleCreateProject}
+            onDismissEmpty={() => {}}
+            tabBarHeight={cap.tabBarHeight || TAB_BAR_HEIGHT_FALLBACK}
+            onActivityChange={setComposerActive}
+          />
         </View>
       ) : null}
     </View>

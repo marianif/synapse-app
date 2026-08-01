@@ -60,6 +60,56 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "bundleIdentifier": "dev.the-wedge.synapse-app.widget",
+                  "targetName": "widget",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.dev.the-wedge.synapse-app"
+                    ]
+                  }
+                },
+                {
+                  "bundleIdentifier": "dev.the-wedge.synapse-app.watch.watchwidget",
+                  "targetName": "watchwidget",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.dev.the-wedge.synapse-app"
+                    ]
+                  }
+                },
+                {
+                  "bundleIdentifier": "dev.the-wedge.synapse-app.watch",
+                  "targetName": "watch",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.dev.the-wedge.synapse-app"
+                    ]
+                  }
+                },
+                {
+                  "bundleIdentifier": "dev.the-wedge.synapse-app.share",
+                  "targetName": "share",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.dev.the-wedge.synapse-app"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "431b3534-d4d1-4fce-ab9c-14af1613cad3"
+      }
     }
   }
 }

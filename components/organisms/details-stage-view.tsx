@@ -1,13 +1,18 @@
-import { StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import { OptionChip } from "@/components/atoms/option-chip";
-import { ThemedText } from "@/components/atoms/themed-text";
-import { ExactInline } from "@/components/molecules/exact-inline";
-import { OptionRow } from "@/components/molecules/option-row";
-import { StageHeader } from "@/components/molecules/stage-header";
+import { DatePickerSheet } from "@/components/organisms/date-picker-sheet";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import type { Scheme } from "@/constants/theme";
-import { entryColor, tokens } from "@/constants/theme";
-import { horizonEndDate, horizonLabel } from "@/lib/horizons";
+import { tokens } from "@/constants/theme";
 import type { DueRange } from "@/lib/types";
 
 type DatedKind = "todo" | "deadline";
@@ -70,126 +75,263 @@ export function DetailsStageView({
   setProjectId,
   activeProjects,
   lockedProjectId,
-  projectName,
   onBack,
-  onDiscard,
   onCommit,
 }: DetailsStageViewProps): React.ReactElement {
-  return (
-    <View style={styles.detailStage}>
-      <StageHeader
-        label={selected === "deadline" ? "Deadline" : "Todo"}
-        onBack={onBack}
-        onDiscard={onDiscard}
-        onCommit={onCommit}
-        ink={ink}
-        muted={muted}
-        accent={accent}
-      />
-      <View style={styles.detailStack}>
-        <OptionRow label="WHEN" muted={muted}>
-          {WHEN_OPTIONS.map((option) =>
-            option.kind === "concrete" ? (
-              <OptionChip
-                key={option.label}
-                label={option.label}
-                selected={!exact && dueRange === null && date === option.date()}
-                ink={ink}
-                muted={muted}
-                raised={quiet}
-                onPress={() => {
-                  setExact(() => false);
-                  setDueRange(null);
-                  setDate(option.date());
-                  setTime("");
-                }}
-              />
-            ) : (
-              <OptionChip
-                key={option.label}
-                label={option.label}
-                selected={!exact && dueRange === option.range}
-                ink={ink}
-                muted={muted}
-                raised={quiet}
-                onPress={() => {
-                  setExact(() => false);
-                  setDueRange(option.range);
-                  setDate("");
-                  setTime("");
-                }}
-              />
-            ),
-          )}
+  const [substage, setSubstage] = useState<"when" | "project">("when");
+  const [stageWidth, setStageWidth] = useState(0);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [pickerSnapshot, setPickerSnapshot] = useState<{
+    exact: boolean;
+    date: string;
+    time: string;
+    dueRange: DueRange | null;
+  } | null>(null);
+  const progress = useSharedValue(0);
+  const reduced = useReducedMotion();
+
+  const hasProjectSubstage = !lockedProjectId && activeProjects.length > 0;
+
+  useEffect(() => {
+    setSubstage("when");
+    setDatePickerOpen(false);
+    setPickerSnapshot(null);
+    progress.value = reduced
+      ? 0
+      : withTiming(0, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.out(Easing.cubic),
+        });
+  }, [selected, progress, reduced]);
+
+  const trackStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: -progress.value * stageWidth }],
+  }));
+
+  const goToProject = (): void => {
+    setSubstage("project");
+    progress.value = reduced
+      ? 1
+      : withTiming(1, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.out(Easing.cubic),
+        });
+  };
+
+  const goToWhen = (): void => {
+    setSubstage("when");
+    progress.value = reduced
+      ? 0
+      : withTiming(0, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.out(Easing.cubic),
+        });
+  };
+
+  const selectWhenOption = (callback: () => void): void => {
+    callback();
+    if (hasProjectSubstage) {
+      goToProject();
+    }
+  };
+
+  const handleBack = (): void => {
+    setDatePickerOpen(false);
+    goToWhen();
+    onBack();
+  };
+
+  const openDatePicker = (): void => {
+    setPickerSnapshot({ exact, date, time, dueRange });
+    setExact(() => true);
+    setDueRange(null);
+    setDatePickerOpen(true);
+  };
+
+  const handleDatePickerConfirm = (nextDate: string, nextTime: string): void => {
+    setDate(nextDate);
+    setTime(nextTime);
+    setDatePickerOpen(false);
+    setPickerSnapshot(null);
+    if (hasProjectSubstage) {
+      goToProject();
+    }
+  };
+
+  const handleDatePickerDismiss = (): void => {
+    if (pickerSnapshot) {
+      setExact(() => pickerSnapshot.exact);
+      setDate(pickerSnapshot.date);
+      setTime(pickerSnapshot.time);
+      setDueRange(pickerSnapshot.dueRange);
+    }
+    setDatePickerOpen(false);
+    setPickerSnapshot(null);
+  };
+
+  const renderWhenOptions = (): React.ReactElement => (
+    <>
+      {WHEN_OPTIONS.map((option) =>
+        option.kind === "concrete" ? (
           <OptionChip
-            label="exact"
-            selected={exact}
+            key={option.label}
+            label={option.label}
+            selected={!exact && dueRange === null && date === option.date()}
             ink={ink}
             muted={muted}
             raised={quiet}
-            onPress={() => {
-              setExact((v) => !v);
-              setDueRange(null);
-            }}
+            onPress={() =>
+              selectWhenOption(() => {
+                setExact(() => false);
+                setDueRange(null);
+                setDate(option.date());
+                setTime("");
+              })
+            }
           />
-        </OptionRow>
-
-        {exact ? (
-          <ExactInline
-            date={date}
-            time={time}
-            color={accent}
+        ) : (
+          <OptionChip
+            key={option.label}
+            label={option.label}
+            selected={!exact && dueRange === option.range}
+            ink={ink}
             muted={muted}
             raised={quiet}
-            onDateChange={setDate}
-            onTimeChange={setTime}
+            onPress={() =>
+              selectWhenOption(() => {
+                setExact(() => false);
+                setDueRange(option.range);
+                setDate("");
+                setTime("");
+              })
+            }
           />
-        ) : dueRange ? (
-          <ThemedText type="micro" style={{ color: muted }}>
-            {selected === "deadline" ? "Close it" : "Land it"}{" "}
-            {horizonLabel(dueRange)} · {horizonEndDate(dueRange)}
-          </ThemedText>
-        ) : null}
+        ),
+      )}
+      <OptionChip
+        label="exact"
+        selected={exact}
+        ink={ink}
+        muted={muted}
+        raised={quiet}
+        onPress={openDatePicker}
+      />
+    </>
+  );
 
-        {!lockedProjectId && activeProjects.length > 0 ? (
-          <OptionRow label="PROJECT" muted={muted}>
-            <OptionChip
-              label="unfiled"
-              selected={projectId === null}
-              ink={ink}
-              muted={muted}
-              raised={quiet}
-              onPress={() => setProjectId(null)}
-            />
-            {activeProjects.map((project) => (
-              <OptionChip
-                key={project.id}
-                label={project.title}
-                emoji={project.emoji}
-                selected={projectId === project.id}
-                ink={ink}
-                muted={muted}
-                raised={quiet}
-                onPress={() =>
-                  setProjectId((id) => (id === project.id ? null : project.id))
-                }
-              />
-            ))}
-          </OptionRow>
-        ) : null}
+  const renderProjectOptions = (): React.ReactElement => (
+    <>
+      <OptionChip
+        label="unfiled"
+        selected={projectId === null}
+        ink={ink}
+        muted={muted}
+        raised={quiet}
+        onPress={() => setProjectId(null)}
+      />
+      {activeProjects.map((project) => (
+        <OptionChip
+          key={project.id}
+          label={project.title}
+          emoji={project.emoji}
+          selected={projectId === project.id}
+          ink={ink}
+          muted={muted}
+          raised={quiet}
+          onPress={() =>
+            setProjectId((id) => (id === project.id ? null : project.id))
+          }
+        />
+      ))}
+    </>
+  );
 
-        <View style={styles.commitReadout}>
-          <View
-            style={[
-              styles.commitDot,
-              { backgroundColor: entryColor(selected) },
-            ]}
-          />
-          <ThemedText type="mono" style={{ color: muted }}>
-            {projectName}
-          </ThemedText>
+  return (
+    <View
+      style={styles.detailsStage}
+      onLayout={(e) => setStageWidth(e.nativeEvent.layout.width)}
+    >
+      <Animated.View style={[styles.track, trackStyle]}>
+        <View
+          style={[styles.substage, { width: stageWidth }]}
+          pointerEvents={substage === "when" ? "auto" : "none"}
+          accessibilityElementsHidden={substage !== "when"}
+          importantForAccessibility={
+            substage === "when" ? "auto" : "no-hide-descendants"
+          }
+        >
+          <Pressable
+            onPress={handleBack}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+            style={styles.headerButton}
+          >
+            <IconSymbol name="ChevronLeft" size={18} color={muted} />
+          </Pressable>
+          <ScrollView
+            horizontal
+            style={styles.optionScroll}
+            contentContainerStyle={styles.optionRail}
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {renderWhenOptions()}
+          </ScrollView>
+          {!hasProjectSubstage ? (
+            <Pressable
+              onPress={onCommit}
+              accessibilityRole="button"
+              accessibilityLabel="Save"
+              style={styles.headerButton}
+            >
+              <IconSymbol name="Check" size={18} color={accent} />
+            </Pressable>
+          ) : null}
         </View>
-      </View>
+
+        <View
+          style={[styles.substage, { width: stageWidth }]}
+          pointerEvents={substage === "project" ? "auto" : "none"}
+          accessibilityElementsHidden={substage !== "project"}
+          importantForAccessibility={
+            substage === "project" ? "auto" : "no-hide-descendants"
+          }
+        >
+          <Pressable
+            onPress={goToWhen}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+            style={styles.headerButton}
+          >
+            <IconSymbol name="ChevronLeft" size={18} color={muted} />
+          </Pressable>
+          <ScrollView
+            horizontal
+            style={styles.optionScroll}
+            contentContainerStyle={styles.optionRail}
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {renderProjectOptions()}
+          </ScrollView>
+          <Pressable
+            onPress={onCommit}
+            accessibilityRole="button"
+            accessibilityLabel="Save"
+            style={styles.headerButton}
+          >
+            <IconSymbol name="Check" size={18} color={accent} />
+          </Pressable>
+        </View>
+      </Animated.View>
+
+      <DatePickerSheet
+        visible={datePickerOpen}
+        initialDate={date}
+        initialTime={time}
+        onDismiss={handleDatePickerDismiss}
+        onConfirm={handleDatePickerConfirm}
+      />
     </View>
   );
 }
@@ -208,24 +350,31 @@ function daysToWeekend(): number {
 }
 
 const styles = StyleSheet.create({
-  detailStage: {
+  detailsStage: {
+    overflow: "hidden",
+  },
+  track: {
+    flexDirection: "row",
+  },
+  substage: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: tokens.space.md,
     paddingVertical: tokens.space.sm,
     gap: tokens.space.xs,
   },
-  detailStack: {
-    gap: tokens.space.sm,
-  },
-  commitReadout: {
-    minHeight: 24,
-    flexDirection: "row",
+  headerButton: {
+    width: 32,
+    height: 32,
     alignItems: "center",
     justifyContent: "center",
-    gap: tokens.space.xs,
   },
-  commitDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  optionScroll: {
+    flex: 1,
+  },
+  optionRail: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
   },
 });

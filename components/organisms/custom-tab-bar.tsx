@@ -1,8 +1,8 @@
 import * as Haptics from "expo-haptics";
 import { TabTrigger } from "expo-router/ui";
 import { forwardRef } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
 import type { View as RNView } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import type { IconSymbolName } from "@/components/ui/icon-symbol";
 import { IconSymbol } from "@/components/ui/icon-symbol";

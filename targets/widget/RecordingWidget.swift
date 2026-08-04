@@ -110,21 +110,16 @@ struct SmallVoiceWidgetView: View {
     var body: some View {
         Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
             FieldTile {
-                VStack(alignment: .leading, spacing: Spacing.md) {
-                    MicButton(size: 52, iconSize: 22)
+                VStack(alignment: .center, spacing: Spacing.md) {
+                    Spacer(minLength: 0)
+
+                    MicButton(size: 72, iconSize: 30)
 
                     Spacer(minLength: 0)
 
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Kicker(text: "VOICE")
-
-                        Text("Capture\na thought")
-                            .font(.system(size: 19, weight: .semibold))
-                            .foregroundStyle(Color.ink)
-                            .lineSpacing(1)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                    Kicker(text: "VOICE")
                 }
+                .frame(maxWidth: .infinity)
                 .padding(Spacing.lg)
             }
         }

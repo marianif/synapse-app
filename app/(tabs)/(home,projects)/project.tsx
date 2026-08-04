@@ -8,7 +8,14 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -24,7 +31,10 @@ import {
   CaptureComposer,
 } from "@/components/organisms/capture-composer";
 import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
-import type { ProjectComposerKind } from "@/components/organisms/project-composer";
+import type {
+  ProjectComposerKind,
+  ProjectComposerSubmitPayload,
+} from "@/components/organisms/project-composer";
 import { ProjectComposer } from "@/components/organisms/project-composer";
 import { ProjectFab } from "@/components/organisms/project-fab";
 import { ScreenHeader } from "@/components/organisms/screen-header";
@@ -35,6 +45,7 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 import { doneStatus, sortDirect } from "@/lib/direct-when";
+import { horizonEndDate } from "@/lib/horizons";
 import type { StarterPrompt } from "@/lib/project-starters";
 import { ConfirmKey } from "@/lib/settings";
 import { isTodoFamily } from "@/lib/taxonomy";
@@ -170,34 +181,84 @@ export default function ProjectScreen(): React.ReactElement {
   // Manual keyboard-lift for the pinned dock. KeyboardAvoidingView doesn't
   // reliably lift an absolutely-positioned child on iOS (KAV measures its own
   // frame, and an absolute wrapper detaches from that measurement), so we
-  // subscribe to keyboard events and shift the dock's `bottom` by the
-  // keyboard height directly. Android's soft input mode already resizes the
-  // window, so we only need the offset on iOS.
-  const [kbHeight, setKbHeight] = useState(0);
+  // subscribe to keyboard events and translate the dock so its bottom edge lands
+  // just above the keyboard. The rest offset is the dock's normal bottom gap
+  // (space.lg); the 1.05 multiplier leaves the same tiny gap CaptureDock uses.
+  // Android's soft input mode already resizes the window, so we only need the
+  // offset on iOS.
+  const restOffset = tokens.space.lg;
+  const keyboardLift = useSharedValue(0);
   useEffect(() => {
     if (Platform.OS !== "ios") return;
     const showSub = Keyboard.addListener("keyboardWillShow", (e) => {
-      setKbHeight(e.endCoordinates.height);
+      const lift = Math.max(0, e.endCoordinates.height - restOffset);
+      keyboardLift.value = withTiming(lift, {
+        duration: e.duration || 220,
+        easing: Easing.out(Easing.cubic),
+      });
     });
-    const hideSub = Keyboard.addListener("keyboardWillHide", () => {
-      setKbHeight(0);
+    const hideSub = Keyboard.addListener("keyboardWillHide", (e) => {
+      keyboardLift.value = withTiming(0, {
+        duration: e?.duration || 200,
+        easing: Easing.out(Easing.cubic),
+      });
     });
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, []);
+  }, [keyboardLift, restOffset]);
 
-  const handleFabSubmit = (kind: ProjectComposerKind, text: string): void => {
+  const dockLiftStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -keyboardLift.value * 1.05 }],
+  }));
+
+  const handleFabSubmit = (payload: ProjectComposerSubmitPayload): void => {
     if (!id) return;
-    if (kind === "note") {
-      void addDiaryEntry(text, null, null, id).catch((err) =>
+    if (payload.kind === "note") {
+      void addDiaryEntry(payload.text, null, null, id).catch((err) =>
         console.error("Failed to save project note:", err),
       );
       return;
     }
-    void createEntry({ title: text, type: kind, projectId: id }).catch((err) =>
-      console.error(`Failed to capture ${kind}:`, err),
+    if (payload.kind === "idea") {
+      void createEntry({
+        title: payload.text,
+        type: payload.kind,
+        projectId: id,
+      }).catch((err) =>
+        console.error(`Failed to capture ${payload.kind}:`, err),
+      );
+      return;
+    }
+    const due = payload.dueRange ? horizonEndDate(payload.dueRange) : undefined;
+    void createEntry({
+      title: payload.text,
+      type: payload.kind,
+      projectId: id,
+      scheduledDate:
+        payload.kind === "todo"
+          ? due ?? payload.date ?? undefined
+          : undefined,
+      scheduledTime:
+        payload.kind === "todo"
+          ? payload.dueRange
+            ? undefined
+            : payload.time ?? undefined
+          : undefined,
+      dueDate:
+        payload.kind === "deadline"
+          ? due ?? payload.date ?? undefined
+          : undefined,
+      dueTime:
+        payload.kind === "deadline"
+          ? payload.dueRange
+            ? undefined
+            : payload.time ?? undefined
+          : undefined,
+      dueRange: payload.dueRange ?? undefined,
+    }).catch((err) =>
+      console.error(`Failed to capture ${payload.kind}:`, err),
     );
   };
 
@@ -715,8 +776,8 @@ export default function ProjectScreen(): React.ReactElement {
       {/* The capture dock — the same instrument as the home board, pinned to the
           bottom and pre-locked to this project (no ManualBar: a project can't
           birth a sibling project). Only mounts a surface when summoned. */}
-      <View
-        style={[styles.dock, { bottom: tokens.space.lg + kbHeight }]}
+      <Animated.View
+        style={[styles.dock, dockLiftStyle]}
         pointerEvents="box-none"
       >
         <CaptureComposer cap={cap} projects={projects} />
@@ -729,8 +790,13 @@ export default function ProjectScreen(): React.ReactElement {
           }}
           onSubmit={handleFabSubmit}
           onActivityChange={setComposerActive}
+          projectId={id}
+          activeProjects={projects
+            .filter((p) => p.status === "active")
+            .map((p) => ({ id: p.id, title: p.title, emoji: p.emoji }))}
+          projectName={project.title}
         />
-      </View>
+      </Animated.View>
       {fabKind === null ? (
         <>
           <ProjectFab

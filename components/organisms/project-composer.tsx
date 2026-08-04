@@ -1,24 +1,32 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
-import {
-  Keyboard,
-  Platform,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { WaveformVisualizer } from "@/components/atoms/waveform-bar";
+import { DetailsStageView } from "@/components/organisms/details-stage-view";
 import { DockShell } from "@/components/organisms/dock-shell";
-import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
+import {
+  entryColor,
+  entryKicker,
+  tokens,
+  useEntryKicker,
+  useTheme,
+} from "@/constants/theme";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
-import type { EntryType } from "@/lib/types";
+import type { DueRange, EntryType } from "@/lib/types";
 
 // The four kinds the ProjectFab can arm. `note` is not an EntryType (it becomes
 // a diary entry), so it lives alongside as its own literal.
 export type ProjectComposerKind = EntryType | "note";
+
+export interface ProjectComposerSubmitPayload {
+  kind: ProjectComposerKind;
+  text: string;
+  date?: string;
+  time?: string;
+  dueRange?: DueRange;
+}
 
 const KIND_LABELS: Record<ProjectComposerKind, string> = {
   idea: "IDEA",
@@ -37,7 +45,7 @@ const KIND_PLACEHOLDERS: Record<ProjectComposerKind, string> = {
 interface ProjectComposerProps {
   kind: ProjectComposerKind | null;
   onClose: () => void;
-  onSubmit: (kind: ProjectComposerKind, text: string) => void;
+  onSubmit: (payload: ProjectComposerSubmitPayload) => void;
   /**
    * Seed the draft when the composer opens — used by the empty-project starter
    * rows, which pre-fill a suggested line ("Book a workout") the user can send
@@ -47,17 +55,21 @@ interface ProjectComposerProps {
   /** Fires whenever the composer becomes active (mounted) or inactive, so the
    *  screen can render a backdrop scrim behind it. */
   onActivityChange?: (active: boolean) => void;
+  /** Locked project for todo/deadline capture. When set, the details stage is
+   *  shown with the project picker hidden. */
+  projectId?: string | null;
+  /** Project list required by the details stage shape; unused when a project is
+   *  locked, but kept for interface parity. */
+  activeProjects?: { id: string; title: string; emoji: string | null }[];
+  /** Display name for the locked project (interface parity). */
+  projectName?: string;
 }
 
 /**
- * A minimal capture surface armed by ProjectFab. Unlike the home dock's
- * CaptureFlow (four-stage: capture → classify → details → note-link), the
- * flavour is already chosen — the FAB item IS the classification — so this
- * composer stays a single line: text field + mic. Send commits directly.
- *
- * Type identity is carried by the ACCENTS only — send button fill, mic ring,
- * kicker label, waveform bars — while the shell keeps the scheme-aware neutral
- * surface. Note uses the neutral ink shade (no entry code exists for it).
+ * A minimal capture surface armed by ProjectFab. For idea and note it stays a
+ * single line: text field + mic. For todo and deadline it unfolds into the same
+ * details stage the home dock uses (date / time / horizon), with the project
+ * locked so the surface never asks the user to re-file.
  */
 export function ProjectComposer({
   kind,
@@ -65,7 +77,17 @@ export function ProjectComposer({
   onSubmit,
   initialText,
   onActivityChange,
+  projectId,
+  activeProjects,
+  projectName,
 }: ProjectComposerProps): React.ReactElement | null {
+  const [stage, setStage] = useState<"input" | "details">("input");
+
+  // Reset the stage whenever the composer is re-armed (kind changed).
+  useEffect(() => {
+    if (kind !== null) setStage("input");
+  }, [kind]);
+
   // The composer is only meaningful while a flavour is chosen; report activity
   // only in that window so the parent doesn't show a scrim when `kind` is null.
   useEffect(() => {
@@ -79,14 +101,19 @@ export function ProjectComposer({
     // contentKey includes the seed so switching starter rows (todo → idea)
     // remounts the body and re-seeds the draft, rather than keeping the old text.
     <DockShell
-      register="surface"
+      register={stage === "details" ? "slab" : "surface"}
       contentKey={`project-composer-${kind}-${initialText ?? ""}`}
     >
       <ProjectComposerBody
         kind={kind}
+        stage={stage}
+        setStage={setStage}
         onClose={onClose}
         onSubmit={onSubmit}
         initialText={initialText}
+        projectId={projectId}
+        activeProjects={activeProjects}
+        projectName={projectName}
       />
     </DockShell>
   );
@@ -94,33 +121,48 @@ export function ProjectComposer({
 
 function ProjectComposerBody({
   kind,
+  stage,
+  setStage,
   onClose,
   onSubmit,
   initialText,
+  projectId,
+  activeProjects,
+  projectName,
 }: {
   kind: ProjectComposerKind;
+  stage: "input" | "details";
+  setStage: (stage: "input" | "details") => void;
   onClose: () => void;
-  onSubmit: (kind: ProjectComposerKind, text: string) => void;
+  onSubmit: (payload: ProjectComposerSubmitPayload) => void;
   initialText?: string;
+  projectId?: string | null;
+  activeProjects?: { id: string; title: string; emoji: string | null }[];
+  projectName?: string;
 }): React.ReactElement {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const [draft, setDraft] = useState(initialText ?? "");
   const [isRecording, setIsRecording] = useState(false);
   const inputRef = useRef<TextInput | null>(null);
-  const {
-    transcript,
-    startRecording,
-    stopRecording,
-  } = useSpeechRecognizer();
+  const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
+
+  const [exact, setExact] = useState(false);
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [dueRange, setDueRange] = useState<DueRange | null>(null);
+
+  // Details stage only applies to dated kinds when a project is locked.
+  const needsDetails =
+    (kind === "todo" || kind === "deadline") && projectId != null;
 
   // Explicit focus after mount — `autoFocus` doesn't fire reliably inside
   // DockShell's opacity cross-fade. Small delay so the fade-in / layout have
   // committed before we ask the OS to raise the keyboard.
   useEffect(() => {
-    if (isRecording) return;
+    if (isRecording || stage !== "input") return;
     const t = setTimeout(() => inputRef.current?.focus(), 60);
     return () => clearTimeout(t);
-  }, [isRecording]);
+  }, [isRecording, stage]);
 
   // Type accent: use the AA-safe kicker shade so the ink reads on the neutral
   // surface fill in both schemes. Note falls back to the muted ink (no code).
@@ -133,10 +175,22 @@ function ProjectComposerBody({
     if (isRecording && transcript) setDraft(transcript);
   }, [transcript, isRecording]);
 
-  const handleSubmit = (): void => {
+  const handleInputSubmit = (): void => {
     const text = draft.trim();
     if (!text) return;
-    onSubmit(kind, text);
+    if (needsDetails) {
+      setStage("details");
+      return;
+    }
+    onSubmit({ kind, text });
+    setDraft("");
+    onClose();
+  };
+
+  const handleCommitDetails = (): void => {
+    const text = draft.trim();
+    if (!text) return;
+    onSubmit({ kind, text, date, time, dueRange: dueRange ?? undefined });
     setDraft("");
     onClose();
   };
@@ -149,7 +203,7 @@ function ProjectComposerBody({
   const handleStopRecording = (): void => {
     void stopRecording().then(() => {
       setIsRecording(false);
-      if (draft.trim()) handleSubmit();
+      if (draft.trim()) handleInputSubmit();
     });
   };
 
@@ -188,10 +242,7 @@ function ProjectComposerBody({
           onPress={handleStopRecording}
           accessibilityRole="button"
           accessibilityLabel="Save recording"
-          style={[
-            styles.primaryRound,
-            { backgroundColor: accent },
-          ]}
+          style={[styles.primaryRound, { backgroundColor: accent }]}
         >
           <MaterialCommunityIcons
             name="arrow-right"
@@ -200,6 +251,46 @@ function ProjectComposerBody({
           />
         </Pressable>
       </View>
+    );
+  }
+
+  if (stage === "details" && needsDetails) {
+    const datedKind = kind as "todo" | "deadline";
+    const onSlab = colors.accent.onClay;
+    const detailMuted = `${onSlab}A6`;
+    const detailQuiet = `${onSlab}24`;
+    const detailRaised = `${onSlab}1F`;
+    const detailAccent =
+      scheme === "dark"
+        ? entryKicker(datedKind, "light")
+        : entryColor(datedKind);
+
+    return (
+      <DetailsStageView
+        selected={datedKind}
+        accent={detailAccent}
+        muted={detailMuted}
+        raised={detailRaised}
+        quiet={detailQuiet}
+        ink={onSlab}
+        scheme={scheme}
+        exact={exact}
+        setExact={setExact}
+        date={date}
+        setDate={setDate}
+        time={time}
+        setTime={setTime}
+        dueRange={dueRange}
+        setDueRange={setDueRange}
+        projectId={projectId ?? null}
+        setProjectId={() => {}}
+        activeProjects={activeProjects ?? []}
+        lockedProjectId={projectId ?? null}
+        projectName={projectName ?? ""}
+        onBack={() => setStage("input")}
+        onDiscard={onClose}
+        onCommit={handleCommitDetails}
+      />
     );
   }
 
@@ -217,7 +308,7 @@ function ProjectComposerBody({
         ref={inputRef}
         value={draft}
         onChangeText={setDraft}
-        onSubmitEditing={handleSubmit}
+        onSubmitEditing={handleInputSubmit}
         placeholder={KIND_PLACEHOLDERS[kind]}
         placeholderTextColor={colors.inkMuted}
         selectionColor={accent}
@@ -229,7 +320,7 @@ function ProjectComposerBody({
       />
       {hasText ? (
         <Pressable
-          onPress={handleSubmit}
+          onPress={handleInputSubmit}
           hitSlop={10}
           accessibilityRole="button"
           accessibilityLabel={`Save ${KIND_LABELS[kind].toLowerCase()}`}

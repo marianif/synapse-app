@@ -72,8 +72,6 @@ struct EntriesWidgetEntryView: View {
                 SmallWidgetView(entry: entry)
             case .systemMedium:
                 MediumWidgetView(entry: entry)
-            case .systemLarge:
-                LargeWidgetView(entry: entry)
             default:
                 SmallWidgetView(entry: entry)
             }
@@ -167,53 +165,6 @@ struct MediumWidgetView: View {
     }
 }
 
-// MARK: - Large Widget (Full list + stats)
-
-struct LargeWidgetView: View {
-    let entry: EntriesEntry
-
-    private var displayEntries: [EntryData] {
-        Array(entry.entries.prefix(8))
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header row with stats
-            HStack {
-                WidgetHeader(title: "Entries", icon: "list.bullet.clipboard")
-                Spacer()
-                if !entry.isEmpty {
-                    WidgetStatsRow(entries: entry.entries)
-                }
-            }
-            
-            Spacer(minLength: Spacing.md)
-            
-            if entry.isEmpty {
-                EmptyStateView()
-                Spacer()
-            } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
-                        ForEach(displayEntries) { entry in
-                            EntryRow(entry: entry, showType: true)
-                        }
-                        
-                        if entry.entries.count > 8 {
-                            MoreEntriesRow(count: entry.entries.count - 8)
-                        }
-                    }
-                }
-            }
-        }
-        .padding(Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: Radius.lg)
-                .fill(Color.surface)
-        )
-    }
-}
-
 // MARK: - Widget Header
 
 struct WidgetHeader: View {
@@ -234,7 +185,6 @@ struct WidgetHeader: View {
 
 struct EntryRow: View {
     let entry: EntryData
-    var showType: Bool = false
 
     var body: some View {
         HStack(spacing: Spacing.sm) {
@@ -242,28 +192,14 @@ struct EntryRow: View {
             Circle()
                 .fill(accentColor)
                 .frame(width: 6, height: 6)
-            
+
             // Title — the actual content, so primary ink, not muted.
             Text(entry.title)
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Color.ink)
                 .lineLimit(1)
-            
+
             Spacer()
-            
-            // Status label (optional, for larger views)
-            if showType {
-                Text(statusLabel)
-                    .font(.system(size: 10, weight: .medium))
-                    .tracking(0.3)
-                    .foregroundStyle(statusTextColor)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(
-                        Capsule()
-                            .fill(statusBgColor)
-                    )
-            }
         }
     }
 
@@ -271,7 +207,7 @@ struct EntryRow: View {
         if entry.status == "done" || entry.status == "completed" {
             return .success
         }
-        
+
         if let type = entry.type?.lowercased() {
             switch type {
             case "todo": return .typeTodo
@@ -280,10 +216,10 @@ struct EntryRow: View {
             default: return .typeTodo
             }
         }
-        
+
         return statusColor
     }
-    
+
     private var statusColor: Color {
         switch entry.status.lowercased() {
         case "done", "completed":
@@ -294,41 +230,6 @@ struct EntryRow: View {
             return .typeBills
         default:
             return .inkMuted
-        }
-    }
-    
-    private var statusLabel: String {
-        switch entry.status.lowercased() {
-        case "done", "completed":
-            return "Done"
-        case "in-progress", "inprogress":
-            return "Active"
-        case "pending", "scheduled":
-            return "Scheduled"
-        default:
-            return entry.status.capitalized
-        }
-    }
-    
-    private var statusTextColor: Color {
-        switch entry.status.lowercased() {
-        case "done", "completed":
-            return .success
-        case "in-progress", "inprogress":
-            return .typeTodo
-        default:
-            return .inkMuted
-        }
-    }
-
-    private var statusBgColor: Color {
-        switch entry.status.lowercased() {
-        case "done", "completed":
-            return .success.opacity(0.15)
-        case "in-progress", "inprogress":
-            return .typeTodo.opacity(0.15)
-        default:
-            return .surfaceSubtle
         }
     }
 }
@@ -347,34 +248,6 @@ struct StatsCard: View {
         .padding(Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: Radius.md)
-                .fill(Color.surfaceSubtle)
-        )
-    }
-}
-
-// MARK: - Stats Row (Large widget)
-
-struct WidgetStatsRow: View {
-    let entries: [EntryData]
-
-    private var doneCount: Int {
-        entries.filter { $0.status == "done" || $0.status == "completed" }.count
-    }
-
-    var body: some View {
-        HStack(spacing: Spacing.sm) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 12))
-                .foregroundStyle(Color.success)
-            
-            Text("\(doneCount)/\(entries.count)")
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                .foregroundStyle(Color.inkMuted)
-        }
-        .padding(.horizontal, Spacing.sm)
-        .padding(.vertical, Spacing.xs)
-        .background(
-            Capsule()
                 .fill(Color.surfaceSubtle)
         )
     }
@@ -422,27 +295,6 @@ struct EmptyStateView: View {
     }
 }
 
-// MARK: - More Entries Row
-
-struct MoreEntriesRow: View {
-    let count: Int
-
-    var body: some View {
-        HStack {
-            Text("+\(count) more")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(Color.inkMuted)
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(Color.inkMuted)
-        }
-        .padding(.vertical, Spacing.xs)
-    }
-}
-
 // MARK: - Widget Definition
 
 struct entriesWidget: Widget {
@@ -454,7 +306,7 @@ struct entriesWidget: Widget {
         }
         .configurationDisplayName("Entries")
         .description("View your recent entries at a glance.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
 
@@ -479,22 +331,5 @@ struct entriesWidget: Widget {
         EntryData(id: "3", title: "Submit invoices", status: "done", type: "deadline"),
         EntryData(id: "4", title: "Renew the lease", status: "pending", type: "deadline"),
         EntryData(id: "5", title: "Update documentation", status: "in-progress", type: "todo"),
-    ], configuration: ConfigurationAppIntent())
-}
-
-#Preview(as: .systemLarge) {
-    entriesWidget()
-} timeline: {
-    EntriesEntry(date: .now, entries: [
-        EntryData(id: "1", title: "Review quarterly report", status: "in-progress", type: "todo"),
-        EntryData(id: "2", title: "Reply to the studio", status: "scheduled", type: "todo"),
-        EntryData(id: "3", title: "Submit invoices", status: "done", type: "deadline"),
-        EntryData(id: "4", title: "Renew the lease", status: "pending", type: "deadline"),
-        EntryData(id: "5", title: "Update documentation", status: "in-progress", type: "todo"),
-        EntryData(id: "6", title: "Fix authentication bug", status: "done", type: "todo"),
-        EntryData(id: "7", title: "Design new onboarding flow", status: "scheduled", type: "idea"),
-        EntryData(id: "8", title: "Research AI tools", status: "pending", type: "idea"),
-        EntryData(id: "9", title: "Archive old projects", status: "done", type: "todo"),
-        EntryData(id: "10", title: "Prepare presentation", status: "in-progress", type: "todo"),
     ], configuration: ConfigurationAppIntent())
 }

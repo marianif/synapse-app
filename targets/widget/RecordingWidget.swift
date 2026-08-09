@@ -59,17 +59,23 @@ struct VoiceInputWidgetEntryView: View {
     @Environment(\.widgetFamily) var family
 
     var body: some View {
-        Group {
-            switch family {
-            case .systemSmall:
-                SmallVoiceWidgetView()
-            case .systemMedium:
-                MediumVoiceWidgetView()
-            default:
-                SmallVoiceWidgetView()
-            }
+        switch family {
+        case .systemSmall:
+            SmallVoiceWidgetView()
+                .containerBackground(Color.paper, for: .widget)
+        case .systemMedium:
+            MediumVoiceWidgetView()
+                .containerBackground(Color.paper, for: .widget)
+        case .accessoryCircular:
+            CircularVoiceWidgetView()
+                .containerBackground(for: .widget) { Color.clear }
+        case .accessoryRectangular:
+            RectangularVoiceWidgetView()
+                .containerBackground(for: .widget) { Color.clear }
+        default:
+            SmallVoiceWidgetView()
+                .containerBackground(Color.paper, for: .widget)
         }
-        .containerBackground(Color.paper, for: .widget)
     }
 }
 
@@ -160,6 +166,40 @@ struct MediumVoiceWidgetView: View {
     }
 }
 
+// MARK: - Lock Screen Widgets
+//
+// Accessory families render in the system's vibrant monochrome material —
+// no Field Lab color tokens apply here. SF Symbol + system text only; the
+// system handles tinting for both the Lock Screen and StandBy contexts.
+// Tapping still deep links into the app, which triggers the same unlock
+// prompt as any Lock Screen app launch — see app/(tabs)/(home)/index.tsx's
+// `capture=voice` handling for what happens after that.
+
+struct CircularVoiceWidgetView: View {
+    var body: some View {
+        Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
+            Image(systemName: "mic.fill")
+                .font(.system(size: 22, weight: .semibold))
+                .widgetLabel("Voice")
+        }
+    }
+}
+
+struct RectangularVoiceWidgetView: View {
+    var body: some View {
+        Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: "mic.fill")
+                    .font(.system(size: 15, weight: .semibold))
+
+                Text("Capture a thought")
+                    .font(.system(size: 13, weight: .medium))
+                    .lineLimit(1)
+            }
+        }
+    }
+}
+
 // MARK: - Widget Definition
 
 struct voiceInputWidget: Widget {
@@ -171,7 +211,7 @@ struct voiceInputWidget: Widget {
         }
         .configurationDisplayName("Voice Capture")
         .description("Quickly capture thoughts with your voice.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular])
     }
 }
 
@@ -184,6 +224,18 @@ struct voiceInputWidget: Widget {
 }
 
 #Preview(as: .systemMedium) {
+    voiceInputWidget()
+} timeline: {
+    VoiceInputEntry(date: .now, configuration: ConfigurationAppIntent())
+}
+
+#Preview(as: .accessoryCircular) {
+    voiceInputWidget()
+} timeline: {
+    VoiceInputEntry(date: .now, configuration: ConfigurationAppIntent())
+}
+
+#Preview(as: .accessoryRectangular) {
     voiceInputWidget()
 } timeline: {
     VoiceInputEntry(date: .now, configuration: ConfigurationAppIntent())

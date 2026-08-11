@@ -23,7 +23,6 @@ import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DirectPager } from "@/components/molecules/direct-pager";
 import { DirectRow } from "@/components/molecules/direct-row";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
-import { ProjectNoteComposerSheet } from "@/components/molecules/project-note-composer-sheet";
 import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sheet";
 import { ProjectStarters } from "@/components/molecules/project-starters";
 import {
@@ -40,13 +39,14 @@ import { ProjectFab } from "@/components/organisms/project-fab";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
+import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useCapture } from "@/hooks/use-capture";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 import { doneStatus, sortDirect } from "@/lib/direct-when";
 import { horizonEndDate } from "@/lib/horizons";
-import type { StarterPrompt } from "@/lib/project-starters";
+import type { StarterPrompt, StarterType } from "@/lib/project-starters";
 import { ConfirmKey } from "@/lib/settings";
 import { isTodoFamily } from "@/lib/taxonomy";
 import type { DbDiaryEntry, DbEntry, EntryType } from "@/lib/types";
@@ -92,11 +92,7 @@ export default function ProjectScreen(): React.ReactElement {
     deleteProject,
   } = useDatabase();
 
-  const {
-    entries: diaryEntries,
-    addEntry: addDiaryEntry,
-    updateEntry: updateDiaryEntry,
-  } = useDiary();
+  const { entries: diaryEntries, addEntry: addDiaryEntry } = useDiary();
 
   const project = projects.find((p) => p.id === id);
 
@@ -139,24 +135,25 @@ export default function ProjectScreen(): React.ReactElement {
     // which is what we want — the user can clear a done line if they're
     // sure, or leave it as a record of completion.
     const todoLike = filed.filter((e) => isTodoFamily(e.type));
-    // Which entry types this project already carries — drives which starter
+    const projectNotes = diaryEntries.filter((n) => n.linked_project_id === id);
+    // Which channels this project already carries — drives which starter
     // prompts survive. A starter for type T persists until T has a real entry,
-    // so each of the three channels retires independently (not all-or-nothing
+    // so each of the four channels retires independently (not all-or-nothing
     // on the first capture). Counts entries of ANY status; a completed todo
-    // still means the todo channel has been used.
-    const present = new Set<EntryType>(filed.map((e) => e.type as EntryType));
+    // still means the todo channel has been used. Notes live in a separate
+    // table, so their presence is tracked alongside the EntryType set.
+    const present = new Set<StarterType>(filed.map((e) => e.type as EntryType));
+    if (projectNotes.length > 0) present.add("note");
     return {
       spine: sortDirect(todoLike),
       ideas: filed.filter((e) => e.type === "idea" && !isDone(e)),
       origin: entries.find(
         (e) => e.type === "idea" && e.promoted_project_id === id,
       ),
-      notes: diaryEntries.filter((n) => n.linked_project_id === id),
+      notes: projectNotes,
       presentTypes: present,
     };
   }, [entries, diaryEntries, id]);
-  const [noteOpen, setNoteOpen] = useState(false);
-  const [editingNote, setEditingNote] = useState<DbDiaryEntry | null>(null);
 
   // Capture: the SAME dock the home board uses (bar → resolver), pre-locked to
   // this project. The old hero-pen → chooser-sheet → three-composer flow was a
@@ -165,6 +162,15 @@ export default function ProjectScreen(): React.ReactElement {
   // grammar. `lockedProjectId` threads attribution through every resolution and
   // hides the resolver's PROJECT picker — the surface implies the project.
   const cap = useCapture({ lockedProjectId: id ?? null });
+
+  // This screen is a pushed Stack.Screen inside the tab layout, so the
+  // CustomTabBar stays mounted underneath it — the dock's `bottom` gap
+  // (space.lg) sits ABOVE the tab bar, not at the true screen bottom. The
+  // keyboard height the OS reports is measured from the true screen bottom,
+  // so the rest offset must include the tab bar's real height too, or the
+  // lift overshoots by exactly that height and the composer floats too high
+  // above the keyboard.
+  const { tabBarHeight } = useGlobalCapture();
 
   // FAB-armed composer: which kind is currently open (null = closed).
   // Distinct from `cap` (the shared home-style dock): this composer skips the
@@ -178,15 +184,26 @@ export default function ProjectScreen(): React.ReactElement {
   // the composer doesn't visually fuse with the project content behind it.
   const [composerActive, setComposerActive] = useState(false);
 
+  // Aborts the FAB-armed composer: clears the kind (unmounts it) and the seed
+  // text, discarding whatever draft was in progress. Shared by the composer's
+  // own close paths (submit, details-stage discard) and the backdrop tap, so
+  // tapping outside the composer cancels it exactly like CaptureBackdrop's
+  // outside-tap cancels the home dock instead of merely dropping the keyboard.
+  const closeFabComposer = (): void => {
+    setFabKind(null);
+    setStarterSeed("");
+  };
+
   // Manual keyboard-lift for the pinned dock. KeyboardAvoidingView doesn't
   // reliably lift an absolutely-positioned child on iOS (KAV measures its own
   // frame, and an absolute wrapper detaches from that measurement), so we
   // subscribe to keyboard events and translate the dock so its bottom edge lands
-  // just above the keyboard. The rest offset is the dock's normal bottom gap
-  // (space.lg); the 1.05 multiplier leaves the same tiny gap CaptureDock uses.
+  // just above the keyboard. The rest offset is the tab bar's real height plus
+  // the dock's own bottom gap (space.lg) — same math as CaptureDock/
+  // AddProjectBar; the 1.05 multiplier leaves the same tiny gap they use.
   // Android's soft input mode already resizes the window, so we only need the
   // offset on iOS.
-  const restOffset = tokens.space.lg;
+  const restOffset = tabBarHeight + tokens.space.lg;
   const keyboardLift = useSharedValue(0);
   useEffect(() => {
     if (Platform.OS !== "ios") return;
@@ -357,28 +374,6 @@ export default function ProjectScreen(): React.ReactElement {
       pathname: "/detail",
       params: { id: idea.id, entryType: idea.type },
     });
-  };
-
-  // + write/edit a note — opens the lightweight composer pre-linked to this
-  // project. When editing, the composer is pre-populated and saves via
-  // updateDiaryEntry; for new notes it calls addDiaryEntry.
-  const handleTapNote = (note: DbDiaryEntry): void => {
-    setEditingNote(note);
-    setNoteOpen(true);
-  };
-
-  const handleSaveNote = (body: string): void => {
-    if (!id) return;
-    if (editingNote) {
-      void updateDiaryEntry(editingNote.id, { body }).catch((err) =>
-        console.error("Failed to update note:", err),
-      );
-      setEditingNote(null);
-    } else {
-      void addDiaryEntry(body, null, null, id).catch((err) =>
-        console.error("Failed to save project note:", err),
-      );
-    }
   };
 
   // DirectRow done/delete handlers — same shape as the home board, so a line
@@ -559,9 +554,11 @@ export default function ProjectScreen(): React.ReactElement {
           {/* Starter prompts — the instrument panel's unlit channels. One row
               per type the project doesn't yet carry (topic-suited on a seeded
               default, generic on a user-created project). Persists PER TYPE:
-              after a todo lands it sits above, and the idea/deadline prompts
-              stay below until each is used. Renders null once all three types
-              exist. Decoupled from `isEmpty` so it coexists with real rows. */}
+              after a todo lands it sits above, and the idea/deadline/note
+              prompts stay below until each is used. Renders null once all
+              four channels exist. Decoupled from `isEmpty` so it coexists
+              with real rows. Note's starter is the only add-path for notes on
+              this screen now — no separate "write a note" CTA. */}
           <ProjectStarters
             projectTitle={project.title}
             presentTypes={presentTypes}
@@ -615,88 +612,53 @@ export default function ProjectScreen(): React.ReactElement {
           </View>
         ) : null}
 
-        {/* NOTES — the handwritten margin, now with session grouping so the
-            margin reads like a dated journal. Each note is tappable to edit;
-            the vertical rule uses per-note opacity segments (today = full,
-            yesterday = 0.6, older = 0.3) so recency is carried by the rule. */}
-        <View style={styles.section}>
-          {notesSessionGroups.map((group) => (
-            <View key={group.label}>
-              <ThemedText
-                type="micro"
-                style={[styles.sessionHeader, { color: colors.inkMuted }]}
-              >
-                {group.label} · {group.ids.length}{" "}
-                {group.ids.length === 1 ? "NOTE" : "NOTES"}
-              </ThemedText>
-              <View style={styles.margin}>
-                {group.ids.map((nid) => {
-                  const note = notesById.get(nid);
-                  if (!note) return null;
-                  const segOpacity = ruleOpacity(note.created_at);
-                  return (
-                    <Pressable
-                      key={note.id}
-                      onPress={() => handleTapNote(note)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Edit note: ${note.body.slice(0, 40)}`}
-                      style={({ pressed }) => [
-                        styles.marginNoteRow,
-                        pressed && styles.pressed,
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.ruleSegment,
-                          {
-                            backgroundColor: colors.surfaceSubtle,
-                            opacity: segOpacity,
-                          },
-                        ]}
-                      />
-                      <ThemedText
-                        type="hand"
-                        style={[styles.marginNote, { color: colors.ink }]}
-                      >
-                        {note.body}
-                      </ThemedText>
-                    </Pressable>
-                  );
-                })}
+        {/* NOTES — the handwritten margin, session-grouped so it reads like a
+            dated journal. Display-only here (editing lives elsewhere); the
+            vertical rule uses per-note opacity segments (today = full,
+            yesterday = 0.6, older = 0.3) so recency is carried by the rule.
+            Adding a note happens via the FAB / starter row, same as every
+            other channel — no dedicated CTA in this section. */}
+        {notes.length > 0 ? (
+          <View style={styles.section}>
+            {notesSessionGroups.map((group) => (
+              <View key={group.label}>
+                <ThemedText
+                  type="micro"
+                  style={[styles.sessionHeader, { color: colors.inkMuted }]}
+                >
+                  {group.label} · {group.ids.length}{" "}
+                  {group.ids.length === 1 ? "NOTE" : "NOTES"}
+                </ThemedText>
+                <View style={styles.margin}>
+                  {group.ids.map((nid) => {
+                    const note = notesById.get(nid);
+                    if (!note) return null;
+                    const segOpacity = ruleOpacity(note.created_at);
+                    return (
+                      <View key={note.id} style={styles.marginNoteRow}>
+                        <View
+                          style={[
+                            styles.ruleSegment,
+                            {
+                              backgroundColor: colors.surfaceSubtle,
+                              opacity: segOpacity,
+                            },
+                          ]}
+                        />
+                        <ThemedText
+                          type="hand"
+                          style={[styles.marginNote, { color: colors.ink }]}
+                        >
+                          {note.body}
+                        </ThemedText>
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
-            </View>
-          ))}
-          {notes.length === 0 && !isEmpty ? (
-            <ThemedText
-              type="hand"
-              style={[styles.quiet, { color: colors.inkMuted }]}
-            >
-              No notes yet.
-            </ThemedText>
-          ) : null}
-          {isEmpty ? null : (
-            <Pressable
-              onPress={() => {
-                setEditingNote(null);
-                setNoteOpen(true);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel="Write a note about this project"
-              style={({ pressed }) => [
-                styles.addNoteBtn,
-                pressed && styles.pressed,
-              ]}
-            >
-              <IconSymbol name="Plus" size={16} color={colors.inkMuted} />
-              <ThemedText
-                type="micro"
-                style={[styles.addNoteLabel, { color: colors.inkMuted }]}
-              >
-                {notes.length === 0 ? "WRITE A NOTE" : "ADD A NOTE"}
-              </ThemedText>
-            </Pressable>
-          )}
-        </View>
+            ))}
+          </View>
+        ) : null}
       </ScrollView>
       <ProjectOverflowSheet
         visible={overflowOpen}
@@ -715,16 +677,6 @@ export default function ProjectScreen(): React.ReactElement {
         onMakeTodo={() => actionIdea && handleMakeTodoFromIdea(actionIdea)}
         onUnfile={() => actionIdea && handleUnfileIdea(actionIdea)}
         onOpen={() => actionIdea && handleOpenIdea(actionIdea)}
-      />
-      <ProjectNoteComposerSheet
-        visible={noteOpen}
-        projectTitle={project.title}
-        initialBody={editingNote?.body}
-        onClose={() => {
-          setNoteOpen(false);
-          setEditingNote(null);
-        }}
-        onSave={handleSaveNote}
       />
       <ConfirmSheet
         visible={deleteConfirm.visible}
@@ -767,7 +719,11 @@ export default function ProjectScreen(): React.ReactElement {
         >
           <Pressable
             style={[StyleSheet.absoluteFill, styles.scrim]}
-            onPress={() => Keyboard.dismiss()}
+            onPress={() => {
+              Keyboard.dismiss();
+              closeFabComposer();
+            }}
+            accessibilityRole="button"
             accessibilityLabel="Dismiss project composer"
           />
         </Animated.View>
@@ -784,10 +740,7 @@ export default function ProjectScreen(): React.ReactElement {
         <ProjectComposer
           kind={fabKind}
           initialText={starterSeed}
-          onClose={() => {
-            setFabKind(null);
-            setStarterSeed("");
-          }}
+          onClose={closeFabComposer}
           onSubmit={handleFabSubmit}
           onActivityChange={setComposerActive}
           projectId={id}
@@ -867,11 +820,6 @@ const styles = StyleSheet.create({
     letterSpacing: tokens.type.micro.tracking,
     marginBottom: tokens.space.xs,
   },
-  quiet: {
-    fontSize: 18,
-    lineHeight: 24,
-    paddingVertical: tokens.space.xs,
-  },
 
   // Ideas pin-row — wrapped chips so footprint stays below the spine.
   pinRow: {
@@ -925,21 +873,6 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: "center",
     justifyContent: "center",
-  },
-
-  // Add-note button — same mono quiet voice as the pull-in trigger, sits
-  // under the NOTES margin so the verb belongs to the surface that displays
-  // the notes. Aligned to the rule's indent so it reads as "add to the margin."
-  addNoteBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.xs,
-    paddingVertical: tokens.space.sm,
-    paddingLeft: tokens.space.md,
-    alignSelf: "flex-start",
-  },
-  addNoteLabel: {
-    letterSpacing: tokens.type.micro.tracking,
   },
 
   empty: {

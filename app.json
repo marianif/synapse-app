@@ -13,8 +13,12 @@
       "appleTeamId": "BK483NXCX5",
       "entitlements": {
         "com.apple.security.application-groups": [
+          "group.dev.the-wedge.synapse-app",
           "group.dev.the-wedge.synapse-app"
         ]
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {

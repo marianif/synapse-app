@@ -4,21 +4,24 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useTheme } from "@/constants/theme";
-import { starterPromptsFor, type StarterPrompt } from "@/lib/project-starters";
-
-import type { EntryType } from "@/lib/types";
+import {
+  starterPromptsFor,
+  type StarterPrompt,
+  type StarterType,
+} from "@/lib/project-starters";
 
 /**
  * The empty-project canvas as an instrument panel at rest, not a void. Renders
- * one add-row per channel (todo · idea · deadline) so a fresh project reads as
- * three lit-but-empty lanes waiting to be filled — the useful default, the
- * projects-overview philosophy applied inside a single project.
+ * one add-row per channel (todo · idea · deadline · note) so a fresh project
+ * reads as four lit-but-empty lanes waiting to be filled — the useful default,
+ * the projects-overview philosophy applied inside a single project.
  *
  * ONE component for both cases; the difference is only the prompt copy:
  *   - seeded default project → topic-suited lines ("Book a workout"), tapping
  *     pre-fills the composer (a real head-start).
  *   - user-created project    → generic labels ("First project todo"), tapping
- *     opens the composer blank.
+ *     opens the composer blank. Note is always generic — there's no
+ *     topic-suited note to suggest.
  *
  * Rows are display-only affordances — a tap arms the SAME in-screen composer
  * the FAB opens (via onStart), pre-locked to this project and type. Nothing is
@@ -37,7 +40,7 @@ export function ProjectStarters({
 }: {
   projectTitle: string;
   /** Entry types the project already carries — prompts for these are retired. */
-  presentTypes: Set<EntryType>;
+  presentTypes: Set<StarterType>;
   /**
    * Arm the project composer for `type`, seeding `text` when the prompt is a
    * real suggestion (empty string = open blank). Wired to the same setter the
@@ -67,7 +70,13 @@ export function ProjectStarters({
             size={16}
             color={colors.inkMuted}
           />
-          <EntryDot type={prompt.type} />
+          {prompt.type === "note" ? (
+            <View
+              style={[styles.noteDot, { backgroundColor: colors.inkMuted }]}
+            />
+          ) : (
+            <EntryDot type={prompt.type} />
+          )}
           <ThemedText
             type="body"
             numberOfLines={1}
@@ -97,6 +106,14 @@ const styles = StyleSheet.create({
   },
   text: {
     flex: 1,
+  },
+  // Note's dot: same 6px footprint as EntryDot, but a plain neutral gray since
+  // note isn't a colored entry-type channel.
+  noteDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    flexShrink: 0,
   },
   pressed: {
     opacity: 0.7,

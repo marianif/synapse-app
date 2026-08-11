@@ -13,24 +13,29 @@ import type { EntryType } from "@/lib/types";
  *     is real: tapping pre-fills the composer with the line, editable, one send
  *     from committing.
  *   - User-created projects (topic unknown) fall back to GENERIC_STARTERS — a
- *     neutral "First project todo / idea / deadline" per channel, opening the
- *     composer blank (there's nothing meaningful to pre-fill).
+ *     neutral "First project todo / idea / deadline / note" per channel,
+ *     opening the composer blank (there's nothing meaningful to pre-fill).
  *
  * The prompts are display-only until the user commits via the composer; they
  * are never seeded as real DB rows, so `isEmpty` holds until a real capture
  * lands. Voice per PRODUCT.md principle 6: plain, concrete, never a nag.
  */
 
-// The three channels an empty project shows, in display order. Deadline reads
-// as its own channel even though it's a todo flavor.
-export const STARTER_TYPES: readonly EntryType[] = [
+// `note` isn't a real EntryType (it becomes a diary entry, not an entries
+// row) — same bolt-on literal ProjectComposerKind uses.
+export type StarterType = EntryType | "note";
+
+// The four channels an empty project shows, in display order. Deadline reads
+// as its own channel even though it's a todo flavor; note is the quietest.
+export const STARTER_TYPES: readonly StarterType[] = [
   "todo",
   "idea",
   "deadline",
+  "note",
 ] as const;
 
 export type StarterPrompt = {
-  type: EntryType;
+  type: StarterType;
   /** The row label AND the text pre-filled into the composer on tap. */
   text: string;
   /**
@@ -46,6 +51,7 @@ const GENERIC_STARTERS: StarterPrompt[] = [
   { type: "todo", text: "First project todo", prefill: false },
   { type: "idea", text: "First project idea", prefill: false },
   { type: "deadline", text: "First project deadline", prefill: false },
+  { type: "note", text: "First project note", prefill: false },
 ];
 
 // Topic-suited prompts keyed by the exact seeded default-project title. The

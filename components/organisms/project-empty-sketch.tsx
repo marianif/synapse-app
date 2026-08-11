@@ -103,10 +103,6 @@ export function ProjectEmptyFabPointer({
 
   if (!visible && opacity.value === 0) return null;
 
-  // Top of the annotation stack: sits above the top-most pill (idea).
-  const topAnnoCenterFromBottom = pillCenterFromBottom(0);
-  const headlineBottom = topAnnoCenterFromBottom + LABEL_HEIGHT + 40;
-
   return (
     <Animated.View style={[styles.overlay, animatedStyle]} pointerEvents="none">
       {/* One label + arrow per pill. */}

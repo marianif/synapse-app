@@ -26,6 +26,10 @@ interface FabAction {
 interface ProjectFabProps {
   onAction?: (key: string) => void;
   isEmpty: boolean;
+  /** Fires whenever the fanned-out pill menu opens or closes, so the screen
+   *  can reserve scroll space for it (see FAB_OPEN_FOOTPRINT below) and keep
+   *  list content from sitting behind the pills/captions. */
+  onOpenChange?: (open: boolean) => void;
 }
 
 // ─── Default actions per project screen ──────────────────────────────────────────
@@ -71,12 +75,28 @@ function getActions(colors: ThemeColors, scheme: Scheme): FabAction[] {
 const PILL_HEIGHT = 44;
 const STAGGER_SHIFT = 0.15;
 const STAGGER_MULTIPLIER = 1.6;
+const PILL_COUNT = 4;
+const WRAPPER_BOTTOM = 28;
+const WRAPPER_GAP = tokens.space.md;
+const ACTIONS_GAP = tokens.space.sm;
+const ACTIONS_PAD_BOTTOM = tokens.space.sm;
+
+// How much vertical space the fanned-out pill column occupies above the
+// screen bottom, once fully open — screens use this to reserve scroll room
+// so list content never ends up sitting behind the pills (see project.tsx).
+export const FAB_OPEN_FOOTPRINT =
+  WRAPPER_BOTTOM +
+  PILL_COUNT * PILL_HEIGHT +
+  (PILL_COUNT - 1) * ACTIONS_GAP +
+  ACTIONS_PAD_BOTTOM +
+  WRAPPER_GAP;
 
 // ─── Component ────────────────────────────────────────────────────────────────────
 
 export function ProjectFab({
   onAction,
   isEmpty = false,
+  onOpenChange,
 }: ProjectFabProps): React.ReactElement {
   const defaultOpen = isEmpty;
   const { colors, scheme } = useTheme();
@@ -88,16 +108,18 @@ export function ProjectFab({
 
   const close = useCallback((): void => {
     setOpen(false);
+    onOpenChange?.(false);
     isOpen.value = withTiming(0, { duration: tokens.motion.duration.base });
-  }, [isOpen]);
+  }, [isOpen, onOpenChange]);
 
   const handleToggle = useCallback((): void => {
     const next = !open;
     setOpen(next);
+    onOpenChange?.(next);
     isOpen.value = withTiming(next ? 1 : 0, {
       duration: tokens.motion.duration.base,
     });
-  }, [open, isOpen]);
+  }, [open, isOpen, onOpenChange]);
 
   const handleAction = useCallback(
     (key: string): void => {

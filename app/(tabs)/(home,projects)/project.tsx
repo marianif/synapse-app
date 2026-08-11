@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   Platform,
@@ -35,7 +35,10 @@ import type {
   ProjectComposerSubmitPayload,
 } from "@/components/organisms/project-composer";
 import { ProjectComposer } from "@/components/organisms/project-composer";
-import { ProjectFab } from "@/components/organisms/project-fab";
+import {
+  FAB_OPEN_FOOTPRINT,
+  ProjectFab,
+} from "@/components/organisms/project-fab";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
@@ -155,6 +158,9 @@ export default function ProjectScreen(): React.ReactElement {
     };
   }, [entries, diaryEntries, id]);
 
+  const isEmpty =
+    spine.length === 0 && ideas.length === 0 && notes.length === 0 && !origin;
+
   // Capture: the SAME dock the home board uses (bar → resolver), pre-locked to
   // this project. The old hero-pen → chooser-sheet → three-composer flow was a
   // slower, project-only fork of capture; capture is the brand's one trigger
@@ -192,6 +198,26 @@ export default function ProjectScreen(): React.ReactElement {
   const closeFabComposer = (): void => {
     setFabKind(null);
     setStarterSeed("");
+  };
+
+  // When the FAB's pill menu fans out, it can visually land on top of list
+  // content (notes especially) since the pills+captions are a fixed-position
+  // overlay, not part of the scroll flow. Rather than paint a scrim/backing
+  // shape behind them, reserve that much space at the bottom of the
+  // scrollable content and scroll it into view — so there's simply nothing
+  // back there for the pills to sit on top of. Only meaningful for a project
+  // with real content; the empty-state FAB has no scrollable content behind
+  // it to begin with.
+  const scrollRef = useRef<ScrollView | null>(null);
+  const [fabReserve, setFabReserve] = useState(0);
+  const handleFabOpenChange = (open: boolean): void => {
+    if (isEmpty) return;
+    if (open) {
+      setFabReserve(FAB_OPEN_FOOTPRINT);
+      requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
+    } else {
+      setFabReserve(0);
+    }
   };
 
   // Manual keyboard-lift for the pinned dock. KeyboardAvoidingView doesn't
@@ -433,8 +459,6 @@ export default function ProjectScreen(): React.ReactElement {
   }
 
   const archived = project.status === "archived";
-  const isEmpty =
-    spine.length === 0 && ideas.length === 0 && notes.length === 0 && !origin;
 
   // Archived projects: a hairline tonal wash on the paper, never a banner.
   // The kicker on the header says "ARCHIVED PROJECT"; the surface whispers it.
@@ -486,8 +510,12 @@ export default function ProjectScreen(): React.ReactElement {
         }}
       />
       <ScrollView
+        ref={scrollRef}
         style={styles.scroll}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          fabReserve > 0 && { paddingBottom: styles.content.paddingBottom + fabReserve },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* Provenance — the handwritten line that says where this project
@@ -760,6 +788,7 @@ export default function ProjectScreen(): React.ReactElement {
               setStarterSeed("");
               setFabKind(key as ProjectComposerKind);
             }}
+            onOpenChange={handleFabOpenChange}
           />
         </>
       ) : null}

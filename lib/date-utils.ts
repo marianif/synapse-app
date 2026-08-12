@@ -51,6 +51,45 @@ export function formatDateLabel(d: Date): string {
   return `${DAY_NAMES[d.getDay()]}, ${MONTH_ABBRS[d.getMonth()]} ${d.getDate()}`;
 }
 
+/**
+ * Parse a lenient time string into minutes since midnight, or null.
+ * Accepts the canonical padded 24h "HH:MM", legacy free-text "H:MM AM/PM",
+ * and bare "H:MM" / "HH".
+ */
+export function parseTimeToMinutes(
+  timeStr: string | null | undefined,
+): number | null {
+  if (!timeStr) return null;
+  const match = timeStr
+    .trim()
+    .match(/^(\d{1,2})(?::(\d{2}))?(?:\s*(AM|PM))?$/i);
+  if (!match) return null;
+  let hour = parseInt(match[1], 10);
+  const minute = match[2] ? parseInt(match[2], 10) : 0;
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  const period = match[3]?.toUpperCase();
+  if (period === "PM" && hour < 12) hour += 12;
+  if (period === "AM" && hour === 12) hour = 0;
+  return hour * 60 + minute;
+}
+
+/** Format minutes since midnight as the padded 24h "HH:MM" storage form. */
+export function formatTime24h(minutes: number): string {
+  const clamped = ((minutes % 1440) + 1440) % 1440;
+  const h = String(Math.floor(clamped / 60)).padStart(2, "0");
+  const m = String(clamped % 60).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+/** Format minutes since midnight as a 12h display string like "9:30 PM". */
+export function formatTime12h(minutes: number): string {
+  const clamped = ((minutes % 1440) + 1440) % 1440;
+  const h24 = Math.floor(clamped / 60);
+  const hour = h24 % 12 === 0 ? 12 : h24 % 12;
+  const period = h24 >= 12 ? "PM" : "AM";
+  return `${hour}:${String(clamped % 60).padStart(2, "0")} ${period}`;
+}
+
 // ─── Comparison ───────────────────────────────────────────────────────────────
 
 /** Compare two Date objects at day-level. */

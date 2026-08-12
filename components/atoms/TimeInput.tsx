@@ -7,9 +7,10 @@ type TimeInputProps = {
   value?: string;
   onChange: (value: string) => void;
   style?: StyleProp<TextStyle>;
+  backgroundColor?: string;
 };
 
-export default function TimeInput({ value, onChange, style }: TimeInputProps): React.JSX.Element {
+export default function TimeInput({ value, onChange, style, backgroundColor }: TimeInputProps): React.JSX.Element {
   const { colors } = useTheme();
   const [internalValue, setInternalValue] = useState(value ?? '');
 
@@ -61,7 +62,7 @@ export default function TimeInput({ value, onChange, style }: TimeInputProps): R
       maxLength={8}
       style={[
         {
-          backgroundColor: colors.surfaceSubtle,
+          backgroundColor: backgroundColor ?? colors.surfaceSubtle,
           borderRadius: tokens.radius.md,
           paddingHorizontal: tokens.space.lg,
           paddingVertical: tokens.space.md,

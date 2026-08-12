@@ -7,9 +7,10 @@ type DateInputProps = {
   value?: string;
   onChange: (value: string) => void;
   style?: StyleProp<TextStyle>;
+  backgroundColor?: string;
 };
 
-export default function DateInput({ value, onChange, style }: DateInputProps): React.JSX.Element {
+export default function DateInput({ value, onChange, style, backgroundColor }: DateInputProps): React.JSX.Element {
   const { colors } = useTheme();
   const [internalValue, setInternalValue] = useState(value ?? '');
 
@@ -43,7 +44,7 @@ export default function DateInput({ value, onChange, style }: DateInputProps): R
       maxLength={10}
       style={[
         {
-          backgroundColor: colors.surfaceSubtle,
+          backgroundColor: backgroundColor ?? colors.surfaceSubtle,
           borderRadius: tokens.radius.md,
           paddingHorizontal: tokens.space.lg,
           paddingVertical: tokens.space.md,

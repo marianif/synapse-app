@@ -16,13 +16,14 @@ export default function HomeStackLayout(): React.ReactElement {
   return (
     <Stack screenOptions={{ headerShown: true }}>
       <Stack.Screen name="index" options={{ header: () => <AppHeader /> }} />
-      <Stack.Screen name="detail" />
       <Stack.Screen name="settings" />
-      {/* Shared route: project.tsx lives in the (home,projects) array group, so
-          it exists in this stack AND in the projects stack. Opening a project
-          from the Field pushes it here, which is what keeps Back returning to
-          the Field instead of dumping you on the Projects shelf. */}
+      {/* Shared routes: project.tsx and detail.tsx live in the (home,projects)
+          array group, so each exists in this stack AND in the projects stack.
+          Opening one from the Field pushes it here, which is what keeps Back
+          returning to the Field instead of dumping you on the Projects shelf. */}
       <Stack.Screen name="project" />
+      <Stack.Screen name="detail" />
+      <Stack.Screen name="edit" />
     </Stack>
   );
 }

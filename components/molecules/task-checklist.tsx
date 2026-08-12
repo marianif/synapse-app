@@ -18,6 +18,10 @@ interface TaskChecklistProps {
   entryId: string;
   /** The parent's type shade; the open checkbox and the counter borrow it. */
   accent: string;
+  /** Render progress and task labels without any mutation controls. */
+  readOnly?: boolean;
+  /** Keep completion toggles active while hiding task editing controls. */
+  toggleOnly?: boolean;
 }
 
 // ── Row ───────────────────────────────────────────────────────────────────────
@@ -29,6 +33,8 @@ function TaskRow({
   onToggle,
   onRename,
   onDelete,
+  readOnly,
+  toggleOnly,
 }: {
   task: DbTask;
   accent: string;
@@ -36,9 +42,12 @@ function TaskRow({
   onToggle: () => void;
   onRename: (title: string) => void;
   onDelete: () => void;
+  readOnly: boolean;
+  toggleOnly: boolean;
 }): React.ReactElement {
   const { colors } = useTheme();
   const done = task.done === 1;
+  const canToggle = !readOnly || toggleOnly;
 
   // Local text state so each keystroke doesn't round-trip through SQLite; the
   // write happens on blur. Seeded from the row and never re-synced — the row is
@@ -57,23 +66,37 @@ function TaskRow({
 
   return (
     <View style={styles.row}>
-      <Pressable
-        onPress={onToggle}
-        hitSlop={10}
-        style={styles.check}
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: done }}
-        accessibilityLabel={task.title}
-      >
-        <MaterialCommunityIcons
-          name={done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
-          size={20}
-          // Green is completion-only; an open box takes the parent's type shade.
-          color={done ? tokens.feedback.success : accent}
-        />
-      </Pressable>
+      {canToggle ? (
+        <Pressable
+          onPress={onToggle}
+          hitSlop={10}
+          style={styles.check}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: done }}
+          accessibilityLabel={task.title}
+        >
+          <MaterialCommunityIcons
+            name={done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
+            size={20}
+            color={done ? tokens.feedback.success : accent}
+          />
+        </Pressable>
+      ) : (
+        <View
+          style={styles.check}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: done }}
+          accessibilityLabel={task.title}
+        >
+          <MaterialCommunityIcons
+            name={done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
+            size={20}
+            color={done ? tokens.feedback.success : accent}
+          />
+        </View>
+      )}
 
-      {editing ? (
+      {editing && !readOnly ? (
         <TextInput
           value={text}
           onChangeText={setText}
@@ -97,7 +120,7 @@ function TaskRow({
         </ThemedText>
       )}
 
-      {editing ? (
+      {editing && !readOnly ? (
         <Pressable
           onPress={onDelete}
           hitSlop={10}
@@ -138,6 +161,8 @@ function TaskRow({
 export function TaskChecklist({
   entryId,
   accent,
+  readOnly = false,
+  toggleOnly = false,
 }: TaskChecklistProps): React.ReactElement {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
@@ -171,24 +196,24 @@ export function TaskChecklist({
           <ThemedText type="micro" muted style={styles.kicker}>
             Tasks
           </ThemedText>
-          {mine.length > 0 ? (
-            <Pressable
-              onPress={() => setEditing((v) => !v)}
-              hitSlop={8}
-              style={({ pressed }) => [
-                styles.editPill,
-                { backgroundColor: accent + (editing ? "22" : "18") },
-                pressed && styles.pressed,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={editing ? "Done editing tasks" : "Edit tasks"}
-            >
-              <MaterialCommunityIcons
-                name={editing ? "check" : "pencil-outline"}
-                size={13}
-                color={accent}
-              />
-            </Pressable>
+          {mine.length > 0 && !readOnly ? (
+              <Pressable
+                onPress={() => setEditing((v) => !v)}
+                hitSlop={8}
+                style={({ pressed }) => [
+                  styles.editPill,
+                  { backgroundColor: accent + (editing ? "22" : "18") },
+                  pressed && styles.pressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={editing ? "Done editing tasks" : "Edit tasks"}
+              >
+                <MaterialCommunityIcons
+                  name={editing ? "check" : "pencil-outline"}
+                  size={13}
+                  color={accent}
+                />
+              </Pressable>
           ) : null}
         </View>
         {mine.length > 0 ? (
@@ -220,6 +245,8 @@ export function TaskChecklist({
             task={task}
             accent={accent}
             editing={editing}
+            readOnly={readOnly}
+            toggleOnly={toggleOnly}
             onToggle={() => {
               void setTaskDone(task.id, task.done === 0).catch(
                 (error: unknown) => {
@@ -241,30 +268,29 @@ export function TaskChecklist({
         ))}
       </Animated.View>
 
-      <View style={styles.row}>
-        <View style={styles.check}>
-          <MaterialCommunityIcons
-            name="plus"
-            size={18}
-            color={colors.inkMuted}
+      {!readOnly ? (
+        <View style={styles.row}>
+          <View style={styles.check}>
+            <MaterialCommunityIcons
+              name="plus"
+              size={18}
+              color={colors.inkMuted}
+            />
+          </View>
+          <TextInput
+            ref={inputRef}
+            value={drafting}
+            onChangeText={setDrafting}
+            onSubmitEditing={handleAdd}
+            placeholder={mine.length ? "Add another" : "Add a task"}
+            placeholderTextColor={colors.inkMuted}
+            submitBehavior="submit"
+            returnKeyType="next"
+            style={[styles.input, { color: colors.ink }]}
+            accessibilityLabel="Add a task"
           />
         </View>
-        <TextInput
-          ref={inputRef}
-          value={drafting}
-          onChangeText={setDrafting}
-          onSubmitEditing={handleAdd}
-          placeholder={mine.length ? "Add another" : "Add a task"}
-          placeholderTextColor={colors.inkMuted}
-          // `submitBehavior="submit"` keeps the keyboard up across submits, so a
-          // burst of subtasks lands in one sitting. (RN 0.83 — replaces the
-          // deprecated `blurOnSubmit={false}`.)
-          submitBehavior="submit"
-          returnKeyType="next"
-          style={[styles.input, { color: colors.ink }]}
-          accessibilityLabel="Add a task"
-        />
-      </View>
+      ) : null}
     </View>
   );
 }

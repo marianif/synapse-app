@@ -10,10 +10,11 @@ const PAYLOAD_KEY = "shared_incoming";
 /**
  * Drains payloads left by the iOS share extension.
  *
- * The extension writes into the App Group container rather than deep-linking —
- * an extension can only launch its host app by walking the responder chain for
- * `openURL:`, which iOS restricts and which fails silently. Shared storage has
- * no such dependency.
+ * The extension writes into the App Group container, then asks the host to
+ * open the app's `synapseapp` scheme so Synapse foregrounds on the Notes tab
+ * (see targets/share/ShareViewController.swift). Shared storage is the durable
+ * channel: it has no dependency on the foreground call succeeding, and shares
+ * queued while the app was closed all survive.
  *
  * The extension appends to an array, so shares queued while the app was closed
  * all survive. We drain on mount and on every foreground, clearing the key so

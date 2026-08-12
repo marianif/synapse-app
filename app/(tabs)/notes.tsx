@@ -239,6 +239,7 @@ export default function NotesScreen(): React.ReactElement {
           }}
           targetLabel={targetLabel}
           targetKind={target?.kind ?? null}
+          targetCount={filterTargets.length}
           onOpenTargetFilter={() => setTargetSheetOpen(true)}
           onClearTarget={() => setTarget(null)}
         />
@@ -292,6 +293,7 @@ export default function NotesScreen(): React.ReactElement {
         visible={targetSheetOpen}
         selected={target}
         targets={filterTargets}
+        title="BY PROJECT · IDEA"
         onSelect={handlePickTarget}
         onClose={() => setTargetSheetOpen(false)}
       />

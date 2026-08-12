@@ -30,9 +30,7 @@ export function CompactCalendar({
 }: CompactCalendarProps): React.ReactElement {
   const { colors } = useTheme();
   // The visible month — seeds from the selection, else today.
-  const [cursor, setCursor] = useState<Dayjs>(
-    value ? dayjs(value) : dayjs(),
-  );
+  const [cursor, setCursor] = useState<Dayjs>(value ? dayjs(value) : dayjs());
   const today = dayjs();
 
   const monthStart = cursor.startOf("month");
@@ -46,9 +44,7 @@ export function CompactCalendar({
   ];
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: colors.surfaceSubtle }]}
-    >
+    <View style={[styles.container, { backgroundColor: colors.surfaceSubtle }]}>
       {/* Month navigator */}
       <View style={styles.monthBar}>
         <Pressable
@@ -73,7 +69,7 @@ export function CompactCalendar({
       {/* Weekday header */}
       <View style={styles.weekRow}>
         {WEEKDAY_LETTERS.map((letter, i) => (
-          <View key={i} style={styles.cell}>
+          <View key={i} style={styles.weekdayCell}>
             <ThemedText type="caption" muted style={styles.weekdayText}>
               {letter}
             </ThemedText>
@@ -111,11 +107,19 @@ export function CompactCalendar({
                     { color: colors.ink },
                     isPast && { color: colors.inkMuted },
                     isToday && !isSelected && { color: accentColor },
-                    isSelected && [styles.dayTextSelected, { color: colors.paper }],
+                    isSelected && [
+                      styles.dayTextSelected,
+                      { color: colors.paper },
+                    ],
                   ]}
                 >
                   {day.date()}
                 </ThemedText>
+                {isToday && !isSelected ? (
+                  <View
+                    style={[styles.todayDot, { backgroundColor: accentColor }]}
+                  />
+                ) : null}
               </View>
             </Pressable>
           );
@@ -128,26 +132,27 @@ export function CompactCalendar({
 const styles = StyleSheet.create({
   container: {
     borderRadius: tokens.radius.md,
-    padding: tokens.space.sm,
+    padding: tokens.space.md,
     gap: tokens.space.xs,
   },
   monthBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: tokens.space.xs,
+    minHeight: 44,
   },
   navButton: {
-    width: 28,
-    height: 28,
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
   },
   monthLabel: {
-    fontSize: 13,
+    fontSize: 14,
   },
   weekRow: {
     flexDirection: "row",
+    marginBottom: tokens.space.xs,
   },
   grid: {
     flexDirection: "row",
@@ -155,24 +160,38 @@ const styles = StyleSheet.create({
   },
   cell: {
     width: `${100 / 7}%`,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 1,
+  },
+  weekdayCell: {
+    width: `${100 / 7}%`,
+    height: 24,
+    alignItems: "center",
+    justifyContent: "center",
   },
   weekdayText: {
     fontSize: 10,
   },
   dayPill: {
-    width: 30,
-    height: 30,
+    width: 34,
+    height: 34,
     borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
+    position: "relative",
   },
   dayText: {
     fontSize: 13,
   },
   dayTextSelected: {
     fontWeight: "600",
+  },
+  todayDot: {
+    position: "absolute",
+    bottom: 3,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
   },
 });

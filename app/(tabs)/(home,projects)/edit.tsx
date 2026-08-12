@@ -28,17 +28,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { TimeStepper } from "@/components/atoms/time-stepper";
-import { CompactCalendar } from "@/components/molecules/compact-calendar";
+import { WhenPicker } from "@/components/molecules/when-picker";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { entryKicker, tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
-import {
-  formatTime12h,
-  parseDate,
-  parseTimeToMinutes,
-  toDisplayDate,
-} from "@/lib/date-utils";
+import { formatTime12h, parseDate, parseTimeToMinutes } from "@/lib/date-utils";
 import { horizonEndDate } from "@/lib/horizons";
 import { parseRule } from "@/lib/recurrence";
 import type {
@@ -431,58 +425,22 @@ export default function EditScreen(): React.ReactElement {
                     open={openRow === "when"}
                     onPress={() => toggleRow("when")}
                   >
-                    {isDeadline ? (
-                      <View style={styles.expandGap}>
-                        <InlineOptionRail>
-                          {HORIZONS.map((horizon) => (
-                            <InlineOption
-                              key={horizon.value}
-                              label={horizon.label}
-                              selected={draft.dueRange === horizon.value}
-                              accentColor={accent}
-                              onPress={() =>
-                                patchDraft(setDraft, {
-                                  dueRange:
-                                    draft.dueRange === horizon.value
-                                      ? null
-                                      : horizon.value,
-                                })
-                              }
-                            />
-                          ))}
-                          <InlineOption
-                            label="exact date"
-                            selected={draft.dueRange === null}
-                            accentColor={accent}
-                            onPress={() =>
-                              patchDraft(setDraft, { dueRange: null })
-                            }
-                          />
-                        </InlineOptionRail>
-                      </View>
-                    ) : null}
-
                     {!isDeadline || draft.dueRange === null ? (
                       <View style={styles.expandGap}>
-                        <CompactCalendar
-                          value={parseDate(draft.date || null)}
-                          onSelect={(d) =>
-                            patchDraft(setDraft, { date: toDisplayDate(d) })
+                        <WhenPicker
+                          date={draft.date}
+                          time={draft.time}
+                          onDateChange={(date) =>
+                            patchDraft(setDraft, { date })
+                          }
+                          onTimeChange={(time) =>
+                            patchDraft(setDraft, { time })
                           }
                           accentColor={accent}
+                          dateLabel={isDeadline ? "DUE DATE" : "DATE"}
+                          initiallyOpen
+                          showQuickOptions={false}
                         />
-                        <View style={styles.timeRow}>
-                          <ThemedText type="mono" muted>
-                            AT
-                          </ThemedText>
-                          <TimeStepper
-                            value={draft.time}
-                            onChange={(time) =>
-                              patchDraft(setDraft, { time })
-                            }
-                            accentColor={accent}
-                          />
-                        </View>
                       </View>
                     ) : null}
                   </ReadoutRow>
@@ -727,6 +685,52 @@ function InlineOptionRail({
   );
 }
 
+function HorizonOptionGrid({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.ReactElement {
+  return <View style={styles.horizonGrid}>{children}</View>;
+}
+
+function HorizonOption({
+  label,
+  selected,
+  accentColor,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  accentColor: string;
+  onPress: () => void;
+}): React.ReactElement {
+  const { colors } = useTheme();
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+      style={styles.horizonOption}
+    >
+      <View
+        style={[
+          styles.horizonMark,
+          { backgroundColor: selected ? accentColor : colors.inkMuted },
+        ]}
+      />
+      <ThemedText
+        type="mono"
+        numberOfLines={1}
+        style={{ color: selected ? accentColor : colors.inkMuted }}
+      >
+        {label}
+      </ThemedText>
+    </Pressable>
+  );
+}
+
 function InlineOption({
   label,
   selected,
@@ -864,6 +868,23 @@ const styles = StyleSheet.create({
   optionRail: {
     flexDirection: "row",
     gap: tokens.space.md,
+  },
+  horizonGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: tokens.space.xs,
+  },
+  horizonOption: {
+    width: "48%",
+    minHeight: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+  },
+  horizonMark: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
   },
   option: {
     minHeight: 32,

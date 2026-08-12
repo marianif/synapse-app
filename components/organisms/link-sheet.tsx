@@ -52,6 +52,8 @@ interface LinkSheetProps {
   /** Pick a target to link, or null to make the note free. */
   onSelect: (selection: LinkSelection) => void;
   onClose: () => void;
+  /** Sheet header label. Defaults to "Relate this note". */
+  title?: string;
 }
 
 /**
@@ -66,6 +68,7 @@ export function LinkSheet({
   targets,
   onSelect,
   onClose,
+  title = "RELATE THIS NOTE",
 }: LinkSheetProps): React.ReactElement {
   const { colors } = useTheme();
 
@@ -115,7 +118,7 @@ export function LinkSheet({
 
           <View style={styles.header}>
             <ThemedText type="label" style={{ color: colors.inkMuted }}>
-              RELATE THIS NOTE
+              {title}
             </ThemedText>
           </View>
 

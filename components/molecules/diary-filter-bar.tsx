@@ -25,6 +25,8 @@ interface DiaryFilterBarProps {
   onOpenTargetFilter: () => void;
   /** Clear the target filter (back to the macro buckets). */
   onClearTarget: () => void;
+  /** Live count of browsable targets (projects + ideas that have notes). */
+  targetCount?: number;
 }
 
 /**
@@ -41,6 +43,7 @@ export function DiaryFilterBar({
   targetKind,
   onOpenTargetFilter,
   onClearTarget,
+  targetCount,
 }: DiaryFilterBarProps): React.ReactElement {
   const { colors } = useTheme();
   const filteringByTarget = targetLabel !== null;
@@ -119,10 +122,21 @@ export function DiaryFilterBar({
         onPress={onOpenTargetFilter}
         hitSlop={10}
         accessibilityRole="button"
-        accessibilityLabel="Filter by a specific project or idea"
-        style={styles.filterKey}
+        accessibilityLabel="Browse notes by project or idea"
+        style={({ pressed }) => [
+          styles.filterKey,
+          { backgroundColor: pressed ? colors.surfaceSubtle : colors.surface },
+        ]}
       >
-        <IconSymbol name="Filters" size={20} color={colors.inkMuted} />
+        <IconSymbol name="Filters" size={16} color={colors.inkMuted} />
+        <ThemedText type="micro" style={[styles.filterLabel, { color: colors.inkMuted }]}>
+          BY PROJECT · IDEA
+        </ThemedText>
+        {targetCount !== undefined && targetCount > 0 ? (
+          <ThemedText type="micro" style={{ color: colors.inkMuted }}>
+            {targetCount}
+          </ThemedText>
+        ) : null}
       </Pressable>
     </View>
   );
@@ -167,10 +181,15 @@ const styles = StyleSheet.create({
   },
   filterKey: {
     marginLeft: "auto",
-    width: 28,
-    height: 28,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: tokens.space.sm,
+    minHeight: 32,
+    paddingHorizontal: tokens.space.md,
+    borderRadius: tokens.radius.pill,
+  },
+  filterLabel: {
+    letterSpacing: 0.4,
   },
   clearKey: {
     width: 28,

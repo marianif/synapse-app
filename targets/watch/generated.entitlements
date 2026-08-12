@@ -5,6 +5,7 @@
     <key>com.apple.security.application-groups</key>
     <array>
       <string>group.dev.the-wedge.synapse-app</string>
+      <string>group.dev.the-wedge.synapse-app</string>
     </array>
   </dict>
 </plist>

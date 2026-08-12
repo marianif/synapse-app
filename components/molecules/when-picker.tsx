@@ -8,12 +8,12 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ChipRail, SelectChip } from "@/components/atoms/select-chip";
+import { ThemedText } from "@/components/atoms/themed-text";
 import {
   WHEEL_ROW_HEIGHT,
   WheelPicker,
   type WheelItem,
 } from "@/components/atoms/wheel-picker";
-import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { parseDate, toDisplayDate } from "@/lib/date-utils";
@@ -76,6 +76,10 @@ type WhenPickerProps = {
   accentColor: string;
   /** Label above the panel ("DATE" or "DUE DATE"). */
   dateLabel: string;
+  /** Opens the precise wheel immediately when embedded in an editor. */
+  initiallyOpen?: boolean;
+  /** Hide relative shortcuts when the surrounding screen owns those choices. */
+  showQuickOptions?: boolean;
 };
 
 /**
@@ -90,9 +94,11 @@ export function WhenPicker({
   onTimeChange,
   accentColor,
   dateLabel,
+  initiallyOpen = false,
+  showQuickOptions = true,
 }: WhenPickerProps): React.ReactElement {
   const { colors } = useTheme();
-  const [wheelOpen, setWheelOpen] = useState(false);
+  const [wheelOpen, setWheelOpen] = useState(initiallyOpen);
 
   const selectedDate = parseDate(date || null);
 
@@ -127,7 +133,8 @@ export function WhenPicker({
         .format("h:mm A")
     : "";
   const echoText = selectedDate
-    ? dayjs(selectedDate).format("ddd, D MMM") + (timeLabel ? ` · ${timeLabel}` : "")
+    ? dayjs(selectedDate).format("ddd, D MMM") +
+      (timeLabel ? ` · ${timeLabel}` : "")
     : "When?";
 
   return (
@@ -171,20 +178,21 @@ export function WhenPicker({
         </Pressable>
       </View>
 
-      {/* Quick-pick chip rail — the one-tap common answers */}
-      <View style={styles.railWrap}>
-        <ChipRail>
-          {RELATIVE_OPTIONS.map((option) => (
-            <SelectChip
-              key={option.key}
-              label={option.label}
-              selected={activeRelative === option.key}
-              accentColor={accentColor}
-              onPress={() => pickRelative(option)}
-            />
-          ))}
-        </ChipRail>
-      </View>
+      {showQuickOptions ? (
+        <View style={styles.railWrap}>
+          <ChipRail>
+            {RELATIVE_OPTIONS.map((option) => (
+              <SelectChip
+                key={option.key}
+                label={option.label}
+                selected={activeRelative === option.key}
+                accentColor={accentColor}
+                onPress={() => pickRelative(option)}
+              />
+            ))}
+          </ChipRail>
+        </View>
+      ) : null}
 
       {/* Day + time wheel — centered selection band, progressive disclosure */}
       {wheelOpen && (
@@ -250,10 +258,7 @@ export function WhenPicker({
                 pressed && { opacity: 0.8 },
               ]}
             >
-              <ThemedText
-                type="bodyBold"
-                style={{ color: colors.paper }}
-              >
+              <ThemedText type="bodyBold" style={{ color: colors.paper }}>
                 Done
               </ThemedText>
             </Pressable>

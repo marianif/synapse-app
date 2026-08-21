@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-09T12:33:58.425Z",
+  "generatedAt": "2026-08-12T18:02:52.435Z",
   "surface": "mobile",
   "componentsDir": "components",
   "register": null,
@@ -8,7 +8,7 @@
     {
       "name": "DateInput",
       "file": "components/atoms/DateInput.tsx",
-      "line": 12,
+      "line": 13,
       "kind": "function",
       "exports": [
         "named"
@@ -26,6 +26,11 @@
         },
         {
           "name": "style",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "backgroundColor",
           "required": true,
           "usageCount": 0
         }
@@ -44,7 +49,7 @@
     {
       "name": "TimeInput",
       "file": "components/atoms/TimeInput.tsx",
-      "line": 12,
+      "line": 13,
       "kind": "function",
       "exports": [
         "named"
@@ -62,6 +67,11 @@
         },
         {
           "name": "style",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "backgroundColor",
           "required": true,
           "usageCount": 0
         }
@@ -807,7 +817,9 @@
       "tokensUsed": [],
       "styleSignal": "none",
       "composed": [],
-      "consumers": [],
+      "consumers": [
+        "app/(tabs)/(home,projects)/edit.tsx"
+      ],
       "depth": 0
     },
     {
@@ -879,6 +891,7 @@
       "styleSignal": "StyleSheet.create",
       "composed": [],
       "consumers": [
+        "app/(tabs)/(home,projects)/edit.tsx",
         "app/(tabs)/(home,projects)/project.tsx",
         "app/(tabs)/(projects)/index.tsx",
         "app/(tabs)/agenda.tsx",
@@ -920,6 +933,101 @@
       "composed": [],
       "consumers": [],
       "depth": 0
+    },
+    {
+      "name": "TimeStepper",
+      "file": "components/atoms/time-stepper.tsx",
+      "line": 27,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onChange",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "accentColor",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText",
+        "StepperColumn"
+      ],
+      "consumers": [],
+      "depth": 2
+    },
+    {
+      "name": "StepperColumn",
+      "file": "components/atoms/time-stepper.tsx",
+      "line": 91,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "ink",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "muted",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "upLabel",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "downLabel",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "onUp",
+          "required": true,
+          "usageCount": 0,
+          "type": "("
+        },
+        {
+          "name": "onDown",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText"
+      ],
+      "consumers": [],
+      "depth": 1
     },
     {
       "name": "WaveformBar",
@@ -1399,7 +1507,6 @@
         "IconSymbol"
       ],
       "consumers": [
-        "app/(tabs)/(home)/detail.tsx",
         "app/(tabs)/(home,projects)/project.tsx"
       ],
       "depth": 1
@@ -1443,7 +1550,7 @@
     {
       "name": "DetailActionBar",
       "file": "components/molecules/detail-action-bar.tsx",
-      "line": 44,
+      "line": 22,
       "kind": "function",
       "exports": [
         "named"
@@ -1451,13 +1558,15 @@
       "props": [
         {
           "name": "primary",
-          "required": true,
-          "usageCount": 0
+          "required": false,
+          "usageCount": 0,
+          "type": "PrimaryAction"
         },
         {
           "name": "accentColor",
           "required": true,
-          "usageCount": 0
+          "usageCount": 0,
+          "type": "string"
         },
         {
           "name": "onEdit",
@@ -1472,7 +1581,9 @@
           "type": "() => void"
         }
       ],
-      "variants": [],
+      "variants": [
+        "primary"
+      ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
@@ -1660,7 +1771,7 @@
     {
       "name": "DetailViewMeta",
       "file": "components/molecules/detail-view-meta.tsx",
-      "line": 63,
+      "line": 31,
       "kind": "function",
       "exports": [
         "named"
@@ -1668,11 +1779,6 @@
       "props": [
         {
           "name": "entry",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "accent",
           "required": true,
           "usageCount": 0
         },
@@ -1695,94 +1801,20 @@
           "name": "done",
           "required": true,
           "usageCount": 0
-        },
-        {
-          "name": "doneLabel",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "reduced",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "editing",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onStartEdit",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "titleDraft",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onTitleDraftChange",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "whenDraft",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onWhenDraftChange",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onCommitEdit",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "isDeadlineType",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "isTodoType",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onDelete",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onMarkDone",
-          "required": true,
-          "usageCount": 0
         }
       ],
       "variants": [
         "entry",
-        "recurrenceText",
-        "done",
-        "editing",
-        "isDeadlineType"
+        "recurrenceText"
       ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "DateInput",
-        "TimeInput",
-        "IconPill",
-        "SelectChip",
-        "ChipRail",
         "ThemedText",
-        "DetailNoteBlock",
-        "RecurrencePicker"
+        "DetailNoteBlock"
       ],
       "consumers": [],
-      "depth": 3
+      "depth": 2
     },
     {
       "name": "DiaryComposer",
@@ -1872,7 +1904,7 @@
     {
       "name": "DiaryFilterBar",
       "file": "components/molecules/diary-filter-bar.tsx",
-      "line": 37,
+      "line": 39,
       "kind": "function",
       "exports": [
         "named"
@@ -1909,9 +1941,16 @@
           "name": "onClearTarget",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "targetCount",
+          "required": true,
+          "usageCount": 0
         }
       ],
-      "variants": [],
+      "variants": [
+        "targetCount"
+      ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
@@ -2673,7 +2712,9 @@
       "composed": [
         "ThemedText"
       ],
-      "consumers": [],
+      "consumers": [
+        "app/(tabs)/(home,projects)/edit.tsx"
+      ],
       "depth": 1
     },
     {
@@ -3210,55 +3251,6 @@
       "depth": 1
     },
     {
-      "name": "ProjectNoteComposerSheet",
-      "file": "components/molecules/project-note-composer-sheet.tsx",
-      "line": 36,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "visible",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "projectTitle",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onClose",
-          "required": true,
-          "usageCount": 0,
-          "type": "("
-        },
-        {
-          "name": "onSave",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "initialBody",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
-        "WaveformVisualizer"
-      ],
-      "consumers": [
-        "app/(tabs)/(home,projects)/project.tsx"
-      ],
-      "depth": 2
-    },
-    {
       "name": "ProjectOverflowSheet",
       "file": "components/molecules/project-overflow-sheet.tsx",
       "line": 49,
@@ -3372,7 +3364,9 @@
       "composed": [
         "ThemedText"
       ],
-      "consumers": [],
+      "consumers": [
+        "app/(tabs)/(home,projects)/edit.tsx"
+      ],
       "depth": 1
     },
     {
@@ -3442,7 +3436,7 @@
     {
       "name": "ProjectStarters",
       "file": "components/molecules/project-starters.tsx",
-      "line": 33,
+      "line": 36,
       "kind": "function",
       "exports": [
         "named"
@@ -3703,7 +3697,7 @@
     {
       "name": "TaskRow",
       "file": "components/molecules/task-checklist.tsx",
-      "line": 25,
+      "line": 29,
       "kind": "function",
       "exports": [
         "named"
@@ -3742,6 +3736,16 @@
           "name": "onDelete",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "readOnly",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "toggleOnly",
+          "required": true,
+          "usageCount": 0
         }
       ],
       "variants": [],
@@ -3756,7 +3760,7 @@
     {
       "name": "TaskChecklist",
       "file": "components/molecules/task-checklist.tsx",
-      "line": 138,
+      "line": 161,
       "kind": "function",
       "exports": [
         "named"
@@ -3771,9 +3775,21 @@
           "name": "accent",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "readOnly",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "toggleOnly",
+          "required": false,
+          "usageCount": 0
         }
       ],
-      "variants": [],
+      "variants": [
+        "readOnly"
+      ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
@@ -3958,7 +3974,7 @@
     {
       "name": "WhenPicker",
       "file": "components/molecules/when-picker.tsx",
-      "line": 86,
+      "line": 90,
       "kind": "function",
       "exports": [
         "named"
@@ -3993,10 +4009,21 @@
           "name": "dateLabel",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "initiallyOpen",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "showQuickOptions",
+          "required": false,
+          "usageCount": 0
         }
       ],
       "variants": [
-        "time"
+        "time",
+        "showQuickOptions"
       ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
@@ -4007,7 +4034,9 @@
         "WheelPicker",
         "IconSymbol"
       ],
-      "consumers": [],
+      "consumers": [
+        "app/(tabs)/(home,projects)/edit.tsx"
+      ],
       "depth": 2
     },
     {
@@ -4853,9 +4882,7 @@
       "composed": [
         "ThemedText"
       ],
-      "consumers": [
-        "app/(tabs)/(home)/detail.tsx"
-      ],
+      "consumers": [],
       "depth": 1
     },
     {
@@ -5071,7 +5098,7 @@
     {
       "name": "DirectDetailSheet",
       "file": "components/organisms/direct-detail-sheet.tsx",
-      "line": 145,
+      "line": 114,
       "kind": "function",
       "exports": [
         "named"
@@ -5122,6 +5149,7 @@
       "composed": [
         "ProjectBreadcrumb",
         "ThemedText",
+        "DetailActionBar",
         "DetailHeaderRow",
         "DetailViewMeta",
         "TaskChecklist"
@@ -5130,7 +5158,7 @@
         "app/(tabs)/(home,projects)/project.tsx",
         "app/(tabs)/agenda.tsx"
       ],
-      "depth": 4
+      "depth": 3
     },
     {
       "name": "DirectOverview",
@@ -5166,7 +5194,7 @@
       "consumers": [
         "app/(tabs)/(home)/index.tsx"
       ],
-      "depth": 5
+      "depth": 4
     },
     {
       "name": "DockShell",
@@ -5656,7 +5684,7 @@
     {
       "name": "LinkSheet",
       "file": "components/organisms/link-sheet.tsx",
-      "line": 63,
+      "line": 65,
       "kind": "function",
       "exports": [
         "named"
@@ -5689,6 +5717,11 @@
           "required": true,
           "usageCount": 0,
           "type": "() => void"
+        },
+        {
+          "name": "title",
+          "required": false,
+          "usageCount": 0
         }
       ],
       "variants": [
@@ -5710,7 +5743,7 @@
     {
       "name": "TargetRow",
       "file": "components/organisms/link-sheet.tsx",
-      "line": 264,
+      "line": 267,
       "kind": "function",
       "exports": [
         "named"
@@ -6168,7 +6201,7 @@
     {
       "name": "ProjectFab",
       "file": "components/organisms/project-fab.tsx",
-      "line": 77,
+      "line": 96,
       "kind": "function",
       "exports": [
         "named"
@@ -6185,6 +6218,11 @@
           "required": true,
           "usageCount": 0,
           "type": "boolean"
+        },
+        {
+          "name": "onOpenChange",
+          "required": true,
+          "usageCount": 0
         }
       ],
       "variants": [],
@@ -6202,7 +6240,7 @@
     {
       "name": "ActionPill",
       "file": "components/organisms/project-fab.tsx",
-      "line": 167,
+      "line": 189,
       "kind": "function",
       "exports": [
         "named"
@@ -6413,8 +6451,8 @@
         "ThemedText"
       ],
       "consumers": [
-        "app/(tabs)/(home)/detail.tsx",
         "app/(tabs)/(home)/settings.tsx",
+        "app/(tabs)/(home,projects)/edit.tsx",
         "app/(tabs)/(home,projects)/project.tsx",
         "app/(tabs)/(projects)/index.tsx",
         "app/list.tsx"
@@ -6660,15 +6698,20 @@
     "SelectChip": [],
     "ChipRail": [],
     "ChipRow": [],
-    "SketchIcon": [],
+    "SketchIcon": [
+      "app/(tabs)/(home,projects)/edit.tsx"
+    ],
     "StreakBadge": [],
     "ThemedText": [
+      "app/(tabs)/(home,projects)/edit.tsx",
       "app/(tabs)/(home,projects)/project.tsx",
       "app/(tabs)/(projects)/index.tsx",
       "app/(tabs)/agenda.tsx",
       "app/list.tsx"
     ],
     "ThemedView": [],
+    "TimeStepper": [],
+    "StepperColumn": [],
     "WaveformBar": [],
     "WaveformVisualizer": [],
     "Waveform": [],
@@ -6680,7 +6723,6 @@
     "CaptureResolver": [],
     "CompactCalendar": [],
     "ConfirmSheet": [
-      "app/(tabs)/(home)/detail.tsx",
       "app/(tabs)/(home,projects)/project.tsx"
     ],
     "CountClause": [],
@@ -6720,7 +6762,9 @@
     "IdeaActionSheet": [
       "app/(tabs)/(home,projects)/project.tsx"
     ],
-    "Row": [],
+    "Row": [
+      "app/(tabs)/(home,projects)/edit.tsx"
+    ],
     "Divider": [],
     "NodeReticle": [],
     "NodeInteractive": [],
@@ -6735,9 +6779,6 @@
     "PenLine": [],
     "ProjectCard": [],
     "ProjectEntryComposerSheet": [],
-    "ProjectNoteComposerSheet": [
-      "app/(tabs)/(home,projects)/project.tsx"
-    ],
     "ProjectOverflowSheet": [
       "app/(tabs)/(home,projects)/project.tsx"
     ],
@@ -6759,7 +6800,9 @@
     "WeekdayRow": [],
     "DAY_ITEMS": [],
     "TIME_ITEMS": [],
-    "WhenPicker": [],
+    "WhenPicker": [
+      "app/(tabs)/(home,projects)/edit.tsx"
+    ],
     "WhenStepper": [],
     "RepeatButton": [],
     "WireMarker": [],
@@ -6794,9 +6837,7 @@
       "app/(tabs)/(home)/index.tsx"
     ],
     "DeadlinesCard": [],
-    "DeleteScopeSheet": [
-      "app/(tabs)/(home)/detail.tsx"
-    ],
+    "DeleteScopeSheet": [],
     "DetailsStageView": [],
     "DiaryFeed": [
       "app/(tabs)/notes.tsx"
@@ -6840,8 +6881,8 @@
     "AddProjectTile": [],
     "RecordingStage": [],
     "ScreenHeader": [
-      "app/(tabs)/(home)/detail.tsx",
       "app/(tabs)/(home)/settings.tsx",
+      "app/(tabs)/(home,projects)/edit.tsx",
       "app/(tabs)/(home,projects)/project.tsx",
       "app/(tabs)/(projects)/index.tsx",
       "app/list.tsx"
@@ -6881,17 +6922,6 @@
       "isSystemMaterial": false
     },
     {
-      "name": "detail",
-      "file": "app/(tabs)/(home)/detail.tsx",
-      "declarations": [
-        "DetailScreen"
-      ],
-      "usageCount": 0,
-      "consumers": [],
-      "tokensUsed": [],
-      "isSystemMaterial": false
-    },
-    {
       "name": "index",
       "file": "app/(tabs)/(home)/index.tsx",
       "declarations": [
@@ -6909,6 +6939,23 @@
       "declarations": [
         "SettingsScreen",
         "ThemeToggle"
+      ],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
+      "name": "edit",
+      "file": "app/(tabs)/(home,projects)/edit.tsx",
+      "declarations": [
+        "EditScreen",
+        "ReadoutRow",
+        "InlineOptionRail",
+        "HorizonOptionGrid",
+        "HorizonOption",
+        "InlineOption",
+        "TextZone"
       ],
       "usageCount": 0,
       "consumers": [],
@@ -7092,9 +7139,10 @@
     "SelectChip",
     "ChipRail",
     "ChipRow",
-    "SketchIcon",
     "StreakBadge",
     "ThemedView",
+    "TimeStepper",
+    "StepperColumn",
     "WaveformBar",
     "WaveformVisualizer",
     "Waveform",
@@ -7127,7 +7175,6 @@
     "FieldSummary",
     "FloatNote",
     "HorizonStrip",
-    "Row",
     "Divider",
     "NodeReticle",
     "NodeInteractive",
@@ -7136,7 +7183,6 @@
     "PenLine",
     "ProjectCard",
     "ProjectEntryComposerSheet",
-    "Row",
     "Divider",
     "RecurrencePicker",
     "RelatedNotes",
@@ -7150,7 +7196,6 @@
     "WeekdayRow",
     "DAY_ITEMS",
     "TIME_ITEMS",
-    "WhenPicker",
     "WhenStepper",
     "RepeatButton",
     "WireMarker",
@@ -7164,6 +7209,7 @@
     "VerticalWheel",
     "DatePickerSheet",
     "DeadlinesCard",
+    "DeleteScopeSheet",
     "DetailsStageView",
     "DockShell",
     "Fab",
@@ -7209,10 +7255,10 @@
     }
   ],
   "summary": {
-    "memberCount": 148,
-    "consumerCount": 42,
+    "memberCount": 149,
+    "consumerCount": 43,
     "candidateCount": 19,
-    "unusedCount": 116,
+    "unusedCount": 115,
     "duplicateCount": 1
   }
 }

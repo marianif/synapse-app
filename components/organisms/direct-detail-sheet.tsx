@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
@@ -135,6 +136,7 @@ export function DirectDetailSheet({
   const statColor = statusColor(entry.status);
 
   const handleMarkDone = (): void => {
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     onMarkDone(entry);
     onClose();
   };
@@ -171,10 +173,17 @@ export function DirectDetailSheet({
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Pressable
+          style={[StyleSheet.absoluteFill, styles.backdrop]}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+        />
 
-        <View style={[styles.sheet, { backgroundColor: colors.surface }]}>
-          <View style={[styles.handle, { backgroundColor: colors.inkMuted }]} />
+        <View style={[styles.sheet, { backgroundColor: colors.paper }]}>
+          <View
+            style={[styles.handle, { backgroundColor: colors.surfaceSubtle }]}
+          />
 
           <ScrollView
             style={styles.scroll}
@@ -240,7 +249,9 @@ export function DirectDetailSheet({
             </Animated.View>
           </ScrollView>
 
-          <View style={styles.actions}>
+          <View
+            style={[styles.actions, { backgroundColor: colors.surfaceSubtle }]}
+          >
             <DetailActionBar
               primary={primary}
               accentColor={accent}
@@ -260,7 +271,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: tokens.color.scrim.strong,
   },
   sheet: {
@@ -270,7 +280,7 @@ const styles = StyleSheet.create({
     paddingBottom: tokens.space.xxl,
   },
   handle: {
-    width: 40,
+    width: 32,
     height: 4,
     borderRadius: 2,
     alignSelf: "center",
@@ -289,6 +299,8 @@ const styles = StyleSheet.create({
   },
   actions: {
     marginTop: tokens.space.lg,
-    paddingHorizontal: tokens.space.lg,
+    marginHorizontal: tokens.space.lg,
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.md,
   },
 });

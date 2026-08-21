@@ -43,6 +43,7 @@ export function DetailViewMeta({
       <View style={styles.titleRow}>
         <ThemedText
           type="title"
+          numberOfLines={3}
           style={[
             styles.title,
             { color: colors.ink, textDecorationLine: done ? "line-through" : "none" },
@@ -137,5 +138,6 @@ const styles = StyleSheet.create({
   },
   metaValue: {
     flex: 1,
+    fontVariant: ["tabular-nums"],
   },
 });

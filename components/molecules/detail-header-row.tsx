@@ -26,28 +26,33 @@ export function DetailHeaderRow({
 }: DetailHeaderRowProps): React.ReactElement {
   return (
     <View style={styles.header}>
-      <EntryDot type={type} size={8} />
-      <ThemedText type="label" style={{ color: accent }}>
-        {type}
-      </ThemedText>
+      <View style={styles.identity}>
+        <EntryDot type={type} size={8} />
+        <ThemedText type="label" style={{ color: accent }}>
+          {type}
+        </ThemedText>
+      </View>
 
-      {urgency ? (
-        <View style={[styles.chip, { backgroundColor: urgency.color + "18" }]}>
-          <ThemedText type="micro" style={{ color: urgency.color }}>
+      <View style={styles.trailing}>
+        {urgency ? (
+          <ThemedText
+            type="micro"
+            style={[styles.urgency, { color: urgency.color }]}
+          >
             {urgency.text}
           </ThemedText>
-        </View>
-      ) : null}
+        ) : null}
 
-      {statusColor ? (
-        <ThemedText type="micro" style={{ color: statusColor }}>
-          {statusLabel}
-        </ThemedText>
-      ) : (
-        <ThemedText type="micro" muted>
-          {statusLabel}
-        </ThemedText>
-      )}
+        {statusColor ? (
+          <ThemedText type="micro" style={{ color: statusColor }}>
+            {statusLabel}
+          </ThemedText>
+        ) : (
+          <ThemedText type="micro" muted>
+            {statusLabel}
+          </ThemedText>
+        )}
+      </View>
     </View>
   );
 }
@@ -56,12 +61,20 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: tokens.space.sm,
+    justifyContent: "space-between",
     marginBottom: tokens.space.sm,
   },
-  chip: {
-    borderRadius: tokens.radius.sm,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+  identity: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+  },
+  trailing: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+  },
+  urgency: {
+    fontVariant: ["tabular-nums"],
   },
 });

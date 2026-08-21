@@ -108,6 +108,14 @@ const feedback = {
   success: "#34D399", // cool emerald — the ONLY green (completion means done)
   warning: "#FBBF24", // amber — cool-charged caution
   danger: "#F43F5E", // hot cool-red — the stakes signal at full intensity
+  // Soft destructive-action tint — same light/dark tile-tint pattern as
+  // `color.typeTint`, scaled off `danger` instead of a type hue. Needed for
+  // icon-badge fills (e.g. Delete chip) where the flat `danger` red is too
+  // loud as a background but still needs to read as "destructive" at a glance.
+  dangerTint: {
+    light: "#FBDDE3",
+    dark: "#301820",
+  },
 } as const;
 
 const type = {

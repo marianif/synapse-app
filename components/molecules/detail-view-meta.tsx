@@ -38,7 +38,7 @@ export function DetailViewMeta({
   const { colors } = useTheme();
 
   return (
-        <View>
+    <View>
       {/* ── Static identity ── */}
       <View style={styles.titleRow}>
         <ThemedText
@@ -46,7 +46,10 @@ export function DetailViewMeta({
           numberOfLines={3}
           style={[
             styles.title,
-            { color: colors.ink, textDecorationLine: done ? "line-through" : "none" },
+            {
+              color: colors.ink,
+              textDecorationLine: done ? "line-through" : "none",
+            },
           ]}
         >
           {entry.title}
@@ -61,21 +64,6 @@ export function DetailViewMeta({
 
       {/* ── WHEN readout ── */}
       <View style={[styles.meta, styles.metaStart]}>
-        <View style={styles.metaRow}>
-          <View style={styles.whenReadout}>
-            <ThemedText type="micro" muted style={styles.metaLabel}>
-              WHEN
-            </ThemedText>
-            <ThemedText
-              type="mono"
-              style={[styles.metaValue, charged && { color: tokens.feedback.danger }]}
-            >
-              {whenText}
-            </ThemedText>
-          </View>
-
-        </View>
-
         {recurrenceText ? (
           <View style={styles.metaRow}>
             <ThemedText type="micro" muted style={styles.metaLabel}>
@@ -93,7 +81,9 @@ export function DetailViewMeta({
         <DetailNoteBlock label="INSPIRATION" value={entry.inspiration} />
       ) : null}
 
-      {entry.notes ? <DetailNoteBlock label="NOTES" value={entry.notes} /> : null}
+      {entry.notes ? (
+        <DetailNoteBlock label="NOTES" value={entry.notes} />
+      ) : null}
     </View>
   );
 }

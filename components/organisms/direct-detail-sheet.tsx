@@ -148,7 +148,10 @@ export function DirectDetailSheet({
 
   const handleEdit = (): void => {
     onClose();
-    router.push({ pathname: "/edit", params: { id: entry.id, entryType: type } });
+    router.push({
+      pathname: "/edit",
+      params: { id: entry.id, entryType: type },
+    });
   };
 
   const primary: PrimaryAction | undefined =
@@ -245,20 +248,15 @@ export function DirectDetailSheet({
                   toggleOnly
                 />
               ) : null}
-
             </Animated.View>
           </ScrollView>
 
-          <View
-            style={[styles.actions, { backgroundColor: colors.surfaceSubtle }]}
-          >
-            <DetailActionBar
-              primary={primary}
-              accentColor={accent}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          </View>
+          <DetailActionBar
+            primary={primary}
+            accentColor={accent}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </View>
       </View>
     </Modal>

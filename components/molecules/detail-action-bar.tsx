@@ -18,70 +18,96 @@ interface DetailActionBarProps {
   onDelete: () => void;
 }
 
-/** A quiet command line for the sheet's immediate actions. */
+interface ActionChipProps {
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  label: string;
+  iconColor: string;
+  badgeColor: string;
+  labelColor?: string;
+  onPress: () => void;
+  flex?: boolean;
+  accessibilityState?: { selected: boolean };
+}
+
+function ActionChip({
+  icon,
+  label,
+  iconColor,
+  badgeColor,
+  labelColor,
+  onPress,
+  flex,
+  accessibilityState,
+}: ActionChipProps): React.ReactElement {
+  const { colors } = useTheme();
+
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      style={({ pressed }) => [
+        styles.chip,
+        flex && styles.chipFlex,
+        { backgroundColor: colors.surface },
+        pressed && styles.pressed,
+      ]}
+      accessibilityRole="button"
+      accessibilityState={accessibilityState}
+      accessibilityLabel={label}
+    >
+      <View style={[styles.badge, { backgroundColor: badgeColor }]}>
+        <MaterialCommunityIcons name={icon} size={16} color={iconColor} />
+      </View>
+      <ThemedText
+        type="mono"
+        style={[styles.label, labelColor ? { color: labelColor } : null]}
+      >
+        {label}
+      </ThemedText>
+    </Pressable>
+  );
+}
+
+/** A row of separated action chips for the sheet's immediate actions. */
 export function DetailActionBar({
   primary,
   accentColor,
   onEdit,
   onDelete,
 }: DetailActionBarProps): React.ReactElement {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
+  const dangerBadge = tokens.feedback.dangerTint[scheme];
 
   return (
     <View style={styles.line}>
       {primary ? (
-        <Pressable
+        <ActionChip
+          icon={primary.icon}
+          label={primary.label}
+          iconColor={accentColor}
+          badgeColor={colors.surfaceSubtle}
+          labelColor={accentColor}
           onPress={primary.onPress}
-          hitSlop={8}
-          style={({ pressed }) => [styles.command, styles.primary, pressed && styles.pressed]}
-          accessibilityRole="button"
+          flex
           accessibilityState={{ selected: primary.done }}
-          accessibilityLabel={primary.label}
-        >
-          <MaterialCommunityIcons
-            name={primary.icon}
-            size={20}
-            color={accentColor}
-          />
-          <ThemedText type="mono" style={[styles.label, { color: accentColor }]}>
-            {primary.label}
-          </ThemedText>
-        </Pressable>
+        />
       ) : null}
 
-      <Pressable
+      <ActionChip
+        icon="pencil-outline"
+        label="Edit"
+        iconColor={colors.inkMuted}
+        badgeColor={colors.surfaceSubtle}
         onPress={onEdit}
-        hitSlop={8}
-        style={({ pressed }) => [styles.command, pressed && styles.pressed]}
-        accessibilityRole="button"
-        accessibilityLabel="Edit"
-      >
-        <MaterialCommunityIcons
-          name="pencil-outline"
-          size={18}
-          color={colors.inkMuted}
-        />
-        <ThemedText type="mono" muted style={styles.label}>
-          Edit
-        </ThemedText>
-      </Pressable>
+      />
 
-      <Pressable
+      <ActionChip
+        icon="trash-can-outline"
+        label="Delete"
+        iconColor={tokens.feedback.danger}
+        badgeColor={dangerBadge}
         onPress={onDelete}
-        hitSlop={8}
-        style={({ pressed }) => [styles.command, pressed && styles.deletePressed]}
-        accessibilityRole="button"
-        accessibilityLabel="Delete"
-      >
-        <MaterialCommunityIcons
-          name="trash-can-outline"
-          size={18}
-          color={colors.inkMuted}
-        />
-        <ThemedText type="mono" muted style={styles.label}>
-          Delete
-        </ThemedText>
-      </Pressable>
+      />
     </View>
   );
 }
@@ -90,30 +116,34 @@ const styles = StyleSheet.create({
   line: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    minHeight: 52,
-    gap: tokens.space.md,
+    justifyContent: "center",
+    maxHeight: 48,
+    gap: tokens.space.sm,
+    paddingHorizontal: tokens.space.md,
   },
-  command: {
+  chip: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: tokens.space.xs,
-    minHeight: 48,
-    paddingHorizontal: tokens.space.xs,
-    borderRadius: tokens.radius.sm,
+    gap: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
+    paddingRight: tokens.space.md,
+    paddingLeft: tokens.space.xs,
+    borderRadius: tokens.radius.pill,
   },
-  primary: {
-    flex: 1,
-    justifyContent: "flex-start",
+  chipFlex: {
+    flexShrink: 1,
+  },
+  badge: {
+    width: 32,
+    height: 32,
+    borderRadius: tokens.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
   },
   label: {
     letterSpacing: 0.2,
   },
   pressed: {
-    opacity: 0.58,
-  },
-  deletePressed: {
     opacity: 0.58,
   },
 });

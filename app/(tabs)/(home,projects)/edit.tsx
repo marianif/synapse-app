@@ -26,6 +26,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import { EntryDot } from "@/components/atoms/entry-dot";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { WhenPicker } from "@/components/molecules/when-picker";
@@ -38,6 +41,7 @@ import { parseRule } from "@/lib/recurrence";
 import type {
   DbEntry,
   DueRange,
+  EntryType,
   RecurrenceFrequency,
   RecurrenceRule,
 } from "@/lib/types";
@@ -419,7 +423,7 @@ export default function EditScreen(): React.ReactElement {
               <View style={styles.readout}>
                 {!isIdea ? (
                   <ReadoutRow
-                    mark={accent}
+                    entryType={entry.type}
                     label="WHEN"
                     clause={whenClause(draft, isDeadline)}
                     open={openRow === "when"}
@@ -448,7 +452,6 @@ export default function EditScreen(): React.ReactElement {
 
                 {!isIdea ? (
                   <ReadoutRow
-                    mark={colors.inkMuted}
                     label="REPEATS"
                     clause={repeatClause(draft)}
                     open={openRow === "repeat"}
@@ -535,7 +538,6 @@ export default function EditScreen(): React.ReactElement {
 
                 {activeProjects.length > 0 ? (
                   <ReadoutRow
-                    mark={colors.inkMuted}
                     label="FILED IN"
                     clause={projectClause(draft.projectId, activeProjects)}
                     open={openRow === "project"}
@@ -604,18 +606,23 @@ export default function EditScreen(): React.ReactElement {
   );
 }
 
-// ─── Readout row — the punch-card line: a mark, a mono label, a value clause,
-// and an inline expand-in-place editor. No container, no fill, no border. ────
+// ─── Readout row — a tonal row: a dot, a mono label, a value clause, a chevron,
+// and an inline expand-in-place editor. Matches the row-on-tone + EntryDot +
+// chevron vocabulary used everywhere else (entry-row, task-checklist,
+// project-card) rather than inventing its own bare punch-card style. ────
 
 function ReadoutRow({
-  mark,
+  entryType,
   label,
   clause,
   open,
   onPress,
   children,
 }: {
-  mark: string;
+  /** Set for the WHEN row so the dot carries the entry's real type color;
+   * omitted for neutral metadata rows (REPEATS, FILED IN), which get a
+   * muted dot instead — they aren't tied to any entry type. */
+  entryType?: EntryType;
   label: string;
   clause: string;
   open: boolean;
@@ -628,13 +635,22 @@ function ReadoutRow({
     <View>
       <Pressable
         onPress={onPress}
-        style={styles.readoutRow}
+        style={({ pressed }) => [
+          styles.readoutRow,
+          { backgroundColor: pressed ? colors.surface : colors.surfaceSubtle },
+        ]}
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${clause}`}
         accessibilityState={{ expanded: open }}
         hitSlop={4}
       >
-        <View style={[styles.readoutMark, { backgroundColor: mark }]} />
+        {entryType ? (
+          <EntryDot type={entryType} size={8} />
+        ) : (
+          <View
+            style={[styles.readoutMark, { backgroundColor: colors.inkMuted }]}
+          />
+        )}
         <ThemedText type="micro" muted style={styles.readoutLabel}>
           {label}
         </ThemedText>
@@ -645,9 +661,11 @@ function ReadoutRow({
         >
           {clause}
         </ThemedText>
-        <ThemedText type="mono" muted>
-          {open ? "–" : "+"}
-        </ThemedText>
+        <MaterialCommunityIcons
+          name={open ? "chevron-up" : "chevron-down"}
+          size={18}
+          color={colors.inkMuted}
+        />
       </Pressable>
 
       {open ? (
@@ -839,18 +857,20 @@ const styles = StyleSheet.create({
     minHeight: 32,
   },
   readout: {
-    gap: tokens.space.lg,
+    gap: tokens.space.sm,
   },
   readoutRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.sm,
     minHeight: 44,
+    paddingHorizontal: tokens.space.md,
+    borderRadius: tokens.radius.md,
   },
   readoutMark: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     flexShrink: 0,
   },
   readoutLabel: {
@@ -862,7 +882,8 @@ const styles = StyleSheet.create({
   },
   expandGap: {
     paddingTop: tokens.space.md,
-    paddingLeft: tokens.space.md + 6,
+    // Aligns under the readout row's clause text: row inset + dot + gap.
+    paddingLeft: tokens.space.md + 8 + tokens.space.sm,
     gap: tokens.space.md,
   },
   optionRail: {

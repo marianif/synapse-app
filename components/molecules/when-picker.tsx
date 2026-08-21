@@ -21,7 +21,7 @@ import { parseDate, toDisplayDate } from "@/lib/date-utils";
 // ─── When? ──────────────────────────────────────────────────────────────────────
 // "When" is a relative human concept for a capture-first user. Quick-pick chips
 // answer the common cases in one tap; the day+time wheel below is the precise
-// control — a centered selection band, day on the left, time on the right, like a
+// control — a dot marks the centered selection, day on the left, time on the right, like a
 // single instrument. No keyboard, no fragile parsing.
 
 type RelativeOption = {
@@ -72,7 +72,7 @@ type WhenPickerProps = {
   time: string;
   onDateChange: (value: string) => void;
   onTimeChange: (value: string) => void;
-  /** Entry-type tint — colors the selected chip + selection band. */
+  /** Entry-type tint — colors the selected chip + a selection dot. */
   accentColor: string;
   /** Label above the panel ("DATE" or "DUE DATE"). */
   dateLabel: string;
@@ -85,7 +85,7 @@ type WhenPickerProps = {
 /**
  * The "When" control for Add Entry — a compact panel. The resolved date is the
  * headline (echo); quick-pick chips answer common cases in one tap; the day+time
- * wheel (centered selection band) is the precise control, progressive-disclosed.
+ * wheel (a dot marks the centered selection) is the precise control, progressive-disclosed.
  */
 export function WhenPicker({
   date,
@@ -194,7 +194,7 @@ export function WhenPicker({
         </View>
       ) : null}
 
-      {/* Day + time wheel — centered selection band, progressive disclosure */}
+      {/* Day + time wheel — a dot marks the centered selection, progressive disclosure */}
       {wheelOpen && (
         <Animated.View
           entering={FadeIn.duration(180)}
@@ -202,13 +202,12 @@ export function WhenPicker({
           layout={LinearTransition.springify().damping(18).stiffness(220)}
           style={styles.wheelZone}
         >
-          {/* The selection band sits behind both wheels, dead-center */}
+          {/* A single leading dot marks the center row — the same EntryDot
+              vocabulary used for selection elsewhere in the app, not a
+              filled band or an accent bar/tick. */}
           <View
             pointerEvents="none"
-            style={[
-              styles.selectionBand,
-              { backgroundColor: accentColor + "1A" },
-            ]}
+            style={[styles.selectionDot, { backgroundColor: accentColor }]}
           />
           <View style={styles.wheelRow}>
             <WheelPicker
@@ -254,11 +253,14 @@ export function WhenPicker({
               accessibilityLabel="Confirm day and time"
               style={({ pressed }) => [
                 styles.doneButton,
-                { backgroundColor: accentColor },
-                pressed && { opacity: 0.8 },
+                {
+                  backgroundColor: pressed
+                    ? colors.accent.clayPressed
+                    : colors.accent.clay,
+                },
               ]}
             >
-              <ThemedText type="bodyBold" style={{ color: colors.paper }}>
+              <ThemedText type="bodyBold" style={{ color: colors.accent.onClay }}>
                 Done
               </ThemedText>
             </Pressable>
@@ -316,14 +318,18 @@ const styles = StyleSheet.create({
     paddingTop: tokens.space.md,
     justifyContent: "center",
   },
-  // The band marks the center row both wheels snap into.
-  selectionBand: {
+  // A single dot marks the center row both wheels snap into — EntryDot's own
+  // size (8px), not a filled band or an accent bar/tick pair.
+  selectionDot: {
     position: "absolute",
-    left: tokens.space.lg,
-    right: tokens.space.lg,
-    height: WHEEL_ROW_HEIGHT,
-    top: tokens.space.md + WHEEL_ROW_HEIGHT * 2, // center of a 5-row wheel
-    borderRadius: tokens.radius.md,
+    left: tokens.space.md,
+    top:
+      tokens.space.md +
+      WHEEL_ROW_HEIGHT * 2 + // center of a 5-row wheel
+      (WHEEL_ROW_HEIGHT - 8) / 2, // vertically center an 8px dot in the row
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   wheelRow: {
     flexDirection: "row",

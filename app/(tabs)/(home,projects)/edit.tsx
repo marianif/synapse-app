@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   Stack,
   useLocalSearchParams,
@@ -26,9 +27,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-
 import { EntryDot } from "@/components/atoms/entry-dot";
+import { ChipRail, SelectChip } from "@/components/atoms/select-chip";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { WhenPicker } from "@/components/molecules/when-picker";
@@ -77,14 +77,26 @@ const FREQ_LABEL: Record<RecurrenceFrequency, string> = {
 
 const FREQ_OPTIONS: RecurrenceFrequency[] = ["daily", "weekly", "monthly"];
 
+// FREQ_OPTIONS never includes "weekdays" (that variant has no UI entry
+// point here), but the map keys off the wider RecurrenceFrequency type.
+const FREQ_ICON: Record<
+  RecurrenceFrequency,
+  React.ComponentProps<typeof MaterialCommunityIcons>["name"]
+> = {
+  daily: "calendar-today",
+  weekdays: "calendar-today",
+  weekly: "calendar-week",
+  monthly: "calendar-month",
+};
+
 const WEEKDAY_LETTERS: { value: number; label: string }[] = [
-  { value: 1, label: "M" },
-  { value: 2, label: "T" },
-  { value: 3, label: "W" },
-  { value: 4, label: "T" },
-  { value: 5, label: "F" },
-  { value: 6, label: "S" },
-  { value: 0, label: "S" },
+  { value: 1, label: "Mon" },
+  { value: 2, label: "Tue" },
+  { value: 3, label: "Wed" },
+  { value: 4, label: "Thu" },
+  { value: 5, label: "Fri" },
+  { value: 6, label: "Sat" },
+  { value: 0, label: "Sun" },
 ];
 
 function draftFromEntry(entry: DbEntry): Draft {
@@ -458,11 +470,11 @@ export default function EditScreen(): React.ReactElement {
                     onPress={() => toggleRow("repeat")}
                   >
                     <View style={styles.expandGap}>
-                      <InlineOptionRail>
+                      <View style={styles.freqRow}>
                         {FREQ_OPTIONS.map((freq) => (
-                          <InlineOption
+                          <FreqChip
                             key={freq}
-                            label={freq}
+                            freq={freq}
                             selected={draft.recurrenceFreq === freq}
                             accentColor={accent}
                             onPress={() => {
@@ -481,7 +493,7 @@ export default function EditScreen(): React.ReactElement {
                             }}
                           />
                         ))}
-                      </InlineOptionRail>
+                      </View>
 
                       {draft.recurrenceFreq === "weekly" ? (
                         <Animated.View
@@ -512,16 +524,25 @@ export default function EditScreen(): React.ReactElement {
                                   })
                                 }
                                 hitSlop={8}
-                                style={styles.weekdayCell}
+                                style={({ pressed }) => [
+                                  styles.weekdayCell,
+                                  {
+                                    backgroundColor: selected
+                                      ? accent + "22"
+                                      : colors.surfaceSubtle,
+                                  },
+                                  pressed && !selected && { opacity: 0.6 },
+                                ]}
                                 accessibilityRole="button"
                                 accessibilityLabel={day.label}
                                 accessibilityState={{ selected }}
                               >
                                 <ThemedText
                                   type="mono"
+                                  numberOfLines={1}
                                   style={
                                     selected
-                                      ? { color: accent }
+                                      ? { color: accent, fontWeight: "700" }
                                       : { color: colors.inkMuted }
                                   }
                                 >
@@ -544,8 +565,8 @@ export default function EditScreen(): React.ReactElement {
                     onPress={() => toggleRow("project")}
                   >
                     <View style={styles.expandGap}>
-                      <InlineOptionRail>
-                        <InlineOption
+                      <ChipRail>
+                        <SelectChip
                           label="unfiled"
                           selected={draft.projectId === null}
                           accentColor={accent}
@@ -554,7 +575,7 @@ export default function EditScreen(): React.ReactElement {
                           }
                         />
                         {activeProjects.map((project) => (
-                          <InlineOption
+                          <SelectChip
                             key={project.id}
                             label={`${project.emoji ? `${project.emoji} ` : ""}${project.title}`}
                             selected={draft.projectId === project.id}
@@ -564,7 +585,7 @@ export default function EditScreen(): React.ReactElement {
                             }
                           />
                         ))}
-                      </InlineOptionRail>
+                      </ChipRail>
                     </View>
                   </ReadoutRow>
                 ) : null}
@@ -683,23 +704,55 @@ function ReadoutRow({
   );
 }
 
-// ─── Inline option — a bare tap target, no chip fill; selection reads via
-// mono weight + accent ink, matching the readout's typographic vocabulary. ──
+// ─── Frequency chip — a real tap target with room to breathe: icon over
+// label, filled on selection. Three options only, so they split the row
+// evenly rather than scroll in a rail. ──────────────────────────────────
 
-function InlineOptionRail({
-  children,
+function FreqChip({
+  freq,
+  selected,
+  accentColor,
+  onPress,
 }: {
-  children: React.ReactNode;
+  freq: RecurrenceFrequency;
+  selected: boolean;
+  accentColor: string;
+  onPress: () => void;
 }): React.ReactElement {
+  const { colors } = useTheme();
+
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={styles.optionRail}
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={freq}
+      accessibilityState={{ selected }}
+      style={({ pressed }) => [
+        styles.freqChip,
+        {
+          backgroundColor: selected
+            ? accentColor + "22"
+            : colors.surfaceSubtle,
+        },
+        pressed && !selected && { opacity: 0.6 },
+      ]}
     >
-      {children}
-    </ScrollView>
+      <MaterialCommunityIcons
+        name={FREQ_ICON[freq]}
+        size={22}
+        color={selected ? accentColor : colors.inkMuted}
+      />
+      <ThemedText
+        type="body"
+        style={
+          selected
+            ? { color: accentColor, fontWeight: "700" }
+            : { color: colors.inkMuted }
+        }
+      >
+        {freq}
+      </ThemedText>
+    </Pressable>
   );
 }
 
@@ -743,38 +796,6 @@ function HorizonOption({
         numberOfLines={1}
         style={{ color: selected ? accentColor : colors.inkMuted }}
       >
-        {label}
-      </ThemedText>
-    </Pressable>
-  );
-}
-
-function InlineOption({
-  label,
-  selected,
-  accentColor,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  accentColor: string;
-  onPress: () => void;
-}): React.ReactElement {
-  const { colors } = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ selected }}
-      hitSlop={8}
-      style={styles.option}
-    >
-      <ThemedText
-        type="mono"
-        style={selected ? { color: accentColor } : { color: colors.inkMuted }}
-      >
-        {selected ? "· " : "  "}
         {label}
       </ThemedText>
     </Pressable>
@@ -886,9 +907,21 @@ const styles = StyleSheet.create({
     paddingLeft: tokens.space.md + 8 + tokens.space.sm,
     gap: tokens.space.md,
   },
-  optionRail: {
+  freqRow: {
     flexDirection: "row",
-    gap: tokens.space.md,
+    gap: tokens.space.sm,
+    // Chips should span the row's full width, not sit inset under the
+    // readout's clause-text alignment inherited from expandGap.
+    marginLeft: -(tokens.space.md + 8 + tokens.space.sm),
+  },
+  freqChip: {
+    flex: 1,
+    minHeight: 72,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: tokens.space.xs,
+    paddingVertical: tokens.space.md,
+    borderRadius: tokens.radius.md,
   },
   horizonGrid: {
     flexDirection: "row",
@@ -907,10 +940,6 @@ const styles = StyleSheet.create({
     height: 5,
     borderRadius: 3,
   },
-  option: {
-    minHeight: 32,
-    justifyContent: "center",
-  },
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -918,13 +947,17 @@ const styles = StyleSheet.create({
   },
   weekdayRow: {
     flexDirection: "row",
-    gap: tokens.space.md,
+    gap: tokens.space.xs,
+    // Same full-width treatment as freqRow — spans the row, not inset
+    // under the readout's clause-text alignment inherited from expandGap.
+    marginLeft: -(tokens.space.md + 8 + tokens.space.sm),
   },
   weekdayCell: {
-    width: 28,
-    height: 28,
+    flex: 1,
+    minHeight: 40,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: tokens.radius.sm,
   },
   textZone: {
     gap: tokens.space.sm,

@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space.sm,
     borderRadius: tokens.radius.pill,
     minWidth: 64,
+    minHeight: 28,
   },
   pressed: {
     transform: [{ scale: 0.96 }],

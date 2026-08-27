@@ -1,11 +1,13 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
+import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 
 export function OptionChip({
   label,
   emoji,
+  icon,
   selected,
   muted,
   raised,
@@ -14,6 +16,7 @@ export function OptionChip({
 }: {
   label: string;
   emoji?: string | null;
+  icon?: IconSymbolName;
   selected: boolean;
   muted: string;
   raised: string;
@@ -38,7 +41,15 @@ export function OptionChip({
     >
       {({ pressed }) => (
         <>
-          {emoji ? <Text style={styles.emoji}>{emoji}</Text> : null}
+          {icon ? (
+            <IconSymbol
+              name={icon}
+              size={13}
+              color={selected || pressed ? clay : muted}
+            />
+          ) : emoji ? (
+            <Text style={styles.emoji}>{emoji}</Text>
+          ) : null}
           <ThemedText
             type="label"
             numberOfLines={1}
@@ -54,9 +65,9 @@ export function OptionChip({
 
 const styles = StyleSheet.create({
   optionChip: {
-    maxHeight: 48,
+    minHeight: 28,
     maxWidth: 160,
-    borderRadius: tokens.radius.pill,
+    borderRadius: tokens.radius.lg,
     paddingHorizontal: tokens.space.sm,
     paddingVertical: 2,
     flexDirection: "row",
@@ -65,7 +76,7 @@ const styles = StyleSheet.create({
     gap: tokens.space.xs,
   },
   emoji: {
-    fontSize: 14,
+    fontSize: 18,
     lineHeight: 18,
   },
   pressed: {

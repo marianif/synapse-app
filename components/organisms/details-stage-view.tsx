@@ -16,7 +16,7 @@ import Animated, {
 
 import { OptionChip } from "@/components/atoms/option-chip";
 import { ExactDateMenu } from "@/components/organisms/exact-date-menu";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
 import type { Scheme } from "@/constants/theme";
 import { tokens } from "@/constants/theme";
 import type { DueRange } from "@/lib/types";
@@ -24,15 +24,25 @@ import type { DueRange } from "@/lib/types";
 type DatedKind = "todo" | "deadline";
 
 type WhenOption =
-  | { kind: "concrete"; label: string; date: () => string }
-  | { kind: "horizon"; label: string; range: DueRange };
+  | { kind: "concrete"; label: string; icon: IconSymbolName; date: () => string }
+  | { kind: "horizon"; label: string; icon: IconSymbolName; range: DueRange };
 
 const WHEN_OPTIONS: WhenOption[] = [
-  { kind: "concrete", label: "tomorrow", date: () => dateStr(1) },
-  { kind: "concrete", label: "weekend", date: () => dateStr(daysToWeekend()) },
-  { kind: "horizon", label: "this week", range: "week" },
-  { kind: "horizon", label: "this month", range: "month" },
-  { kind: "horizon", label: "this year", range: "year" },
+  {
+    kind: "concrete",
+    label: "tomorrow",
+    icon: "CalendarDay",
+    date: () => dateStr(1),
+  },
+  {
+    kind: "concrete",
+    label: "weekend",
+    icon: "Moon",
+    date: () => dateStr(daysToWeekend()),
+  },
+  { kind: "horizon", label: "this week", icon: "Calendar", range: "week" },
+  { kind: "horizon", label: "this month", icon: "Calendar2", range: "month" },
+  { kind: "horizon", label: "this year", icon: "Infinite", range: "year" },
 ];
 
 export interface DetailsStageViewProps {
@@ -193,6 +203,7 @@ export function DetailsStageView({
     <>
       <OptionChip
         label="exact"
+        icon="Target"
         selected={exact}
         ink={ink}
         muted={muted}
@@ -204,6 +215,7 @@ export function DetailsStageView({
           <OptionChip
             key={option.label}
             label={option.label}
+            icon={option.icon}
             selected={!exact && dueRange === null && date === option.date()}
             ink={ink}
             muted={muted}
@@ -221,6 +233,7 @@ export function DetailsStageView({
           <OptionChip
             key={option.label}
             label={option.label}
+            icon={option.icon}
             selected={!exact && dueRange === option.range}
             ink={ink}
             muted={muted}
@@ -243,6 +256,7 @@ export function DetailsStageView({
     <>
       <OptionChip
         label="unfiled"
+        icon="Folder"
         selected={projectId === null}
         ink={ink}
         muted={muted}

@@ -14,6 +14,7 @@ import {
 import { useReducedMotion } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BrandMark } from "@/components/atoms/brand-mark";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useTheme, type ThemeColors } from "@/constants/theme";
 import { useOnboarding } from "@/contexts/onboarding-context";
@@ -152,9 +153,12 @@ export function OnboardingCarousel(): React.ReactElement {
       ]}
     >
       <View style={styles.header}>
-        <ThemedText type="label" muted>
-          SYNAPSE
-        </ThemedText>
+        <View style={styles.brand}>
+          <BrandMark size={22} />
+          <ThemedText type="headline" style={styles.wordmark}>
+            synapse
+          </ThemedText>
+        </View>
         <Pressable
           onPress={handleSkip}
           disabled={isFinishing}
@@ -377,7 +381,7 @@ function FieldScene({
       <View
         style={[styles.sceneFrame, { backgroundColor: colors.surfaceSubtle }]}
       >
-        {stage === 0 ? <SignalScene colors={colors} /> : null}
+        {stage === 0 ? <OriginScene colors={colors} /> : null}
         {stage === 1 ? <ShapesScene colors={colors} /> : null}
         {stage === 2 ? <FrictionScene colors={colors} /> : null}
         {stage === 3 ? <InsightScene colors={colors} /> : null}
@@ -388,39 +392,59 @@ function FieldScene({
   );
 }
 
-function SignalScene({ colors }: { colors: ThemeColors }): React.ReactElement {
+function OriginScene({ colors }: { colors: ThemeColors }): React.ReactElement {
   return (
-    <View style={styles.signalScene}>
-      <View
-        style={[
-          styles.signalNode,
-          styles.signalNodeA,
-          { backgroundColor: colors.type.ideas },
-        ]}
-      />
-      <View
-        style={[
-          styles.signalNode,
-          styles.signalNodeB,
-          { backgroundColor: colors.type.todo },
-        ]}
-      />
-      <View
-        style={[
-          styles.signalNode,
-          styles.signalNodeC,
-          { backgroundColor: colors.type.bills },
-        ]}
-      />
-      <View style={[styles.signalCore, { backgroundColor: colors.surface }]}>
-        <View style={[styles.coreMark, { backgroundColor: colors.inkMuted }]} />
-        <View
-          style={[
-            styles.coreMark,
-            styles.coreMarkShort,
-            { backgroundColor: colors.inkMuted },
-          ]}
-        />
+    <View style={styles.originScene}>
+      <View style={[styles.originField, { backgroundColor: colors.surface }]}>
+        <View style={styles.originHeader}>
+          <Text style={[styles.sceneLabel, { color: colors.inkMuted }]}>ONE PLACE</Text>
+          <Text style={[styles.originCount, { color: colors.inkMuted }]}>04 THREADS</Text>
+        </View>
+        <View style={styles.originCanvas}>
+          <View
+            style={[
+              styles.originCard,
+              styles.originIdeaCard,
+              { backgroundColor: colors.typeTint.ideas },
+            ]}
+          >
+            <Text style={[styles.originCardLabel, { color: colors.typeKicker.ideas }]}>idea</Text>
+            <Text style={[styles.originIdeaText, { color: colors.ink }]}>maybe write a book</Text>
+          </View>
+          <View
+            style={[
+              styles.originCard,
+              styles.originDeadlineCard,
+              { backgroundColor: colors.typeTint.bills },
+            ]}
+          >
+            <Text style={[styles.originCardLabel, { color: colors.typeKicker.bills }]}>deadline</Text>
+            <Text style={[styles.originDeadlineText, { color: colors.ink }]}>30 June</Text>
+          </View>
+          <View
+            style={[
+              styles.originCard,
+              styles.originProjectCard,
+              { backgroundColor: colors.typeTint.todo },
+            ]}
+          >
+            <Text style={[styles.originCardLabel, { color: colors.typeKicker.todo }]}>growing project</Text>
+            <Text style={[styles.originProjectText, { color: colors.ink }]}>book project</Text>
+            <View style={styles.originProjectLines}>
+              <View style={[styles.originProjectLine, { backgroundColor: colors.type.todo }]} />
+              <View
+                style={[
+                  styles.originProjectLine,
+                  styles.originProjectLineShort,
+                  { backgroundColor: colors.inkMuted },
+                ]}
+              />
+            </View>
+          </View>
+          <View style={[styles.originThought, { backgroundColor: colors.surfaceSubtle }]}>
+            <Text style={[styles.originThoughtText, { color: colors.inkMuted }]}>random thought</Text>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -703,6 +727,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: tokens.space.xxl,
   },
+  brand: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+  },
+  wordmark: {
+    fontFamily: tokens.type.fontInter.bold,
+    fontSize: 18,
+    lineHeight: 22,
+  },
   skipButton: {
     minHeight: 44,
     minWidth: 44,
@@ -806,49 +840,111 @@ const styles = StyleSheet.create({
     padding: tokens.space.lg,
     overflow: "hidden",
   },
-  signalScene: {
+  originScene: {
+    flex: 1,
+  },
+  originField: {
+    flex: 1,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space.md,
+  },
+  originHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  originCount: {
+    fontFamily: tokens.type.fontMono.medium,
+    fontSize: tokens.type.micro.size,
+    lineHeight: tokens.type.micro.lineHeight,
+    letterSpacing: 0.7,
+  },
+  originCanvas: {
     flex: 1,
     position: "relative",
+    marginTop: tokens.space.sm,
   },
-  signalNode: {
+  originCard: {
     position: "absolute",
-    width: 12,
-    height: 12,
-    borderRadius: tokens.radius.pill,
+    borderRadius: tokens.radius.md,
+    padding: tokens.space.sm,
+    shadowColor: tokens.color.scrim.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 6,
+    elevation: 1,
   },
-  signalNodeA: {
-    top: 22,
-    left: 36,
+  originIdeaCard: {
+    top: 8,
+    left: 4,
+    width: "60%",
+    minHeight: 62,
+    transform: [{ rotate: "-3deg" }],
   },
-  signalNodeB: {
-    top: 118,
-    right: 42,
+  originDeadlineCard: {
+    top: 2,
+    right: 4,
+    width: "30%",
+    minHeight: 62,
+    transform: [{ rotate: "4deg" }],
   },
-  signalNodeC: {
-    bottom: 28,
-    left: 106,
+  originProjectCard: {
+    bottom: 2,
+    left: "16%",
+    width: "64%",
+    minHeight: 70,
+    transform: [{ rotate: "1deg" }],
   },
-  signalCore: {
-    position: "absolute",
-    width: 92,
-    height: 92,
-    borderRadius: tokens.radius.lg,
-    left: "50%",
-    top: "50%",
-    marginLeft: -46,
-    marginTop: -46,
-    alignItems: "center",
-    justifyContent: "center",
+  originCardLabel: {
+    fontFamily: tokens.type.fontMono.medium,
+    fontSize: tokens.type.micro.size,
+    lineHeight: tokens.type.micro.lineHeight,
+    letterSpacing: 0.5,
+  },
+  originIdeaText: {
+    fontFamily: tokens.type.fontHand.medium,
+    fontSize: 18,
+    lineHeight: 23,
+    marginTop: tokens.space.xs,
+  },
+  originDeadlineText: {
+    fontFamily: tokens.type.fontMono.bold,
+    fontSize: 17,
+    lineHeight: 22,
+    marginTop: tokens.space.sm,
+  },
+  originProjectText: {
+    fontFamily: tokens.type.fontInter.semiBold,
+    fontSize: 14,
+    lineHeight: 18,
+    marginTop: tokens.space.xs,
+  },
+  originProjectLines: {
     gap: tokens.space.xs,
+    paddingTop: tokens.space.xs,
   },
-  coreMark: {
-    width: 38,
-    height: 5,
+  originProjectLine: {
+    width: "72%",
+    height: 4,
     borderRadius: tokens.radius.pill,
-    opacity: 0.7,
   },
-  coreMarkShort: {
-    width: 22,
+  originProjectLineShort: {
+    width: "44%",
+    opacity: 0.4,
+  },
+  originThought: {
+    position: "absolute",
+    right: 8,
+    bottom: 44,
+    paddingHorizontal: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
+    borderRadius: tokens.radius.sm,
+    transform: [{ rotate: "-5deg" }],
+  },
+  originThoughtText: {
+    fontFamily: tokens.type.fontHand.regular,
+    fontSize: 16,
+    lineHeight: 20,
   },
   sceneStack: {
     gap: tokens.space.sm,

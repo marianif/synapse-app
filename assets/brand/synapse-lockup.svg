@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="240" viewBox="0 0 720 240" fill="none">
+  <rect width="720" height="240" fill="#171A20"/>
+  <g transform="translate(24 42) scale(1.5)">
+    <path d="M60 18L24 82L96 82Z M60 18L72 8 M24 82L36 72 M96 82L108 72 M36 72L72 8L108 72Z" stroke="#E9EDF3" stroke-width="2.25" stroke-linecap="square" stroke-linejoin="miter"/>
+    <circle cx="60" cy="18" r="8" fill="#FB7185"/>
+    <circle cx="24" cy="82" r="8" fill="#22D3EE"/>
+    <circle cx="96" cy="82" r="8" fill="#FBBF24"/>
+  </g>
+  <text x="205" y="151" fill="#E9EDF3" font-family="Host Grotesk, Arial, sans-serif" font-size="92" font-weight="700" letter-spacing="-4">synapse</text>
+</svg>

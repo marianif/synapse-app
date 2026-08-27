@@ -9,6 +9,27 @@ export type ThemePreference = "system" | "light" | "dark";
 
 const THEME_PREFERENCE_KEY = "theme_preference";
 
+const ONBOARDING_COMPLETE_KEY = "onboarding-v1-complete";
+
+/** Returns whether the first-run story has been completed or skipped. */
+export async function getOnboardingComplete(): Promise<boolean> {
+  try {
+    return (await AsyncStorage.getItem(ONBOARDING_COMPLETE_KEY)) === "true";
+  } catch (error) {
+    console.error("[settings] getOnboardingComplete failed:", error);
+    return false;
+  }
+}
+
+/** Persists completion of the first-run story. */
+export async function setOnboardingComplete(): Promise<void> {
+  try {
+    await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, "true");
+  } catch (error) {
+    console.error("[settings] setOnboardingComplete failed:", error);
+  }
+}
+
 function isThemePreference(value: string | null): value is ThemePreference {
   return value === "system" || value === "light" || value === "dark";
 }

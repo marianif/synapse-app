@@ -31,6 +31,7 @@ import { EntryDot } from "@/components/atoms/entry-dot";
 import { ChipRail, SelectChip } from "@/components/atoms/select-chip";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { TaskChecklist } from "@/components/molecules/task-checklist";
 import { WhenPicker } from "@/components/molecules/when-picker";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { entryKicker, tokens, useTheme } from "@/constants/theme";
@@ -395,6 +396,7 @@ export default function EditScreen(): React.ReactElement {
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
+          automaticallyAdjustKeyboardInsets
         >
           <TouchableWithoutFeedback
             onPress={Keyboard.dismiss}
@@ -590,6 +592,13 @@ export default function EditScreen(): React.ReactElement {
                   </ReadoutRow>
                 ) : null}
               </View>
+
+              {/* Subtasks: todo and deadline only. An idea that grows a
+                  checklist is a project — promote it instead. Full editing
+                  (add, toggle, rename, delete) lives here, in /edit. */}
+              {!isIdea ? (
+                <TaskChecklist entryId={entry.id} accent={accent} />
+              ) : null}
 
               {isIdea ? (
                 <TextZone

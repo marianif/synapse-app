@@ -28,6 +28,12 @@ Three voices carry the typography: **Host Grotesk** (display/body — Inter was 
 - No 1px structural borders and no colored edge-bars — tonal layering, spacing, and the 6px EntryDot / mono kicker carry structure. Sharp radii (6–14) for tiles and cards: surgical, not soft. Floating dock composers (capture bar, notes composer, add-project bar) use `radius.pill` so they read as a single capsule instrument above the feed.
 - Motion is expressive but earns its place: quick springs on re-flow; the stale-pulse on untouched ideas is the one sanctioned continuous motion. **List/feed entrances never spring** — a row printing itself in is a calm timing fade, not a bounce. Springs are reserved for direct manipulation feedback (re-flow, drag, press response), never for passive content appearing on screen.
 
+### Circuit Node mark
+
+The Synapse brand mark is a compact triangular prism, not a data cluster or a literal brain. Three solid nodes use the deadline coral, todo cyan, and idea amber codes at equal intensity on the front face; crisp off-white edges reveal the offset rear face. The source vectors live in `assets/brand/`, while `BrandMark` in `components/atoms/brand-mark.tsx` keeps the same geometry in the app chrome and onboarding.
+
+The graphite app icon and splash lockup are rendered from that same construction. `EntryCluster` remains reserved for mixed-type content, so the brand mark is never mistaken for a board-state indicator.
+
 ## Tokens
 
 Source of truth: **`constants/theme.ts`** (the `tokens` object + `useTheme()`). The module below mirrors its live shape and values — change values there, not names.

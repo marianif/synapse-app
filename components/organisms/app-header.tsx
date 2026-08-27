@@ -2,10 +2,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { BrandMark } from "@/components/atoms/brand-mark";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useTheme } from "@/constants/theme";
-import { useIncomingCount } from "@/hooks/use-incoming-count";
-import { EntryCluster } from "../atoms/entry-cluster";
 
 interface AppHeaderProps {
   onAvatarPress?: () => void;
@@ -18,20 +17,14 @@ export function AppHeader({
 }: AppHeaderProps): React.ReactElement {
   const { colors } = useTheme();
   const router = useRouter();
-  const incomingCount = useIncomingCount();
 
   return (
     <View style={[styles.bar, { backgroundColor: colors.paper }]}>
       <View style={styles.brand}>
-        <EntryCluster
-          types={["deadline", "todo", "idea"]}
-          dotSize={7}
-          gap={3}
-          width={24}
-        />
+        <BrandMark size={24} />
 
         <ThemedText type="headline" style={styles.wordmark}>
-          Synapse
+          synapse
         </ThemedText>
       </View>
 

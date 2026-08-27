@@ -21,7 +21,7 @@ import {
   ThemeProvider as NavThemeProvider,
 } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
-import { Stack } from "expo-router";
+import { Redirect, Stack, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
@@ -30,8 +30,8 @@ import "react-native-reanimated";
 
 import { ErrorBoundary } from "@/components/error-boundary";
 import { DatabaseProvider } from "@/contexts/database-context";
+import { OnboardingProvider, useOnboarding } from "@/contexts/onboarding-context";
 import { ThemeProvider, useThemeContext } from "@/contexts/theme-context";
-import { requestNotificationPermissions } from "@/lib/notifications";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -41,7 +41,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
-        <ThemedNavigationShell />
+        <OnboardingProvider>
+          <ThemedNavigationShell />
+        </OnboardingProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );
@@ -51,6 +53,11 @@ export default function RootLayout() {
 // component cannot read a context it also renders the Provider for, hence the split.
 function ThemedNavigationShell(): React.ReactElement | null {
   const { resolvedScheme, isReady } = useThemeContext();
+  const {
+    complete: onboardingComplete,
+    isReady: onboardingReady,
+  } = useOnboarding();
+  const segments = useSegments();
 
   // Field Lab's hierarchy is sans + mono (Host Grotesk display/body, JetBrains Mono
   // for the signal layer: counts/status/kickers). Load both before the splash clears
@@ -68,8 +75,8 @@ function ThemedNavigationShell(): React.ReactElement | null {
     Caveat_700Bold,
   });
 
-  // Configure foreground notification display and request permissions once.
-  // rescheduleAllEntries is handled inside DatabaseProvider after initial load.
+  // Configure foreground notification display once. Permission is requested when
+  // a user creates a deadline, after the notification has a clear purpose.
   useEffect(() => {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -79,10 +86,6 @@ function ThemedNavigationShell(): React.ReactElement | null {
         shouldShowBanner: true,
         shouldShowList: true,
       }),
-    });
-
-    requestNotificationPermissions().catch((err) => {
-      console.warn("[RootLayout] requestNotificationPermissions failed:", err);
     });
   }, []);
 
@@ -94,7 +97,22 @@ function ThemedNavigationShell(): React.ReactElement | null {
     }
   }, [isReady, fontsLoaded]);
 
-  if (!fontsLoaded) return null;
+  if (
+    !fontsLoaded ||
+    !isReady ||
+    !onboardingReady ||
+    onboardingComplete === null
+  ) {
+    return null;
+  }
+
+  const isOnboarding = segments[0] === "onboarding";
+  if (!onboardingComplete && !isOnboarding) {
+    return <Redirect href="/onboarding" />;
+  }
+  if (onboardingComplete && isOnboarding) {
+    return <Redirect href="/(tabs)/(home)" />;
+  }
 
   const isDark = resolvedScheme === "dark";
 
@@ -107,6 +125,7 @@ function ThemedNavigationShell(): React.ReactElement | null {
               chrome is owned by the navigator (not laid out in the screen body)
               while still reading screen-local, param-driven title/kicker. */}
           <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="onboarding" />
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="modal" options={{ presentation: "modal" }} />
           </Stack>

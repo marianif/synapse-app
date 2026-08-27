@@ -23,6 +23,7 @@ import {
 import { seedDevDataIfEmpty } from "@/lib/dev-seed";
 import {
   cancelNotificationForEntry,
+  requestNotificationPermissions,
   rescheduleAllEntries,
   scheduleEntryNotification,
 } from "@/lib/notifications";
@@ -332,8 +333,16 @@ export function DatabaseProvider({
           return next;
         });
 
-        // Schedule notification — failures must not block the mutation
-        scheduleEntryNotification(created).catch((err) => {
+        // Ask for notifications only when a deadline makes the benefit clear.
+        // Scheduling remains fire-and-forget so it never blocks a save.
+        const schedule = async (): Promise<void> => {
+          if (created.type === "deadline") {
+            const granted = await requestNotificationPermissions();
+            if (!granted) return;
+          }
+          await scheduleEntryNotification(created);
+        };
+        schedule().catch((err) => {
           console.warn("[DatabaseContext] scheduleEntryNotification failed:", err);
         });
 

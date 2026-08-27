@@ -54,7 +54,7 @@ export function OptionChip({
 
 const styles = StyleSheet.create({
   optionChip: {
-    minHeight: 32,
+    maxHeight: 48,
     maxWidth: 160,
     borderRadius: tokens.radius.pill,
     paddingHorizontal: tokens.space.sm,
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     gap: tokens.space.xs,
   },
   emoji: {
-    fontSize: 13,
+    fontSize: 14,
     lineHeight: 18,
   },
   pressed: {

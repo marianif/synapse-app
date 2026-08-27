@@ -17,7 +17,6 @@ import { tokens, useTheme } from "@/constants/theme";
 
 export const WHEEL_ROW_HEIGHT = 44;
 const VISIBLE_ROWS = 5; // must be odd so one row sits dead-center
-const PADDING_ROWS = (VISIBLE_ROWS - 1) / 2;
 
 export type WheelItem = {
   /** Stable key + the value reported on select. */
@@ -37,6 +36,15 @@ type WheelPickerProps = {
   align?: "split" | "center";
   /** Flex weight when sat next to another wheel. */
   flex?: number;
+  /** Compact density: row height (default 44) and visible rows (default 5). */
+  rowHeight?: number;
+  visibleRows?: number;
+  /** Active-row text color. Defaults to the entry accent for existing uses. */
+  selectedColor?: string;
+  /** Inactive primary text color. Defaults to the active theme ink. */
+  textColor?: string;
+  /** Inactive secondary text color. Defaults to the muted theme ink. */
+  mutedColor?: string;
 };
 
 export function WheelPicker({
@@ -46,13 +54,21 @@ export function WheelPicker({
   accentColor,
   align = "center",
   flex = 1,
+  rowHeight = WHEEL_ROW_HEIGHT,
+  visibleRows = VISIBLE_ROWS,
+  selectedColor = accentColor,
+  textColor,
+  mutedColor,
 }: WheelPickerProps): React.ReactElement {
   const { colors } = useTheme();
+  const inactiveTextColor = textColor ?? colors.ink;
+  const inactiveMutedColor = mutedColor ?? colors.inkMuted;
   const scrollRef = useRef<ScrollView>(null);
   const selectedIndex = Math.max(
     0,
     items.findIndex((i) => i.value === selectedValue),
   );
+  const paddingRows = (visibleRows - 1) / 2;
 
   // Keep the wheel parked on the selected row when it changes from outside
   // (e.g. a quick-pick chip), without fighting an in-progress drag.
@@ -60,32 +76,32 @@ export function WheelPicker({
   useEffect(() => {
     if (isDragging.current) return;
     scrollRef.current?.scrollTo({
-      y: selectedIndex * WHEEL_ROW_HEIGHT,
+      y: selectedIndex * rowHeight,
       animated: true,
     });
-  }, [selectedIndex]);
+  }, [selectedIndex, rowHeight]);
 
   function handleMomentumEnd(
     e: NativeSyntheticEvent<NativeScrollEvent>,
   ): void {
     isDragging.current = false;
     const y = e.nativeEvent.contentOffset.y;
-    const index = Math.round(y / WHEEL_ROW_HEIGHT);
+    const index = Math.round(y / rowHeight);
     const clamped = Math.min(Math.max(index, 0), items.length - 1);
     const next = items[clamped];
     if (next && next.value !== selectedValue) onChange(next.value);
   }
 
   return (
-    <View style={[styles.wheel, { flex }]}>
+    <View style={[styles.wheel, { flex, height: rowHeight * visibleRows }]}>
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
-        snapToInterval={WHEEL_ROW_HEIGHT}
+        snapToInterval={rowHeight}
         decelerationRate="fast"
         nestedScrollEnabled
         contentContainerStyle={{
-          paddingVertical: PADDING_ROWS * WHEEL_ROW_HEIGHT,
+          paddingVertical: paddingRows * rowHeight,
         }}
         onScrollBeginDrag={() => {
           isDragging.current = true;
@@ -109,6 +125,7 @@ export function WheelPicker({
               accessibilityState={{ selected: active }}
               style={[
                 styles.row,
+                { height: rowHeight },
                 align === "split" && styles.rowSplit,
                 align === "center" && styles.rowCenter,
               ]}
@@ -118,8 +135,8 @@ export function WheelPicker({
                 numberOfLines={1}
                 style={[
                   { opacity },
-                  active && { color: accentColor, fontWeight: "700" },
-                  !active && { color: colors.ink },
+                  active && { color: selectedColor, fontWeight: "700" },
+                  !active && { color: inactiveTextColor },
                 ]}
               >
                 {item.label}
@@ -131,8 +148,8 @@ export function WheelPicker({
                   style={[
                     { opacity },
                     active
-                      ? { color: accentColor, fontWeight: "700" }
-                      : { color: colors.inkMuted },
+                      ? { color: selectedColor, fontWeight: "700" }
+                      : { color: inactiveMutedColor },
                   ]}
                 >
                   {item.detail}
@@ -148,10 +165,9 @@ export function WheelPicker({
 
 const styles = StyleSheet.create({
   wheel: {
-    height: WHEEL_ROW_HEIGHT * VISIBLE_ROWS,
+    // height is supplied inline (rowHeight × visibleRows).
   },
   row: {
-    height: WHEEL_ROW_HEIGHT,
     flexDirection: "row",
     alignItems: "center",
   },

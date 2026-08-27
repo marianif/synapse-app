@@ -1,5 +1,11 @@
-import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+  Keyboard,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -9,7 +15,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { OptionChip } from "@/components/atoms/option-chip";
-import { DatePickerSheet } from "@/components/organisms/date-picker-sheet";
+import { ExactDateMenu } from "@/components/organisms/exact-date-menu";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import type { Scheme } from "@/constants/theme";
 import { tokens } from "@/constants/theme";
@@ -87,6 +93,13 @@ export function DetailsStageView({
     time: string;
     dueRange: DueRange | null;
   } | null>(null);
+  const [anchorRect, setAnchorRect] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
+  const stageRef = useRef<View | null>(null);
   const progress = useSharedValue(0);
   const reduced = useReducedMotion();
 
@@ -145,10 +158,17 @@ export function DetailsStageView({
     setPickerSnapshot({ exact, date, time, dueRange });
     setExact(() => true);
     setDueRange(null);
-    setDatePickerOpen(true);
+    Keyboard.dismiss();
+    stageRef.current?.measureInWindow((x, y, w, h) => {
+      setAnchorRect({ x, y, w, h });
+      setDatePickerOpen(true);
+    });
   };
 
-  const handleDatePickerConfirm = (nextDate: string, nextTime: string): void => {
+  const handleDatePickerConfirm = (
+    nextDate: string,
+    nextTime: string,
+  ): void => {
     setDate(nextDate);
     setTime(nextTime);
     setDatePickerOpen(false);
@@ -171,6 +191,14 @@ export function DetailsStageView({
 
   const renderWhenOptions = (): React.ReactElement => (
     <>
+      <OptionChip
+        label="exact"
+        selected={exact}
+        ink={ink}
+        muted={muted}
+        raised={quiet}
+        onPress={openDatePicker}
+      />
       {WHEN_OPTIONS.map((option) =>
         option.kind === "concrete" ? (
           <OptionChip
@@ -208,14 +236,6 @@ export function DetailsStageView({
           />
         ),
       )}
-      <OptionChip
-        label="exact"
-        selected={exact}
-        ink={ink}
-        muted={muted}
-        raised={quiet}
-        onPress={openDatePicker}
-      />
     </>
   );
 
@@ -248,6 +268,7 @@ export function DetailsStageView({
 
   return (
     <View
+      ref={stageRef}
       style={styles.detailsStage}
       onLayout={(e) => setStageWidth(e.nativeEvent.layout.width)}
     >
@@ -325,10 +346,12 @@ export function DetailsStageView({
         </View>
       </Animated.View>
 
-      <DatePickerSheet
+      <ExactDateMenu
         visible={datePickerOpen}
         initialDate={date}
         initialTime={time}
+        accentColor={accent}
+        anchor={anchorRect}
         onDismiss={handleDatePickerDismiss}
         onConfirm={handleDatePickerConfirm}
       />

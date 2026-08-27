@@ -74,11 +74,6 @@ export function TypeLane({
           >
             {label}
           </ThemedText>
-          <IconSymbol
-            name="ChevronRight"
-            size={10}
-            color={pressed ? pressedForeground : foreground}
-          />
         </>
       )}
     </Pressable>
@@ -93,7 +88,7 @@ const styles = StyleSheet.create({
     paddingVertical: tokens.space.xs,
     paddingHorizontal: tokens.space.sm,
     borderRadius: tokens.radius.pill,
-    minHeight: 32,
+    minWidth: 64,
   },
   pressed: {
     transform: [{ scale: 0.96 }],

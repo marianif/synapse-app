@@ -218,6 +218,18 @@ const elevation = {
     android: { elevation: 8 },
     default: {},
   }),
+  // floating context-menu / popover card — tighter lift than a tile so it
+  // reads as hovering above the composer, not as another board surface.
+  menu: Platform.select({
+    ios: {
+      shadowColor: "#28384f",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.35,
+      shadowRadius: 8,
+    },
+    android: { elevation: 6 },
+    default: {},
+  }),
 } as const;
 
 export const tokens = {

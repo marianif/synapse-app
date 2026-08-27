@@ -110,7 +110,7 @@ export const CaptureFlow = forwardRef<InputStageHandle, CaptureFlowProps>(
     const from = Math.floor(progress.value);
     const to = Math.min(from + 1, heights.length - 1);
     const localProgress = progress.value - from;
-    const fromH = heights[from] || heights[stageIndex] || 0;
+    const fromH = heights[from] || 0;
     const toH = heights[to] || fromH;
     const h = fromH + (toH - fromH) * localProgress;
     return h ? { height: h } : {};

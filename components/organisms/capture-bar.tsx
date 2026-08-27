@@ -202,6 +202,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     minHeight: 56,
+    borderRadius: tokens.radius.pill,
+    paddingLeft: tokens.space.lg,
+    paddingRight: tokens.space.xs,
+    gap: tokens.space.md,
+    overflow: "hidden",
   },
   // Idle: split dock — text slab + voice slab. A small gap separates the two
   // so voice reads as its own instrument, not a trailing icon. Padding keeps

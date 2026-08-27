@@ -168,6 +168,13 @@ const space = {
   xxxl: 32,
 } as const;
 
+// Fixed frame sizes — the composer dock's one-line readouts (capture /
+// classify / details) share one bar height so the capsule never visibly
+// reshapes between them; only multi-row workbenches grow past it.
+const size = {
+  dockBar: 56,
+} as const;
+
 const radius = {
   sm: 6, // sharp — crisp instrument-panel edges
   md: 10,
@@ -220,6 +227,7 @@ export const tokens = {
   feedback,
   type,
   space,
+  size,
   radius,
   motion,
   elevation,

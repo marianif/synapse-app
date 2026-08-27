@@ -214,7 +214,9 @@ export default function ProjectScreen(): React.ReactElement {
     if (isEmpty) return;
     if (open) {
       setFabReserve(FAB_OPEN_FOOTPRINT);
-      requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
+      requestAnimationFrame(() =>
+        scrollRef.current?.scrollToEnd({ animated: true }),
+      );
     } else {
       setFabReserve(0);
     }
@@ -281,28 +283,26 @@ export default function ProjectScreen(): React.ReactElement {
       projectId: id,
       scheduledDate:
         payload.kind === "todo"
-          ? due ?? payload.date ?? undefined
+          ? (due ?? payload.date ?? undefined)
           : undefined,
       scheduledTime:
         payload.kind === "todo"
           ? payload.dueRange
             ? undefined
-            : payload.time ?? undefined
+            : (payload.time ?? undefined)
           : undefined,
       dueDate:
         payload.kind === "deadline"
-          ? due ?? payload.date ?? undefined
+          ? (due ?? payload.date ?? undefined)
           : undefined,
       dueTime:
         payload.kind === "deadline"
           ? payload.dueRange
             ? undefined
-            : payload.time ?? undefined
+            : (payload.time ?? undefined)
           : undefined,
       dueRange: payload.dueRange ?? undefined,
-    }).catch((err) =>
-      console.error(`Failed to capture ${payload.kind}:`, err),
-    );
+    }).catch((err) => console.error(`Failed to capture ${payload.kind}:`, err));
   };
 
   const spinePageCount = Math.max(1, Math.ceil(spine.length / PAGE_SIZE));
@@ -489,7 +489,11 @@ export default function ProjectScreen(): React.ReactElement {
                       {project.emoji}
                     </ThemedText>
                   ) : (
-                    <IconSymbol name="Folder" size={22} color={colors.inkMuted} />
+                    <IconSymbol
+                      name="Folder"
+                      size={22}
+                      color={colors.inkMuted}
+                    />
                   )}
                 </Pressable>
               }
@@ -514,7 +518,9 @@ export default function ProjectScreen(): React.ReactElement {
         style={styles.scroll}
         contentContainerStyle={[
           styles.content,
-          fabReserve > 0 && { paddingBottom: styles.content.paddingBottom + fabReserve },
+          fabReserve > 0 && {
+            paddingBottom: styles.content.paddingBottom + fabReserve,
+          },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -522,19 +528,10 @@ export default function ProjectScreen(): React.ReactElement {
             came from. Identity, not metadata. Its own band so the eye
             registers it as the project's origin story, not as content. */}
         {origin ? (
-          <Pressable
-            onPress={() =>
-              router.push({
-                pathname: "/detail",
-                params: { id: origin.id, entryType: origin.type },
-              })
-            }
+          <View
             accessibilityRole="button"
             accessibilityLabel={`Born from idea: ${origin.title}`}
-            style={({ pressed }) => [
-              styles.originBand,
-              pressed && styles.pressed,
-            ]}
+            style={[styles.originBand]}
           >
             <ThemedText
               type="hand"
@@ -542,7 +539,7 @@ export default function ProjectScreen(): React.ReactElement {
             >
               Born from “{origin.title}”.
             </ThemedText>
-          </Pressable>
+          </View>
         ) : null}
 
         {/* Stats bar — compact instrument readout below provenance.

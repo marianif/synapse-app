@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   classifyStage: {
     flexDirection: "row",
     alignItems: "center",
+    minHeight: tokens.size.dockBar,
     paddingHorizontal: tokens.space.md,
     paddingVertical: tokens.space.sm,
     gap: tokens.space.xs,

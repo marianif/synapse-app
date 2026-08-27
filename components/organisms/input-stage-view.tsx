@@ -93,7 +93,7 @@ export const InputStage = forwardRef<
 
 const styles = StyleSheet.create({
   inputStage: {
-    minHeight: 56,
+    minHeight: tokens.size.dockBar,
     flexDirection: "row",
     alignItems: "center",
     padding: tokens.space.xs,

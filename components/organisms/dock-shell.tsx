@@ -131,25 +131,35 @@ export function DockShell({
     <Animated.View
       entering={entering}
       layout={layout}
-      style={[styles.shell, fillStyle, tokens.elevation.capture]}
+      style={[styles.shellShadow, tokens.elevation.capture]}
     >
-      {/* The body sizes the shell (in-flow), and cross-fades on contentKey so
-          the readout swaps inside one persistent frame. */}
-      <Animated.View
-        key={contentKey}
-        layout={layout}
-        style={[styles.body, bodyStyle]}
-      >
-        {children}
+      {/* The inner frame owns the clip (radius + overflow) so the animated fill
+          and the readouts stay inside the pill; the shadow lives on the outer
+          wrapper because `overflow: hidden` clips iOS shadows off the frame. */}
+      <Animated.View style={[styles.shell, fillStyle]}>
+        {/* The body sizes the shell (in-flow), and cross-fades on contentKey so
+            the readout swaps inside one persistent frame. */}
+        <Animated.View
+          key={contentKey}
+          layout={layout}
+          style={[styles.body, bodyStyle]}
+        >
+          {children}
+        </Animated.View>
       </Animated.View>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Outer wrapper: carries the elevation so the pill keeps its shadow — the
+  // frame itself clips (overflow hidden) and would mask it off on iOS.
+  shellShadow: {
+    borderRadius: tokens.radius.pill,
+  },
   // One silhouette for the whole dock: a single full-rounded radius, one
-  // clipped frame, one elevation. No per-surface radius/fill/margin — the shell
-  // is the only frame.
+  // clipped frame, one elevation (on the wrapper above). No per-surface
+  // radius/fill/margin — the shell is the only frame.
   shell: {
     borderRadius: tokens.radius.pill,
     overflow: "hidden",

@@ -149,62 +149,65 @@ export const AddProjectBar = forwardRef<
             : SlideInDown.duration(320).easing(Easing.out(Easing.cubic))
         }
         exiting={reduced ? undefined : FadeOut.duration(110)}
-        style={[
-          styles.bar,
-          { backgroundColor: colors.accent.clay },
-          tokens.elevation.capture,
-        ]}
+        style={[styles.barShadow, tokens.elevation.capture]}
       >
-        {/* The channel label — mono kicker reading what this line opens. */}
-        <ThemedText type="label" style={[styles.kicker, { color: onSlab }]}>
-          NEW PROJECT
-        </ThemedText>
+        {/* The inner frame owns the clip (radius + overflow) so the slab fill
+            stays inside the pill; the shadow lives on the outer wrapper because
+            `overflow: hidden` clips iOS shadows off the frame. */}
+        <Animated.View
+          style={[styles.bar, { backgroundColor: colors.accent.clay }]}
+        >
+          {/* The channel label — mono kicker reading what this line opens. */}
+          <ThemedText type="label" style={[styles.kicker, { color: onSlab }]}>
+            NEW PROJECT
+          </ThemedText>
 
-        <TextInput
-          ref={inputRef}
-          value={draft}
-          onChangeText={setDraft}
-          onSubmitEditing={submit}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          placeholder="Name a life area"
-          placeholderTextColor={withDimmed(onSlab)}
-          selectionColor={onSlab}
-          returnKeyType="done"
-          submitBehavior="submit"
-          accessibilityLabel="New project name"
-          accessibilityHint="Type a project name and submit to create it."
-          style={[styles.input, { color: onSlab }]}
-        />
+          <TextInput
+            ref={inputRef}
+            value={draft}
+            onChangeText={setDraft}
+            onSubmitEditing={submit}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            placeholder="Name a life area"
+            placeholderTextColor={withDimmed(onSlab)}
+            selectionColor={onSlab}
+            returnKeyType="done"
+            submitBehavior="submit"
+            accessibilityLabel="New project name"
+            accessibilityHint="Type a project name and submit to create it."
+            style={[styles.input, { color: onSlab }]}
+          />
 
-        {hasText ? (
-          <Pressable
-            onPress={submit}
-            hitSlop={12}
-            accessibilityRole="button"
-            accessibilityLabel="Create project"
-            style={({ pressed }) => [
-              styles.sendBtn,
-              { backgroundColor: onSlab },
-              pressed && styles.pressed,
-            ]}
-          >
-            <IconSymbol name="ArrowUp" size={22} color={colors.accent.clay} />
-          </Pressable>
-        ) : (
-          <Pressable
-            onPress={() => {
-              Keyboard.dismiss();
-              onDismissEmpty();
-            }}
-            hitSlop={12}
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-            style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
-          >
-            <IconSymbol name="X" size={22} color={onSlab} />
-          </Pressable>
-        )}
+          {hasText ? (
+            <Pressable
+              onPress={submit}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Create project"
+              style={({ pressed }) => [
+                styles.sendBtn,
+                { backgroundColor: onSlab },
+                pressed && styles.pressed,
+              ]}
+            >
+              <IconSymbol name="ArrowUp" size={22} color={colors.accent.clay} />
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={() => {
+                Keyboard.dismiss();
+                onDismissEmpty();
+              }}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+              style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
+            >
+              <IconSymbol name="X" size={22} color={onSlab} />
+            </Pressable>
+          )}
+        </Animated.View>
       </Animated.View>
     </Animated.View>
   );
@@ -220,10 +223,15 @@ const styles = StyleSheet.create({
   liftContainer: {
     width: "100%",
   },
+  // Outer wrapper: carries the elevation so the pill keeps its shadow — the
+  // frame itself clips (overflow hidden) and would mask it off on iOS.
+  barShadow: {
+    borderRadius: tokens.radius.pill,
+  },
   bar: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 56,
+    minHeight: tokens.size.dockBar,
     borderRadius: tokens.radius.pill,
     paddingLeft: tokens.space.lg,
     paddingRight: tokens.space.xs,

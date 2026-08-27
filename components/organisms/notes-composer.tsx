@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   forwardRef,
   useEffect,
@@ -29,6 +28,7 @@ import {
   type LinkSelection,
   type LinkableTarget,
 } from "@/components/organisms/link-sheet";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useSpeechRecognizer } from "@/hooks/use-speech-recognizer";
 
@@ -197,7 +197,7 @@ export const NotesComposer = forwardRef<
               accessibilityLabel="Discard recording"
               style={styles.roundButton}
             >
-              <MaterialCommunityIcons name="close" size={20} color={onSlab} />
+              <IconSymbol name="X" size={20} color={onSlab} />
             </Pressable>
             <View style={styles.recordingCenter}>
               {transcript ? (
@@ -218,8 +218,8 @@ export const NotesComposer = forwardRef<
               accessibilityLabel="Save recording"
               style={[styles.primaryRound, { backgroundColor: onSlab }]}
             >
-              <MaterialCommunityIcons
-                name="arrow-right"
+              <IconSymbol
+                name="ArrowRight"
                 size={20}
                 color={colors.accent.clay}
               />
@@ -267,8 +267,8 @@ export const NotesComposer = forwardRef<
                 pressed && styles.pressed,
               ]}
             >
-              <MaterialCommunityIcons
-                name="arrow-right"
+              <IconSymbol
+                name="ArrowRight"
                 size={20}
                 color={colors.accent.clay}
               />
@@ -280,16 +280,12 @@ export const NotesComposer = forwardRef<
               accessibilityRole="button"
               accessibilityLabel="Capture by voice"
               style={({ pressed }) => [
-                styles.secondaryRound,
-                { borderColor: onSlab },
+                styles.voiceSlab,
+                { backgroundColor: `${onSlab}22` },
                 pressed && styles.pressed,
               ]}
             >
-              <MaterialCommunityIcons
-                name="microphone"
-                size={20}
-                color={onSlab}
-              />
+              <IconSymbol name="Microphone" size={20} color={onSlab} />
             </Pressable>
           )}
         </View>
@@ -311,7 +307,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   inputStage: {
-    minHeight: 52,
+    minHeight: tokens.size.dockBar,
     flexDirection: "row",
     alignItems: "center",
     paddingLeft: tokens.space.md,
@@ -336,17 +332,16 @@ const styles = StyleSheet.create({
     fontFamily: tokens.type.fontInter.medium,
   },
   primaryRound: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
   },
-  secondaryRound: {
-    width: 36,
-    height: 36,
+  voiceSlab: {
+    width: 40,
+    height: 40,
     borderRadius: tokens.radius.pill,
-    borderWidth: 1.5,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -357,7 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   recordingStage: {
-    minHeight: 52,
+    minHeight: tokens.size.dockBar,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: tokens.space.sm,

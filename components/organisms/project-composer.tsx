@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
@@ -6,6 +5,7 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { WaveformVisualizer } from "@/components/atoms/waveform-bar";
 import { DetailsStageView } from "@/components/organisms/details-stage-view";
 import { DockShell } from "@/components/organisms/dock-shell";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import {
   entryColor,
   entryKicker,
@@ -223,7 +223,7 @@ function ProjectComposerBody({
           accessibilityLabel="Discard recording"
           style={styles.roundButton}
         >
-          <MaterialCommunityIcons name="close" size={20} color={colors.ink} />
+          <IconSymbol name="X" size={20} color={colors.ink} />
         </Pressable>
         <View style={styles.recordingCenter}>
           {transcript ? (
@@ -244,8 +244,8 @@ function ProjectComposerBody({
           accessibilityLabel="Save recording"
           style={[styles.primaryRound, { backgroundColor: accent }]}
         >
-          <MaterialCommunityIcons
-            name="arrow-right"
+          <IconSymbol
+            name="ArrowRight"
             size={20}
             color={colors.surface}
           />
@@ -330,8 +330,8 @@ function ProjectComposerBody({
             pressed && styles.pressed,
           ]}
         >
-          <MaterialCommunityIcons
-            name="arrow-right"
+          <IconSymbol
+            name="ArrowRight"
             size={20}
             color={colors.surface}
           />
@@ -343,12 +343,12 @@ function ProjectComposerBody({
           accessibilityRole="button"
           accessibilityLabel="Capture by voice"
           style={({ pressed }) => [
-            styles.secondaryRound,
-            { borderColor: accent },
+            styles.voiceSlab,
+            { backgroundColor: `${accent}22` },
             pressed && styles.pressed,
           ]}
         >
-          <MaterialCommunityIcons name="microphone" size={20} color={accent} />
+          <IconSymbol name="Microphone" size={20} color={accent} />
         </Pressable>
       )}
     </View>
@@ -357,7 +357,7 @@ function ProjectComposerBody({
 
 const styles = StyleSheet.create({
   inputStage: {
-    minHeight: 52,
+    minHeight: tokens.size.dockBar,
     flexDirection: "row",
     alignItems: "center",
     paddingLeft: tokens.space.md,
@@ -382,17 +382,16 @@ const styles = StyleSheet.create({
     fontFamily: tokens.type.fontInter.medium,
   },
   primaryRound: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
   },
-  secondaryRound: {
-    width: 36,
-    height: 36,
+  voiceSlab: {
+    width: 40,
+    height: 40,
     borderRadius: tokens.radius.pill,
-    borderWidth: 1.5,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -403,7 +402,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   recordingStage: {
-    minHeight: 52,
+    minHeight: tokens.size.dockBar,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: tokens.space.sm,

@@ -1,8 +1,8 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { WaveformVisualizer } from "@/components/atoms/waveform-bar";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens } from "@/constants/theme";
 
 const WAVEFORM_BARS = 9;
@@ -26,7 +26,7 @@ export function RecordingStage({
         accessibilityLabel="Discard recording"
         style={styles.recordingButton}
       >
-        <MaterialCommunityIcons name="close" size={20} color={ink} />
+        <IconSymbol name="X" size={20} color={ink} />
       </Pressable>
       <View style={styles.recordingCenter}>
         {transcript ? (
@@ -47,7 +47,7 @@ export function RecordingStage({
         accessibilityLabel="Continue"
         style={styles.recordingButton}
       >
-        <MaterialCommunityIcons name="arrow-right" size={20} color={ink} />
+        <IconSymbol name="ArrowRight" size={20} color={ink} />
       </Pressable>
     </View>
   );
@@ -55,7 +55,7 @@ export function RecordingStage({
 
 const styles = StyleSheet.create({
   recordingStage: {
-    minHeight: 52,
+    minHeight: tokens.size.dockBar,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: tokens.space.sm,

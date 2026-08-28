@@ -4,8 +4,8 @@
   <dict>
     <key>com.apple.security.application-groups</key>
     <array>
-      <string>group.dev.the-wedge.synapse-app</string>
-      <string>group.dev.the-wedge.synapse-app</string>
+      <string>group.dev.the-wedge.synapse-app.dev</string>
+      <string>group.dev.the-wedge.synapse-app.dev</string>
     </array>
   </dict>
 </plist>

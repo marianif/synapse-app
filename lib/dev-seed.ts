@@ -930,7 +930,6 @@ export async function seedScenario(
   db: SQLite.SQLiteDatabase,
   key: ScenarioKey,
 ): Promise<void> {
-  if (!__DEV__) return;
   const scenario = SCENARIOS_BY_KEY[key];
   if (!scenario) throw new Error(`Unknown seed scenario: ${key}`);
 

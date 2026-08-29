@@ -15,9 +15,20 @@
         "chrome-devtools-mcp"
       ],
       "type": "local"
+    },
+    "argent": {
+      "type": "local",
+      "command": [
+        "argent",
+        "mcp"
+      ],
+      "enabled": true
     }
   },
   "plugin": [
     "opencode-scheduler"
-  ]
+  ],
+  "tools": {
+    "argent*": true
+  }
 }

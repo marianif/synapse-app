@@ -26,15 +26,15 @@ export function BrandMark({
       accessibilityLabel={accessibilityLabel}
     >
       <Path
-        d="M60 18L24 82L96 82Z M60 18L72 8 M24 82L36 72 M96 82L108 72 M36 72L72 8L108 72Z"
+        d="M92 23L63 34L80 61L37 76"
         stroke={colors.ink}
         strokeWidth={2.25}
         strokeLinecap="square"
         strokeLinejoin="miter"
       />
-      <Circle cx="60" cy="18" r="8" fill={colors.type.bills} />
-      <Circle cx="24" cy="82" r="8" fill={colors.type.todo} />
-      <Circle cx="96" cy="82" r="8" fill={colors.type.ideas} />
+      <Circle cx="92" cy="23" r="8" fill={colors.type.bills} />
+      <Circle cx="80" cy="61" r="8" fill={colors.type.todo} />
+      <Circle cx="37" cy="76" r="8" fill={colors.type.ideas} />
     </Svg>
   );
 }

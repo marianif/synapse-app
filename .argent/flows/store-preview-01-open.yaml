@@ -1,0 +1,37 @@
+executionPrerequisite: >-
+  App already restarted and idle-settled by goldie's captureSegments step
+  before this flow starts. Onboarding may or may not be showing.
+
+steps:
+  - echo: Pin element lookups to this app without a destructive relaunch
+  - tool: launch-app
+    args:
+      bundleId: dev.the-wedge.synapse-app.dev
+  - wait: 5000
+  - echo: Skip onboarding only if it is showing (data may persist across runs)
+  - when:
+      visible:
+        text: Continue
+    steps:
+      - tap:
+          text: Skip onboarding
+  - await: { visible: { text: Field } }
+  - echo: Make sure we are on the Field tab before opening Settings
+  - tap:
+      text: Field
+  - await: { visible: { text: Settings } }
+  - tap:
+      text: Settings
+  - await: { visible: { text: "DEV · SEED SCENARIO" } }
+  - tap:
+      text: Seed scenario Mixed pressure
+  - await: { visible: { text: "Seed \"Mixed pressure\"?" } }
+  - tap:
+      text: Apply
+  - wait: 400
+  - echo: Back to Field home tab — this is the opening shot
+  - tap:
+      text: Field
+  - await: { visible: { text: "PROJECTS AND LIFE AREAS" } }
+  - await: { idle: true }
+  - wait: 1200

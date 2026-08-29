@@ -1,0 +1,11 @@
+executionPrerequisite: >-
+  App back on Field home after marking a deadline met (completing the action
+  returns here automatically), "PROJECTS AND LIFE AREAS" visible.
+
+steps:
+  - echo: Go to the Agenda tab to see the day's dispatch
+  - tap:
+      text: Agenda
+  - await: { visible: { text: "The board's dispatch" } }
+  - await: { idle: true }
+  - wait: 1500

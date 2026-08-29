@@ -1,0 +1,13 @@
+{
+  "source_summary": "Official Field Lab palette from constants/theme.ts and DESIGN.md — existing app design system, not newly generated.",
+  "palette": {
+    "colors": [
+      { "hex": "#171A20", "name": "Graphite", "role": "background" },
+      { "hex": "#E9EDF3", "name": "Paper", "role": "text" },
+      { "hex": "#22D3EE", "name": "Cyan", "role": "accent" },
+      { "hex": "#FB7185", "name": "Coral", "role": "accent" },
+      { "hex": "#FBBF24", "name": "Amber", "role": "accent" }
+    ],
+    "gradients": []
+  }
+}

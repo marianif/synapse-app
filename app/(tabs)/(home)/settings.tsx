@@ -121,7 +121,7 @@ export default function SettingsScreen(): React.ReactElement {
           </Text>
         </View>
 
-        {__DEV__ && (
+        {true && (
           <View style={styles.section}>
             <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
               Dev · Seed Scenario

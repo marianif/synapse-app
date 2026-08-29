@@ -3,7 +3,7 @@ module.exports = (config) => ({
   type: "watch-widget",
   bundleIdentifier: config.ios.bundleIdentifier + ".watch.watchwidget",
   colors: { $accent: "darkcyan" },
-  deploymentTarget: "10.6",
+  deploymentTarget: "10.0",
   entitlements: {
     "com.apple.security.application-groups":
       config.ios.entitlements["com.apple.security.application-groups"],

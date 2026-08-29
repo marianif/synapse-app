@@ -1,0 +1,16 @@
+executionPrerequisite: >-
+  App on the Studio rebrand project detail screen, task list visible
+  including "Book the dentist, this week".
+
+steps:
+  - echo: Tap "Book the dentist" to open its quick-action sheet
+  - tap:
+      text: "Book the dentist, this week"
+  - await: { visible: { text: "Mark met" } }
+  - await: { idle: true }
+  - wait: 500
+  - echo: Mark the deadline met — shows completion in the flow
+  - tap:
+      text: Mark met
+  - await: { idle: true }
+  - wait: 1200

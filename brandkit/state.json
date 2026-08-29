@@ -1,0 +1,50 @@
+{
+  "brandbookElements": [],
+  "essentialKitApproved": false,
+  "logo": {
+    "approvalSummary": "User selected Candidate 02 — Diagonal sweep — from the Circuit Node variant set.",
+    "asset": {
+      "id": "6684d515-672d-4a07-ad1d-5f13dda57489",
+      "path": "/Users/federicamariani/Desktop/the-wedge/synapse-app/brandkit/logo/circuit/candidate-2.svg"
+    },
+    "geometryFingerprint": "a024d8ecc0e991b17a743fea7ed24ae9ee4c206bb2c74cf97dc74add1b16c27d",
+    "name": "Synapse Circuit Node — Diagonal sweep",
+    "origin": "brandkit_generated",
+    "paletteRevision": 1,
+    "revision": 1
+  },
+  "palette": {
+    "approvalSummary": "Official Field Lab palette from constants/theme.ts and DESIGN.md — existing app design system, not newly generated.",
+    "colors": [
+      {
+        "hex": "#171a20",
+        "name": "Graphite",
+        "role": "background"
+      },
+      {
+        "hex": "#e9edf3",
+        "name": "Paper",
+        "role": "text"
+      },
+      {
+        "hex": "#22d3ee",
+        "name": "Cyan",
+        "role": "accent"
+      },
+      {
+        "hex": "#fb7185",
+        "name": "Coral",
+        "role": "accent"
+      },
+      {
+        "hex": "#fbbf24",
+        "name": "Amber",
+        "role": "accent"
+      }
+    ],
+    "gradients": [],
+    "origin": "user_supplied",
+    "revision": 1
+  },
+  "version": 2
+}

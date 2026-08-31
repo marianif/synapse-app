@@ -14,12 +14,17 @@ interface DiaryFeedProps {
   ideaTitles?: Record<string, string>;
   /** id → project title, for notes filed ON a project. */
   projectTitles?: Record<string, string>;
+  /** id → project emoji, for notes filed ON a project. Shown on the relatedness
+   *  chip in place of the folder glyph. */
+  projectEmojis?: Record<string, string>;
   /** True when a filter is narrowing the feed — changes the empty-state copy so
    *  "nothing matches" never reads as "the notes tab is empty". */
   filtered?: boolean;
   /** Open the link sheet to re-relate a note (pull it into a project/idea).
    *  Omit to render notes with a static relatedness chip. */
   onRelate?: (entry: DbDiaryEntry) => void;
+  /** Tap a note's body to edit it. Omit to render bodies as static text. */
+  onEdit?: (entry: DbDiaryEntry) => void;
   onDelete: (id: string) => void;
 }
 
@@ -53,8 +58,10 @@ export function DiaryFeed({
   entries,
   ideaTitles,
   projectTitles,
+  projectEmojis,
   filtered = false,
   onRelate,
+  onEdit,
   onDelete,
 }: DiaryFeedProps): React.ReactElement {
   const { colors } = useTheme();
@@ -101,12 +108,17 @@ export function DiaryFeed({
               : ideaTitle
                 ? ("idea" as const)
                 : undefined;
+            const projectEmoji = e.linked_project_id
+              ? projectEmojis?.[e.linked_project_id]
+              : undefined;
             return (
               <DiaryNote
                 key={e.id}
                 entry={e}
                 linkedTitle={title}
                 linkedKind={kind}
+                linkedEmoji={projectEmoji}
+                onEdit={onEdit ? () => onEdit(e) : undefined}
                 onRelate={onRelate ? () => onRelate(e) : undefined}
                 onDelete={() => onDelete(e.id)}
               />

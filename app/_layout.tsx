@@ -127,7 +127,10 @@ function ThemedNavigationShell(): React.ReactElement | null {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="onboarding" />
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+            <Stack.Screen
+              name="note"
+              options={{ presentation: "modal" }}
+            />
           </Stack>
         </ErrorBoundary>
         <StatusBar style={isDark ? "light" : "dark"} />

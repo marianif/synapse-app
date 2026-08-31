@@ -1,12 +1,18 @@
 import dayjs from "dayjs";
 import { useCallback, useEffect, useRef } from "react";
-import { findNodeHandle, Pressable, StyleSheet, View } from "react-native";
+import {
+  findNodeHandle,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import type { LinkableKind } from "@/components/organisms/link-sheet";
+import { SwipeableRow } from "@/components/organisms/swipeable-row";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useTendrilRegistry } from "@/hooks/use-tendril-registry";
 import { ConfirmKey } from "@/lib/settings";
@@ -20,6 +26,16 @@ interface DiaryNoteProps {
   linkedTitle?: string;
   /** Kind of the linked target — picks the leading glyph. */
   linkedKind?: LinkableKind;
+  /** Emoji of the linked project, when it has one. Shown in place of the folder
+   *  glyph on a project chip so the project's identity carries through to the
+   *  note. */
+  linkedEmoji?: string | null;
+  /** Hide the relatedness chip entirely. Use on surfaces that already imply
+   *  the link (e.g. a project's own notes), where the chip would be redundant
+   *  or misleading. */
+  hideChip?: boolean;
+  /** Tap the note body to edit it. Omit to render the body as static text. */
+  onEdit?: () => void;
   /** Tap the relatedness chip to re-link this note (pull it into a project or
    *  idea). Omit to render the chip as a static label. */
   onRelate?: () => void;
@@ -35,6 +51,9 @@ export function DiaryNote({
   entry,
   linkedTitle,
   linkedKind,
+  linkedEmoji,
+  hideChip = false,
+  onEdit,
   onRelate,
   onDelete,
 }: DiaryNoteProps): React.ReactElement {
@@ -48,9 +67,9 @@ export function DiaryNote({
   const reportPosition = useCallback(() => {
     if (!registry) return;
     const noteNode = noteRef.current;
-    const contentNode = registry.contentRef.current as
-      | { measure?: unknown }
-      | null;
+    const contentNode = registry.contentRef.current as {
+      measure?: unknown;
+    } | null;
     if (!contentNode || !noteNode) return;
     const contentHandle = findNodeHandle(contentNode as never);
     if (contentHandle == null) return;
@@ -91,20 +110,39 @@ export function DiaryNote({
         style={[styles.note, { backgroundColor: colors.surface }]}
       >
         <View style={styles.noteMeta}>
-          <ThemedText type="mono" style={{ color: colors.inkMuted }}>
+          <ThemedText
+            type="mono"
+            style={{ color: colors.inkMuted, fontSize: 11 }}
+          >
             {dayjs.unix(entry.created_at).format("HH:mm")}
           </ThemedText>
 
-          <Chip
-            onRelate={onRelate}
-            linkedTitle={linkedTitle}
-            linkedKind={linkedKind}
-          />
+          {hideChip ? null : (
+            <Chip
+              onRelate={onRelate}
+              linkedTitle={linkedTitle}
+              linkedKind={linkedKind}
+              linkedEmoji={linkedEmoji}
+            />
+          )}
         </View>
 
-        <ThemedText style={[styles.noteBody, { color: colors.ink }]}>
-          {entry.body}
-        </ThemedText>
+        {onEdit ? (
+          <Pressable
+            onPress={onEdit}
+            accessibilityRole="button"
+            accessibilityLabel={`Note from ${dayjs.unix(entry.created_at).format("HH:mm")}`}
+            accessibilityHint="Tap to edit"
+          >
+            <ThemedText style={[styles.noteBody, { color: colors.ink }]}>
+              {entry.body}
+            </ThemedText>
+          </Pressable>
+        ) : (
+          <ThemedText style={[styles.noteBody, { color: colors.ink }]}>
+            {entry.body}
+          </ThemedText>
+        )}
       </View>
     </SwipeableRow>
   );
@@ -120,17 +158,23 @@ function Chip({
   onRelate,
   linkedTitle,
   linkedKind,
+  linkedEmoji,
 }: {
   onRelate?: () => void;
   linkedTitle?: string;
   linkedKind?: LinkableKind;
+  linkedEmoji?: string | null;
 }): React.ReactElement {
   const { colors } = useTheme();
 
   const content = linkedTitle ? (
     <>
       {linkedKind === "project" ? (
-        <IconSymbol name="Folder" size={13} color={colors.inkMuted} />
+        linkedEmoji ? (
+          <Text style={styles.emoji}>{linkedEmoji}</Text>
+        ) : (
+          <IconSymbol name="Folder" size={13} color={colors.inkMuted} />
+        )
       ) : (
         <SketchIcon type="idea" size={13} />
       )}
@@ -176,11 +220,7 @@ function Chip({
       ]}
     >
       {content}
-      <IconSymbol
-        name="Link"
-        size={13}
-        color={colors.inkMuted}
-      />
+      <IconSymbol name="Link" size={13} color={colors.inkMuted} />
     </Pressable>
   );
 }
@@ -207,6 +247,10 @@ const styles = StyleSheet.create({
   },
   relLabel: {
     flexShrink: 1,
+  },
+  emoji: {
+    fontSize: 13,
+    lineHeight: 13,
   },
   pressed: {
     opacity: 0.7,

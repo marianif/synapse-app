@@ -6,6 +6,7 @@ import { RectButton, Swipeable } from "react-native-gesture-handler";
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
+import { useDatabase } from "@/hooks/use-database/use-database";
 import { daysUntil, isDone, isWhenCharged, whenLabel } from "@/lib/direct-when";
 import { horizonLabel } from "@/lib/horizons";
 
@@ -30,6 +31,11 @@ interface DirectRowProps {
  * not a separate badge). The when-label runs in the entry's type color when the
  * date is approaching or expired, and in muted ink when it's comfortably out or
  * undated — date pressure shows as color, not position.
+ * A line carrying subtasks grows two readouts: a muted mono "N subtasks" count
+ * right-justified on the title line, and a bottom-edge completion thread whose
+ * type-shaded fill + right-hand percentage show how far the checklist is. Both
+ * stay sub-visual (never louder than the dot or the when-label) and dim with a
+ * done line.
  * Swiping reveals actions — an open row can be marked done OR deleted; a done
  * row can only be deleted (it's already crossed off, completing it again is
  * meaningless). A done row reads like a struck-through agenda line: muted ink,
@@ -42,6 +48,7 @@ export function DirectRow({
   onDelete,
 }: DirectRowProps): React.ReactElement {
   const { colors } = useTheme();
+  const { tasks } = useDatabase();
   const swipeableRef = useRef<Swipeable>(null);
   const done = isDone(entry);
 
@@ -57,8 +64,17 @@ export function DirectRow({
   // expired, muted when comfortably out. A done line is settled — always muted,
   // never charged.
   const typeShade = useEntryKicker(type);
-  const whenColor =
-    !done && isWhenCharged(days) ? typeShade : colors.inkMuted;
+  const whenColor = !done && isWhenCharged(days) ? typeShade : colors.inkMuted;
+
+  // Subtask rollup for this row. Todos and deadlines are the only taskable
+  // types; ideas always roll up to zero, so the meta stays hidden for them.
+  // The count phrase sits on the title line; the completion thread + percentage
+  // live on the row's bottom edge.
+  const subtasks = tasks.filter((t) => t.entry_id === entry.id);
+  const subtaskTotal = subtasks.length;
+  const subtaskDone = subtasks.filter((t) => t.done === 1).length;
+  const pct =
+    subtaskTotal > 0 ? Math.round((subtaskDone / subtaskTotal) * 100) : 0;
 
   const handleMarkDone = (): void => {
     swipeableRef.current?.close();
@@ -112,43 +128,91 @@ export function DirectRow({
         style={({ pressed }) => [
           styles.row,
           { backgroundColor: colors.surface },
+          pressed && styles.pressed,
         ]}
       >
-        {/* minimal 6px type dot — color is categorization, dimmed on a done line */}
-        <View style={done ? styles.dotDone : undefined}>
-          <EntryDot type={type} />
+        {/* Title line: minimal 6px type dot, the title, the mono when-label,
+            and — when the line carries subtasks — the "N subtasks" count,
+            right-justified on the same line. */}
+        <View style={[styles.body, { minHeight: subtaskTotal ? 38 : 48 }]}>
+          {/* minimal 6px type dot — color is categorization, dimmed on a done line */}
+          <View style={done ? styles.dotDone : undefined}>
+            <EntryDot type={type} />
+          </View>
+
+          <ThemedText
+            type="body"
+            numberOfLines={1}
+            style={[
+              styles.title,
+              {
+                color: done ? colors.inkMuted : colors.ink,
+                textDecorationLine: done ? "line-through" : "none",
+              },
+            ]}
+          >
+            {entry.title}
+          </ThemedText>
+
+          <ThemedText type="mono" style={[styles.when, { color: whenColor }]}>
+            {when}
+          </ThemedText>
         </View>
 
-        <ThemedText
-          type="body"
-          numberOfLines={1}
-          style={[
-            styles.title,
-            {
-              color: done ? colors.inkMuted : colors.ink,
-              textDecorationLine: done ? "line-through" : "none",
-            },
-          ]}
-        >
-          {entry.title}
-        </ThemedText>
-
-        <ThemedText type="mono" style={[styles.when, { color: whenColor }]}>
-          {when}
-        </ThemedText>
+        {/* Completion thread along the bottom edge, with the percentage beside
+            it on the right. Rendered only when the line carries subtasks; a
+            done line dims the whole readout with the struck-through title. */}
+        {subtaskTotal > 0 ? (
+          <View style={[styles.footer, done && styles.footerDone]}>
+            <View
+              style={[styles.track, { backgroundColor: colors.surfaceSubtle }]}
+              accessibilityLabel={`${pct} percent of subtasks done`}
+            >
+              <View
+                style={[
+                  styles.fill,
+                  {
+                    width: `${pct}%`,
+                    backgroundColor: typeShade,
+                    boxShadow: [
+                      {
+                        offsetX: 0,
+                        offsetY: 0,
+                        blurRadius: 2,
+                        color: typeShade,
+                      },
+                    ],
+                  },
+                ]}
+              />
+            </View>
+            <ThemedText type="mono" muted style={styles.pct}>
+              {`${pct}%`}
+            </ThemedText>
+          </View>
+        ) : null}
       </Pressable>
     </Swipeable>
   );
 }
 
 const styles = StyleSheet.create({
+  // Tile: a column stack of the title line + the optional completion footer.
+  // Horizontal padding is shared so the bottom thread aligns with the title.
   row: {
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.space.lg,
+  },
+  pressed: {
+    opacity: 0.8,
+  },
+
+  // Title line — keeps the 48pt touch target; the title flexes so the mono
+  // readouts sit right-justified on the same line.
+  body: {
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.md,
-    minHeight: 48,
-    paddingHorizontal: tokens.space.lg,
-    borderRadius: tokens.radius.md,
   },
 
   // a done line's dot quiets down — settled, not pressing
@@ -161,6 +225,38 @@ const styles = StyleSheet.create({
   when: {
     textAlign: "right",
   },
+  taskCount: {
+    textAlign: "right",
+    // Muted monospace count — the signal layer owns numbers. No extra styling.
+  },
+
+  // Bottom-edge completion thread: a tonal track + a type-shaded fill, with the
+  // percentage beside it on the right. Compact enough to read as a baseline,
+  // not a second line of content.
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+    paddingBottom: tokens.space.sm,
+  },
+  footerDone: {
+    opacity: 0.35,
+  },
+  track: {
+    flex: 1,
+    height: 2,
+    borderRadius: tokens.radius.pill,
+  },
+  fill: {
+    height: "100%",
+    borderRadius: tokens.radius.pill,
+  },
+  pct: {
+    minWidth: 32,
+    textAlign: "right",
+    fontSize: 11,
+  },
+
   // swipe actions sit flush behind the row; the row body slides to reveal them
   actions: {
     flexDirection: "row",

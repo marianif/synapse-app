@@ -8,10 +8,9 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
+import { TaskRow } from "@/components/molecules/task-row";
 import { tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
-
-import type { DbTask } from "@/lib/types";
 
 interface TaskChecklistProps {
   /** The owning todo or deadline. Ideas never render this — see `isTaskable`. */
@@ -22,121 +21,6 @@ interface TaskChecklistProps {
   readOnly?: boolean;
   /** Keep completion toggles active while hiding task editing controls. */
   toggleOnly?: boolean;
-}
-
-// ── Row ───────────────────────────────────────────────────────────────────────
-
-function TaskRow({
-  task,
-  accent,
-  editing,
-  onToggle,
-  onRename,
-  onDelete,
-  readOnly,
-  toggleOnly,
-}: {
-  task: DbTask;
-  accent: string;
-  editing: boolean;
-  onToggle: () => void;
-  onRename: (title: string) => void;
-  onDelete: () => void;
-  readOnly: boolean;
-  toggleOnly: boolean;
-}): React.ReactElement {
-  const { colors } = useTheme();
-  const done = task.done === 1;
-  const canToggle = !readOnly || toggleOnly;
-
-  // Local text state so each keystroke doesn't round-trip through SQLite; the
-  // write happens on blur. Seeded from the row and never re-synced — the row is
-  // the only thing that edits this title.
-  const [text, setText] = useState(task.title);
-
-  const commit = (): void => {
-    const trimmed = text.trim();
-    // An emptied title would leave an untappable ghost row. Snap back instead.
-    if (!trimmed) {
-      setText(task.title);
-      return;
-    }
-    if (trimmed !== task.title) onRename(trimmed);
-  };
-
-  return (
-    <View style={styles.row}>
-      {canToggle ? (
-        <Pressable
-          onPress={onToggle}
-          hitSlop={10}
-          style={styles.check}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: done }}
-          accessibilityLabel={task.title}
-        >
-          <MaterialCommunityIcons
-            name={done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
-            size={20}
-            color={done ? tokens.feedback.success : accent}
-          />
-        </Pressable>
-      ) : (
-        <View
-          style={styles.check}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: done }}
-          accessibilityLabel={task.title}
-        >
-          <MaterialCommunityIcons
-            name={done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
-            size={20}
-            color={done ? tokens.feedback.success : accent}
-          />
-        </View>
-      )}
-
-      {editing && !readOnly ? (
-        <TextInput
-          value={text}
-          onChangeText={setText}
-          onBlur={commit}
-          onSubmitEditing={commit}
-          returnKeyType="done"
-          style={[styles.input, { color: colors.ink }]}
-          accessibilityLabel={`Rename ${task.title}`}
-        />
-      ) : (
-        <ThemedText
-          type="item"
-          muted={done}
-          numberOfLines={2}
-          style={[
-            styles.title,
-            done && { textDecorationLine: "line-through" },
-          ]}
-        >
-          {task.title}
-        </ThemedText>
-      )}
-
-      {editing && !readOnly ? (
-        <Pressable
-          onPress={onDelete}
-          hitSlop={10}
-          style={({ pressed }) => [styles.trash, pressed && styles.pressed]}
-          accessibilityRole="button"
-          accessibilityLabel={`Delete ${task.title}`}
-        >
-          <MaterialCommunityIcons
-            name="close"
-            size={16}
-            color={colors.inkMuted}
-          />
-        </Pressable>
-      ) : null}
-    </View>
-  );
 }
 
 // ── Checklist ─────────────────────────────────────────────────────────────────
@@ -171,6 +55,9 @@ export function TaskChecklist({
 
   const [drafting, setDrafting] = useState("");
   const [editing, setEditing] = useState(false);
+  // Per-row inline editing: the id of the task whose title the user tapped.
+  // Tapping a row opens it directly; the pencil pill still offers bulk mode.
+  const [editingId, setEditingId] = useState<string | null>(null);
   const inputRef = useRef<TextInput>(null);
 
   // `tasks` is the flat store of every entry's subtasks; the DB hands them back
@@ -244,9 +131,19 @@ export function TaskChecklist({
             key={task.id}
             task={task}
             accent={accent}
-            editing={editing}
+            editing={!readOnly && (editing || editingId === task.id)}
+            autoFocus={!readOnly && editingId === task.id}
+            onEndEdit={() =>
+              setEditingId((current) =>
+                current === task.id ? null : current,
+              )
+            }
             readOnly={readOnly}
             toggleOnly={toggleOnly}
+            onPressTitle={() => {
+              if (readOnly) return;
+              setEditingId(task.id);
+            }}
             onToggle={() => {
               void setTaskDone(task.id, task.done === 0).catch(
                 (error: unknown) => {
@@ -335,21 +232,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  title: {
-    flex: 1,
-  },
   input: {
     flex: 1,
     paddingVertical: tokens.space.sm,
     fontFamily: tokens.type.fontInter.medium,
     fontSize: tokens.type.item.size,
     lineHeight: tokens.type.item.lineHeight,
-  },
-  trash: {
-    width: 28,
-    height: 28,
-    alignItems: "center",
-    justifyContent: "center",
   },
   pressed: {
     opacity: 0.6,

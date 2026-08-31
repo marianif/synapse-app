@@ -18,11 +18,13 @@ import {
   type AddProjectBarHandle,
 } from "@/components/organisms/add-project-bar";
 import { ScreenHeader } from "@/components/organisms/screen-header";
+import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useUiPreference } from "@/hooks/use-ui-preference";
+import { ConfirmKey } from "@/lib/settings";
 
 import type { DbProject } from "@/lib/types";
 
@@ -56,9 +58,11 @@ function isSortMode(value: string | null): value is SortMode {
  *      decides what `ProjectsOverview` on home surfaces)
  *   3. OPEN a project (tap the row body)
  *
- * Project mutations (rename, emoji, archive, delete) live on the project
- * detail screen. This screen is a shelf, not a tool drawer — keeping the
- * verb set tight is the whole point of the rethink.
+ * Deleting is the one mutation on the shelf, and it rides the same swipe
+ * gesture as the home entries: swipe a row left to reveal the trash action.
+ * Every other mutation (rename, emoji, archive) lives on the project detail
+ * screen. This screen is a shelf, not a tool drawer — keeping the verb set
+ * tight is the whole point of the rethink.
  *
  * The home is the map; this is where you choose what's on it.
  */
@@ -66,7 +70,7 @@ export default function ProjectsScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
   const cap = useGlobalCapture();
-  const { projects, entries, createProject, setProjectFeatured } =
+  const { projects, entries, createProject, setProjectFeatured, deleteProject } =
     useDatabase();
   const addProjectBarRef = useRef<AddProjectBarHandle | null>(null);
 
@@ -156,6 +160,16 @@ export default function ProjectsScreen(): React.ReactElement {
     void Haptics.selectionAsync();
     setProjectFeatured(project.id, project.is_featured !== 1).catch((err) =>
       console.error("Failed to toggle featured:", err),
+    );
+  };
+
+  // Swipe-to-delete on the shelf row, same gesture as the home entries. The
+  // branded confirm sheet's copy mirrors the project detail's, so the two
+  // delete paths speak the same voice. Deleting only unfiles the project's
+  // entries; nothing else is touched.
+  const handleDeleteProject = (project: DbProject): void => {
+    deleteProject(project.id).catch((err) =>
+      console.error("Failed to delete project:", err),
     );
   };
 
@@ -281,12 +295,19 @@ export default function ProjectsScreen(): React.ReactElement {
             {visibleActive.length > 0 ? (
               <View style={styles.rowList}>
                 {visibleActive.map((project) => (
-                  <ProjectRow
+                  <SwipeableRow
                     key={project.id}
-                    project={project}
-                    signal={signalFor(project, sort, openByProject)}
-                    onToggleFeatured={() => toggleFeatured(project)}
-                  />
+                    onDelete={() => handleDeleteProject(project)}
+                    confirmKey={ConfirmKey.deleteProject}
+                    confirmKicker="DELETE PROJECT"
+                    confirmMessage="Its todos and ideas stay on the board, just unfiled."
+                  >
+                    <ProjectRow
+                      project={project}
+                      signal={signalFor(project, sort, openByProject)}
+                      onToggleFeatured={() => toggleFeatured(project)}
+                    />
+                  </SwipeableRow>
                 ))}
               </View>
             ) : (

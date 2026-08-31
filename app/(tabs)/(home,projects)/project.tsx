@@ -20,6 +20,7 @@ import Animated, {
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
+import { DiaryNote } from "@/components/molecules/diary-note";
 import { DirectPager } from "@/components/molecules/direct-pager";
 import { DirectRow } from "@/components/molecules/direct-row";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
@@ -95,7 +96,8 @@ export default function ProjectScreen(): React.ReactElement {
     deleteProject,
   } = useDatabase();
 
-  const { entries: diaryEntries, addEntry: addDiaryEntry } = useDiary();
+  const { entries: diaryEntries, addEntry: addDiaryEntry, removeEntry: removeDiaryEntry } =
+  useDiary();
 
   const project = projects.find((p) => p.id === id);
 
@@ -352,13 +354,6 @@ export default function ProjectScreen(): React.ReactElement {
     }
     return groups;
   }, [notes]);
-
-  function ruleOpacity(epochSeconds: number): number {
-    const daysSince = Math.floor((Date.now() / 1000 - epochSeconds) / 86400);
-    if (daysSince === 0) return 1.0;
-    if (daysSince === 1) return 0.6;
-    return 0.3;
-  }
 
   // Long-press menu on idea chips. Holding the idea on the sheet by id (not
   // the row) means re-renders during pull-in / promote don't yank the menu
@@ -637,16 +632,17 @@ export default function ProjectScreen(): React.ReactElement {
           </View>
         ) : null}
 
-        {/* NOTES — the handwritten margin, session-grouped so it reads like a
-            dated journal. Display-only here (editing lives elsewhere); the
-            vertical rule uses per-note opacity segments (today = full,
-            yesterday = 0.6, older = 0.3) so recency is carried by the rule.
-            Adding a note happens via the FAB / starter row, same as every
-            other channel — no dedicated CTA in this section. */}
+        {/* NOTES — session-grouped diary cards, the same DiaryNote the notes
+            tab renders, so a note here looks and behaves exactly like one in
+            the feed. The relatedness chip is suppressed: a note in this
+            section is by definition ON this project, so the label would be
+            redundant. Tap a note to edit it (the /note modal), swipe to
+            delete. Adding a note happens via the FAB / starter row, same as
+            every other channel — no dedicated CTA in this section. */}
         {notes.length > 0 ? (
           <View style={styles.section}>
             {notesSessionGroups.map((group) => (
-              <View key={group.label}>
+              <View key={group.label} style={styles.notesGroup}>
                 <ThemedText
                   type="micro"
                   style={[styles.sessionHeader, { color: colors.inkMuted }]}
@@ -654,32 +650,28 @@ export default function ProjectScreen(): React.ReactElement {
                   {group.label} · {group.ids.length}{" "}
                   {group.ids.length === 1 ? "NOTE" : "NOTES"}
                 </ThemedText>
-                <View style={styles.margin}>
-                  {group.ids.map((nid) => {
-                    const note = notesById.get(nid);
-                    if (!note) return null;
-                    const segOpacity = ruleOpacity(note.created_at);
-                    return (
-                      <View key={note.id} style={styles.marginNoteRow}>
-                        <View
-                          style={[
-                            styles.ruleSegment,
-                            {
-                              backgroundColor: colors.surfaceSubtle,
-                              opacity: segOpacity,
-                            },
-                          ]}
-                        />
-                        <ThemedText
-                          type="hand"
-                          style={[styles.marginNote, { color: colors.ink }]}
-                        >
-                          {note.body}
-                        </ThemedText>
-                      </View>
-                    );
-                  })}
-                </View>
+                {group.ids.map((nid) => {
+                  const note = notesById.get(nid);
+                  if (!note) return null;
+                  return (
+                    <DiaryNote
+                      key={note.id}
+                      entry={note}
+                      hideChip
+                      onDelete={() => void removeDiaryEntry(note.id)}
+                      onEdit={() =>
+                        router.push({
+                          pathname: "/note",
+                          params: {
+                            id: note.id,
+                            body: note.body,
+                            relatable: "0",
+                          },
+                        })
+                      }
+                    />
+                  );
+                })}
               </View>
             ))}
           </View>
@@ -866,31 +858,15 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
 
-  // Notes margin — per-note 2px rule segments whose opacity varies with
-  // recency (today = full, yesterday = 0.6, older = 0.3). No container
-  // border — each row carries its own left bar.
+  // Notes — session-grouped DiaryNote cards. The group owns the rhythm between
+  // its header and its cards; the section supplies the gap between groups.
+  notesGroup: {
+    gap: tokens.space.sm,
+  },
   sessionHeader: {
     letterSpacing: tokens.type.micro.tracking,
     marginTop: tokens.space.sm,
     marginBottom: tokens.space.xs,
-  },
-  margin: {
-    gap: tokens.space.sm,
-  },
-  marginNoteRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: tokens.space.md,
-  },
-  ruleSegment: {
-    width: 2,
-    alignSelf: "stretch",
-    borderRadius: 1,
-  },
-  marginNote: {
-    fontSize: 18,
-    lineHeight: 24,
-    flex: 1,
   },
 
   // Header `··` overflow button — matches the back button's hit area.

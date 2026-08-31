@@ -103,6 +103,14 @@ export default function NotesScreen(): React.ReactElement {
     return map;
   }, [projects]);
 
+  // Only projects that actually carry an emoji — the chip falls back to the
+  // folder glyph for the rest.
+  const projectEmojis = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const p of projects) if (p.emoji) map[p.id] = p.emoji;
+    return map;
+  }, [projects]);
+
   // Count notes per target — one map per kind, indexed by the target id.
   const { ideaNoteCounts, projectNoteCounts } = useMemo(() => {
     const ideas: Record<string, number> = {};
@@ -248,8 +256,20 @@ export default function NotesScreen(): React.ReactElement {
           entries={visibleEntries}
           ideaTitles={ideaTitles}
           projectTitles={projectTitles}
+          projectEmojis={projectEmojis}
           filtered={target !== null || macro !== "all"}
           onRelate={setRelatingNote}
+          onEdit={(entry) =>
+            router.push({
+              pathname: "/note",
+              params: {
+                id: entry.id,
+                body: entry.body,
+                linkedProjectId: entry.linked_project_id ?? "",
+                linkedEntryId: entry.linked_entry_id ?? "",
+              },
+            })
+          }
           onDelete={removeEntry}
         />
         <View style={styles.bottomSpacer} />

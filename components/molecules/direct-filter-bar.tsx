@@ -1,7 +1,4 @@
-import { Pressable, StyleSheet, View } from "react-native";
-
-import { ThemedText } from "@/components/atoms/themed-text";
-import { tokens, useTheme } from "@/constants/theme";
+import { SectionTabs, type SectionTab } from "@/components/molecules/section-tabs";
 
 /** Which slice of the direct zone is shown. */
 export type DirectFilter = "all" | "deadline" | "todo" | "idea";
@@ -14,11 +11,11 @@ export interface DirectCounts {
   idea: number;
 }
 
-const SEGMENTS: { key: DirectFilter; label: string }[] = [
-  { key: "all", label: "ALL" },
-  { key: "deadline", label: "DEADLINES" },
-  { key: "todo", label: "TODOS" },
-  { key: "idea", label: "IDEAS" },
+const SEGMENTS: SectionTab<DirectFilter>[] = [
+  { value: "all", label: "All" },
+  { value: "deadline", label: "Deadlines" },
+  { value: "todo", label: "Todos" },
+  { value: "idea", label: "Ideas" },
 ];
 
 interface DirectFilterBarProps {
@@ -28,60 +25,30 @@ interface DirectFilterBarProps {
 }
 
 /**
- * The direct-zone header: a filter and a live count readout in one. Mono signal
- * layer; the active segment is carried by ink weight, never a type hue (the
- * action/selection signal must not be confused with a content category). Each
- * segment doubles as a tab and a tabular count.
+ * The direct-zone header: a filter and a live count readout in one, on the
+ * shared SectionTabs row. Each tab doubles as a tab and a tabular count; the
+ * active one is full-ink with a thin underline. The action/selection signal is
+ * carried by ink weight, never a type hue (the selection must not be confused
+ * with a content category).
  */
 export function DirectFilterBar({
   value,
   counts,
   onChange,
 }: DirectFilterBarProps): React.ReactElement {
-  const { colors } = useTheme();
+  const options = SEGMENTS.map((segment) => ({
+    ...segment,
+    count: counts[segment.value],
+    accessibilityLabel: `${segment.label}, ${counts[segment.value]}`,
+  }));
 
   return (
-    <View
-      style={styles.bar}
-      accessibilityRole="tablist"
+    <SectionTabs
+      value={value}
+      options={options}
+      onChange={onChange}
       accessibilityLabel="Filter deadlines, todos, and ideas"
-    >
-      {SEGMENTS.map(({ key, label }) => {
-        const active = value === key;
-        const tint = active ? colors.ink : colors.inkMuted;
-        return (
-          <Pressable
-            key={key}
-            onPress={() => onChange(key)}
-            hitSlop={8}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: active }}
-            accessibilityLabel={`${label}, ${counts[key]}`}
-            style={styles.segment}
-          >
-            <ThemedText type="label" style={{ color: tint }}>
-              {label}
-            </ThemedText>
-            <ThemedText type="mono" style={{ color: tint }}>
-              {counts[key]}
-            </ThemedText>
-          </Pressable>
-        );
-      })}
-    </View>
+      tabs
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  bar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.lg,
-  },
-  segment: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.xs,
-    minHeight: 28,
-  },
-});

@@ -2,16 +2,17 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { SectionTabs, type SectionTab } from "@/components/molecules/section-tabs";
 import type { LinkableKind } from "@/components/organisms/link-sheet";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 
 export type DiaryMacro = "all" | "linked" | "free";
 
-const MACROS: { value: DiaryMacro; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "linked", label: "Linked" },
-  { value: "free", label: "Free" },
+const MACROS: SectionTab<DiaryMacro>[] = [
+  { value: "all", label: "All", accessibilityLabel: "Show all notes" },
+  { value: "linked", label: "Linked", accessibilityLabel: "Show linked notes" },
+  { value: "free", label: "Free", accessibilityLabel: "Show free notes" },
 ];
 
 interface DiaryFilterBarProps {
@@ -86,37 +87,12 @@ export function DiaryFilterBar({
 
   return (
     <View style={styles.row}>
-      <View style={styles.macros}>
-        {MACROS.map((m) => {
-          const active = macro === m.value;
-          return (
-            <Pressable
-              key={m.value}
-              onPress={() => onMacro(m.value)}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={`Show ${m.label.toLowerCase()} notes`}
-              style={styles.macroItem}
-            >
-              <ThemedText
-                style={[
-                  styles.macroLabel,
-                  { color: active ? colors.ink : colors.inkMuted },
-                ]}
-              >
-                {m.label}
-              </ThemedText>
-              <View
-                style={[
-                  styles.rule,
-                  { backgroundColor: active ? colors.ink : "transparent" },
-                ]}
-              />
-            </Pressable>
-          );
-        })}
-      </View>
+      <SectionTabs
+        value={macro}
+        options={MACROS}
+        onChange={onMacro}
+        accessibilityLabel="Notes macro filter"
+      />
 
       <Pressable
         onPress={onOpenTargetFilter}
@@ -147,21 +123,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     paddingHorizontal: tokens.space.xs,
-  },
-  macros: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: tokens.space.lg,
-  },
-  macroItem: {
-    alignItems: "flex-start",
-    gap: 5,
-  },
-  macroLabel: {
-    fontFamily: tokens.type.fontInter.semiBold,
-    fontSize: 15,
-    lineHeight: 18,
-    letterSpacing: 0.2,
   },
   rule: {
     alignSelf: "stretch",

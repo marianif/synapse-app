@@ -2,7 +2,13 @@ import { tokens } from "@/constants/theme";
 
 import type { DiaryMood } from "@/lib/types";
 
-import type { MoodOption } from "@/components/organisms/mood-sheet";
+/** A mood's display option — glyph code, label, and resolved electric tint. */
+export interface MoodOption {
+  value: DiaryMood;
+  label: string;
+  /** Resolved electric code for the glyph + active fill. */
+  color: string;
+}
 
 /**
  * Mood → electric type-code mapping for the diary's reflective layer. Moods are a

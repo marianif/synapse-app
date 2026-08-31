@@ -31,7 +31,7 @@ export function HorizonStrip({ entries }: HorizonStripProps): React.ReactElement
       {entries.map((e) => (
         <Link
           key={e.id}
-          href={{ pathname: "/detail", params: { id: e.id, entryType: e.type } }}
+          href={{ pathname: "/edit", params: { id: e.id } }}
           asChild
         >
           <Pressable

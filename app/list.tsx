@@ -470,7 +470,7 @@ export default function ListScreen(): React.ReactElement {
                       }
                       onPress={() =>
                         router.push(
-                          `/detail?id=${encodeURIComponent(entry.id)}&entryType=${entry.entryType}`,
+                          `/edit?id=${encodeURIComponent(entry.id)}`,
                         )
                       }
                       onDelete={() => handleDelete(entry.id)}

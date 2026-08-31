@@ -1,11 +1,11 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import {
-  Stack,
+  useFocusEffect,
   useLocalSearchParams,
   useNavigation,
   useRouter,
 } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   AppState,
@@ -29,16 +29,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ChipRail, SelectChip } from "@/components/atoms/select-chip";
-import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
+import { DetailHeaderRow } from "@/components/molecules/detail-header-row";
 import { TaskChecklist } from "@/components/molecules/task-checklist";
 import { WhenPicker } from "@/components/molecules/when-picker";
-import { ScreenHeader } from "@/components/organisms/screen-header";
+import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
 import { entryKicker, tokens, useTheme } from "@/constants/theme";
+import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { formatTime12h, parseDate, parseTimeToMinutes } from "@/lib/date-utils";
+import { daysUntil, doneStatus, isDone } from "@/lib/direct-when";
 import { horizonEndDate } from "@/lib/horizons";
 import { parseRule } from "@/lib/recurrence";
+import { ConfirmKey } from "@/lib/settings";
 import type {
   DbEntry,
   DueRange,
@@ -63,12 +67,6 @@ type Draft = {
 
 type Row = "when" | "repeat" | "project" | null;
 
-const HORIZONS: { value: DueRange; label: string }[] = [
-  { value: "week", label: "this week" },
-  { value: "month", label: "this month" },
-  { value: "year", label: "this year" },
-];
-
 const FREQ_LABEL: Record<RecurrenceFrequency, string> = {
   daily: "every day",
   weekdays: "on weekdays",
@@ -80,14 +78,11 @@ const FREQ_OPTIONS: RecurrenceFrequency[] = ["daily", "weekly", "monthly"];
 
 // FREQ_OPTIONS never includes "weekdays" (that variant has no UI entry
 // point here), but the map keys off the wider RecurrenceFrequency type.
-const FREQ_ICON: Record<
-  RecurrenceFrequency,
-  React.ComponentProps<typeof MaterialCommunityIcons>["name"]
-> = {
-  daily: "calendar-today",
-  weekdays: "calendar-today",
-  weekly: "calendar-week",
-  monthly: "calendar-month",
+const FREQ_ICON: Record<RecurrenceFrequency, IconSymbolName> = {
+  daily: "CalendarDay",
+  weekdays: "CalendarDays",
+  weekly: "CalendarDays",
+  monthly: "CalendarMark",
 };
 
 const WEEKDAY_LETTERS: { value: number; label: string }[] = [
@@ -99,6 +94,15 @@ const WEEKDAY_LETTERS: { value: number; label: string }[] = [
   { value: 6, label: "Sat" },
   { value: 0, label: "Sun" },
 ];
+
+const STATUS_LABELS: Record<DbEntry["status"], string> = {
+  scheduled: "Scheduled",
+  active: "Active",
+  completed: "Done",
+  pending: "Pending",
+  met: "Met",
+  overdue: "Overdue",
+};
 
 function draftFromEntry(entry: DbEntry): Draft {
   const deadline = entry.type === "deadline";
@@ -226,6 +230,65 @@ function projectClause(
   return project ? project.title : "unfiled";
 }
 
+function doneLabel(type: DbEntry["type"]): string {
+  if (type === "deadline") return "Mark met";
+  if (type === "idea") return "Archive";
+  return "Complete";
+}
+
+// Only surfaces a narrative line when it adds information the status row
+// doesn't already carry: a settled entry's closure, and a stale idea's age.
+function narrativeFor(entry: DbEntry): string | null {
+  if (isDone(entry)) return "Settled";
+
+  if (entry.type === "idea") {
+    const age = Math.floor((Date.now() - entry.created_at) / 86_400_000);
+    if (age > 7) return `Sketched ${age} days ago`;
+  }
+
+  return null;
+}
+
+function urgencyTag(
+  entry: DbEntry,
+  typeShade: string,
+): { text: string; color: string } | null {
+  if (isDone(entry)) return null;
+
+  const days = daysUntil(entry.due_date ?? entry.scheduled_date ?? null);
+  if (days !== null) {
+    if (days < 0)
+      return {
+        text: `Over by ${Math.abs(days)}d`,
+        color: tokens.feedback.danger,
+      };
+    // days === 0 is skipped here — the WHEN row already reads "Today" in the
+    // same danger color, so a chip saying the same word would just repeat it.
+    if (days > 0) return { text: `${days}d left`, color: typeShade };
+  }
+
+  return null;
+}
+
+function statusColor(status: DbEntry["status"]): string | null {
+  if (status === "overdue") return tokens.feedback.danger;
+  if (status === "completed" || status === "met")
+    return tokens.feedback.success;
+  return null;
+}
+
+/**
+ * The combined detail + edit surface for a single entry, presented as a native
+ * modal (`presentation: "fullScreenModal"` in the root stack). It replaces the
+ * old two-hop flow — a read-only detail sheet that pushed a separate /edit —
+ * so opening a row lands on one surface that shows the entry's state (status,
+ * urgency, narrative) and edits it in place.
+ *
+ * Everything autosaves: closing via the X, the native dismissal, the back
+ * gesture, or backgrounding the app all funnel through the `beforeRemove` /
+ * `AppState` listeners below, so the draft is never left behind. Mark-done and
+ * delete (with confirmation) live in the bottom action bar.
+ */
 export default function EditScreen(): React.ReactElement {
   const router = useRouter();
   const navigation = useNavigation();
@@ -236,6 +299,8 @@ export default function EditScreen(): React.ReactElement {
     projects,
     isLoading,
     updateEntry,
+    updateEntryStatus,
+    deleteEntry,
     fetchEntries,
     fetchProjects,
   } = useDatabase();
@@ -245,6 +310,7 @@ export default function EditScreen(): React.ReactElement {
   const dirtyRef = useRef(false);
   const saveInFlightRef = useRef(false);
   const persistRef = useRef<() => Promise<boolean>>(async () => true);
+  const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteEntry });
 
   const entry = entries.find((item) => item.id === id);
 
@@ -319,10 +385,10 @@ export default function EditScreen(): React.ReactElement {
     persistRef.current = persist;
   });
 
-  // Save when the screen is being removed — the header back button, the iOS
-  // swipe-back gesture, and hardware back all funnel through beforeRemove.
-  // The removal is replayed only once the write lands, so a failed save keeps
-  // the user on the screen with the error visible.
+  // Save when the screen is being removed — the X close, the iOS swipe-back
+  // gesture, and hardware back all funnel through beforeRemove. The removal is
+  // replayed only once the write lands, so a failed save keeps the user on the
+  // screen with the error visible.
   useEffect(() => {
     if (!draft || !entry) return;
     return navigation.addListener("beforeRemove", (e) => {
@@ -343,13 +409,26 @@ export default function EditScreen(): React.ReactElement {
     return () => subscription.remove();
   }, []);
 
+  // Blur-time autosave safety net: whatever dismissal path closes the modal
+  // (X, back, native gesture), the screen blurs as it's removed and this
+  // cleanup persists the latest draft. `beforeRemove` is the primary path —
+  // it blocks dismissal until the write lands — and `persist` is idempotent
+  // (dirtyRef / saveInFlightRef guards), so a close that reaches both paths
+  // writes at most once.
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        void persistRef.current();
+      };
+    }, []),
+  );
+
   if (isLoading || !entry || !draft) {
     return (
       <SafeAreaView
         style={[styles.safeArea, { backgroundColor: colors.paper }]}
-        edges={["bottom"]}
+        edges={["top", "bottom"]}
       >
-        <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.loading}>
           <ActivityIndicator
             color={entry ? entryKicker(entry.type, scheme) : colors.inkMuted}
@@ -365,28 +444,86 @@ export default function EditScreen(): React.ReactElement {
   const activeProjects = projects.filter(
     (project) => project.status === "active",
   );
+  const done = isDone(entry);
+  const urgency = urgencyTag(entry, accent);
+  const statColor = statusColor(entry.status);
+  const narrative = narrativeFor(entry);
 
   const toggleRow = (row: Row): void =>
     setOpenRow((current) => (current === row ? null : row));
 
+  const handleMarkDone = (): void => {
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    void updateEntryStatus(entry.id, doneStatus(entry.type)).catch((err) =>
+      console.error("Failed to mark entry done:", err),
+    );
+    router.back();
+  };
+
+  const handleDelete = (): void => {
+    void deleteConfirm.request(() => {
+      void deleteEntry(entry.id).catch((err) =>
+        console.error("Failed to delete entry:", err),
+      );
+      router.back();
+    });
+  };
+
+  const canComplete = !done && entry.type !== "idea";
+
   return (
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: colors.paper }]}
-      edges={["bottom"]}
+      edges={["top", "bottom"]}
     >
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          header: () => (
-            <ScreenHeader
-              title="Edit"
-              kicker={entry.type.toUpperCase()}
-              entryType={entry.type}
-              onBack={() => router.back()}
-            />
-          ),
-        }}
-      />
+      {/* Modal header — close + type kicker, with complete + delete as icon-only
+          actions. Closing autosaves (beforeRemove); complete uses the shared
+          success color for every entry type that can be completed. */}
+      <View style={styles.modalHeader}>
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Close entry editor"
+          style={styles.headerBtn}
+        >
+          <IconSymbol name="X" size={22} color={colors.ink} />
+        </Pressable>
+
+        <View style={styles.headerTitle}>
+          <ThemedText type="micro" style={{ color: accent }}>
+            {typeLabel(entry.type)}
+          </ThemedText>
+        </View>
+
+        <View style={styles.headerActions}>
+          {canComplete ? (
+            <Pressable
+              onPress={handleMarkDone}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={doneLabel(entry.type)}
+              style={styles.headerBtn}
+            >
+              <IconSymbol
+                name="Check"
+                size={22}
+                color={tokens.feedback.success}
+              />
+            </Pressable>
+          ) : null}
+
+          <Pressable
+            onPress={handleDelete}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Delete entry"
+            style={styles.headerBtn}
+          >
+            <IconSymbol name="Trash" size={22} color={tokens.feedback.danger} />
+          </Pressable>
+        </View>
+      </View>
 
       <KeyboardAvoidingView
         style={styles.screen}
@@ -404,17 +541,26 @@ export default function EditScreen(): React.ReactElement {
           >
             <View style={styles.content}>
               <View style={styles.hero}>
-                <View style={styles.heroIdentity}>
-                  <SketchIcon type={entry.type} size={22} />
-                  <ThemedText type="micro" style={{ color: accent }}>
-                    {typeLabel(entry.type)}
+                {/* Detail glance — identity + status/urgency + narrative. The
+                    "read-only" half of the surface; everything below edits. */}
+                <DetailHeaderRow
+                  type={entry.type}
+                  accent={accent}
+                  urgency={urgency}
+                  statusLabel={STATUS_LABELS[entry.status].toUpperCase()}
+                  statusColor={statColor}
+                />
+
+                {narrative ? (
+                  <ThemedText type="mono" muted style={styles.narrative}>
+                    {narrative}
                   </ThemedText>
-                </View>
+                ) : null}
+
                 <TextInput
                   value={draft.title}
                   onChangeText={(title) => patchDraft(setDraft, { title })}
                   multiline
-                  autoFocus
                   placeholder="Name the thing"
                   placeholderTextColor={colors.inkMuted}
                   selectionColor={accent}
@@ -594,8 +740,7 @@ export default function EditScreen(): React.ReactElement {
               </View>
 
               {/* Subtasks: todo and deadline only. An idea that grows a
-                  checklist is a project — promote it instead. Full editing
-                  (add, toggle, rename, delete) lives here, in /edit. */}
+                  checklist is a project — promote it instead. */}
               {!isIdea ? (
                 <TaskChecklist entryId={entry.id} accent={accent} />
               ) : null}
@@ -632,6 +777,16 @@ export default function EditScreen(): React.ReactElement {
           </TouchableWithoutFeedback>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <ConfirmSheet
+        visible={deleteConfirm.visible}
+        kicker="DELETE ENTRY"
+        message="This removes it from the field for good."
+        dontAsk={deleteConfirm.dontAsk}
+        onToggleDontAsk={deleteConfirm.toggleDontAsk}
+        onConfirm={deleteConfirm.confirm}
+        onCancel={deleteConfirm.cancel}
+      />
     </SafeAreaView>
   );
 }
@@ -691,8 +846,8 @@ function ReadoutRow({
         >
           {clause}
         </ThemedText>
-        <MaterialCommunityIcons
-          name={open ? "chevron-up" : "chevron-down"}
+        <IconSymbol
+          name={open ? "ChevronUp" : "ChevronDown"}
           size={18}
           color={colors.inkMuted}
         />
@@ -739,14 +894,12 @@ function FreqChip({
       style={({ pressed }) => [
         styles.freqChip,
         {
-          backgroundColor: selected
-            ? accentColor + "22"
-            : colors.surfaceSubtle,
+          backgroundColor: selected ? accentColor + "22" : colors.surfaceSubtle,
         },
         pressed && !selected && { opacity: 0.6 },
       ]}
     >
-      <MaterialCommunityIcons
+      <IconSymbol
         name={FREQ_ICON[freq]}
         size={22}
         color={selected ? accentColor : colors.inkMuted}
@@ -760,52 +913,6 @@ function FreqChip({
         }
       >
         {freq}
-      </ThemedText>
-    </Pressable>
-  );
-}
-
-function HorizonOptionGrid({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement {
-  return <View style={styles.horizonGrid}>{children}</View>;
-}
-
-function HorizonOption({
-  label,
-  selected,
-  accentColor,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  accentColor: string;
-  onPress: () => void;
-}): React.ReactElement {
-  const { colors } = useTheme();
-
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ selected }}
-      style={styles.horizonOption}
-    >
-      <View
-        style={[
-          styles.horizonMark,
-          { backgroundColor: selected ? accentColor : colors.inkMuted },
-        ]}
-      />
-      <ThemedText
-        type="mono"
-        numberOfLines={1}
-        style={{ color: selected ? accentColor : colors.inkMuted }}
-      >
-        {label}
       </ThemedText>
     </Pressable>
   );
@@ -857,6 +964,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: tokens.space.lg,
+    paddingTop: tokens.space.sm,
+  },
+  headerTitle: {
+    flex: 1,
+    alignItems: "center",
+  },
+  headerBtn: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   content: {
     paddingHorizontal: tokens.space.lg,
     paddingTop: tokens.space.xl,
@@ -866,10 +993,8 @@ const styles = StyleSheet.create({
   hero: {
     gap: tokens.space.sm,
   },
-  heroIdentity: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.xs,
+  narrative: {
+    marginBottom: tokens.space.xs,
   },
   titleInput: {
     fontFamily: tokens.type.fontInter.bold,
@@ -931,28 +1056,6 @@ const styles = StyleSheet.create({
     gap: tokens.space.xs,
     paddingVertical: tokens.space.md,
     borderRadius: tokens.radius.md,
-  },
-  horizonGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: tokens.space.xs,
-  },
-  horizonOption: {
-    width: "48%",
-    minHeight: 40,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.xs,
-  },
-  horizonMark: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-  },
-  timeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.sm,
   },
   weekdayRow: {
     flexDirection: "row",

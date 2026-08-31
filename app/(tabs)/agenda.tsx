@@ -4,16 +4,13 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { AgendaFeed } from "@/components/organisms/agenda-feed";
-import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
 import { tokens, useTheme } from "@/constants/theme";
 import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 import { agendaVoice } from "@/lib/agenda-voice";
-import { doneStatus } from "@/lib/direct-when";
 
 import type { Dispatch } from "@/lib/agenda-voice";
-import type { DbEntry, EntryType } from "@/lib/types";
 
 /**
  * AGENDA — the board's dispatch.
@@ -36,8 +33,6 @@ export default function AgendaScreen(): React.ReactElement {
     tasks,
     projects,
     fetchEntries,
-    updateEntryStatus,
-    deleteEntry,
   } = useDatabase();
   const { entries: notes, refresh: refreshDiary } = useDiary();
 
@@ -62,27 +57,14 @@ export default function AgendaScreen(): React.ReactElement {
   );
 
   // The feed is a pointer into the board, never a dead end: an entry line opens
-  // its detail sheet in place, a project line pushes the project, a note line
-  // hands off to the Notes tab where that trace lives.
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const selected = useMemo(
-    () => entries.find((e) => e.id === selectedId) ?? null,
-    [entries, selectedId],
-  );
-
-  const selectedProject = useMemo(
-    () => projects.find((p) => p.id === selected?.project_id) ?? null,
-    [projects, selected?.project_id],
-  );
-
+  // its detail+edit modal, a project line pushes the project, a note line hands
+  // off to the Notes tab where that trace lives.
   const handleSelect = useCallback(
     (d: Dispatch) => {
       const target = d.target;
       switch (target.kind) {
         case "entry": {
-          const entry = entries.find((e) => e.id === target.id);
-          if (entry) setSelectedId(entry.id);
+          router.push({ pathname: "/edit", params: { id: target.id } });
           return;
         }
         case "project":
@@ -106,34 +88,14 @@ export default function AgendaScreen(): React.ReactElement {
           return;
       }
     },
-    [entries, router],
-  );
-
-  const handleMarkDone = useCallback(
-    (entry: DbEntry): void => {
-      void updateEntryStatus(
-        entry.id,
-        doneStatus(entry.type as EntryType),
-      ).catch((err) => console.error("Failed to mark entry done:", err));
-    },
-    [updateEntryStatus],
-  );
-
-  const handleDelete = useCallback(
-    (entry: DbEntry): void => {
-      setSelectedId(null);
-      void deleteEntry(entry.id).catch((err) =>
-        console.error("Failed to delete entry:", err),
-      );
-    },
-    [deleteEntry],
+    [router],
   );
 
   const header = (
     <View style={styles.header}>
       <Text style={[styles.kicker, { color: colors.inkMuted }]}>AGENDA</Text>
       <ThemedText type="display" style={styles.title}>
-        The board's dispatch
+        The board&apos;s dispatch
       </ThemedText>
     </View>
   );
@@ -145,15 +107,6 @@ export default function AgendaScreen(): React.ReactElement {
         onSelect={handleSelect}
         header={header}
         bottomInset={cap.tabBarHeight}
-      />
-
-      <DirectDetailSheet
-        entry={selected}
-        project={selectedProject}
-        visible={selected !== null}
-        onClose={() => setSelectedId(null)}
-        onMarkDone={handleMarkDone}
-        onDelete={handleDelete}
       />
     </View>
   );

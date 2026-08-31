@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import Animated, {
@@ -9,8 +8,11 @@ import Animated, {
 
 import { ThemedText } from "@/components/atoms/themed-text";
 import { TaskRow } from "@/components/molecules/task-row";
+import { SwipeableRow } from "@/components/organisms/swipeable-row";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
+import { ConfirmKey } from "@/lib/settings";
 
 interface TaskChecklistProps {
   /** The owning todo or deadline. Ideas never render this — see `isTaskable`. */
@@ -60,10 +62,20 @@ export function TaskChecklist({
   const [editingId, setEditingId] = useState<string | null>(null);
   const inputRef = useRef<TextInput>(null);
 
-  // `tasks` is the flat store of every entry's subtasks; the DB hands them back
-  // ordered by (entry_id, position), so filtering preserves the order.
-  const mine = tasks.filter((t) => t.entry_id === entryId);
-  const doneCount = mine.filter((t) => t.done === 1).length;
+// `tasks` is the flat store of every entry's subtasks. Open subtasks sit on
+// top so the unfinished work reads first; done lines sink to the bottom, with
+// position order preserved inside each group so completing a task moves just
+// that line, not its peers.
+const mine = tasks
+  .filter((t) => t.entry_id === entryId)
+  .sort((a, b) =>
+    a.done === b.done ? a.position - b.position : a.done - b.done,
+  );
+const doneCount = mine.filter((t) => t.done === 1).length;
+
+// Deleting is a swipe on the row — the same gesture the feeds use. Read-only
+// and toggle-only renders keep rows gesture-free.
+const canSwipeDelete = !readOnly && !toggleOnly;
 
   const handleAdd = (): void => {
     const title = drafting.trim();
@@ -95,8 +107,8 @@ export function TaskChecklist({
                 accessibilityRole="button"
                 accessibilityLabel={editing ? "Done editing tasks" : "Edit tasks"}
               >
-                <MaterialCommunityIcons
-                  name={editing ? "check" : "pencil-outline"}
+                <IconSymbol
+                  name={editing ? "Check" : "Edit2"}
                   size={13}
                   color={accent}
                 />
@@ -126,53 +138,62 @@ export function TaskChecklist({
             : LinearTransition.duration(220).easing(Easing.bezier(0.22, 1, 0.36, 1))
         }
       >
-        {mine.map((task) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            accent={accent}
-            editing={!readOnly && (editing || editingId === task.id)}
-            autoFocus={!readOnly && editingId === task.id}
-            onEndEdit={() =>
-              setEditingId((current) =>
-                current === task.id ? null : current,
-              )
-            }
-            readOnly={readOnly}
-            toggleOnly={toggleOnly}
-            onPressTitle={() => {
-              if (readOnly) return;
-              setEditingId(task.id);
-            }}
-            onToggle={() => {
-              void setTaskDone(task.id, task.done === 0).catch(
-                (error: unknown) => {
-                  console.error("[task-checklist] toggle failed:", error);
-                },
-              );
-            }}
-            onRename={(title) => {
-              void updateTaskTitle(task.id, title).catch((error: unknown) => {
-                console.error("[task-checklist] rename failed:", error);
-              });
-            }}
-            onDelete={() => {
-              void deleteTask(task.id).catch((error: unknown) => {
-                console.error("[task-checklist] delete failed:", error);
-              });
-            }}
-          />
-        ))}
+        {mine.map((task) => {
+          const row = (
+            <TaskRow
+              key={task.id}
+              task={task}
+              accent={accent}
+              editing={!readOnly && (editing || editingId === task.id)}
+              autoFocus={!readOnly && editingId === task.id}
+              onEndEdit={() =>
+                setEditingId((current) =>
+                  current === task.id ? null : current,
+                )
+              }
+              readOnly={readOnly}
+              toggleOnly={toggleOnly}
+              onPressTitle={() => {
+                if (readOnly) return;
+                setEditingId(task.id);
+              }}
+              onToggle={() => {
+                void setTaskDone(task.id, task.done === 0).catch(
+                  (error: unknown) => {
+                    console.error("[task-checklist] toggle failed:", error);
+                  },
+                );
+              }}
+              onRename={(title) => {
+                void updateTaskTitle(task.id, title).catch((error: unknown) => {
+                  console.error("[task-checklist] rename failed:", error);
+                });
+              }}
+            />
+          );
+          if (!canSwipeDelete) return row;
+          return (
+            <SwipeableRow
+              key={task.id}
+              onDelete={() => {
+                void deleteTask(task.id).catch((error: unknown) => {
+                  console.error("[task-checklist] delete failed:", error);
+                });
+              }}
+              confirmKey={ConfirmKey.deleteTask}
+              confirmKicker="DELETE TASK"
+              confirmMessage="Removes this line from the checklist."
+            >
+              {row}
+            </SwipeableRow>
+          );
+        })}
       </Animated.View>
 
       {!readOnly ? (
         <View style={styles.row}>
           <View style={styles.check}>
-            <MaterialCommunityIcons
-              name="plus"
-              size={18}
-              color={colors.inkMuted}
-            />
+            <IconSymbol name="Add2" size={18} color={colors.inkMuted} />
           </View>
           <TextInput
             ref={inputRef}

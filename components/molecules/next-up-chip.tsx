@@ -34,8 +34,8 @@ export function NextUpChip({
     <Pressable
       onPress={() =>
         router.push({
-          pathname: "/detail",
-          params: { id: item.id, entryType: item.type },
+          pathname: "/edit",
+          params: { id: item.id },
         })
       }
       accessibilityRole="button"

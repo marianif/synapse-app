@@ -86,7 +86,6 @@ synapse-app/
 │   │   └── TimeInput.tsx       # Time picker input
 │   ├── molecules/              # Composed atoms
 │   │   ├── bento-card-header.tsx
-│   │   ├── detail-action-bar.tsx
 │   │   ├── detail-metadata-row.tsx
 │   │   ├── detail-someday-hero.tsx
 │   │   ├── empty-state.tsx     # Empty list state
@@ -115,7 +114,7 @@ synapse-app/
 │   │   ├── upcoming-preview-card.tsx
 │   │   └── weekly-overview-card.tsx
 │   ├── ui/                     # UI primitives
-│   │   └── icon-symbol.tsx     # Icon wrapper (MaterialCommunityIcons)
+│   │   └── icon-symbol.tsx     # Icon wrapper (Reicon) — the ONLY icon source
 │   ├── haptic-tab.tsx          # Custom bottom tab with haptics
 │   └── index.ts                # Barrel exports
 │
@@ -199,6 +198,11 @@ VSCode auto-organizes imports on save (`source.organizeImports`).
 - Light/dark theming via `useColorScheme()` + React Navigation's
   `ThemeProvider`. Access palette: `Colors[colorScheme ?? 'light']`.
 - Use Atomic Design: `components/atoms/`, `molecules/`, `organisms/`.
+- **Icons come from `@/components/ui/icon-symbol.tsx` only** — the single icon
+  source, backed by `reicon-react-native`. Never import `@expo/vector-icons`,
+  `MaterialCommunityIcons`, `MaterialIcons`, or any other icon library. Map the
+  needed glyph to a Reicon `IconSymbolName` (PascalCase, see
+  https://reicon.dev/icons) and render it via `<IconSymbol name color size />`.
 - React Compiler handles memoization — do **not** add manual
   `useMemo`/`useCallback` unless measured.
 

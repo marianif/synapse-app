@@ -98,6 +98,7 @@ export const ConfirmKey = {
   deleteEntry: "delete_entry",
   deleteNote: "delete_note",
   deleteProject: "delete_project",
+  deleteTask: "delete_task",
 } as const;
 
 export type ConfirmKeyValue = (typeof ConfirmKey)[keyof typeof ConfirmKey];

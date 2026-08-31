@@ -30,7 +30,10 @@ import "react-native-reanimated";
 
 import { ErrorBoundary } from "@/components/error-boundary";
 import { DatabaseProvider } from "@/contexts/database-context";
-import { OnboardingProvider, useOnboarding } from "@/contexts/onboarding-context";
+import {
+  OnboardingProvider,
+  useOnboarding,
+} from "@/contexts/onboarding-context";
 import { ThemeProvider, useThemeContext } from "@/contexts/theme-context";
 
 export const unstable_settings = {
@@ -53,10 +56,8 @@ export default function RootLayout() {
 // component cannot read a context it also renders the Provider for, hence the split.
 function ThemedNavigationShell(): React.ReactElement | null {
   const { resolvedScheme, isReady } = useThemeContext();
-  const {
-    complete: onboardingComplete,
-    isReady: onboardingReady,
-  } = useOnboarding();
+  const { complete: onboardingComplete, isReady: onboardingReady } =
+    useOnboarding();
   const segments = useSegments();
 
   // Field Lab's hierarchy is sans + mono (Host Grotesk display/body, JetBrains Mono
@@ -127,10 +128,8 @@ function ThemedNavigationShell(): React.ReactElement | null {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="onboarding" />
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen
-              name="note"
-              options={{ presentation: "modal" }}
-            />
+            <Stack.Screen name="note" options={{ presentation: "modal" }} />
+            <Stack.Screen name="edit" options={{ presentation: "modal" }} />
           </Stack>
         </ErrorBoundary>
         <StatusBar style={isDark ? "light" : "dark"} />

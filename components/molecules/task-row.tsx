@@ -13,7 +13,6 @@ interface TaskRowProps {
   editing: boolean;
   onToggle: () => void;
   onRename: (title: string) => void;
-  onDelete: () => void;
   /** Tap the resting title to open this row for inline editing. */
   onPressTitle: () => void;
   /** Focus the rename input the moment it mounts (the tapped row). */
@@ -26,10 +25,10 @@ interface TaskRowProps {
 }
 
 /**
- * A single subtask row: a completion circle, a title that taps into an inline
- * rename input, and a delete affordance that appears while editing. The parent
- * (`TaskChecklist`) owns all state and persistence — this row is a leaf that
- * renders one task and reports gestures back.
+ * A single subtask row: a completion circle and a title that taps into an
+ * inline rename input. Deleting is a swipe on the row (handled by the parent's
+ * `SwipeableRow`), so the row itself stays a leaf that renders one task and
+ * reports gestures back.
  */
 export function TaskRow({
   task,
@@ -37,7 +36,6 @@ export function TaskRow({
   editing,
   onToggle,
   onRename,
-  onDelete,
   onPressTitle,
   autoFocus,
   onEndEdit,
@@ -125,8 +123,9 @@ export function TaskRow({
           {task.title}
         </ThemedText>
       ) : (
-        // Tap the resting title to open this row for inline editing — the
-        // rename input and delete affordance take over the row until blur.
+        // Tap the resting title to open this row for inline rename. Delete is
+        // a swipe on the row (the parent's SwipeableRow), so the resting state
+        // stays one clean tap-to-rename surface.
         <Pressable
           onPress={onPressTitle}
           style={styles.titleButton}
@@ -146,22 +145,6 @@ export function TaskRow({
           </ThemedText>
         </Pressable>
       )}
-
-      {editing && !readOnly ? (
-        <Pressable
-          onPress={onDelete}
-          hitSlop={10}
-          style={({ pressed }) => [styles.trash, pressed && styles.pressed]}
-          accessibilityRole="button"
-          accessibilityLabel={`Delete ${task.title}`}
-        >
-          <MaterialCommunityIcons
-            name="close"
-            size={16}
-            color={colors.inkMuted}
-          />
-        </Pressable>
-      ) : null}
     </View>
   );
 }
@@ -199,14 +182,5 @@ const styles = StyleSheet.create({
     fontFamily: tokens.type.fontInter.medium,
     fontSize: tokens.type.item.size,
     lineHeight: tokens.type.item.lineHeight,
-  },
-  trash: {
-    width: 28,
-    height: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  pressed: {
-    opacity: 0.6,
   },
 });

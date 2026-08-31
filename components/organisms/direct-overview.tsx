@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -10,7 +11,6 @@ import {
 import { DirectPager } from "@/components/molecules/direct-pager";
 import { DirectRow } from "@/components/molecules/direct-row";
 import { EmptyState } from "@/components/molecules/empty-state";
-import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
 import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
@@ -54,7 +54,8 @@ export function DirectOverview({
   entries,
   onCapture,
 }: DirectOverviewProps): React.ReactElement | null {
-  const { updateEntryStatus, deleteEntry, projects } = useDatabase();
+  const router = useRouter();
+  const { updateEntryStatus, deleteEntry } = useDatabase();
   const { colors } = useTheme();
   // AA-safe type shades for the empty-state title + CTA. Hooks must resolve at
   // the top level, so pre-compute both and pick by filter inside the memo.
@@ -63,7 +64,6 @@ export function DirectOverview({
   const ideaShade = useEntryKicker("idea");
   const [filter, setFilter] = useState<DirectFilter>("all");
   const [page, setPage] = useState(0);
-  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteEntry });
 
   // Live counts off the unfiltered set so the header reads the true field, not
@@ -177,16 +177,6 @@ export function DirectOverview({
     setPage(0); // a new cut always opens on its most pressing page
   };
 
-  const selectedEntry = useMemo(
-    () => entries.find((e) => e.id === selectedEntryId) ?? null,
-    [entries, selectedEntryId],
-  );
-
-  const selectedProject = useMemo(
-    () => projects.find((p) => p.id === selectedEntry?.project_id) ?? null,
-    [projects, selectedEntry?.project_id],
-  );
-
   const handleMarkDone = (entry: DbEntry): void => {
     void updateEntryStatus(entry.id, doneStatus(entry.type as EntryType)).catch(
       (err) => console.error("Failed to mark entry done:", err),
@@ -224,7 +214,9 @@ export function DirectOverview({
               <DirectRow
                 key={entry.id}
                 entry={entry}
-                onPress={(entry) => setSelectedEntryId(entry.id)}
+                onPress={(entry) =>
+                  router.push({ pathname: "/edit", params: { id: entry.id } })
+                }
                 onMarkDone={handleMarkDone}
                 onDelete={handleDelete}
               />
@@ -238,15 +230,6 @@ export function DirectOverview({
           />
         </>
       )}
-
-      <DirectDetailSheet
-        entry={selectedEntry}
-        project={selectedProject}
-        visible={selectedEntry !== null}
-        onClose={() => setSelectedEntryId(null)}
-        onMarkDone={handleMarkDone}
-        onDelete={handleDelete}
-      />
 
       <ConfirmSheet
         visible={deleteConfirm.visible}

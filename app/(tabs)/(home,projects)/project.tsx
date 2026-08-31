@@ -30,7 +30,6 @@ import {
   CaptureBackdrop,
   CaptureComposer,
 } from "@/components/organisms/capture-composer";
-import { DirectDetailSheet } from "@/components/organisms/direct-detail-sheet";
 import type {
   ProjectComposerKind,
   ProjectComposerSubmitPayload,
@@ -105,11 +104,6 @@ export default function ProjectScreen(): React.ReactElement {
   const entryDeleteConfirm = useConfirm({
     confirmKey: ConfirmKey.deleteEntry,
   });
-  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
-  const selectedEntry = useMemo(
-    () => entries.find((e) => e.id === selectedEntryId) ?? null,
-    [entries, selectedEntryId],
-  );
   const [spinePage, setSpinePage] = useState(0);
 
   // Overflow sheet — every tier-3 verb (rename, change emoji, archive, delete)
@@ -392,8 +386,8 @@ export default function ProjectScreen(): React.ReactElement {
   };
   const handleOpenIdea = (idea: DbEntry): void => {
     router.push({
-      pathname: "/detail",
-      params: { id: idea.id, entryType: idea.type },
+      pathname: "/edit",
+      params: { id: idea.id },
     });
   };
 
@@ -556,7 +550,9 @@ export default function ProjectScreen(): React.ReactElement {
                 <DirectRow
                   key={e.id}
                   entry={e}
-                  onPress={(entry) => setSelectedEntryId(entry.id)}
+                  onPress={(entry) =>
+                    router.push({ pathname: "/edit", params: { id: entry.id } })
+                  }
                   onMarkDone={handleMarkDone}
                   onDelete={handleDeleteEntry}
                 />
@@ -603,8 +599,8 @@ export default function ProjectScreen(): React.ReactElement {
                   key={e.id}
                   onPress={() =>
                     router.push({
-                      pathname: "/detail",
-                      params: { id: e.id, entryType: e.type },
+                      pathname: "/edit",
+                      params: { id: e.id },
                     })
                   }
                   onLongPress={() => setActionIdeaId(e.id)}
@@ -703,14 +699,6 @@ export default function ProjectScreen(): React.ReactElement {
         onToggleDontAsk={deleteConfirm.toggleDontAsk}
         onConfirm={deleteConfirm.confirm}
         onCancel={deleteConfirm.cancel}
-      />
-      <DirectDetailSheet
-        entry={selectedEntry}
-        project={project ?? null}
-        visible={selectedEntry !== null}
-        onClose={() => setSelectedEntryId(null)}
-        onMarkDone={handleMarkDone}
-        onDelete={handleDeleteEntry}
       />
       <ConfirmSheet
         visible={entryDeleteConfirm.visible}

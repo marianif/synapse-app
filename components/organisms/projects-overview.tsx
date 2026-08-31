@@ -195,10 +195,7 @@ function AddProjectTile({
         pressed && styles.pressed,
       ]}
     >
-      <IconSymbol name="Plus" size={22} color={colors.inkMuted} />
-      <ThemedText type="body" style={{ color: colors.inkMuted }}>
-        New project
-      </ThemedText>
+      <IconSymbol name="FolderPlus" size={28} color={colors.inkMuted} />
     </Pressable>
   );
 }

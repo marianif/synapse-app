@@ -27,6 +27,9 @@ interface SwipeableRowProps {
   /** Copy for the branded confirm sheet — defaults to the entry voice. */
   confirmKicker?: string;
   confirmMessage?: string;
+  /** Called when this row's swipe opens; `close` dismisses it. Lets a list
+   *  keep a single row open and dismiss it on outside interaction. */
+  onSwipeOpen?: (close: () => void) => void;
 }
 
 export function SwipeableRow({
@@ -36,6 +39,7 @@ export function SwipeableRow({
   confirmKey = ConfirmKey.deleteEntry,
   confirmKicker = 'DELETE ENTRY',
   confirmMessage = 'This removes it from the field for good.',
+  onSwipeOpen,
 }: SwipeableRowProps): React.ReactElement {
   const { colors } = useTheme();
   const swipeableRef = useRef<Swipeable>(null);
@@ -68,6 +72,9 @@ export function SwipeableRow({
         renderRightActions={renderRightActions}
         rightThreshold={40}
         overshootRight={false}
+        onSwipeableWillOpen={() =>
+          onSwipeOpen?.(() => swipeableRef.current?.close())
+        }
       >
         {children}
       </Swipeable>

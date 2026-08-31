@@ -1,8 +1,9 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { StyleSheet, TextInput, View } from "react-native";
+import { RectButton } from "react-native-gesture-handler";
 
 import { ThemedText } from "@/components/atoms/themed-text";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 
 import type { DbTask } from "@/lib/types";
@@ -64,20 +65,22 @@ export function TaskRow({
   return (
     <View style={styles.row}>
       {canToggle ? (
-        <Pressable
+        <RectButton
           onPress={onToggle}
           hitSlop={10}
           style={styles.check}
+          activeOpacity={0.6}
+          underlayColor={colors.surfaceSubtle}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: done }}
           accessibilityLabel={task.title}
         >
-          <MaterialCommunityIcons
-            name={done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
+          <IconSymbol
+            name={done ? "CheckCircle" : "Record"}
             size={20}
             color={done ? tokens.feedback.success : accent}
           />
-        </Pressable>
+        </RectButton>
       ) : (
         <View
           style={styles.check}
@@ -85,8 +88,8 @@ export function TaskRow({
           accessibilityState={{ checked: done }}
           accessibilityLabel={task.title}
         >
-          <MaterialCommunityIcons
-            name={done ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
+          <IconSymbol
+            name={done ? "CheckCircle" : "Record"}
             size={20}
             color={done ? tokens.feedback.success : accent}
           />
@@ -115,20 +118,20 @@ export function TaskRow({
           type="item"
           muted={done}
           numberOfLines={2}
-          style={[
-            styles.title,
-            done && { textDecorationLine: "line-through" },
-          ]}
+          style={[styles.title, done && { textDecorationLine: "line-through" }]}
         >
           {task.title}
         </ThemedText>
       ) : (
         // Tap the resting title to open this row for inline rename. Delete is
-        // a swipe on the row (the parent's SwipeableRow), so the resting state
-        // stays one clean tap-to-rename surface.
-        <Pressable
+        // a swipe on the row (the parent's SwipeableRow). A gesture-handler
+        // RectButton is used (not an RN Pressable) so a swipe cancels the
+        // press instead of opening the rename input.
+        <RectButton
           onPress={onPressTitle}
           style={styles.titleButton}
+          activeOpacity={0.6}
+          underlayColor={colors.surfaceSubtle}
           accessibilityRole="button"
           accessibilityLabel={`Edit ${task.title}`}
         >
@@ -143,7 +146,7 @@ export function TaskRow({
           >
             {task.title}
           </ThemedText>
-        </Pressable>
+        </RectButton>
       )}
     </View>
   );

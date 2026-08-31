@@ -9,9 +9,15 @@ import {
   TextInput,
   View,
 } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
+import { ProjectGridCard } from "@/components/molecules/project-grid-card";
 import { ProjectRow } from "@/components/molecules/project-row";
 import {
   AddProjectBar,
@@ -19,7 +25,7 @@ import {
 } from "@/components/organisms/add-project-bar";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
@@ -48,6 +54,25 @@ function isSortMode(value: string | null): value is SortMode {
   return value === "recent" || value === "busy" || value === "az";
 }
 
+// ─── View mode ───────────────────────────────────────────────────────────────
+// The shelf reads two ways: stacked rows (swipe-to-delete, instrument-panel
+// readings) or a glance grid (emoji hero + signal footer, no swipe). The mode
+// is a persisted preference, not transient state — flip it once and the shelf
+// stays in the reading you prefer.
+
+type ViewMode = "list" | "grid";
+function isViewMode(value: string | null): value is ViewMode {
+  return value === "list" || value === "grid";
+}
+
+// Soft timing-based re-flow when the user flips the view toggle. A custom
+// ease-in-out bezier (0.4, 0, 0.2, 1) starts gently and settles over a long
+// tail — a calm morph, no spring overshoot, no rapid snap. Deliberately slower
+// than the system bezier, which reads as rushed at this size.
+const SHELF_REFLOW = LinearTransition.duration(320).easing(
+  Easing.bezier(0.4, 0, 0.2, 1),
+);
+
 /**
  * The Project Shelf — `app/(tabs)/projects/index.tsx`, the Projects tab's
  * root screen.
@@ -57,6 +82,10 @@ function isSortMode(value: string | null): value is SortMode {
  *   2. FEATURE a project (the star toggle on each row; the only knob that
  *      decides what `ProjectsOverview` on home surfaces)
  *   3. OPEN a project (tap the row body)
+ *
+ * The shelf reads two ways, toggled by the toolbar's view switch and
+ * persisted: stacked rows (swipe-to-delete) or a glance grid (no swipe —
+ * a half-width card is too small; delete stays on the project detail).
  *
  * Deleting is the one mutation on the shelf, and it rides the same swipe
  * gesture as the home entries: swipe a row left to reveal the trash action.
@@ -70,8 +99,13 @@ export default function ProjectsScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
   const cap = useGlobalCapture();
-  const { projects, entries, createProject, setProjectFeatured, deleteProject } =
-    useDatabase();
+  const {
+    projects,
+    entries,
+    createProject,
+    setProjectFeatured,
+    deleteProject,
+  } = useDatabase();
   const addProjectBarRef = useRef<AddProjectBarHandle | null>(null);
 
   // AddProjectBar handles its own keyboard lift to match CaptureDock. The
@@ -92,6 +126,14 @@ export default function ProjectsScreen(): React.ReactElement {
     "projects.sort",
     "recent",
     isSortMode,
+  );
+
+  // Stacked rows or glance grid — both render the same sorted/filtered data,
+  // so flipping the mode never re-walks the shelves.
+  const [viewMode, setViewMode] = useUiPreference<ViewMode>(
+    "projects.layout",
+    "list",
+    isViewMode,
   );
 
   const active = useMemo(
@@ -267,47 +309,81 @@ export default function ProjectsScreen(): React.ReactElement {
               ) : null}
             </View>
 
-            {/* Sort chip — one Pressable, taps cycle through three modes.
-                The ⇅ glyph signals it's a cycle, not a fixed label. */}
-            <Pressable
-              onPress={cycleSort}
-              accessibilityRole="button"
-              accessibilityLabel={`Sort by ${SORT_LABEL[sort]}. Tap to change.`}
-              style={({ pressed }) => [
-                styles.sortChip,
-                {
-                  backgroundColor: pressed
-                    ? colors.surface
-                    : colors.surfaceSubtle,
-                },
-              ]}
-            >
-              <ThemedText
-                type="micro"
-                style={[styles.sortChipLabel, { color: colors.inkMuted }]}
+            {/* Toolbar — sort cycle on the left, view toggle on the right.
+                The ⇅ glyph on the sort chip signals it's a cycle; the toggle
+                is a two-state segmented pill, so its two options are shown
+                side by side rather than cycling. */}
+            <View style={styles.toolbar}>
+              <Pressable
+                onPress={cycleSort}
+                accessibilityRole="button"
+                accessibilityLabel={`Sort by ${SORT_LABEL[sort]}. Tap to change.`}
+                style={({ pressed }) => [
+                  styles.sortChip,
+                  {
+                    backgroundColor: pressed
+                      ? colors.surface
+                      : colors.surfaceSubtle,
+                  },
+                ]}
               >
-                {`SORTED · ${SORT_LABEL[sort]}`}
-              </ThemedText>
-              <IconSymbol name="ArrowSwap2" size={14} color={colors.inkMuted} />
-            </Pressable>
+                <ThemedText
+                  type="micro"
+                  style={[styles.sortChipLabel, { color: colors.inkMuted }]}
+                >
+                  {`SORTED · ${SORT_LABEL[sort]}`}
+                </ThemedText>
+                <IconSymbol
+                  name="ArrowSwap2"
+                  size={14}
+                  color={colors.inkMuted}
+                />
+              </Pressable>
 
-            {/* The shelf itself. */}
+              <ViewToggle
+                mode={viewMode}
+                onChange={setViewMode}
+                colors={colors}
+              />
+            </View>
+
+            {/* The shelf itself — stacked rows in list mode (swipe to
+                delete), half-width glance cards in grid mode (delete stays
+                on the project detail; a card is too small to swipe). One
+                container changes its wrap mode; the items stay mounted under
+                it, so the reanimated layout transition morphs rows ↔ cards
+                instead of remounting the shelf. */}
             {visibleActive.length > 0 ? (
-              <View style={styles.rowList}>
+              <View
+                style={viewMode === "list" ? styles.rowList : styles.gridList}
+              >
                 {visibleActive.map((project) => (
-                  <SwipeableRow
+                  <Animated.View
                     key={project.id}
-                    onDelete={() => handleDeleteProject(project)}
-                    confirmKey={ConfirmKey.deleteProject}
-                    confirmKicker="DELETE PROJECT"
-                    confirmMessage="Its todos and ideas stay on the board, just unfiled."
+                    layout={SHELF_REFLOW}
+                    style={viewMode === "grid" ? styles.gridItem : undefined}
                   >
-                    <ProjectRow
-                      project={project}
-                      signal={signalFor(project, sort, openByProject)}
-                      onToggleFeatured={() => toggleFeatured(project)}
-                    />
-                  </SwipeableRow>
+                    {viewMode === "list" ? (
+                      <SwipeableRow
+                        onDelete={() => handleDeleteProject(project)}
+                        confirmKey={ConfirmKey.deleteProject}
+                        confirmKicker="DELETE PROJECT"
+                        confirmMessage="Its todos and ideas stay on the board, just unfiled."
+                      >
+                        <ProjectRow
+                          project={project}
+                          signal={signalFor(project, sort, openByProject)}
+                          onToggleFeatured={() => toggleFeatured(project)}
+                        />
+                      </SwipeableRow>
+                    ) : (
+                      <ProjectGridCard
+                        project={project}
+                        signal={signalFor(project, sort, openByProject)}
+                        onToggleFeatured={() => toggleFeatured(project)}
+                      />
+                    )}
+                  </Animated.View>
                 ))}
               </View>
             ) : (
@@ -404,6 +480,60 @@ export default function ProjectsScreen(): React.ReactElement {
 }
 
 // ─── Subcomponents (kept inline; one-off, never reused) ─────────────────────
+
+const VIEW_OPTIONS: {
+  mode: ViewMode;
+  icon: IconSymbolName;
+  label: string;
+}[] = [
+  { mode: "list", icon: "Menu", label: "List view" },
+  { mode: "grid", icon: "Grid", label: "Grid view" },
+];
+
+/**
+ * Two-state segmented pill for the shelf layout. Both options sit in a recessed
+ * `surfaceSubtle` gutter; the active one rises on `surface` — tonal seating,
+ * no 1px border, per the design system. Reading labels are explicit ("List
+ * view" / "Grid view") so the mode is never color/icon-only.
+ */
+function ViewToggle({
+  mode,
+  onChange,
+  colors,
+}: {
+  mode: ViewMode;
+  onChange: (mode: ViewMode) => void;
+  colors: ReturnType<typeof useTheme>["colors"];
+}): React.ReactElement {
+  return (
+    <View
+      style={[styles.viewToggle, { backgroundColor: colors.surfaceSubtle }]}
+    >
+      {VIEW_OPTIONS.map((option) => {
+        const active = mode === option.mode;
+        return (
+          <Pressable
+            key={option.mode}
+            onPress={() => onChange(option.mode)}
+            accessibilityRole="button"
+            accessibilityLabel={option.label}
+            accessibilityState={{ selected: active }}
+            style={[
+              styles.viewToggleOption,
+              active && { backgroundColor: colors.surface },
+            ]}
+          >
+            <IconSymbol
+              name={option.icon}
+              size={16}
+              color={active ? colors.ink : colors.inkMuted}
+            />
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 function CreateRow({
   draft,
@@ -567,9 +697,16 @@ const styles = StyleSheet.create({
     paddingBottom: tokens.space.xxxl * 2,
   },
 
+  // Toolbar — sort cycle + view toggle on one line, balanced at the ends.
+  toolbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: tokens.space.sm,
+  },
+
   // Sort chip — a self-contained pill, never edge-to-edge like a tab control.
   sortChip: {
-    alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.xs,
@@ -580,6 +717,22 @@ const styles = StyleSheet.create({
   },
   sortChipLabel: {
     letterSpacing: tokens.type.micro.tracking,
+  },
+
+  // View toggle — recessed gutter with a raised active option.
+  viewToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    padding: 2,
+    borderRadius: tokens.radius.pill,
+  },
+  viewToggleOption: {
+    width: 36,
+    height: 32,
+    borderRadius: tokens.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   // Search bar — pill, tonal fill (no 1px border, per the design system).
@@ -600,6 +753,20 @@ const styles = StyleSheet.create({
 
   rowList: {
     gap: tokens.space.xs,
+  },
+
+  // Grid — two-up wrap. Each card flexes from a 47% basis toward a 48% cap so
+  // a lone last card stays half-width instead of stretching full; the 12px gap
+  // is absorbed by the flex growth, never summed against the percentages.
+  gridList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: tokens.space.xs,
+  },
+  gridItem: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    maxWidth: "48%",
   },
 
   noMatch: {

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import Animated, {
   Easing,
@@ -23,6 +23,9 @@ interface TaskChecklistProps {
   readOnly?: boolean;
   /** Keep completion toggles active while hiding task editing controls. */
   toggleOnly?: boolean;
+  /** Exposes a `close()` so a host screen can dismiss the open swipe row on
+   *  outside interaction (scrolling the editor, tapping elsewhere). */
+  swipeController?: React.MutableRefObject<{ close: () => void } | null>;
 }
 
 // ── Checklist ─────────────────────────────────────────────────────────────────
@@ -49,6 +52,7 @@ export function TaskChecklist({
   accent,
   readOnly = false,
   toggleOnly = false,
+  swipeController,
 }: TaskChecklistProps): React.ReactElement {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
@@ -62,20 +66,43 @@ export function TaskChecklist({
   const [editingId, setEditingId] = useState<string | null>(null);
   const inputRef = useRef<TextInput>(null);
 
-// `tasks` is the flat store of every entry's subtasks. Open subtasks sit on
-// top so the unfinished work reads first; done lines sink to the bottom, with
-// position order preserved inside each group so completing a task moves just
-// that line, not its peers.
-const mine = tasks
-  .filter((t) => t.entry_id === entryId)
-  .sort((a, b) =>
-    a.done === b.done ? a.position - b.position : a.done - b.done,
-  );
-const doneCount = mine.filter((t) => t.done === 1).length;
+  // Only one row is swiped open at a time. Track the open row's close handle
+  // so any other interaction — another row, the composer, the header, or the
+  // host screen scrolling — dismisses it back to its resting state.
+  const openRowCloseRef = useRef<(() => void) | null>(null);
+  const closeOpenRow = useCallback((): void => {
+    openRowCloseRef.current?.();
+    openRowCloseRef.current = null;
+  }, []);
+  const handleSwipeOpen = useCallback((close: () => void): void => {
+    // A stale close (row already closed) is a harmless no-op, so opening a new
+    // row can simply close whatever was open and take its place.
+    openRowCloseRef.current?.();
+    openRowCloseRef.current = close;
+  }, []);
 
-// Deleting is a swipe on the row — the same gesture the feeds use. Read-only
-// and toggle-only renders keep rows gesture-free.
-const canSwipeDelete = !readOnly && !toggleOnly;
+  // Hand the close handle to the host screen (e.g. scroll-to-dismiss).
+  useEffect(() => {
+    if (swipeController) swipeController.current = { close: closeOpenRow };
+    return () => {
+      if (swipeController) swipeController.current = null;
+    };
+  }, [swipeController, closeOpenRow]);
+
+  // `tasks` is the flat store of every entry's subtasks. Open subtasks sit on
+  // top so the unfinished work reads first; done lines sink to the bottom, with
+  // position order preserved inside each group so completing a task moves just
+  // that line, not its peers.
+  const mine = tasks
+    .filter((t) => t.entry_id === entryId)
+    .sort((a, b) =>
+      a.done === b.done ? a.position - b.position : a.done - b.done,
+    );
+  const doneCount = mine.filter((t) => t.done === 1).length;
+
+  // Deleting is a swipe on the row — the same gesture the feeds use. Read-only
+  // and toggle-only renders keep rows gesture-free.
+  const canSwipeDelete = !readOnly && !toggleOnly;
 
   const handleAdd = (): void => {
     const title = drafting.trim();
@@ -90,7 +117,7 @@ const canSwipeDelete = !readOnly && !toggleOnly;
 
   return (
     <View style={styles.block}>
-      <View style={styles.head}>
+      <View style={styles.head} onTouchStart={closeOpenRow}>
         <View style={styles.headLeft}>
           <ThemedText type="micro" muted style={styles.kicker}>
             Tasks
@@ -155,9 +182,11 @@ const canSwipeDelete = !readOnly && !toggleOnly;
               toggleOnly={toggleOnly}
               onPressTitle={() => {
                 if (readOnly) return;
+                closeOpenRow();
                 setEditingId(task.id);
               }}
               onToggle={() => {
+                closeOpenRow();
                 void setTaskDone(task.id, task.done === 0).catch(
                   (error: unknown) => {
                     console.error("[task-checklist] toggle failed:", error);
@@ -183,6 +212,7 @@ const canSwipeDelete = !readOnly && !toggleOnly;
               confirmKey={ConfirmKey.deleteTask}
               confirmKicker="DELETE TASK"
               confirmMessage="Removes this line from the checklist."
+              onSwipeOpen={handleSwipeOpen}
             >
               {row}
             </SwipeableRow>
@@ -199,6 +229,7 @@ const canSwipeDelete = !readOnly && !toggleOnly;
             ref={inputRef}
             value={drafting}
             onChangeText={setDrafting}
+            onFocus={closeOpenRow}
             onSubmitEditing={handleAdd}
             placeholder={mine.length ? "Add another" : "Add a task"}
             placeholderTextColor={colors.inkMuted}

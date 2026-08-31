@@ -311,6 +311,8 @@ export default function EditScreen(): React.ReactElement {
   const saveInFlightRef = useRef(false);
   const persistRef = useRef<() => Promise<boolean>>(async () => true);
   const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteEntry });
+  // Lets the checklist's open swipe row be dismissed when the editor scrolls.
+  const taskSwipe = useRef<{ close: () => void } | null>(null);
 
   const entry = entries.find((item) => item.id === id);
 
@@ -534,6 +536,8 @@ export default function EditScreen(): React.ReactElement {
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
           automaticallyAdjustKeyboardInsets
+          scrollEventThrottle={16}
+          onScroll={() => taskSwipe.current?.close()}
         >
           <TouchableWithoutFeedback
             onPress={Keyboard.dismiss}
@@ -742,7 +746,7 @@ export default function EditScreen(): React.ReactElement {
               {/* Subtasks: todo and deadline only. An idea that grows a
                   checklist is a project — promote it instead. */}
               {!isIdea ? (
-                <TaskChecklist entryId={entry.id} accent={accent} />
+                <TaskChecklist entryId={entry.id} accent={accent} swipeController={taskSwipe} />
               ) : null}
 
               {isIdea ? (

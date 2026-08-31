@@ -3,6 +3,9 @@
 # dependencies
 node_modules/
 
+# Argent
+.argent/
+
 
 # Expo
 .expo/

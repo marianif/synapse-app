@@ -3,9 +3,9 @@ executionPrerequisite: >-
   section visible with the Studio rebrand project card on screen.
 
 steps:
-  - echo: Tap the Studio rebrand project card to open it
+  - echo: Tap "Open Studio rebrand" specifically — "Studio rebrand" alone also matches the card's expand/collapse toggle header
   - tap:
-      text: Studio rebrand
+      text: Open Studio rebrand
   - await: { visible: { text: "Export the new logo set" } }
   - await: { idle: true }
   - wait: 1200

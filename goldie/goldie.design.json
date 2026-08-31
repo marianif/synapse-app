@@ -1,0 +1,8 @@
+{
+  "background": "linear-gradient(160deg, #1E293B 0%, #0F172A 100%)",
+  "frame": "17-pro-silver",
+  "fontFamily": "-apple-system, \"SF Pro Display\", system-ui, sans-serif",
+  "template": "editorial",
+  "layout": "classic",
+  "screenOnly": false
+}

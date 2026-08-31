@@ -17,23 +17,23 @@ import {
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { parseDate, toDisplayDate } from "@/lib/date-utils";
+import { horizonLabel } from "@/lib/horizons";
+import type { DueRange } from "@/lib/types";
 
 // ─── When? ──────────────────────────────────────────────────────────────────────
 // "When" is a relative human concept for a capture-first user. Quick-pick chips
-// answer the common cases in one tap; the day+time wheel below is the precise
-// control — a dot marks the centered selection, day on the left, time on the right, like a
-// single instrument. No keyboard, no fragile parsing.
+// answer the common cases in one tap — concrete days (Today/Tomorrow/Weekend)
+// and deadline horizons (this week/month/year); the day+time wheel below is the
+// precise control — a dot marks the centered selection, day on the left, time on
+// the right, like a single instrument. No keyboard, no fragile parsing.
 
-type RelativeOption = {
-  key: string;
-  label: string;
-  resolve: () => dayjs.Dayjs;
-};
+type RelativeOption =
+  | { kind: "date"; key: string; label: string; resolve: () => dayjs.Dayjs }
+  | { kind: "range"; key: string; label: string; range: DueRange };
 
 const RELATIVE_OPTIONS: RelativeOption[] = [
-  { key: "today", label: "Today", resolve: () => dayjs() },
-  { key: "tomorrow", label: "Tomorrow", resolve: () => dayjs().add(1, "day") },
   {
+    kind: "date",
     key: "weekend",
     label: "Weekend",
     // The coming Saturday (today if already Sat).
@@ -42,6 +42,9 @@ const RELATIVE_OPTIONS: RelativeOption[] = [
       return d.add((6 - d.day() + 7) % 7, "day");
     },
   },
+  { kind: "range", key: "week", label: "This week", range: "week" },
+  { kind: "range", key: "month", label: "This month", range: "month" },
+  { kind: "range", key: "year", label: "This year", range: "year" },
 ];
 
 // Day wheel spans ~3 months forward — enough for any near-term capture.
@@ -66,12 +69,15 @@ const TIME_ITEMS: WheelItem[] = Array.from({ length: 24 * 4 }, (_, i) => {
 });
 
 type WhenPickerProps = {
-  /** Date as stored DD/MM/YYYY (or empty). */
+  /** Date as stored DD/MM/YYYY (or empty when a horizon is active). */
   date: string;
-  /** Time as stored HH:mm (or empty for all-day). */
+  /** Time as stored HH:mm (or empty until a time is picked). */
   time: string;
+  /** Active deadline horizon (this week/month/year), if any. */
+  dueRange: DueRange | null;
   onDateChange: (value: string) => void;
   onTimeChange: (value: string) => void;
+  onDueRangeChange: (range: DueRange | null) => void;
   /** Entry-type tint — colors the selected chip + a selection dot. */
   accentColor: string;
   /** Label above the panel ("DATE" or "DUE DATE"). */
@@ -90,8 +96,10 @@ type WhenPickerProps = {
 export function WhenPicker({
   date,
   time,
+  dueRange,
   onDateChange,
   onTimeChange,
+  onDueRangeChange,
   accentColor,
   dateLabel,
   initiallyOpen = false,
@@ -102,13 +110,22 @@ export function WhenPicker({
 
   const selectedDate = parseDate(date || null);
 
-  // Which relative option (if any) the current date matches.
-  const activeRelative = RELATIVE_OPTIONS.find(
-    (o) => toDisplayDate(o.resolve().toDate()) === date,
-  )?.key;
+  // Which relative option (if any) the current selection matches.
+  const activeRelative = RELATIVE_OPTIONS.find((o) => {
+    if (o.kind === "range") return dueRange === o.range;
+    return dueRange === null && toDisplayDate(o.resolve().toDate()) === date;
+  })?.key;
 
   function pickRelative(option: RelativeOption): void {
+    if (option.kind === "range") {
+      onDateChange("");
+      onTimeChange("");
+      onDueRangeChange(option.range);
+      return;
+    }
     onDateChange(toDisplayDate(option.resolve().toDate()));
+    onTimeChange("");
+    onDueRangeChange(null);
   }
 
   // Wheel needs a concrete day to land on — default to today if none set yet.
@@ -118,11 +135,8 @@ export function WhenPicker({
 
   function openWheel(): void {
     if (!date) onDateChange(DAY_ITEMS[0].value);
+    if (dueRange) onDueRangeChange(null);
     setWheelOpen((v) => !v);
-  }
-
-  function clearTime(): void {
-    onTimeChange("");
   }
 
   // Format the stored "HH:mm" into "h:mm A" without fragile string parsing.
@@ -132,10 +146,12 @@ export function WhenPicker({
         .minute(Number(time.split(":")[1]))
         .format("h:mm A")
     : "";
-  const echoText = selectedDate
-    ? dayjs(selectedDate).format("ddd, D MMM") +
-      (timeLabel ? ` · ${timeLabel}` : "")
-    : "When?";
+  const echoText = dueRange
+    ? horizonLabel(dueRange)
+    : selectedDate
+      ? dayjs(selectedDate).format("ddd, D MMM") +
+        (timeLabel ? ` · ${timeLabel}` : "")
+      : "When?";
 
   return (
     <View style={[styles.panel, { backgroundColor: colors.surface }]}>
@@ -149,7 +165,10 @@ export function WhenPicker({
             <View
               style={[
                 styles.echoBar,
-                { backgroundColor: selectedDate ? accentColor : "transparent" },
+                {
+                  backgroundColor:
+                    selectedDate || dueRange ? accentColor : "transparent",
+                },
               ]}
             />
             <ThemedText type="title" numberOfLines={1} style={styles.echo}>
@@ -187,6 +206,7 @@ export function WhenPicker({
                 label={option.label}
                 selected={activeRelative === option.key}
                 accentColor={accentColor}
+                compact
                 onPress={() => pickRelative(option)}
               />
             ))}
@@ -228,25 +248,8 @@ export function WhenPicker({
             />
           </View>
 
-          {/* Footer: All day (clear time) on the left, Done (confirm) on the right */}
+          {/* Footer: Done (confirm) on the right */}
           <View style={styles.wheelFooter}>
-            {time ? (
-              <Pressable
-                onPress={clearTime}
-                accessibilityRole="button"
-                accessibilityLabel="Clear time, all day"
-                style={({ pressed }) => [
-                  styles.allDay,
-                  pressed && { opacity: 0.7 },
-                ]}
-              >
-                <ThemedText type="body" muted>
-                  All day
-                </ThemedText>
-              </Pressable>
-            ) : (
-              <View style={styles.allDay} />
-            )}
             <Pressable
               onPress={() => setWheelOpen(false)}
               accessibilityRole="button"
@@ -260,7 +263,10 @@ export function WhenPicker({
                 },
               ]}
             >
-              <ThemedText type="bodyBold" style={{ color: colors.accent.onClay }}>
+              <ThemedText
+                type="bodyBold"
+                style={{ color: colors.accent.onClay }}
+              >
                 Done
               </ThemedText>
             </Pressable>
@@ -339,14 +345,10 @@ const styles = StyleSheet.create({
   wheelFooter: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     gap: tokens.space.sm,
     paddingTop: tokens.space.md,
     paddingHorizontal: tokens.space.lg,
-  },
-  allDay: {
-    minHeight: 40,
-    justifyContent: "center",
   },
   doneButton: {
     paddingHorizontal: tokens.space.xl,

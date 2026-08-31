@@ -146,7 +146,7 @@ export function ProjectCard({
               card is just a link, no toggle to signal. */}
           {!isQuiet ? (
             <IconSymbol
-              name={isExpanded ? "ChevronUp" : "ChevronDown"}
+              name={isExpanded ? "ArrowUp2" : "ArrowDown2"}
               size={16}
               color={colors.inkMuted}
             />

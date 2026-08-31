@@ -150,11 +150,14 @@ function isDirty(draft: Draft, entry: DbEntry): boolean {
   if (draft.projectId !== entry.project_id) return true;
 
   if (!isDeadline && !isIdea) {
-    if ((draft.date.trim() || null) !== (entry.scheduled_date ?? null))
-      return true;
+    const scheduledDate = draft.dueRange
+      ? horizonEndDate(draft.dueRange)
+      : draft.date.trim() || null;
+    if (scheduledDate !== (entry.scheduled_date ?? null)) return true;
     if (
+      draft.dueRange === null &&
       parseTimeToMinutes(draft.time) !==
-      parseTimeToMinutes(entry.scheduled_time)
+        parseTimeToMinutes(entry.scheduled_time)
     ) {
       return true;
     }
@@ -201,8 +204,13 @@ function typeLabel(type: DbEntry["type"]): string {
 }
 
 function whenClause(draft: Draft, isDeadline: boolean): string {
-  if (isDeadline && draft.dueRange) {
-    return `closes ${horizonEndDate(draft.dueRange)}`;
+  if (draft.dueRange) {
+    const end = horizonEndDate(draft.dueRange);
+    if (isDeadline) return `closes ${end}`;
+    const parsed = parseDate(end);
+    return parsed
+      ? `${parsed.getDate()}/${parsed.getMonth() + 1}/${parsed.getFullYear()}`
+      : end;
   }
   if (!draft.date) return "not scheduled — tap to set";
   const parsed = parseDate(draft.date);
@@ -350,8 +358,10 @@ export default function EditScreen(): React.ReactElement {
                 : undefined,
           }
         : null;
-      const date = draft.date.trim() || null;
-      const time = draft.time.trim() || null;
+      const date = draft.dueRange
+        ? horizonEndDate(draft.dueRange)
+        : draft.date.trim() || null;
+      const time = draft.dueRange ? null : draft.time.trim() || null;
       const horizon = isDeadline ? draft.dueRange : null;
 
       await updateEntry(entry.id, {
@@ -361,7 +371,7 @@ export default function EditScreen(): React.ReactElement {
         notes: draft.notes.trim() || null,
         scheduledDate: isDeadline || isIdea ? null : date,
         scheduledTime: isDeadline || isIdea ? null : time,
-        dueDate: isDeadline ? (horizon ? horizonEndDate(horizon) : date) : null,
+        dueDate: isDeadline ? date : null,
         dueTime: isDeadline && !horizon ? time : null,
         dueRange: horizon,
         recurrenceRule: isIdea ? null : recurrenceRule,
@@ -593,24 +603,25 @@ export default function EditScreen(): React.ReactElement {
                     open={openRow === "when"}
                     onPress={() => toggleRow("when")}
                   >
-                    {!isDeadline || draft.dueRange === null ? (
-                      <View style={styles.expandGap}>
-                        <WhenPicker
-                          date={draft.date}
-                          time={draft.time}
-                          onDateChange={(date) =>
-                            patchDraft(setDraft, { date })
-                          }
-                          onTimeChange={(time) =>
-                            patchDraft(setDraft, { time })
-                          }
-                          accentColor={accent}
-                          dateLabel={isDeadline ? "DUE DATE" : "DATE"}
-                          initiallyOpen
-                          showQuickOptions={false}
-                        />
-                      </View>
-                    ) : null}
+                    <View style={styles.expandGap}>
+                      <WhenPicker
+                        date={draft.date}
+                        time={draft.time}
+                        dueRange={draft.dueRange}
+                        onDateChange={(date) =>
+                          patchDraft(setDraft, { date })
+                        }
+                        onTimeChange={(time) =>
+                          patchDraft(setDraft, { time })
+                        }
+                        onDueRangeChange={(dueRange) =>
+                          patchDraft(setDraft, { dueRange })
+                        }
+                        accentColor={accent}
+                        dateLabel={isDeadline ? "DUE DATE" : "DATE"}
+                        initiallyOpen
+                      />
+                    </View>
                   </ReadoutRow>
                 ) : null}
 

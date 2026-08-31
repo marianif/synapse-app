@@ -14,6 +14,8 @@ type SelectChipProps = {
   onPress: () => void;
   /** Stretch to fill an equal-width slot (segmented rows). */
   fill?: boolean;
+  /** Tighter footprint for dense option rails (When quick-picks). */
+  compact?: boolean;
 };
 
 export function SelectChip({
@@ -22,6 +24,7 @@ export function SelectChip({
   accentColor,
   onPress,
   fill = false,
+  compact = false,
 }: SelectChipProps): React.ReactElement {
   const { colors } = useTheme();
   return (
@@ -33,6 +36,7 @@ export function SelectChip({
       hitSlop={6}
       style={({ pressed }) => [
         styles.chip,
+        compact && styles.compact,
         fill && styles.fill,
         { backgroundColor: colors.surfaceSubtle },
         selected && { backgroundColor: accentColor + "22" },
@@ -88,6 +92,10 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",
+  },
+  compact: {
+    paddingHorizontal: tokens.space.sm,
+    minHeight: 28,
   },
   fill: {
     flex: 1,

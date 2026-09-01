@@ -75,6 +75,10 @@ export function TaskChecklist({
     openRowCloseRef.current = null;
   }, []);
   const handleSwipeOpen = useCallback((close: () => void): void => {
+    // Reopening the already-tracked row is a no-op: its stale close handle
+    // would otherwise close the row that just opened (swipe → swipe-back →
+    // swipe-again flashes the delete action and snaps shut).
+    if (openRowCloseRef.current === close) return;
     // A stale close (row already closed) is a harmless no-op, so opening a new
     // row can simply close whatever was open and take its place.
     openRowCloseRef.current?.();

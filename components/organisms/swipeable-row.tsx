@@ -43,6 +43,11 @@ export function SwipeableRow({
 }: SwipeableRowProps): React.ReactElement {
   const { colors } = useTheme();
   const swipeableRef = useRef<Swipeable>(null);
+  // Stable per-row handle. A list tracks "one row open at a time" by comparing
+  // the identity of the close function it was handed; that identity must not
+  // change between renders, so it lives in a ref and closes whatever
+  // swipeableRef points to at call time.
+  const closeRef = useRef<() => void>(() => swipeableRef.current?.close());
   const confirm = useConfirm({ confirmKey });
 
   const handleDelete = (): void => {
@@ -72,9 +77,7 @@ export function SwipeableRow({
         renderRightActions={renderRightActions}
         rightThreshold={40}
         overshootRight={false}
-        onSwipeableWillOpen={() =>
-          onSwipeOpen?.(() => swipeableRef.current?.close())
-        }
+        onSwipeableWillOpen={() => onSwipeOpen?.(closeRef.current)}
       >
         {children}
       </Swipeable>

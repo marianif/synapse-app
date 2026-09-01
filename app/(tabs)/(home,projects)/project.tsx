@@ -206,14 +206,20 @@ export default function ProjectScreen(): React.ReactElement {
   // it to begin with.
   const scrollRef = useRef<ScrollView | null>(null);
   const [fabReserve, setFabReserve] = useState(0);
+  // Set when the FAB menu opens, cleared once the end-scroll has caught up.
+  // The scroll CANNOT ride on requestAnimationFrame: the rAF fires before the
+  // new paddingBottom is laid out natively, so scrollToEnd computes against the
+  // old (smaller) content size and the pills land on top of real content. The
+  // scroll is instead driven by onContentSizeChange below, which fires exactly
+  // when the reserved padding has taken effect and the content size is final.
+  const scrollToEndPending = useRef(false);
   const handleFabOpenChange = (open: boolean): void => {
     if (isEmpty) return;
     if (open) {
+      scrollToEndPending.current = true;
       setFabReserve(FAB_OPEN_FOOTPRINT);
-      requestAnimationFrame(() =>
-        scrollRef.current?.scrollToEnd({ animated: true }),
-      );
     } else {
+      scrollToEndPending.current = false;
       setFabReserve(0);
     }
   };
@@ -512,6 +518,12 @@ export default function ProjectScreen(): React.ReactElement {
           },
         ]}
         showsVerticalScrollIndicator={false}
+        onContentSizeChange={() => {
+          if (scrollToEndPending.current && fabReserve > 0) {
+            scrollToEndPending.current = false;
+            scrollRef.current?.scrollToEnd({ animated: true });
+          }
+        }}
       >
         {/* Provenance — the handwritten line that says where this project
             came from. Identity, not metadata. Its own band so the eye

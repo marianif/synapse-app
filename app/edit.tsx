@@ -39,7 +39,7 @@ import { entryKicker, tokens, useTheme } from "@/constants/theme";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { formatTime12h, parseDate, parseTimeToMinutes } from "@/lib/date-utils";
-import { daysUntil, doneStatus, isDone } from "@/lib/direct-when";
+import { daysUntil, doneStatus, isDone, openStatus } from "@/lib/direct-when";
 import { horizonEndDate } from "@/lib/horizons";
 import { parseRule } from "@/lib/recurrence";
 import { ConfirmKey } from "@/lib/settings";
@@ -472,6 +472,15 @@ export default function EditScreen(): React.ReactElement {
     router.back();
   };
 
+  // Reopens a done entry (completed/met) to its open status without leaving
+  // the screen, so the user can keep editing. The store's optimistic update
+  // re-renders the header, flipping this back into the complete affordance.
+  const handleUndoDone = (): void => {
+    void updateEntryStatus(entry.id, openStatus(entry.type)).catch((err) =>
+      console.error("Failed to reopen entry:", err),
+    );
+  };
+
   const handleDelete = (): void => {
     void deleteConfirm.request(() => {
       void deleteEntry(entry.id).catch((err) =>
@@ -482,6 +491,7 @@ export default function EditScreen(): React.ReactElement {
   };
 
   const canComplete = !done && entry.type !== "idea";
+  const canUndo = done && entry.type !== "idea";
 
   return (
     <SafeAreaView
@@ -519,6 +529,20 @@ export default function EditScreen(): React.ReactElement {
             >
               <IconSymbol
                 name="Check"
+                size={22}
+                color={tokens.feedback.success}
+              />
+            </Pressable>
+          ) : canUndo ? (
+            <Pressable
+              onPress={handleUndoDone}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Mark as not done"
+              style={styles.headerBtn}
+            >
+              <IconSymbol
+                name="Undo"
                 size={22}
                 color={tokens.feedback.success}
               />

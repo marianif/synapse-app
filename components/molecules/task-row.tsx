@@ -117,7 +117,7 @@ export function TaskRow({
         <ThemedText
           type="item"
           muted={done}
-          numberOfLines={2}
+          numberOfLines={3}
           style={[styles.title, done && { textDecorationLine: "line-through" }]}
         >
           {task.title}

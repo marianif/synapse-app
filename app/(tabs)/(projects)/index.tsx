@@ -761,12 +761,12 @@ const styles = StyleSheet.create({
   gridList: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: tokens.space.xs,
+    gap: tokens.space.sm,
+    justifyContent: "space-between",
   },
   gridItem: {
-    flexBasis: "47%",
-    flexGrow: 1,
-    maxWidth: "48%",
+    width: "31.5%",
+    height: "auto",
   },
 
   noMatch: {

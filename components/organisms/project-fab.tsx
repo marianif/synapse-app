@@ -72,6 +72,7 @@ function getActions(colors: ThemeColors, scheme: Scheme): FabAction[] {
 
 // ─── Constants ────────────────────────────────────────────────────────────────────
 
+const FAB_HEIGHT = 56;
 const PILL_HEIGHT = 44;
 const STAGGER_SHIFT = 0.15;
 const STAGGER_MULTIPLIER = 1.6;
@@ -84,8 +85,13 @@ const ACTIONS_PAD_BOTTOM = tokens.space.sm;
 // How much vertical space the fanned-out pill column occupies above the
 // screen bottom, once fully open — screens use this to reserve scroll room
 // so list content never ends up sitting behind the pills (see project.tsx).
+// The fan stacks actions (4 pills + gaps + pad) ABOVE the FAB button inside
+// the bottom-anchored wrapper, so the footprint must include the button's
+// height and the wrapper gap — leaving it out underestimates the fan's top
+// by FAB_HEIGHT and the top pill still overlaps list content at full scroll.
 export const FAB_OPEN_FOOTPRINT =
   WRAPPER_BOTTOM +
+  FAB_HEIGHT +
   PILL_COUNT * PILL_HEIGHT +
   (PILL_COUNT - 1) * ACTIONS_GAP +
   ACTIONS_PAD_BOTTOM +
@@ -261,14 +267,14 @@ const styles = StyleSheet.create({
   },
   glow: {
     position: "absolute",
-    width: 56,
-    height: 56,
+    width: FAB_HEIGHT,
+    height: FAB_HEIGHT,
     borderRadius: tokens.radius.pill,
     ...tokens.elevation.flat,
   },
   fab: {
-    width: 56,
-    height: 56,
+    width: FAB_HEIGHT,
+    height: FAB_HEIGHT,
     borderRadius: tokens.radius.pill,
     alignItems: "center",
     justifyContent: "center",

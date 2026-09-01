@@ -68,6 +68,12 @@ export function doneStatus(type: EntryType): DbEntry["status"] {
   return type === "deadline" ? "met" : "completed";
 }
 
+/** The open counterpart of a done status: a todo reopens to "active", a
+ *  deadline to "pending". Ideas have no done/undo toggle — handled by Archive. */
+export function openStatus(type: EntryType): DbEntry["status"] {
+  return type === "deadline" ? "pending" : "active";
+}
+
 /**
  * One ordered sequence for the paged direct zone: charged items first (overdue
  * → soonest), then the calm remainder, with done lines last. Page 1 therefore

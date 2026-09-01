@@ -60,12 +60,7 @@ export function ProjectGridCard({
             {project.emoji}
           </ThemedText>
         ) : (
-          <View
-            style={[
-              styles.emojiFallback,
-              { backgroundColor: colors.surfaceSubtle },
-            ]}
-          >
+          <View style={[styles.emojiFallback]}>
             <IconSymbol name="Folder2" size={22} color={colors.inkMuted} />
           </View>
         )}
@@ -112,6 +107,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: tokens.radius.md,
     overflow: "hidden",
+    flexGrow: 1,
   },
   body: {
     alignItems: "center",
@@ -125,8 +121,6 @@ const styles = StyleSheet.create({
     // before the title; no extra color needed.
   },
   emojiFallback: {
-    width: 44,
-    height: 44,
     borderRadius: tokens.radius.sm,
     alignItems: "center",
     justifyContent: "center",

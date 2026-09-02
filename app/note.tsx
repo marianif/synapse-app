@@ -1,5 +1,10 @@
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+} from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -39,6 +44,7 @@ import { useDiary } from "@/hooks/use-diary";
  */
 export default function NoteScreen(): React.ReactElement {
   const router = useRouter();
+  const navigation = useNavigation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { id, body, relatable, linkedProjectId, linkedEntryId } =
@@ -83,48 +89,69 @@ export default function NoteScreen(): React.ReactElement {
   // the first render's draft otherwise.
   const latestRef = useRef({ draft, selection });
   latestRef.current = { draft, selection };
-  // Set once the explicit Check button has committed; the blur cleanup then
-  // skips so closing via Save doesn't write twice.
+  // Set once a write has committed; the dismissal listener then skips so
+  // closing never writes twice.
   const committedRef = useRef(false);
 
-  // Autosave on close: any dismissal (X, native swipe-down, back gesture)
-  // blurs the screen, and this cleanup persists the draft + relate selection.
-  // Skips when nothing changed, so an idle open/close doesn't touch the DB.
+  // Persist the latest draft + relate selection if anything changed. Marks
+  // committed so an idle open/close (or a double path) never touches the DB.
+  // Resolves when the write lands so callers can sequence on it.
+  const persist = useCallback((): Promise<void> => {
+    if (committedRef.current || !id) return Promise.resolve();
+    const { draft: latestDraft, selection: latestSelection } = latestRef.current;
+    const trimmed = latestDraft.trim();
+    if (!trimmed) return Promise.resolve();
+    const dirty =
+      trimmed !== (body ?? "") ||
+      (canRelate &&
+        ((latestSelection?.kind === "project" &&
+          latestSelection.id !== (linkedProjectId ?? "")) ||
+          (latestSelection?.kind === "idea" &&
+            latestSelection.id !== (linkedEntryId ?? "")) ||
+          (!latestSelection &&
+            Boolean(linkedProjectId || linkedEntryId))));
+    if (!dirty) return Promise.resolve();
+    committedRef.current = true;
+    return updateEntry(id, {
+      body: trimmed,
+      ...(canRelate
+        ? {
+            linkedEntryId:
+              latestSelection?.kind === "idea" ? latestSelection.id : null,
+            linkedProjectId:
+              latestSelection?.kind === "project"
+                ? latestSelection.id
+                : null,
+          }
+        : {}),
+    });
+  }, [id, body, canRelate, linkedProjectId, linkedEntryId, updateEntry]);
+
+  // Save when the screen is being removed — the X, the native swipe-down, and
+  // the back gesture all funnel through `beforeRemove`, which blocks dismissal
+  // until the write lands so the caller's refresh never reads stale data.
+  // Idempotent via committedRef: the explicit Check button writes first and
+  // then navigates, so this listener just replays the removal.
+  useEffect(() => {
+    if (!id) return;
+    return navigation.addListener("beforeRemove", (e) => {
+      e.preventDefault();
+      void persist().then(() => {
+        navigation.dispatch(e.data.action);
+      });
+    });
+  }, [navigation, persist, id]);
+
+  // Blur-time autosave safety net: whatever dismissal path closes the sheet,
+  // the screen blurs as it's removed and this cleanup persists the latest
+  // draft. `beforeRemove` is the primary path; `persist` is idempotent
+  // (committedRef), so a close that reaches both writes at most once.
   useFocusEffect(
     useCallback(() => {
       return () => {
-        if (committedRef.current || !id) return;
-        const { draft: latestDraft, selection: latestSelection } =
-          latestRef.current;
-        const trimmed = latestDraft.trim();
-        if (!trimmed) return;
-        const dirty =
-          trimmed !== (body ?? "") ||
-          (canRelate &&
-            ((latestSelection?.kind === "project" &&
-              latestSelection.id !== (linkedProjectId ?? "")) ||
-              (latestSelection?.kind === "idea" &&
-                latestSelection.id !== (linkedEntryId ?? "")) ||
-              (!latestSelection &&
-                Boolean(linkedProjectId || linkedEntryId))));
-        if (!dirty) return;
-        void updateEntry(id, {
-          body: trimmed,
-          ...(canRelate
-            ? {
-                linkedEntryId:
-                  latestSelection?.kind === "idea"
-                    ? latestSelection.id
-                    : null,
-                linkedProjectId:
-                  latestSelection?.kind === "project"
-                    ? latestSelection.id
-                    : null,
-              }
-            : {}),
-        });
+        void persist();
       };
-    }, [id, body, canRelate, linkedProjectId, linkedEntryId, updateEntry]),
+    }, [persist]),
   );
 
   if (!id) {

@@ -1,5 +1,10 @@
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   Platform,
@@ -95,8 +100,22 @@ export default function ProjectScreen(): React.ReactElement {
     deleteProject,
   } = useDatabase();
 
-  const { entries: diaryEntries, addEntry: addDiaryEntry, removeEntry: removeDiaryEntry } =
-  useDiary();
+  const {
+    entries: diaryEntries,
+    addEntry: addDiaryEntry,
+    removeEntry: removeDiaryEntry,
+    refresh: refreshDiary,
+  } = useDiary();
+
+  // Refresh the diary on focus: this screen mounts its own `useDiary` instance,
+  // so a note edited in the /note modal (which writes through a *different*
+  // instance) would otherwise leave the notes column stale until the project
+  // is left and re-entered.
+  useFocusEffect(
+    useCallback(() => {
+      void refreshDiary();
+    }, [refreshDiary]),
+  );
 
   const project = projects.find((p) => p.id === id);
 

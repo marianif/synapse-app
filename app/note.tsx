@@ -5,12 +5,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { ThemedText } from "@/components/atoms/themed-text";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import {
   LinkSheet,
   type LinkableTarget,
   type LinkSelection,
 } from "@/components/organisms/link-sheet";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
@@ -113,9 +113,7 @@ export default function NoteScreen(): React.ReactElement {
               linkedEntryId:
                 latestSelection?.kind === "idea" ? latestSelection.id : null,
               linkedProjectId:
-                latestSelection?.kind === "project"
-                  ? latestSelection.id
-                  : null,
+                latestSelection?.kind === "project" ? latestSelection.id : null,
             }
           : {}),
       });
@@ -132,7 +130,10 @@ export default function NoteScreen(): React.ReactElement {
           { backgroundColor: colors.paper, paddingTop: insets.top },
         ]}
       >
-        <ThemedText type="hand" style={[styles.gone, { color: colors.inkMuted }]}>
+        <ThemedText
+          type="hand"
+          style={[styles.gone, { color: colors.inkMuted }]}
+        >
           This note is gone.
         </ThemedText>
         <Pressable
@@ -166,12 +167,7 @@ export default function NoteScreen(): React.ReactElement {
   };
 
   return (
-    <View
-      style={[
-        styles.screen,
-        { backgroundColor: colors.paper, paddingTop: insets.top },
-      ]}
-    >
+    <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       {/* Header — close / kicker / save. Stays above the keyboard by sitting
           at the very top of the sheet. */}
       <View style={styles.headerRow}>

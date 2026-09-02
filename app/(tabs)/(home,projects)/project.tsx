@@ -19,6 +19,7 @@ import Animated, {
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ThemedText } from "@/components/atoms/themed-text";
+import type { CaptureResolution } from "@/components/molecules/capture-resolver";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DiaryNote } from "@/components/molecules/diary-note";
 import { DirectPager } from "@/components/molecules/direct-pager";
@@ -209,6 +210,9 @@ export default function ProjectScreen(): React.ReactElement {
   // it to begin with.
   const scrollRef = useRef<ScrollView | null>(null);
   const [fabReserve, setFabReserve] = useState(0);
+  const scrollToTop = (): void => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
   // Set when the FAB menu opens, cleared once the end-scroll has caught up.
   // The scroll CANNOT ride on requestAnimationFrame: the rAF fires before the
   // new paddingBottom is laid out natively, so scrollToEnd computes against the
@@ -279,6 +283,7 @@ export default function ProjectScreen(): React.ReactElement {
       }).catch((err) =>
         console.error(`Failed to capture ${payload.kind}:`, err),
       );
+      scrollToTop();
       return;
     }
     const due = payload.dueRange ? horizonEndDate(payload.dueRange) : undefined;
@@ -308,6 +313,17 @@ export default function ProjectScreen(): React.ReactElement {
           : undefined,
       dueRange: payload.dueRange ?? undefined,
     }).catch((err) => console.error(`Failed to capture ${payload.kind}:`, err));
+    scrollToTop();
+  };
+
+  // The home-style dock files entries into this project too (lockedProjectId).
+  // Same jump-to-top as the FAB composer once a line is filed; notes land in
+  // the bottom section, so they don't jump.
+  const handleResolveCapture = (resolution: CaptureResolution): void => {
+    cap.resolveCapture(resolution);
+    if (resolution.kind !== "note" && resolution.kind !== "note-on") {
+      scrollToTop();
+    }
   };
 
   const spinePageCount = Math.max(1, Math.ceil(spine.length / PAGE_SIZE));
@@ -756,7 +772,10 @@ export default function ProjectScreen(): React.ReactElement {
         style={[styles.dock, dockLiftStyle]}
         pointerEvents="box-none"
       >
-        <CaptureComposer cap={cap} projects={projects} />
+        <CaptureComposer
+          cap={{ ...cap, resolveCapture: handleResolveCapture }}
+          projects={projects}
+        />
         <ProjectComposer
           kind={fabKind}
           initialText={starterSeed}

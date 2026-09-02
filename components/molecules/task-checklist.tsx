@@ -108,15 +108,25 @@ export function TaskChecklist({
   // and toggle-only renders keep rows gesture-free.
   const canSwipeDelete = !readOnly && !toggleOnly;
 
-  const handleAdd = (): void => {
+  const commitDraft = (): void => {
     const title = drafting.trim();
     if (!title) return;
     setDrafting("");
     void createTask(entryId, title).catch((error: unknown) => {
       console.error("[task-checklist] create failed:", error);
     });
+  };
+
+  const handleAdd = (): void => {
+    commitDraft();
     // Keep the caret alive so the next subtask needs no second tap.
     inputRef.current?.focus();
+  };
+
+  // A draft left in the composer when the field blurs (tapping elsewhere, or
+  // dismissing the editor) must not be lost — same write as a submit.
+  const handleComposerBlur = (): void => {
+    commitDraft();
   };
 
   return (
@@ -234,6 +244,7 @@ export function TaskChecklist({
             value={drafting}
             onChangeText={setDrafting}
             onFocus={closeOpenRow}
+            onBlur={handleComposerBlur}
             onSubmitEditing={handleAdd}
             placeholder={mine.length ? "Add another" : "Add a task"}
             placeholderTextColor={colors.inkMuted}

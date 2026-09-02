@@ -116,6 +116,13 @@ const feedback = {
     light: "#FBDDE3",
     dark: "#301820",
   },
+  // Deeper emerald for the completion slab's pressed state (lit-dial header).
+  // The system only defines press colors for the neutral accent
+  // (`accent.clayPressed`); pressing a `success` slab to a neutral or fading it
+  // via opacity would break the Neutral Slab and no-opacity-fade rules, so the
+  // committed action earns its own darkened press value. Shared across schemes,
+  // like `success`.
+  successPressed: "#1FB98A",
 } as const;
 
 const type = {

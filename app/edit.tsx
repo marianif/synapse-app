@@ -324,8 +324,8 @@ export default function EditScreen(): React.ReactElement {
   const entry = entries.find((item) => item.id === id);
 
   // The entry already lives in the store — the caller navigated here from a row
-// that reads it, and every write flows back through the slice. Fetch only as a
-// fallback so the loading gate can never hang on a deep-linked id.
+  // that reads it, and every write flows back through the slice. Fetch only as a
+  // fallback so the loading gate can never hang on a deep-linked id.
   useEffect(() => {
     if (!entry) void fetchEntries();
   }, [entry, fetchEntries]);
@@ -499,39 +499,60 @@ export default function EditScreen(): React.ReactElement {
       style={[styles.safeArea, { backgroundColor: colors.paper }]}
       edges={["top", "bottom"]}
     >
-      {/* Modal header — close + type kicker, with complete + delete as icon-only
-          actions. Closing autosaves (beforeRemove); complete uses the shared
-          success color for every entry type that can be completed. */}
+      {/* Modal header — the lit-dial instrument row: close on a seated cell, the
+          type kicker on a mono chip, complete/undo as the committed success
+          slab (the system's one sanctioned green), delete on a danger tint.
+          Closing autosaves (beforeRemove); the slab is the send-equivalent of
+          the capture bar. */}
       <View style={styles.modalHeader}>
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Close entry editor"
-          style={styles.headerBtn}
+          style={({ pressed }) => [
+            styles.headerBtn,
+            {
+              backgroundColor: pressed ? colors.surface : colors.surfaceSubtle,
+            },
+          ]}
         >
-          <IconSymbol name="X" size={22} color={colors.ink} />
+          <IconSymbol name="X" size={18} color={colors.ink} />
         </Pressable>
 
         <View style={styles.headerTitle}>
-          <ThemedText type="micro" style={{ color: accent }}>
-            {typeLabel(entry.type)}
-          </ThemedText>
+          <View
+            style={[
+              styles.kickerChip,
+              { backgroundColor: colors.surfaceSubtle },
+            ]}
+          >
+            <ThemedText type="micro" style={{ color: accent }}>
+              Edit/Details
+            </ThemedText>
+          </View>
         </View>
 
         <View style={styles.headerActions}>
           {canComplete ? (
             <Pressable
               onPress={handleMarkDone}
-              hitSlop={12}
+              hitSlop={18}
               accessibilityRole="button"
               accessibilityLabel={doneLabel(entry.type)}
-              style={styles.headerBtn}
+              style={({ pressed }) => [
+                styles.headerBtn,
+                {
+                  backgroundColor: pressed
+                    ? tokens.feedback.successPressed
+                    : tokens.feedback.success,
+                },
+              ]}
             >
               <IconSymbol
                 name="Check"
-                size={22}
-                color={tokens.feedback.success}
+                size={18}
+                color={tokens.color.light.ink}
               />
             </Pressable>
           ) : canUndo ? (
@@ -540,12 +561,19 @@ export default function EditScreen(): React.ReactElement {
               hitSlop={12}
               accessibilityRole="button"
               accessibilityLabel="Mark as not done"
-              style={styles.headerBtn}
+              style={({ pressed }) => [
+                styles.headerBtn,
+                {
+                  backgroundColor: pressed
+                    ? tokens.feedback.successPressed
+                    : tokens.feedback.success,
+                },
+              ]}
             >
               <IconSymbol
                 name="Undo"
-                size={22}
-                color={tokens.feedback.success}
+                size={18}
+                color={tokens.color.light.ink}
               />
             </Pressable>
           ) : null}
@@ -555,9 +583,20 @@ export default function EditScreen(): React.ReactElement {
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Delete entry"
-            style={styles.headerBtn}
+            style={({ pressed }) => [
+              styles.headerBtn,
+              {
+                backgroundColor: pressed
+                  ? colors.surfaceSubtle
+                  : colors.feedback.dangerTint[scheme],
+              },
+            ]}
           >
-            <IconSymbol name="Trash" size={22} color={tokens.feedback.danger} />
+            <IconSymbol
+              name="Trash2"
+              size={18}
+              color={tokens.feedback.danger}
+            />
           </Pressable>
         </View>
       </View>
@@ -633,12 +672,8 @@ export default function EditScreen(): React.ReactElement {
                         date={draft.date}
                         time={draft.time}
                         dueRange={draft.dueRange}
-                        onDateChange={(date) =>
-                          patchDraft(setDraft, { date })
-                        }
-                        onTimeChange={(time) =>
-                          patchDraft(setDraft, { time })
-                        }
+                        onDateChange={(date) => patchDraft(setDraft, { date })}
+                        onTimeChange={(time) => patchDraft(setDraft, { time })}
                         onDueRangeChange={(dueRange) =>
                           patchDraft(setDraft, { dueRange })
                         }
@@ -782,7 +817,11 @@ export default function EditScreen(): React.ReactElement {
               {/* Subtasks: todo and deadline only. An idea that grows a
                   checklist is a project — promote it instead. */}
               {!isIdea ? (
-                <TaskChecklist entryId={entry.id} accent={accent} swipeController={taskSwipe} />
+                <TaskChecklist
+                  entryId={entry.id}
+                  accent={accent}
+                  swipeController={taskSwipe}
+                />
               ) : null}
 
               {isIdea ? (
@@ -1008,21 +1047,31 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: tokens.space.lg,
-    paddingTop: tokens.space.sm,
+    paddingTop: tokens.space.md,
+    justifyContent: "space-between",
   },
   headerTitle: {
-    flex: 1,
+    position: "absolute",
+    left: 0,
+    right: 0,
     alignItems: "center",
   },
   headerBtn: {
-    width: 40,
-    height: 40,
+    width: 28,
+    height: 28,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: tokens.radius.pill,
   },
   headerActions: {
     flexDirection: "row",
     alignItems: "center",
+    gap: tokens.space.xs,
+  },
+  kickerChip: {
+    paddingHorizontal: tokens.space.sm,
+    paddingVertical: tokens.space.xs,
+    borderRadius: tokens.radius.sm,
   },
   content: {
     paddingHorizontal: tokens.space.lg,

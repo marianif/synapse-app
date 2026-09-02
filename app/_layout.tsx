@@ -26,15 +26,18 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Provider } from "react-redux";
 import "react-native-reanimated";
 
 import { ErrorBoundary } from "@/components/error-boundary";
-import { DatabaseProvider } from "@/contexts/database-context";
 import {
   OnboardingProvider,
   useOnboarding,
 } from "@/contexts/onboarding-context";
 import { ThemeProvider, useThemeContext } from "@/contexts/theme-context";
+import { store } from "@/store";
+import { useAppDispatch } from "@/store/hooks";
+import { initApp } from "@/store/thunks/bootstrap";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -43,11 +46,13 @@ export const unstable_settings = {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
-        <OnboardingProvider>
-          <ThemedNavigationShell />
-        </OnboardingProvider>
-      </ThemeProvider>
+      <Provider store={store}>
+        <ThemeProvider>
+          <OnboardingProvider>
+            <ThemedNavigationShell />
+          </OnboardingProvider>
+        </ThemeProvider>
+      </Provider>
     </GestureHandlerRootView>
   );
 }
@@ -59,6 +64,14 @@ function ThemedNavigationShell(): React.ReactElement | null {
   const { complete: onboardingComplete, isReady: onboardingReady } =
     useOnboarding();
   const segments = useSegments();
+  const dispatch = useAppDispatch();
+
+  // Boot the data layer once: seeds, full fetch, notification self-heal, Watch.
+  useEffect(() => {
+    dispatch(initApp()).catch((error) => {
+      console.error("[store] initApp failed:", error);
+    });
+  }, [dispatch]);
 
   // Field Lab's hierarchy is sans + mono (Host Grotesk display/body, JetBrains Mono
   // for the signal layer: counts/status/kickers). Load both before the splash clears
@@ -119,21 +132,19 @@ function ThemedNavigationShell(): React.ReactElement | null {
 
   return (
     <NavThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-      <DatabaseProvider>
-        <ErrorBoundary>
-          {/* Header default is off; the list & calendar screens opt back in by
-              supplying their own `header` via <Stack.Screen> in-screen, so the
-              chrome is owned by the navigator (not laid out in the screen body)
-              while still reading screen-local, param-driven title/kicker. */}
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="note" options={{ presentation: "modal" }} />
-            <Stack.Screen name="edit" options={{ presentation: "modal" }} />
-          </Stack>
-        </ErrorBoundary>
-        <StatusBar style={isDark ? "light" : "dark"} />
-      </DatabaseProvider>
+      <ErrorBoundary>
+        {/* Header default is off; the list & calendar screens opt back in by
+            supplying their own `header` via <Stack.Screen> in-screen, so the
+            chrome is owned by the navigator (not laid out in the screen body)
+            while still reading screen-local, param-driven title/kicker. */}
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="onboarding" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="note" options={{ presentation: "modal" }} />
+          <Stack.Screen name="edit" options={{ presentation: "modal" }} />
+        </Stack>
+      </ErrorBoundary>
+      <StatusBar style={isDark ? "light" : "dark"} />
     </NavThemeProvider>
   );
 }

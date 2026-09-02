@@ -1,10 +1,5 @@
-import {
-  useFocusEffect,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -28,10 +23,11 @@ import { useDiary } from "@/hooks/use-diary";
  * lower edge instead of shoving it up — the header (close / save) and the
  * relate row stay clear of it by sitting above the body input.
  *
- * The note's content is passed in through navigation params — the caller's
- * store already holds it, and this route mounts its own `useDiary` instance
- * that loads asynchronously, so looking the note up again here would seed the
- * draft from an empty store. The modal commits on Save via `updateEntry`.
+ * The note's content is passed in through navigation params so the draft can be
+ * seeded synchronously at mount (the diary store already holds the row, but a
+ * lookup would flash the pre-save text until it resolves). The modal commits on
+ * Save — or on dismissal, via the autosave paths below — through `updateEntry`,
+ * which upserts the diary slice so every consumer re-renders the saved note.
  *
  * On the notes tab (`relatable`) the relate row lets the user move the note
  * while editing it. Opened from a project screen (`relatable=0`) the relate
@@ -39,12 +35,12 @@ import { useDiary } from "@/hooks/use-diary";
  * implied.
  *
  * Closing the modal autosaves: dismissing via the X, the native swipe-down, or
- * the back gesture commits the draft (and any relate change) without needing
- * the Save button — the Check button is an explicit save for the same write.
+ * the back gesture unmounts the screen, and a single cleanup writes the latest
+ * draft (and any relate change) through the diary store. The Check button is
+ * that same commit, expressed explicitly.
  */
 export default function NoteScreen(): React.ReactElement {
   const router = useRouter();
-  const navigation = useNavigation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { id, body, relatable, linkedProjectId, linkedEntryId } =
@@ -85,74 +81,48 @@ export default function NoteScreen(): React.ReactElement {
   });
   const [linkSheetOpen, setLinkSheetOpen] = useState(false);
 
-  // Live values for the blur-time autosave — the focus-effect cleanup captures
-  // the first render's draft otherwise.
+  // Live values for the unmount write below — a cleanup would capture the
+  // first render's values otherwise.
   const latestRef = useRef({ draft, selection });
   latestRef.current = { draft, selection };
-  // Set once a write has committed; the dismissal listener then skips so
-  // closing never writes twice.
-  const committedRef = useRef(false);
 
-  // Persist the latest draft + relate selection if anything changed. Marks
-  // committed so an idle open/close (or a double path) never touches the DB.
-  // Resolves when the write lands so callers can sequence on it.
-  const persist = useCallback((): Promise<void> => {
-    if (committedRef.current || !id) return Promise.resolve();
-    const { draft: latestDraft, selection: latestSelection } = latestRef.current;
-    const trimmed = latestDraft.trim();
-    if (!trimmed) return Promise.resolve();
-    const dirty =
-      trimmed !== (body ?? "") ||
-      (canRelate &&
-        ((latestSelection?.kind === "project" &&
-          latestSelection.id !== (linkedProjectId ?? "")) ||
-          (latestSelection?.kind === "idea" &&
-            latestSelection.id !== (linkedEntryId ?? "")) ||
-          (!latestSelection &&
-            Boolean(linkedProjectId || linkedEntryId))));
-    if (!dirty) return Promise.resolve();
-    committedRef.current = true;
-    return updateEntry(id, {
-      body: trimmed,
-      ...(canRelate
-        ? {
-            linkedEntryId:
-              latestSelection?.kind === "idea" ? latestSelection.id : null,
-            linkedProjectId:
-              latestSelection?.kind === "project"
-                ? latestSelection.id
-                : null,
-          }
-        : {}),
-    });
-  }, [id, body, canRelate, linkedProjectId, linkedEntryId, updateEntry]);
-
-  // Save when the screen is being removed — the X, the native swipe-down, and
-  // the back gesture all funnel through `beforeRemove`, which blocks dismissal
-  // until the write lands so the caller's refresh never reads stale data.
-  // Idempotent via committedRef: the explicit Check button writes first and
-  // then navigates, so this listener just replays the removal.
+  // Write once as the screen unmounts. Dismissing the modal (X, swipe-down,
+  // back) unmounts it, the thunk updates SQLite and the diary slice, and every
+  // consumer reading the slice re-renders the saved note — no refresh, no
+  // dismissal blocking, no double-write guards. Skips no-ops so an idle
+  // open/close never touches the DB.
   useEffect(() => {
-    if (!id) return;
-    return navigation.addListener("beforeRemove", (e) => {
-      e.preventDefault();
-      void persist().then(() => {
-        navigation.dispatch(e.data.action);
+    return () => {
+      if (!id) return;
+      const { draft: latestDraft, selection: latestSelection } =
+        latestRef.current;
+      const trimmed = latestDraft.trim();
+      if (!trimmed) return;
+      const unchangedLink =
+        !canRelate ||
+        (latestSelection === null
+          ? !linkedProjectId && !linkedEntryId
+          : latestSelection.kind === "project"
+            ? latestSelection.id === (linkedProjectId ?? "")
+            : latestSelection.id === (linkedEntryId ?? ""));
+      if (trimmed === (body ?? "") && unchangedLink) return;
+      void updateEntry(id, {
+        body: trimmed,
+        ...(canRelate
+          ? {
+              linkedEntryId:
+                latestSelection?.kind === "idea" ? latestSelection.id : null,
+              linkedProjectId:
+                latestSelection?.kind === "project"
+                  ? latestSelection.id
+                  : null,
+            }
+          : {}),
       });
-    });
-  }, [navigation, persist, id]);
-
-  // Blur-time autosave safety net: whatever dismissal path closes the sheet,
-  // the screen blurs as it's removed and this cleanup persists the latest
-  // draft. `beforeRemove` is the primary path; `persist` is idempotent
-  // (committedRef), so a close that reaches both writes at most once.
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        void persist();
-      };
-    }, [persist]),
-  );
+    };
+    // Params and store bindings are stable for the screen's lifetime.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!id) {
     return (
@@ -184,21 +154,10 @@ export default function NoteScreen(): React.ReactElement {
     : undefined;
 
   const handleSave = (): void => {
-    const trimmed = draft.trim();
-    if (!trimmed) return;
-    // Mark committed first so the blur cleanup (autosave) doesn't double-write
-    // as this explicit save navigates away.
-    committedRef.current = true;
-    void updateEntry(id, {
-      body: trimmed,
-      ...(canRelate
-        ? {
-            linkedEntryId: selection?.kind === "idea" ? selection.id : null,
-            linkedProjectId:
-              selection?.kind === "project" ? selection.id : null,
-          }
-        : {}),
-    }).then(() => router.back());
+    if (!draft.trim()) return;
+    // Closing triggers the single unmount write — this button is that same
+    // commit, expressed explicitly.
+    router.back();
   };
 
   const handleRelate = (next: LinkSelection): void => {

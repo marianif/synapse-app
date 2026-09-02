@@ -1,10 +1,5 @@
-import {
-  Stack,
-  useFocusEffect,
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
-import { useCallback, useState } from "react";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -243,20 +238,12 @@ export default function ListScreen(): React.ReactElement {
         ? "Ideas"
         : "Weekly Todos";
 
-  const { entries, updateEntryStatus, deleteEntry, fetchEntries } =
-    useDatabase();
+  const { entries, updateEntryStatus, deleteEntry } = useDatabase();
 
   // Incoming's persistent lenses. Session-local (resets on app restart) — a
   // glanceable view, not a saved preference. Only the Incoming lane shows these.
   const [typeFilter, setTypeFilter] = useState<ListTypeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<ListStatusFilter>("all");
-
-  useFocusEffect(
-    useCallback(() => {
-      // Incoming fetches every type; a lane fetches just its own.
-      fetchEntries(resolvedType ?? undefined);
-    }, [resolvedType, fetchEntries]),
-  );
 
   // ── Build sections ────────────────────────────────────────────────────────────
 

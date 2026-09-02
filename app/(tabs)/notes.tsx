@@ -67,7 +67,7 @@ export default function NotesScreen(): React.ReactElement {
   // only positions the bar visually and feeds it the measured tab bar height.
   const TAB_BAR_HEIGHT_FALLBACK = 8 + 52 + 20;
 
-  const { entries, addEntry, updateEntry, removeEntry, refresh } = useDiary();
+  const { entries, addEntry, updateEntry, removeEntry } = useDiary();
   // Board entries + projects — read-only, used to resolve linked titles for the
   // feed chip and to offer targets in the composer's link sheet. Notes writes
   // never touch these stores.
@@ -217,7 +217,6 @@ export default function NotesScreen(): React.ReactElement {
 
   useFocusEffect(
     useCallback(() => {
-      refresh();
       // While the notes tab is focused, the tab-bar pen key focuses THIS
       // composer instead of raising the neutral global dock — the notes tab
       // owns its own input, so the two capture bars never share the band.
@@ -228,7 +227,7 @@ export default function NotesScreen(): React.ReactElement {
         startVoice: () => composerRef.current?.startVoice(),
       });
       return unregister;
-    }, [refresh, cap]),
+    }, [cap]),
   );
 
   return (

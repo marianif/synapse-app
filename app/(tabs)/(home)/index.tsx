@@ -19,7 +19,6 @@ import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
-import { useDiary } from "@/hooks/use-diary";
 import { byRunway, daysUntil } from "@/lib/direct-when";
 import { horizonLabel } from "@/lib/horizons";
 
@@ -87,10 +86,7 @@ export default function HomeScreen(): React.ReactElement {
   // and by the tab-bar pen key (tap → text, long-press → voice). Consumed once below.
   const { capture } = useLocalSearchParams<{ capture?: string }>();
 
-  const { entries, projects, recurrenceCompletions, fetchEntries } =
-    useDatabase();
-
-  const { refresh: refreshDiary } = useDiary();
+  const { entries, projects, recurrenceCompletions } = useDatabase();
 
   // Anchor "now" once per mount so date-derived reads (calendar, greeting,
   // seasonal note) stay stable across renders — React Compiler won't memoize a
@@ -128,13 +124,6 @@ export default function HomeScreen(): React.ReactElement {
       armedFromLink.current = false;
     }
   }, [capture, cap, router]);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchEntries();
-      refreshDiary();
-    }, [fetchEntries, refreshDiary]),
-  );
 
   // The Field is the one surface where the capture affordance stays resting
   // and visible instead of appearing only on a pen-tap — it's the home screen,

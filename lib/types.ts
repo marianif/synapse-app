@@ -147,3 +147,37 @@ export interface RecurringInstance {
   /** true if this instance is completed or skipped */
   isDone: boolean;
 }
+
+// ─── Mutation input types ─────────────────────────────────────────────────────
+
+export interface CreateEntryInput {
+  title: string;
+  type: EntryType;
+  subtitle?: string;
+  inspiration?: string;
+  scheduledDate?: string;
+  scheduledTime?: string;
+  dueDate?: string;
+  dueTime?: string;
+  notes?: string;
+  recurrenceRule?: RecurrenceRule;
+  recurrenceEndDate?: string;
+  projectId?: string;
+  /** Horizon window for deadlines; pass `dueDate` = window end alongside it. */
+  dueRange?: DueRange;
+}
+
+export interface UpdateEntryInput {
+  title?: string;
+  subtitle?: string | null;
+  inspiration?: string | null;
+  scheduledDate?: string | null;
+  scheduledTime?: string | null;
+  dueDate?: string | null;
+  dueTime?: string | null;
+  notes?: string | null;
+  recurrenceRule?: RecurrenceRule | null;
+  recurrenceEndDate?: string | null;
+  projectId?: string | null;
+  dueRange?: DueRange | null;
+}

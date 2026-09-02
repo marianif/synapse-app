@@ -27,6 +27,7 @@ import {
 } from "@/constants/theme";
 import { useThemeContext } from "@/contexts/theme-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
+import { useDiary } from "@/hooks/use-diary";
 import { clearAllData, getDb, seedDefaultProjectsOnce } from "@/lib/database";
 import { SCENARIOS, seedScenario, type ScenarioKey } from "@/lib/dev-seed";
 
@@ -34,9 +35,23 @@ export default function SettingsScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
   const { resolvedScheme, setPreference } = useThemeContext();
-  const { fetchEntries, fetchProjects } = useDatabase();
+  const {
+    fetchEntries,
+    fetchProjects,
+    refetchTasks,
+    refetchRecurrenceCompletions,
+  } = useDatabase();
+  const { refresh: refreshDiary } = useDiary();
   const ideaAccent = useEntryKicker("idea");
   const deadlineAccent = useEntryKicker("deadline");
+
+  const refetchAll = async (): Promise<void> => {
+    await fetchEntries();
+    await fetchProjects();
+    await refetchTasks();
+    await refetchRecurrenceCompletions();
+    await refreshDiary();
+  };
 
   const handleClearDatabase = (): void => {
     Alert.alert(
@@ -51,8 +66,7 @@ export default function SettingsScreen(): React.ReactElement {
             try {
               await clearAllData();
               await seedDefaultProjectsOnce();
-              await fetchEntries();
-              await fetchProjects();
+              await refetchAll();
             } catch (error) {
               console.error("[Settings] clearAllData failed:", error);
               Alert.alert("Couldn't clear the database.");
@@ -74,8 +88,7 @@ export default function SettingsScreen(): React.ReactElement {
           onPress: async () => {
             try {
               await seedScenario(getDb(), key);
-              await fetchEntries();
-              await fetchProjects();
+              await refetchAll();
             } catch (error) {
               console.error("[Settings] seedScenario failed:", error);
               Alert.alert("Couldn't seed the database.");

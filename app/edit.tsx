@@ -310,7 +310,6 @@ export default function EditScreen(): React.ReactElement {
     updateEntryStatus,
     deleteEntry,
     fetchEntries,
-    fetchProjects,
   } = useDatabase();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -324,10 +323,12 @@ export default function EditScreen(): React.ReactElement {
 
   const entry = entries.find((item) => item.id === id);
 
+  // The entry already lives in the store — the caller navigated here from a row
+// that reads it, and every write flows back through the slice. Fetch only as a
+// fallback so the loading gate can never hang on a deep-linked id.
   useEffect(() => {
-    void fetchEntries();
-    void fetchProjects();
-  }, [fetchEntries, fetchProjects]);
+    if (!entry) void fetchEntries();
+  }, [entry, fetchEntries]);
 
   useEffect(() => {
     if (entry) setDraft(draftFromEntry(entry));

@@ -28,27 +28,18 @@ export default function AgendaScreen(): React.ReactElement {
   const { colors } = useTheme();
   const cap = useGlobalCapture();
 
-  const {
-    entries,
-    tasks,
-    projects,
-    fetchEntries,
-  } = useDatabase();
-  const { entries: notes, refresh: refreshDiary } = useDiary();
+  const { entries, tasks, projects } = useDatabase();
+  const { entries: notes } = useDiary();
 
   // Anchor "now" once per mount: every dispatch's age is measured from it, so a
   // fresh Date.now() per render would make the feed re-score on every keystroke
-  // elsewhere in the tree. Re-anchored on focus below.
+  // elsewhere in the tree. Re-anchored on focus so a day passing is noticed.
   const [now, setNow] = useState(() => Date.now());
 
   useFocusEffect(
     useCallback(() => {
-      // Re-read the board and re-clock the voice on every entry into the tab —
-      // a day passing is exactly the kind of thing this screen exists to notice.
       setNow(Date.now());
-      fetchEntries();
-      refreshDiary();
-    }, [fetchEntries, refreshDiary]),
+    }, []),
   );
 
   const dispatches = useMemo(

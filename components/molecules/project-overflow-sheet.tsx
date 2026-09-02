@@ -1,16 +1,15 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  Dimensions,
   Modal,
   Pressable,
   StyleSheet,
   TextInput,
   View,
 } from "react-native";
-import { EmojiKeyboard } from "rn-emoji-keyboard";
 
 import { ThemedText } from "@/components/atoms/themed-text";
+import { EmojiPicker } from "@/components/molecules/emoji-picker";
 import { tokens, useTheme } from "@/constants/theme";
 
 import type { DbProject } from "@/lib/types";
@@ -27,9 +26,10 @@ type Mode = "menu" | "rename" | "emoji";
  * Three modes inside one sheet:
  *   - menu — the default landing: Rename · Change emoji · Archive · Delete
  *   - rename — TextInput inline, Save commits via onRename
- *   - emoji — full in-app emoji picker (`rn-emoji-keyboard`) with the whole
- *     set, categorized, searchable. Landed on emojis by default — no system
- *     keyboard toggling, since iOS can't be asked to open its emoji keyboard.
+ *   - emoji — the in-app emoji picker (custom, on `unicode-emoji-json`) with
+ *     the whole set, categorized, searchable. Landed on emojis by default —
+ *     no system keyboard toggling, since iOS can't be asked to open its emoji
+ *     keyboard.
  *
  * Switching modes never closes the sheet — the user can rename, then change
  * the emoji, then archive, all without dismissing. Tapping outside closes.
@@ -224,63 +224,18 @@ export function ProjectOverflowSheet({
           ) : null}
 
           {mode === "emoji" ? (
-            <View>
-              <View style={styles.emojiPickerWrap}>
-                <EmojiKeyboard
-                  onEmojiSelected={({ emoji }) => {
-                    onChangeEmoji(emoji);
-                    setMode("menu");
-                  }}
-                  enableRecentlyUsed
-                  enableSearchBar
-                  categoryPosition="floating"
-                  theme={{
-                    container: colors.surface,
-                    header: colors.inkMuted,
-                    skinTonesContainer: colors.surfaceSubtle,
-                    category: {
-                      icon: colors.inkMuted,
-                      iconActive: colors.ink,
-                      container: colors.surfaceSubtle,
-                      containerActive: colors.surface,
-                    },
-                    search: {
-                      background: colors.surfaceSubtle,
-                      text: colors.ink,
-                      placeholder: colors.inkMuted,
-                      icon: colors.inkMuted,
-                    },
-                    emoji: {
-                      selected: colors.surfaceSubtle,
-                    },
-                  }}
-                  styles={{
-                    container: {
-                      borderRadius: tokens.radius.md,
-                      shadowColor: "transparent",
-                      shadowOpacity: 0,
-                      elevation: 0,
-                    },
-                  }}
-                />
-              </View>
-              <View style={styles.pickerActions}>
-                {project.emoji ? (
-                  <Pressable
-                    onPress={() => {
-                      onChangeEmoji(null);
-                      setMode("menu");
-                    }}
-                    style={({ pressed }) => [
-                      styles.renameCancel,
-                      pressed && styles.pressed,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel="Clear project emoji"
-                  ></Pressable>
-                ) : null}
-              </View>
-            </View>
+            <EmojiPicker
+              selected={project.emoji}
+              onSelect={(next) => {
+                onChangeEmoji(next);
+                setMode("menu");
+              }}
+              onClear={() => {
+                onChangeEmoji(null);
+                setMode("menu");
+              }}
+              onCancel={() => setMode("menu")}
+            />
           ) : null}
         </Pressable>
       </Pressable>
@@ -398,18 +353,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: tokens.radius.md,
-  },
-
-  // Emoji mode
-  emojiPickerWrap: {
-    height: Dimensions.get("window").height * 0.7,
-    paddingHorizontal: tokens.space.xs,
-  },
-  pickerActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: tokens.space.xl,
-    paddingTop: tokens.space.md,
   },
 
   pressed: { opacity: 0.7 },

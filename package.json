@@ -30,6 +30,7 @@
     "@react-navigation/native": "^7.1.8",
     "@reduxjs/toolkit": "^2.12.0",
     "dayjs": "^1.11.20",
+    "emojilib": "^4.0.3",
     "expo": "^55.0.11",
     "expo-constants": "~55.0.11",
     "expo-dev-client": "~55.0.22",
@@ -58,7 +59,7 @@
     "react-redux": "^9.3.0",
     "reicon-mcp": "^1.1.101",
     "reicon-react-native": "^1.0.0",
-    "rn-emoji-keyboard": "^1.7.0",
+    "unicode-emoji-json": "^0.9.0",
     "watch-connectivity": "./modules/watch-connectivity",
     "zustand": "^5.0.14"
   },

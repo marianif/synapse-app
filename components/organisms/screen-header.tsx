@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -8,6 +7,7 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { entryKicker, tokens, useTheme } from "@/constants/theme";
 
 import type { EntryType } from "@/lib/types";
+import { IconSymbol } from "../ui/icon-symbol";
 
 /** Types shown as the small cluster in the all-types "Incoming" header. */
 const INCOMING_CLUSTER: EntryType[] = ["deadline", "todo", "idea"];
@@ -41,6 +41,13 @@ interface ScreenHeaderProps {
    * mirroring the back button on the left so the row stays balanced.
    */
   headerRight?: React.ReactNode;
+  /**
+   * Optional custom node that replaces the title text — e.g. a tap target
+   * that swaps the label into an editable field. Lets a screen own the title
+   * entirely (hit target, edit state) while the header keeps its layout.
+   * The mono `kicker` below is unaffected.
+   */
+  titleSlot?: React.ReactNode;
 }
 
 /**
@@ -62,6 +69,7 @@ export function ScreenHeader({
   onBack,
   inset = false,
   headerRight,
+  titleSlot,
 }: ScreenHeaderProps): React.ReactElement {
   const { colors, scheme } = useTheme();
   const safeArea = useSafeAreaInsets();
@@ -85,11 +93,7 @@ export function ScreenHeader({
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <MaterialCommunityIcons
-            name="chevron-left"
-            size={28}
-            color={colors.ink}
-          />
+          <IconSymbol name="ArrowLeft2" size={24} color={colors.ink} />
         </Pressable>
       )}
 
@@ -109,9 +113,11 @@ export function ScreenHeader({
           )}
         </View>
         <View style={styles.titleBlock}>
-          <ThemedText type="headline" numberOfLines={1} style={styles.title}>
-            {title}
-          </ThemedText>
+          {titleSlot ?? (
+            <ThemedText type="headline" numberOfLines={1} style={styles.title}>
+              {title}
+            </ThemedText>
+          )}
           {kicker ? (
             <ThemedText
               type="micro"

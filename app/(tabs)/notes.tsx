@@ -3,11 +3,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
+  type LayoutChangeEvent,
 } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeOut,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import {
   DiaryFilterBar,
@@ -90,6 +98,67 @@ export default function NotesScreen(): React.ReactElement {
   // the backdrop scrim so its surface tone doesn't fuse with the feed cards
   // scrolling behind it once it's the thing being acted on.
   const [composerActive, setComposerActive] = useState(false);
+
+  // ─── Composer peek: hide-on-down / reveal-on-up ─────────────────────────────
+  // The composer rests above the tab bar permanently. Once the user scrolls
+  // down into the feed it slides out of the band (Safari-style) to hand content
+  // the vertical space back, and the first upward scroll — or landing near the
+  // top — brings it back. It is never hidden mid-use: while the composer is
+  // focused or recording (composerActive) the bar stays put. Scrolls are read
+  // on the UI thread so the slide stays in sync with the feed, never janking.
+  const HIDE_AT = 32; // px of downward scroll before the bar yields
+  const composerHidden = useSharedValue(false);
+  const composerTranslate = useSharedValue(0);
+  const composerHideDistance = useSharedValue(
+    tokens.size.dockBar + tokens.space.lg,
+  );
+  const composerActiveFlag = useSharedValue(false);
+  const lastScrollY = useSharedValue(0);
+
+  const composerScrollHandler = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      const y = e.contentOffset.y;
+      const dy = y - lastScrollY.value;
+      lastScrollY.value = y;
+      if (composerActiveFlag.value) return;
+      if (!composerHidden.value && y > HIDE_AT && dy > 1) {
+        composerHidden.value = true;
+        composerTranslate.value = withTiming(composerHideDistance.value, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.inOut(Easing.cubic),
+        });
+      } else if (composerHidden.value && (y <= HIDE_AT || dy < -1)) {
+        composerHidden.value = false;
+        composerTranslate.value = withTiming(0, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.inOut(Easing.cubic),
+        });
+      }
+    },
+  });
+
+  const composerBarStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: composerTranslate.value }],
+  }));
+
+  // The bar slides down by its own height + the gap it rests at — enough for it
+  // to exit the tab slot entirely and disappear behind the tab bar's top edge.
+  const handleComposerLayout = (e: LayoutChangeEvent): void => {
+    composerHideDistance.value = e.nativeEvent.layout.height + tokens.space.lg;
+  };
+
+  // Mirror composer activity onto the UI thread so the scroll worklet can skip
+  // hiding, and force the bar back into view when it becomes the thing being
+  // acted on — never hide an instrument mid-use.
+  useEffect(() => {
+    composerActiveFlag.value = composerActive;
+    if (!composerActive) return;
+    composerHidden.value = false;
+    composerTranslate.value = withTiming(0, {
+      duration: tokens.motion.duration.fast,
+      easing: Easing.inOut(Easing.cubic),
+    });
+  }, [composerActive, composerActiveFlag, composerHidden, composerTranslate]);
 
   const ideaTitles = useMemo(() => {
     const map: Record<string, string> = {};
@@ -232,11 +301,13 @@ export default function NotesScreen(): React.ReactElement {
 
   return (
     <View style={styles.flex}>
-      <ScrollView
+      <Animated.ScrollView
         style={styles.flex}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        scrollEventThrottle={16}
+        onScroll={composerScrollHandler}
       >
         <DiaryFilterBar
           macro={macro}
@@ -272,7 +343,7 @@ export default function NotesScreen(): React.ReactElement {
           onDelete={removeEntry}
         />
         <View style={styles.bottomSpacer} />
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Backdrop scrim — only while the composer is actively lifted (focused
           or recording). The bar now rides the clay slab so it no longer fuses
@@ -297,7 +368,8 @@ export default function NotesScreen(): React.ReactElement {
           it rides up with the keyboard (NotesComposer handles the lift to match
           CaptureDock). Rests `tokens.space.lg` above the tab bar. */}
       <Animated.View
-        style={[styles.composerBar, { bottom: tokens.space.lg }]}
+        onLayout={handleComposerLayout}
+        style={[styles.composerBar, composerBarStyle, { bottom: tokens.space.lg }]}
       >
         <NotesComposer
           ref={composerRef}

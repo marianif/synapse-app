@@ -650,11 +650,12 @@ export default function EditScreen(): React.ReactElement {
                   onChangeText={(subtitle) =>
                     patchDraft(setDraft, { subtitle })
                   }
-                  placeholder="One line of context, if it needs one"
+                  placeholder="Enter description, if it needs one"
                   placeholderTextColor={colors.inkMuted}
                   selectionColor={accent}
                   style={[styles.subtitleInput, { color: colors.inkMuted }]}
                   accessibilityLabel="Entry subtitle"
+                  multiline
                 />
               </View>
 

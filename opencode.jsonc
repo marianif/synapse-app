@@ -22,7 +22,7 @@
         "argent",
         "mcp"
       ],
-      "enabled": true
+      "enabled": false
     }
   },
   "plugin": [

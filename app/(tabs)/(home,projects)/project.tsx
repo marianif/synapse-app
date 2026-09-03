@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
 } from "react-native";
 import Animated, {
@@ -24,8 +25,8 @@ import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DiaryNote } from "@/components/molecules/diary-note";
 import { DirectPager } from "@/components/molecules/direct-pager";
 import { DirectRow } from "@/components/molecules/direct-row";
+import { EmojiPickerSheet } from "@/components/molecules/emoji-picker-sheet";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
-import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sheet";
 import { ProjectStarters } from "@/components/molecules/project-starters";
 import {
   CaptureBackdrop,
@@ -93,7 +94,6 @@ export default function ProjectScreen(): React.ReactElement {
     updateEntryStatus,
     deleteEntry,
     updateProject,
-    deleteProject,
   } = useDatabase();
 
   const {
@@ -104,30 +104,50 @@ export default function ProjectScreen(): React.ReactElement {
 
   const project = projects.find((p) => p.id === id);
 
-  const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteProject });
   const entryDeleteConfirm = useConfirm({
     confirmKey: ConfirmKey.deleteEntry,
   });
   const [spinePage, setSpinePage] = useState(0);
 
-  // Overflow sheet — every tier-3 verb (rename, change emoji, archive, delete)
-  // lives here so the project surface itself can stay a working zone. Opens
-  // from ScreenHeader's `··` button on the "menu" pane; the hero emoji opens
-  // it straight on the "emoji" pane so picking stays a single tap.
-  const [overflowOpen, setOverflowOpen] = useState(false);
-  const [overflowMode, setOverflowMode] = useState<"menu" | "emoji">("menu");
-  const openOverflow = (next: "menu" | "emoji"): void => {
-    setOverflowMode(next);
-    setOverflowOpen(true);
-  };
+  // Emoji sheet — the project's identity glyph. Tapped from the header, opens
+  // the in-app picker straight on the emoji grid so picking stays a single tap.
+  const [emojiSheetOpen, setEmojiSheetOpen] = useState(false);
 
-  const requestDelete = (): void => {
-    if (!project) return;
-    deleteConfirm.request(() => {
-      deleteProject(project.id)
-        .then(() => router.back())
-        .catch((err) => console.error("Failed to delete project:", err));
+  // Rename — the header title IS the field: one always-mounted TextInput, so
+  // toggling edit mode never remounts or swaps the title for an input (which
+  // flickers). Idle it renders `editable={false}` — the same headline type
+  // step, no caret — and the tap enters edit, which focuses and selects the
+  // text so typing replaces it. Autosave: the trimmed title commits on the
+  // return key or on blur (keyboard dismiss); empty or unchanged is a no-op.
+  const [renaming, setRenaming] = useState(false);
+  const [renameDraft, setRenameDraft] = useState("");
+  const renameInputRef = useRef<TextInput | null>(null);
+  useEffect(() => {
+    if (!renaming) return;
+    // The input flips from editable=false to true on this same commit; a focus
+    // call in the effect races the native prop application, so iOS can swallow
+    // the keyboard request on the first tap. Defer to the next frame so the
+    // field is interactive when the focus lands.
+    const frame = requestAnimationFrame(() => {
+      renameInputRef.current?.focus();
     });
+    return () => cancelAnimationFrame(frame);
+  }, [renaming]);
+  const startRename = (): void => {
+    setRenameDraft(project?.title ?? "");
+    setRenaming(true);
+  };
+  const commitRename = (): void => {
+    if (!project || !renaming) return;
+    const trimmed = renameDraft.trim();
+    if (trimmed && trimmed !== project.title) {
+      void updateProject(project.id, { title: trimmed }).catch((err) =>
+        console.error("Failed to rename project:", err),
+      );
+    }
+    setRenaming(false);
+    setRenameDraft("");
+    Keyboard.dismiss();
   };
 
   const { spine, ideas, origin, notes, presentTypes } = useMemo(() => {
@@ -245,6 +265,9 @@ export default function ProjectScreen(): React.ReactElement {
   useEffect(() => {
     if (Platform.OS !== "ios") return;
     const showSub = Keyboard.addListener("keyboardWillShow", (e) => {
+      // While renaming in the header, the keyboard belongs to the title field,
+      // not the dock — never lift the pinned composer for it.
+      if (renaming) return;
       const lift = Math.max(0, e.endCoordinates.height - restOffset);
       keyboardLift.value = withTiming(lift, {
         duration: e.duration || 220,
@@ -261,7 +284,7 @@ export default function ProjectScreen(): React.ReactElement {
       showSub.remove();
       hideSub.remove();
     };
-  }, [keyboardLift, restOffset]);
+  }, [keyboardLift, restOffset, renaming]);
 
   const dockLiftStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: -keyboardLift.value * 1.05 }],
@@ -431,23 +454,10 @@ export default function ProjectScreen(): React.ReactElement {
     });
   };
 
-  const handleRename = (next: string): void => {
-    if (!project) return;
-    void updateProject(project.id, { title: next }).catch((err) =>
-      console.error("Failed to rename project:", err),
-    );
-  };
   const handleChangeEmoji = (next: string | null): void => {
     if (!project) return;
     void updateProject(project.id, { emoji: next }).catch((err) =>
       console.error("Failed to update project emoji:", err),
-    );
-  };
-  const handleToggleArchive = (): void => {
-    if (!project) return;
-    const next = project.status === "archived" ? "active" : "archived";
-    void updateProject(project.id, { status: next }).catch((err) =>
-      console.error("Failed to archive project:", err),
     );
   };
 
@@ -486,10 +496,12 @@ export default function ProjectScreen(): React.ReactElement {
           header: () => (
             <ScreenHeader
               title={project.title}
-              kicker={archived ? "ARCHIVED PROJECT" : "PROJECT"}
               glyph={
                 <Pressable
-                  onPress={() => openOverflow("emoji")}
+                  onPress={() => {
+                    commitRename();
+                    setEmojiSheetOpen(true);
+                  }}
                   hitSlop={8}
                   accessibilityRole="button"
                   accessibilityLabel={
@@ -511,18 +523,51 @@ export default function ProjectScreen(): React.ReactElement {
                   )}
                 </Pressable>
               }
-              onBack={() => router.back()}
-              headerRight={
+              titleSlot={
                 <Pressable
-                  onPress={() => openOverflow("menu")}
-                  hitSlop={12}
-                  accessibilityRole="button"
-                  accessibilityLabel="Project actions"
-                  style={styles.overflowBtn}
+                  onPress={startRename}
+                  style={styles.titlePressable}
+                  {...(renaming
+                    ? {}
+                    : {
+                        accessibilityRole: "button",
+                        accessibilityLabel: "Rename project",
+                        accessibilityHint: "Edits the project title",
+                      })}
                 >
-                  <IconSymbol name="MoreH" size={24} color={colors.ink} />
+                  <TextInput
+                    ref={renameInputRef}
+                    value={renaming ? renameDraft : project.title}
+                    onChangeText={setRenameDraft}
+                    editable={renaming}
+                    selectTextOnFocus
+                    returnKeyType="done"
+                    onSubmitEditing={commitRename}
+                    onBlur={commitRename}
+                    pointerEvents={renaming ? "auto" : "none"}
+                    placeholder="Project name"
+                    placeholderTextColor={colors.inkMuted}
+                    accessibilityLabel="Project name"
+                    accessibilityElementsHidden={!renaming}
+                    importantForAccessibility={
+                      renaming ? "auto" : "no-hide-descendants"
+                    }
+                    selectionColor={colors.accent.clay}
+                    style={[styles.renameInput, { color: colors.ink }]}
+                  />
+                  {!renaming ? (
+                    <IconSymbol
+                      name="Edit22"
+                      size={18}
+                      color={colors.inkMuted}
+                    />
+                  ) : null}
                 </Pressable>
               }
+              onBack={() => {
+                if (renaming) commitRename();
+                router.back();
+              }}
             />
           ),
         }}
@@ -704,15 +749,12 @@ export default function ProjectScreen(): React.ReactElement {
           </View>
         ) : null}
       </ScrollView>
-      <ProjectOverflowSheet
-        visible={overflowOpen}
-        project={project}
-        initialMode={overflowMode}
-        onClose={() => setOverflowOpen(false)}
-        onRename={handleRename}
-        onChangeEmoji={handleChangeEmoji}
-        onToggleArchive={handleToggleArchive}
-        onDelete={requestDelete}
+      <EmojiPickerSheet
+        visible={emojiSheetOpen}
+        selected={project.emoji}
+        onSelect={handleChangeEmoji}
+        onClear={() => handleChangeEmoji(null)}
+        onClose={() => setEmojiSheetOpen(false)}
       />
       <IdeaActionSheet
         visible={actionIdea !== null}
@@ -721,15 +763,6 @@ export default function ProjectScreen(): React.ReactElement {
         onMakeTodo={() => actionIdea && handleMakeTodoFromIdea(actionIdea)}
         onUnfile={() => actionIdea && handleUnfileIdea(actionIdea)}
         onOpen={() => actionIdea && handleOpenIdea(actionIdea)}
-      />
-      <ConfirmSheet
-        visible={deleteConfirm.visible}
-        kicker="DELETE PROJECT"
-        message="Its todos and ideas stay on the board, just unfiled."
-        dontAsk={deleteConfirm.dontAsk}
-        onToggleDontAsk={deleteConfirm.toggleDontAsk}
-        onConfirm={deleteConfirm.confirm}
-        onCancel={deleteConfirm.cancel}
       />
       <ConfirmSheet
         visible={entryDeleteConfirm.visible}
@@ -843,6 +876,28 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
 
+  // Rename — the title row doubles as the tap target. The pencil trails the
+  // headline so the edit affordance is discoverable without a persistent
+  // chrome button. The input is always mounted; idle it sits at the same
+  // headline step with no caret, editing it becomes the live field.
+  titlePressable: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.md,
+    alignSelf: "flex-start",
+    maxWidth: "100%",
+    minHeight: 40,
+  },
+  renameInput: {
+    flexShrink: 1,
+    minHeight: 40,
+    paddingVertical: 0,
+    fontSize: tokens.type.title.size,
+    lineHeight: tokens.type.title.lineHeight,
+    letterSpacing: tokens.type.title.tracking,
+    fontFamily: tokens.type.fontInter.bold,
+  },
+
   // Provenance band: own breathing room, reads as a margin note above the
   // content rather than as a row in it.
   originBand: {
@@ -889,14 +944,6 @@ const styles = StyleSheet.create({
     letterSpacing: tokens.type.micro.tracking,
     marginTop: tokens.space.sm,
     marginBottom: tokens.space.xs,
-  },
-
-  // Header `··` overflow button — matches the back button's hit area.
-  overflowBtn: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
   },
 
   empty: {

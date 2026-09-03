@@ -1,19 +1,23 @@
 import * as Haptics from "expo-haptics";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   Pressable,
-  ScrollView,
   StyleSheet,
   TextInput,
   View,
+  type LayoutChangeEvent,
 } from "react-native";
 import Animated, {
   Easing,
   FadeIn,
   FadeOut,
   LinearTransition,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -121,6 +125,66 @@ export default function ProjectsScreen(): React.ReactElement {
   // Whether the AddProjectBar is actively up — drives the backdrop scrim so
   // the clay slab doesn't fuse with the project rows scrolling behind it.
   const [composerActive, setComposerActive] = useState(false);
+
+  // ─── Composer peek: hide-on-down / reveal-on-up ─────────────────────────────
+  // The add-project bar rests above the tab bar permanently, same as the Notes
+  // composer. Once the user scrolls down the shelf it slides out of the band
+  // (Safari-style) to hand content the vertical space back, and the first
+  // upward scroll — or landing near the top — brings it back. It is never
+  // hidden mid-use: while the bar is focused (composerActive) it stays put.
+  const HIDE_AT = 32; // px of downward scroll before the bar yields
+  const dockHidden = useSharedValue(false);
+  const dockTranslate = useSharedValue(0);
+  const dockHideDistance = useSharedValue(
+    tokens.size.dockBar + tokens.space.lg,
+  );
+  const dockActiveFlag = useSharedValue(false);
+  const lastScrollY = useSharedValue(0);
+
+  const shelfScrollHandler = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      const y = e.contentOffset.y;
+      const dy = y - lastScrollY.value;
+      lastScrollY.value = y;
+      if (dockActiveFlag.value) return;
+      if (!dockHidden.value && y > HIDE_AT && dy > 1) {
+        dockHidden.value = true;
+        dockTranslate.value = withTiming(dockHideDistance.value, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.inOut(Easing.cubic),
+        });
+      } else if (dockHidden.value && (y <= HIDE_AT || dy < -1)) {
+        dockHidden.value = false;
+        dockTranslate.value = withTiming(0, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.inOut(Easing.cubic),
+        });
+      }
+    },
+  });
+
+  const dockBarStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: dockTranslate.value }],
+  }));
+
+  // The bar slides down by its own height + the gap it rests at — enough for it
+  // to exit the tab slot entirely and disappear behind the tab bar's top edge.
+  const handleDockLayout = (e: LayoutChangeEvent): void => {
+    dockHideDistance.value = e.nativeEvent.layout.height + tokens.space.lg;
+  };
+
+  // Mirror activity onto the UI thread so the scroll worklet can skip hiding,
+  // and force the bar back into view when it becomes the thing being acted on —
+  // never hide an instrument mid-use.
+  useEffect(() => {
+    dockActiveFlag.value = composerActive;
+    if (!composerActive) return;
+    dockHidden.value = false;
+    dockTranslate.value = withTiming(0, {
+      duration: tokens.motion.duration.fast,
+      easing: Easing.inOut(Easing.cubic),
+    });
+  }, [composerActive, dockActiveFlag, dockHidden, dockTranslate]);
 
   const [sort, setSort] = useUiPreference<SortMode>(
     "projects.sort",
@@ -246,11 +310,13 @@ export default function ProjectsScreen(): React.ReactElement {
         }}
       />
 
-      <ScrollView
+      <Animated.ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={shelfScrollHandler}
       >
         {projects.length === 0 ? (
           // Fresh install: the inception band IS the screen. No sort chip, no
@@ -440,7 +506,7 @@ export default function ProjectsScreen(): React.ReactElement {
             ) : null}
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Backdrop scrim — only while AddProjectBar is up. The bar rides the
           clay slab so it no longer fuses with the shelf, but the scrim still
@@ -465,7 +531,10 @@ export default function ProjectsScreen(): React.ReactElement {
           fresh install, where the inception band's CreateRow owns the same
           job. */}
       {projects.length > 0 ? (
-        <View style={styles.composerDock}>
+        <Animated.View
+          onLayout={handleDockLayout}
+          style={[styles.composerDock, dockBarStyle]}
+        >
           <AddProjectBar
             ref={addProjectBarRef}
             onCreateProject={handleCreateProject}
@@ -473,7 +542,7 @@ export default function ProjectsScreen(): React.ReactElement {
             tabBarHeight={cap.tabBarHeight || TAB_BAR_HEIGHT_FALLBACK}
             onActivityChange={setComposerActive}
           />
-        </View>
+        </Animated.View>
       ) : null}
     </View>
   );
@@ -689,7 +758,7 @@ function relativeStamp(ms: number): string {
 // ─── Styles ─────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
+  screen: { flex: 1, paddingBottom: tokens.space.xxxl },
   scroll: { flex: 1 },
   content: {
     padding: tokens.space.lg,

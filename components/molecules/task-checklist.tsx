@@ -15,10 +15,13 @@ import { useDatabase } from "@/hooks/use-database/use-database";
 import { ConfirmKey } from "@/lib/settings";
 
 interface TaskChecklistProps {
-  /** The owning todo or deadline. Ideas never render this — see `isTaskable`. */
+  /** The owning entry — any type (todo, deadline, idea) can own a checklist. */
   entryId: string;
   /** The parent's type shade; the open checkbox and the counter borrow it. */
   accent: string;
+  /** Kicker label for the checklist — "Tasks" for todos/deadlines, "Steps"
+   *  for ideas (a checklist on an idea is how it gets built, not chores). */
+  label?: string;
   /** Render progress and task labels without any mutation controls. */
   readOnly?: boolean;
   /** Keep completion toggles active while hiding task editing controls. */
@@ -50,6 +53,7 @@ interface TaskChecklistProps {
 export function TaskChecklist({
   entryId,
   accent,
+  label = "Tasks",
   readOnly = false,
   toggleOnly = false,
   swipeController,
@@ -134,7 +138,7 @@ export function TaskChecklist({
       <View style={styles.head} onTouchStart={closeOpenRow}>
         <View style={styles.headLeft}>
           <ThemedText type="micro" muted style={styles.kicker}>
-            Tasks
+            {label}
           </ThemedText>
           {mine.length > 0 && !readOnly ? (
               <Pressable
@@ -146,7 +150,9 @@ export function TaskChecklist({
                   pressed && styles.pressed,
                 ]}
                 accessibilityRole="button"
-                accessibilityLabel={editing ? "Done editing tasks" : "Edit tasks"}
+                accessibilityLabel={
+                  editing ? `Done editing ${label.toLowerCase()}` : `Edit ${label.toLowerCase()}`
+                }
               >
                 <IconSymbol
                   name={editing ? "Check" : "Edit2"}
@@ -224,7 +230,7 @@ export function TaskChecklist({
                 });
               }}
               confirmKey={ConfirmKey.deleteTask}
-              confirmKicker="DELETE TASK"
+              confirmKicker={`DELETE ${label.toUpperCase()}`}
               confirmMessage="Removes this line from the checklist."
               onSwipeOpen={handleSwipeOpen}
             >
@@ -246,12 +252,12 @@ export function TaskChecklist({
             onFocus={closeOpenRow}
             onBlur={handleComposerBlur}
             onSubmitEditing={handleAdd}
-            placeholder={mine.length ? "Add another" : "Add a task"}
+            placeholder={mine.length ? "Add another" : `Add a ${label.toLowerCase()}`}
             placeholderTextColor={colors.inkMuted}
             submitBehavior="submit"
             returnKeyType="next"
             style={[styles.input, { color: colors.ink }]}
-            accessibilityLabel="Add a task"
+            accessibilityLabel={`Add a ${label.toLowerCase()}`}
           />
         </View>
       ) : null}

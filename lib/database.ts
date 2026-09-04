@@ -581,9 +581,9 @@ export async function getTasks(): Promise<DbTask[]> {
 }
 
 /**
- * Append a task to an entry's checklist. Rejects ideas: an idea that needs a
- * checklist is a project, and `promoteIdeaToProject` is the path there. The
- * rule can't be a CHECK constraint (it spans tables), so it lives here.
+ * Append a task to an entry's checklist. Every entry type — todo, deadline,
+ * and idea — can own subtasks. The type guard can't be a CHECK constraint (it
+ * spans tables), so it lives here.
  *
  * Position is `max(position) + 1` within the parent, computed in the same
  * transaction as the insert so two rapid adds can't collide on one slot.
@@ -599,9 +599,7 @@ export async function insertTask(
   );
   if (!parent) throw new Error(`Entry ${entryId} not found`);
   if (!isTaskable(parent.type as EntryType)) {
-    throw new Error(
-      `Cannot add a task to a '${parent.type}'. Promote it to a project instead.`,
-    );
+    throw new Error(`Cannot add a task to a '${parent.type}'.`);
   }
 
   const id = generateId();

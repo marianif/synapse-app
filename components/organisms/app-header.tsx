@@ -21,7 +21,7 @@ export function AppHeader({
   return (
     <View style={[styles.bar, { backgroundColor: colors.paper }]}>
       <View style={styles.brand}>
-        <BrandMark size={24} />
+        <BrandMark size={38} />
 
         <ThemedText type="headline" style={styles.wordmark}>
           synapse

@@ -66,8 +66,7 @@ export function DirectRow({
   const typeShade = useEntryKicker(type);
   const whenColor = !done && isWhenCharged(days) ? typeShade : colors.inkMuted;
 
-  // Subtask rollup for this row. Todos and deadlines are the only taskable
-  // types; ideas always roll up to zero, so the meta stays hidden for them.
+  // Subtask rollup for this row — every entry type can own a checklist.
   // The count phrase sits on the title line; the completion thread + percentage
   // live on the row's bottom edge.
   const subtasks = tasks.filter((t) => t.entry_id === entry.id);

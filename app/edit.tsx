@@ -54,7 +54,6 @@ import type {
 type Draft = {
   title: string;
   subtitle: string;
-  inspiration: string;
   notes: string;
   date: string;
   time: string;
@@ -111,7 +110,6 @@ function draftFromEntry(entry: DbEntry): Draft {
   return {
     title: entry.title,
     subtitle: entry.subtitle ?? "",
-    inspiration: entry.inspiration ?? "",
     notes: entry.notes ?? "",
     date: (deadline ? entry.due_date : entry.scheduled_date) ?? "",
     time: (deadline ? entry.due_time : entry.scheduled_time) ?? "",
@@ -144,8 +142,6 @@ function isDirty(draft: Draft, entry: DbEntry): boolean {
 
   if ((draft.title.trim() || entry.title) !== entry.title) return true;
   if (draft.subtitle.trim() !== (entry.subtitle ?? "")) return true;
-  if (isIdea && draft.inspiration.trim() !== (entry.inspiration ?? ""))
-    return true;
   if (draft.notes.trim() !== (entry.notes ?? "")) return true;
   if (draft.projectId !== entry.project_id) return true;
 
@@ -368,7 +364,7 @@ export default function EditScreen(): React.ReactElement {
       await updateEntry(entry.id, {
         title: draft.title.trim() || entry.title,
         subtitle: draft.subtitle.trim() || null,
-        inspiration: isIdea ? draft.inspiration.trim() || null : null,
+        inspiration: null,
         notes: draft.notes.trim() || null,
         scheduledDate: isDeadline || isIdea ? null : date,
         scheduledTime: isDeadline || isIdea ? null : time,
@@ -491,8 +487,8 @@ export default function EditScreen(): React.ReactElement {
     });
   };
 
-  const canComplete = !done && entry.type !== "idea";
-  const canUndo = done && entry.type !== "idea";
+  const canComplete = !done;
+  const canUndo = done;
 
   return (
     <SafeAreaView
@@ -815,27 +811,15 @@ export default function EditScreen(): React.ReactElement {
                 ) : null}
               </View>
 
-              {/* Subtasks: todo and deadline only. An idea that grows a
-                  checklist is a project — promote it instead. */}
-              {!isIdea ? (
-                <TaskChecklist
-                  entryId={entry.id}
-                  accent={accent}
-                  swipeController={taskSwipe}
-                />
-              ) : null}
-
-              {isIdea ? (
-                <TextZone
-                  label="WHY IT STAYS"
-                  value={draft.inspiration}
-                  placeholder="What made this worth keeping?"
-                  onChange={(inspiration) =>
-                    patchDraft(setDraft, { inspiration })
-                  }
-                  accent={accent}
-                />
-              ) : null}
+              {/* Subtasks: every entry type — todo, deadline, idea — owns a
+                  checklist. Ideas call theirs "Steps" (how the idea gets
+                  built); todos and deadlines keep "Tasks". */}
+              <TaskChecklist
+                entryId={entry.id}
+                accent={accent}
+                label={isIdea ? "Steps" : "Tasks"}
+                swipeController={taskSwipe}
+              />
 
               <TextZone
                 label="MEMORY"

@@ -27,6 +27,7 @@ import { DirectPager } from "@/components/molecules/direct-pager";
 import { DirectRow } from "@/components/molecules/direct-row";
 import { EmojiPickerSheet } from "@/components/molecules/emoji-picker-sheet";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
+import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sheet";
 import { ProjectStarters } from "@/components/molecules/project-starters";
 import {
   CaptureBackdrop,
@@ -93,6 +94,7 @@ export default function ProjectScreen(): React.ReactElement {
     updateEntry,
     updateEntryStatus,
     deleteEntry,
+    deleteProject,
     updateProject,
   } = useDatabase();
 
@@ -108,6 +110,14 @@ export default function ProjectScreen(): React.ReactElement {
     confirmKey: ConfirmKey.deleteEntry,
   });
   const [spinePage, setSpinePage] = useState(0);
+
+  // Overflow menu — the header's `··` button. Opens the project action sheet
+  // (delete lives there; the confirm sheet guards it with the same voice as
+  // the shelf's swipe-to-delete).
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const projectDeleteConfirm = useConfirm({
+    confirmKey: ConfirmKey.deleteProject,
+  });
 
   // Emoji sheet — the project's identity glyph. Tapped from the header, opens
   // the in-app picker straight on the emoji grid so picking stays a single tap.
@@ -461,6 +471,18 @@ export default function ProjectScreen(): React.ReactElement {
     );
   };
 
+  // Delete — surfaced from the header overflow menu. The confirm sheet speaks
+  // the same voice as the shelf's swipe-to-delete ("Its todos and ideas stay
+  // on the board, just unfiled."), then the screen pops back to the shelf.
+  const handleDeleteProject = (): void => {
+    if (!id) return;
+    void projectDeleteConfirm.request(() => {
+      void deleteProject(id)
+        .then(() => router.back())
+        .catch((err) => console.error("Failed to delete project:", err));
+    });
+  };
+
   if (!project) {
     return (
       <View style={[styles.screen, { backgroundColor: colors.paper }]}>
@@ -568,6 +590,21 @@ export default function ProjectScreen(): React.ReactElement {
                 if (renaming) commitRename();
                 router.back();
               }}
+              headerRight={
+                <Pressable
+                  onPress={() => {
+                    commitRename();
+                    setOverflowOpen(true);
+                  }}
+                  hitSlop={8}
+                  style={styles.iconButton}
+                  accessibilityRole="button"
+                  accessibilityLabel="Project menu"
+                  accessibilityHint="Opens project actions"
+                >
+                  <IconSymbol name="MoreH" size={24} color={colors.ink} />
+                </Pressable>
+              }
             />
           ),
         }}
@@ -756,6 +793,12 @@ export default function ProjectScreen(): React.ReactElement {
         onClear={() => handleChangeEmoji(null)}
         onClose={() => setEmojiSheetOpen(false)}
       />
+      <ProjectOverflowSheet
+        visible={overflowOpen}
+        title={project.title}
+        onClose={() => setOverflowOpen(false)}
+        onDelete={handleDeleteProject}
+      />
       <IdeaActionSheet
         visible={actionIdea !== null}
         idea={actionIdea}
@@ -772,6 +815,15 @@ export default function ProjectScreen(): React.ReactElement {
         onToggleDontAsk={entryDeleteConfirm.toggleDontAsk}
         onConfirm={entryDeleteConfirm.confirm}
         onCancel={entryDeleteConfirm.cancel}
+      />
+      <ConfirmSheet
+        visible={projectDeleteConfirm.visible}
+        kicker="DELETE PROJECT"
+        message="Its todos and ideas stay on the board, just unfiled."
+        dontAsk={projectDeleteConfirm.dontAsk}
+        onToggleDontAsk={projectDeleteConfirm.toggleDontAsk}
+        onConfirm={projectDeleteConfirm.confirm}
+        onCancel={projectDeleteConfirm.cancel}
       />
       {/* Outside-tap backdrop — screen-level so it spans the whole surface while
           the dock sits pinned below. Only exists while a dismissible surface is
@@ -874,6 +926,15 @@ const styles = StyleSheet.create({
   headerGlyph: {
     fontSize: 22,
     lineHeight: 26,
+  },
+
+  // Overflow menu button — mirrors the back button's 40px hit target so the
+  // header row stays balanced.
+  iconButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   // Rename — the title row doubles as the tap target. The pencil trails the

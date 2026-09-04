@@ -365,6 +365,23 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 14) {
+    // Migration 14: project description — a one-line "what this area is for",
+    // editable on the project screen. Nullable so existing projects survive
+    // the upgrade without a forced write; the UI surfaces a quiet placeholder.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync('ALTER TABLE projects ADD COLUMN description TEXT');
+      } catch {
+        // column already exists (fresh installs got it from CREATE_PROJECTS_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────
@@ -390,6 +407,7 @@ export async function insertProject(
     title,
     status: 'active',
     emoji,
+    description: null,
     is_featured: 0,
     last_opened_at: null,
     created_at: now,
@@ -480,13 +498,15 @@ export async function seedDefaultProjectsOnce(): Promise<boolean> {
   return true;
 }
 
-/** Update a project's title, status, and/or emoji. Pass `emoji: null` to clear. */
+/** Update a project's title, status, emoji, and/or description. Pass `emoji:
+ * null` to clear the glyph; pass `description: null` to clear the one-liner. */
 export async function updateProject(
   id: string,
   data: {
     title?: string;
     status?: DbProject['status'];
     emoji?: string | null;
+    description?: string | null;
   },
 ): Promise<void> {
   const db = getDb();
@@ -503,6 +523,10 @@ export async function updateProject(
   if (data.emoji !== undefined) {
     updates.push('emoji = ?');
     values.push(data.emoji);
+  }
+  if (data.description !== undefined) {
+    updates.push('description = ?');
+    values.push(data.description);
   }
   if (updates.length === 0) return;
   updates.push('updated_at = ?');

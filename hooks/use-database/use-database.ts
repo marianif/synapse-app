@@ -76,6 +76,7 @@ export interface UseDatabaseReturn {
       title?: string;
       status?: DbProject["status"];
       emoji?: string | null;
+      description?: string | null;
     },
   ) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;

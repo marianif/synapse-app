@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 13;
+export const SCHEMA_VERSION = 14;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -42,6 +42,9 @@ export const CREATE_PROJECTS_TABLE = `
     -- Featured projects are the ones the home overview surfaces. The Project
     -- Shelf (app/projects.tsx) is the only place to toggle this.
     is_featured INTEGER NOT NULL DEFAULT 0,
+    -- One-line "what this area is for", editable on the project screen (same
+    -- field the seeded defaults' narrative lines describe). Null until set.
+    description TEXT,
     -- Last navigation into the project (ms since epoch). Powers the RECENT
     -- sort on the shelf. Null on fresh rows → falls back to updated_at.
     last_opened_at INTEGER,

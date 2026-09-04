@@ -160,6 +160,24 @@ export default function ProjectScreen(): React.ReactElement {
     Keyboard.dismiss();
   };
 
+  // Description — the project's one-line "what this area is for". An
+  // always-mounted multiline input, same grammar as the entry subtitle in
+  // /edit: tap to write, blur autosaves. The draft mirrors `description`;
+  // commit trims and clears to null on empty, so an emptied field reads back
+  // as its quiet placeholder.
+  const [descDraft, setDescDraft] = useState("");
+  useEffect(() => {
+    setDescDraft(project?.description ?? "");
+  }, [project?.description]);
+  const commitDescription = (): void => {
+    if (!project) return;
+    const trimmed = descDraft.trim();
+    if ((trimmed || null) === project.description) return;
+    void updateProject(project.id, { description: trimmed || null }).catch(
+      (err) => console.error("Failed to save project description:", err),
+    );
+  };
+
   const { spine, ideas, origin, notes, presentTypes } = useMemo(() => {
     const filed = entries.filter((e) => e.project_id === id);
     // Spine: open AND done todos/deadlines, sorted by sortDirect so done
@@ -626,6 +644,22 @@ export default function ProjectScreen(): React.ReactElement {
           }
         }}
       >
+        {/* Description — the project's own one-liner, the continuation of the
+            header's title block. Same always-mounted input grammar as the
+            entry subtitle in /edit: tap to write, blur autosaves, empty reads
+            back as a quiet placeholder. */}
+        <TextInput
+          value={descDraft}
+          onChangeText={setDescDraft}
+          onBlur={commitDescription}
+          multiline
+          placeholder="Enter a description, if it needs one"
+          placeholderTextColor={colors.inkMuted}
+          selectionColor={colors.accent.clay}
+          style={[styles.descriptionInput, { color: colors.inkMuted }]}
+          accessibilityLabel="Project description"
+        />
+
         {/* Provenance — the handwritten line that says where this project
             came from. Identity, not metadata. Its own band so the eye
             registers it as the project's origin story, not as content. */}
@@ -957,6 +991,17 @@ const styles = StyleSheet.create({
     lineHeight: tokens.type.title.lineHeight,
     letterSpacing: tokens.type.title.tracking,
     fontFamily: tokens.type.fontInter.bold,
+  },
+
+  // Description — the project's one-liner sits at body step in muted ink,
+  // matching the entry subtitle in /edit so the field reads as a quiet
+  // continuation of the headline, not a content block.
+  descriptionInput: {
+    fontFamily: tokens.type.fontInter.regular,
+    fontSize: 15,
+    lineHeight: 22,
+    padding: 0,
+    minHeight: 32,
   },
 
   // Provenance band: own breathing room, reads as a margin note above the

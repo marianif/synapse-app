@@ -39,6 +39,7 @@ export const updateProject = createAsyncThunk<
       title?: string;
       status?: DbProject["status"];
       emoji?: string | null;
+      description?: string | null;
     };
   }
 >("projects/update", async ({ id, data }) => {

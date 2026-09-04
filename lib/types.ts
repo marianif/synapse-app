@@ -52,6 +52,9 @@ export interface DbProject {
    * until the user picks one — the screen surfaces a quiet picker affordance
    * and falls back to a neutral folder glyph in the meantime. */
   emoji: string | null;
+  /** One-line description of what this area is for. Editable on the project
+   * screen (autosaves on blur); null until the user writes one. */
+  description: string | null;
   /** SQLite stores booleans as 0/1. The Project Shelf is the only place this
    * toggles; `ProjectsOverview` on home reads `is_featured === 1` to filter. */
   is_featured: 0 | 1;

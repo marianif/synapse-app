@@ -116,6 +116,12 @@ export interface DbDiaryEntry {
    * free — notes are never actionable and never appear on the home field.
    */
   linked_project_id: string | null;
+  /**
+   * Flat tag labels, normalized to trimmed lowercase at write time (deduped).
+   * Stored as a JSON array in SQLite; the notes tab's tag rail filters on
+   * exact membership.
+   */
+  tags: string[];
   created_at: number;
   updated_at: number;
 }

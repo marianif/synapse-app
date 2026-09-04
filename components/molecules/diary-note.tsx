@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
+import { TagChip } from "@/components/atoms/tag-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import type { LinkableKind } from "@/components/organisms/link-sheet";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
@@ -143,6 +144,18 @@ export function DiaryNote({
             {entry.body}
           </ThemedText>
         )}
+
+{/* Tags — readonly flat labels under the body, quieter than the meta
+            row. Display only; editing happens in the note modal. Rendered
+            ghost (the tag's own pastel ink, no fill) so the card surface
+            stays clean and the chips read as whispered labels. */}
+        {entry.tags.length > 0 ? (
+          <View style={styles.tagRow}>
+            {entry.tags.map((tag) => (
+              <TagChip key={tag} label={tag} variant="ghost" size="md" />
+            ))}
+          </View>
+        ) : null}
       </View>
     </SwipeableRow>
   );
@@ -266,5 +279,13 @@ const styles = StyleSheet.create({
     fontFamily: tokens.type.fontHand.regular,
     fontSize: 20,
     lineHeight: 26,
+  },
+
+  // Tags — wrapped pills in the same tonal vocabulary as the relatedness chip,
+  // one step quieter. Readonly: the note modal is where tags are edited.
+  tagRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: tokens.space.sm,
   },
 });

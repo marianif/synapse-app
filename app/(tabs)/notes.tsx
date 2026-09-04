@@ -21,6 +21,7 @@ import {
   DiaryFilterBar,
   type DiaryMacro,
 } from "@/components/molecules/diary-filter-bar";
+import { DiaryTagRail } from "@/components/molecules/diary-tag-rail";
 import { DiaryFeed } from "@/components/organisms/diary-feed";
 import {
   LinkSheet,
@@ -36,6 +37,8 @@ import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 import { useSharedIntake } from "@/hooks/use-shared-intake";
+import { countTags } from "@/lib/tags";
+import type { TagCount } from "@/lib/tags";
 
 import type { DbDiaryEntry } from "@/lib/types";
 
@@ -82,9 +85,12 @@ export default function NotesScreen(): React.ReactElement {
   const { entries: boardEntries, projects } = useDatabase();
 
   // Filter state. `macro` is the ALL/LINKED/FREE bucket; `target` narrows to
-  // one project/idea and takes over when set (mutually exclusive with macro).
+  // one project/idea and takes over when set (mutually exclusive with macro);
+  // `selectedTags` narrows to flat labels — any selected tag matches (OR) —
+  // and composes with both.
   const [macro, setMacro] = useState<DiaryMacro>("all");
   const [target, setTarget] = useState<LinkSelection>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [targetSheetOpen, setTargetSheetOpen] = useState(false);
 
   // Pull-in: the note the user is re-relating. Tapping a feed row's relatedness
@@ -195,6 +201,10 @@ export default function NotesScreen(): React.ReactElement {
     return { ideaNoteCounts: ideas, projectNoteCounts: projs };
   }, [entries]);
 
+  // Distinct tags across ALL notes, with counts — the rail's full vocabulary
+  // even while a filter narrows the feed. Sorted by popularity, then alpha.
+  const tagCounts: TagCount[] = useMemo(() => countTags(entries), [entries]);
+
   // Composer offers ALL projects + ideas (you can start a relation with no
   // notes filed yet), each carrying its current count.
   const composerTargets: LinkableTarget[] = useMemo(() => {
@@ -223,20 +233,29 @@ export default function NotesScreen(): React.ReactElement {
   );
 
   const visibleEntries = useMemo(() => {
+    let list = entries;
+    // Tag filter composes with the macro/target axes — narrowing by label
+    // never silently resets the current project/idea view. Multi-select:
+    // any selected tag matches, so adding a tag only widens the feed.
+    if (selectedTags.length > 0) {
+      list = list.filter((n) =>
+        selectedTags.some((t) => n.tags.includes(t)),
+      );
+    }
     if (target) {
       if (target.kind === "idea") {
-        return entries.filter((n) => n.linked_entry_id === target.id);
+        return list.filter((n) => n.linked_entry_id === target.id);
       }
-      return entries.filter((n) => n.linked_project_id === target.id);
+      return list.filter((n) => n.linked_project_id === target.id);
     }
     if (macro === "linked") {
-      return entries.filter((n) => n.linked_entry_id || n.linked_project_id);
+      return list.filter((n) => n.linked_entry_id || n.linked_project_id);
     }
     if (macro === "free") {
-      return entries.filter((n) => !n.linked_entry_id && !n.linked_project_id);
+      return list.filter((n) => !n.linked_entry_id && !n.linked_project_id);
     }
-    return entries;
-  }, [entries, target, macro]);
+    return list;
+  }, [entries, target, macro, selectedTags]);
 
   const targetLabel = target
     ? target.kind === "idea"
@@ -259,6 +278,16 @@ export default function NotesScreen(): React.ReactElement {
     setTarget(selection);
     // Picking "Free note" (null) in the filter context means: show free.
     if (selection === null) setMacro("free");
+  }, []);
+
+  // Tag rail toggle: tap a pill to add it to the filter, tap it again to
+  // remove. Multi-select — any selected tag matches, so taps only widen.
+  const handleToggleTag = useCallback((t: string) => {
+    setSelectedTags((current) =>
+      current.includes(t)
+        ? current.filter((x) => x !== t)
+        : [...current, t],
+    );
   }, []);
 
   // The note-being-related's current link, mapped into the sheet's selection
@@ -309,25 +338,35 @@ export default function NotesScreen(): React.ReactElement {
         scrollEventThrottle={16}
         onScroll={composerScrollHandler}
       >
-        <DiaryFilterBar
-          macro={macro}
-          onMacro={(m) => {
-            setMacro(m);
-            setTarget(null);
-          }}
-          targetLabel={targetLabel}
-          targetKind={target?.kind ?? null}
-          targetCount={filterTargets.length}
-          onOpenTargetFilter={() => setTargetSheetOpen(true)}
-          onClearTarget={() => setTarget(null)}
-        />
+        <View style={styles.filterCluster}>
+          <DiaryFilterBar
+            macro={macro}
+            onMacro={(m) => {
+              setMacro(m);
+              setTarget(null);
+            }}
+            targetLabel={targetLabel}
+            targetKind={target?.kind ?? null}
+            targetCount={filterTargets.length}
+            onOpenTargetFilter={() => setTargetSheetOpen(true)}
+            onClearTarget={() => setTarget(null)}
+          />
+
+          <DiaryTagRail
+            tags={tagCounts}
+            selected={selectedTags}
+            onToggle={handleToggleTag}
+          />
+        </View>
 
         <DiaryFeed
           entries={visibleEntries}
           ideaTitles={ideaTitles}
           projectTitles={projectTitles}
           projectEmojis={projectEmojis}
-          filtered={target !== null || macro !== "all"}
+          filtered={
+            target !== null || macro !== "all" || selectedTags.length > 0
+          }
           onRelate={setRelatingNote}
           onEdit={(entry) =>
             router.push({
@@ -335,6 +374,7 @@ export default function NotesScreen(): React.ReactElement {
               params: {
                 id: entry.id,
                 body: entry.body,
+                tags: JSON.stringify(entry.tags),
                 linkedProjectId: entry.linked_project_id ?? "",
                 linkedEntryId: entry.linked_entry_id ?? "",
               },
@@ -412,6 +452,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space.lg,
     paddingTop: tokens.space.md,
     gap: tokens.space.xxl,
+  },
+  // The macro row + tag rail read as one filter cluster — tighter inner gap
+  // than the content's xxl so the rail hugs its header line.
+  filterCluster: {
+    gap: tokens.space.md,
   },
   composerBar: {
     position: "absolute",

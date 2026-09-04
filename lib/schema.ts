@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 14;
+export const SCHEMA_VERSION = 15;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -65,6 +65,10 @@ export const CREATE_DIARY_TABLE = `
     -- Optional link to a project. A note can point to an idea, a project, or
     -- be free. App-side SET NULL on project delete (same pattern as above).
     linked_project_id TEXT,
+    -- Flat tag labels (JSON array of strings, e.g. '["work","ideas"]').
+    -- NULL = no tags. Normalized to trimmed lowercase at write time; the notes
+    -- tab's tag rail filters on exact membership.
+    tags TEXT,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
   );

@@ -382,6 +382,23 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 15) {
+    // Migration 15: note tags — a flat JSON label array on diary_entries,
+    // edited in the note modal and filtered on the notes tab. Nullable so
+    // existing notes survive with no tags; the UI treats null as an empty set.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync('ALTER TABLE diary_entries ADD COLUMN tags TEXT');
+      } catch {
+        // column already exists (fresh installs got it from CREATE_DIARY_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────
@@ -721,26 +738,49 @@ export async function deleteTasksForEntry(entryId: string): Promise<void> {
 // ─── Diary helpers ──────────────────────────────────────────────────────────────
 
 /**
+ * Parse a stored `tags` cell (JSON array of strings) into a label array.
+ * NULL and malformed payloads read as an empty set — the schema's relaxed
+ * guarantee, so no reader can crash on a hand-edited or pre-15 row.
+ */
+export function parseTags(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((t): t is string => typeof t === "string");
+  } catch {
+    return [];
+  }
+}
+
+/** Serialize a label array for the `tags` cell. Null when empty. */
+function serializeTags(tags: string[]): string | null {
+  return tags.length > 0 ? JSON.stringify(tags) : null;
+}
+
+/**
  * Insert a diary entry, returning the persisted row. `linkedEntryId` ties the
  * note to an action-board entry (an 'idea') — a reflection ON that idea; null
- * for an autonomous note.
+ * for an autonomous note. Tags are stored normalized (trimmed, lowercase).
  */
 export async function insertDiaryEntry(
   body: string,
   mood: DiaryMood | null,
   linkedEntryId: string | null = null,
   linkedProjectId: string | null = null,
+  tags: string[] = [],
 ): Promise<DbDiaryEntry> {
   const db = await ensureDb();
   const id = generateId();
   const now = Math.floor(Date.now() / 1000);
   await db.runAsync(
-    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, linked_project_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, linked_project_id, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     id,
     body,
     mood,
     linkedEntryId,
     linkedProjectId,
+    serializeTags(tags),
     now,
     now,
   );
@@ -750,17 +790,29 @@ export async function insertDiaryEntry(
     mood,
     linked_entry_id: linkedEntryId,
     linked_project_id: linkedProjectId,
+    tags,
     created_at: now,
     updated_at: now,
   };
 }
 
-/** All diary entries, newest first. */
+/** All diary entries, newest first, tags parsed. */
 export async function getDiaryEntries(): Promise<DbDiaryEntry[]> {
   const db = await ensureDb();
-  return db.getAllAsync<DbDiaryEntry>(
-    'SELECT * FROM diary_entries ORDER BY created_at DESC',
-  );
+  const rows = await db.getAllAsync<
+    Omit<DbDiaryEntry, "tags"> & { tags: string | null }
+  >('SELECT * FROM diary_entries ORDER BY created_at DESC');
+  return rows.map((row) => ({ ...row, tags: parseTags(row.tags) }));
+}
+
+/** One diary entry by id, tags parsed. Throws when missing. */
+export async function getDiaryEntry(id: string): Promise<DbDiaryEntry> {
+  const db = await ensureDb();
+  const row = await db.getFirstAsync<
+    Omit<DbDiaryEntry, "tags"> & { tags: string | null }
+  >('SELECT * FROM diary_entries WHERE id = ?', id);
+  if (!row) throw new Error(`Diary entry ${id} not found`);
+  return { ...row, tags: parseTags(row.tags) };
 }
 
 /** Delete a diary entry by id. */
@@ -770,8 +822,9 @@ export async function deleteDiaryEntry(id: string): Promise<void> {
 }
 
 /**
- * Update a diary entry's body, mood, or link targets. Pass `linkedProjectId`
- * or `linkedEntryId` as `null` to clear. Bumps updated_at.
+ * Update a diary entry's body, mood, link targets, or tags. Pass
+ * `linkedProjectId` or `linkedEntryId` as `null` to clear; pass `tags` to
+ * replace the whole set. Bumps updated_at.
  */
 export async function updateDiaryEntry(
   id: string,
@@ -780,6 +833,7 @@ export async function updateDiaryEntry(
     mood?: DiaryMood | null;
     linkedEntryId?: string | null;
     linkedProjectId?: string | null;
+    tags?: string[];
   },
 ): Promise<void> {
   const db = await ensureDb();
@@ -800,6 +854,10 @@ export async function updateDiaryEntry(
   if (data.linkedProjectId !== undefined) {
     updates.push('linked_project_id = ?');
     values.push(data.linkedProjectId);
+  }
+  if (data.tags !== undefined) {
+    updates.push('tags = ?');
+    values.push(serializeTags(data.tags));
   }
   if (updates.length === 0) return;
   updates.push('updated_at = ?');

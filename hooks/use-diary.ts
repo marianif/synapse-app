@@ -19,9 +19,11 @@ interface UseDiaryResult {
     mood: DiaryMood | null,
     linkedEntryId?: string | null,
     linkedProjectId?: string | null,
+    tags?: string[],
   ) => Promise<void>;
-  /** Patch a note. Pass any link target as `null` to clear it. Used by the
-   *  project surface to file a free note under a project. */
+  /** Patch a note. Pass any link target as `null` to clear it, `tags` to
+   *  replace the whole set. Used by the project surface to file a free note
+   *  under a project. */
   updateEntry: (
     id: string,
     data: {
@@ -29,6 +31,7 @@ interface UseDiaryResult {
       mood?: DiaryMood | null;
       linkedEntryId?: string | null;
       linkedProjectId?: string | null;
+      tags?: string[];
     },
   ) => Promise<void>;
   removeEntry: (id: string) => Promise<void>;
@@ -62,6 +65,7 @@ export function useDiary(): UseDiaryResult {
           mood: DiaryMood | null,
           linkedEntryId: string | null = null,
           linkedProjectId: string | null = null,
+          tags: string[] = [],
         ): Promise<void> =>
           toVoid(
             dispatch(
@@ -70,6 +74,7 @@ export function useDiary(): UseDiaryResult {
                 mood,
                 linkedEntryId,
                 linkedProjectId,
+                tags,
               }),
             )
               .unwrap()
@@ -84,6 +89,7 @@ export function useDiary(): UseDiaryResult {
             mood?: DiaryMood | null;
             linkedEntryId?: string | null;
             linkedProjectId?: string | null;
+            tags?: string[];
           },
         ): Promise<void> =>
           toVoid(

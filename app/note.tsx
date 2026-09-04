@@ -1,9 +1,16 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
+import { TagChip } from "@/components/atoms/tag-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import {
   LinkSheet,
@@ -14,6 +21,23 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
+import { countTags, suggestTags } from "@/lib/tags";
+
+/**
+ * Parse the `tags` nav param (a JSON array string) into a label array. Same
+ * relaxed contract as the DB reader: absent or malformed reads as an empty
+ * set, so a stale link can never crash the editor.
+ */
+function parseTagsParam(raw: string | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((t): t is string => typeof t === "string");
+  } catch {
+    return [];
+  }
+}
 
 /**
  * A single note opened up for editing, presented as a native modal
@@ -43,7 +67,7 @@ export default function NoteScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { id, body, relatable, linkedProjectId, linkedEntryId } =
+  const { id, body, relatable, linkedProjectId, linkedEntryId, tags } =
     useLocalSearchParams<{
       id?: string;
       body?: string;
@@ -51,9 +75,11 @@ export default function NoteScreen(): React.ReactElement {
       /** The note's current link, if it has one — seeds the relate row. */
       linkedProjectId?: string;
       linkedEntryId?: string;
+      /** The note's tags, as a JSON array string — seeds the tag editor. */
+      tags?: string;
     }>();
 
-  const { updateEntry } = useDiary();
+  const { updateEntry, entries: diaryEntries } = useDiary();
   const { projects, entries: boardEntries } = useDatabase();
 
   const canRelate = relatable !== "0";
@@ -81,10 +107,58 @@ export default function NoteScreen(): React.ReactElement {
   });
   const [linkSheetOpen, setLinkSheetOpen] = useState(false);
 
+  // Tags — seeded from the param, replaced wholesale on save. New tags are
+  // committed from the add-field via commitTag; each chip's X removes one.
+  const seedTags = parseTagsParam(tags);
+  const [tagSet, setTagSet] = useState<string[]>(seedTags);
+  const [tagDraft, setTagDraft] = useState("");
+
+  // The tag vocabulary — every distinct tag across notes, with counts. Same
+  // `countTags` the notes tab's rail uses, so the editor and the feed agree
+  // on what "already existing" means.
+  const vocab = useMemo(() => countTags(diaryEntries), [diaryEntries]);
+
+  // Suggestions for the add-field: quick picks of the most-used tags while
+  // the field is empty and focused, narrowing to draft matches (prefix first,
+  // then substring) as the user types — excluding tags already on the note,
+  // capped at six so the row stays one line. Hidden the moment the field
+  // blurs, so an idle editor looks exactly like today.
+  const [tagFieldFocused, setTagFieldFocused] = useState(false);
+  const suggestions = useMemo(() => {
+    if (!tagFieldFocused) return [];
+    return suggestTags(vocab, tagDraft, tagSet);
+  }, [tagFieldFocused, vocab, tagDraft, tagSet]);
+
   // Live values for the unmount write below — a cleanup would capture the
   // first render's values otherwise.
-  const latestRef = useRef({ draft, selection });
-  latestRef.current = { draft, selection };
+  const latestRef = useRef({ draft, selection, tags: tagSet });
+  latestRef.current = { draft, selection, tags: tagSet };
+
+  // Add one tag through the shared normalization path (dedupe + latestRef
+  // mirror), used by the suggestion chips. The field's own commit reuses it.
+  const addTag = (t: string): void => {
+    if (tagSet.includes(t)) return;
+    const next = [...tagSet, t];
+    setTagSet(next);
+    latestRef.current = { ...latestRef.current, tags: next };
+    setTagDraft("");
+  };
+
+  // Commit the tag field: split on commas, trim + lowercase (the store's
+  // normalization), dedupe against the current set. Mirrors the result onto
+  // latestRef synchronously so a dismissal landing on the same tick as the
+  // keyboard's blur never writes a stale set.
+  const commitTag = (): void => {
+    const parts = tagDraft
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    setTagDraft("");
+    if (parts.length === 0) return;
+    const next = [...new Set([...tagSet, ...parts])];
+    setTagSet(next);
+    latestRef.current = { ...latestRef.current, tags: next };
+  };
 
   // Write once as the screen unmounts. Dismissing the modal (X, swipe-down,
   // back) unmounts it, the thunk updates SQLite and the diary slice, and every
@@ -94,7 +168,7 @@ export default function NoteScreen(): React.ReactElement {
   useEffect(() => {
     return () => {
       if (!id) return;
-      const { draft: latestDraft, selection: latestSelection } =
+      const { draft: latestDraft, selection: latestSelection, tags: latestTags } =
         latestRef.current;
       const trimmed = latestDraft.trim();
       if (!trimmed) return;
@@ -105,9 +179,12 @@ export default function NoteScreen(): React.ReactElement {
           : latestSelection.kind === "project"
             ? latestSelection.id === (linkedProjectId ?? "")
             : latestSelection.id === (linkedEntryId ?? ""));
-      if (trimmed === (body ?? "") && unchangedLink) return;
+      const unchangedTags =
+        JSON.stringify(latestTags) === JSON.stringify(seedTags);
+      if (trimmed === (body ?? "") && unchangedLink && unchangedTags) return;
       void updateEntry(id, {
         body: trimmed,
+        tags: latestTags,
         ...(canRelate
           ? {
               linkedEntryId:
@@ -246,6 +323,81 @@ export default function NoteScreen(): React.ReactElement {
         </Pressable>
       ) : null}
 
+      {/* Tags — the note's flat labels. A wrapping row of existing chips
+          (each #tag with an X to remove) plus an inline add-field; commits on
+          return / comma / blur, normalized to trimmed lowercase + deduped.
+          Sits above the body so the keyboard never covers it. */}
+      <View style={styles.tagSection}>
+        <View style={styles.tagHeader}>
+          <IconSymbol name="Hashtag" size={12} color={colors.inkMuted} />
+          <ThemedText type="micro" style={{ color: colors.inkMuted }}>
+            TAGS
+          </ThemedText>
+        </View>
+
+        {tagSet.length > 0 ? (
+          <View style={styles.tagRow}>
+            {tagSet.map((t) => (
+              <TagChip
+                key={t}
+                label={t}
+                variant="hue"
+                trailing="remove"
+                onPress={() => {
+                  const next = tagSet.filter((x) => x !== t);
+                  setTagSet(next);
+                  latestRef.current = { ...latestRef.current, tags: next };
+                }}
+                accessibilityLabel={`Remove tag ${t}`}
+              />
+            ))}
+          </View>
+        ) : null}
+
+        <TextInput
+          value={tagDraft}
+          onChangeText={setTagDraft}
+          onSubmitEditing={commitTag}
+          onFocus={() => setTagFieldFocused(true)}
+          onBlur={() => {
+            commitTag();
+            setTagFieldFocused(false);
+          }}
+          returnKeyType="done"
+          autoCorrect={false}
+          autoCapitalize="none"
+          placeholder="Add a tag…"
+          placeholderTextColor={colors.inkMuted}
+          selectionColor={colors.ink}
+          style={[styles.tagInput, { color: colors.inkMuted }]}
+          accessibilityLabel="Add a tag"
+        />
+
+        {/* Suggestions — only while the add-field is focused: quick picks of
+            the most-used tags when empty, draft matches as you type (prefix
+            first, then substring). A `+` signals "not yet on this note"; tap
+            commits through the same path as the field. */}
+        {suggestions.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.suggestionRow}
+          >
+            {suggestions.map((t) => (
+              <TagChip
+                key={t}
+                label={t}
+                variant="hue"
+                trailing="add"
+                onPress={() => addTag(t)}
+                accessibilityLabel={`Add tag ${t}`}
+              />
+            ))}
+          </ScrollView>
+        ) : null}
+      </View>
+
       {/* Body — handwritten input, auto-focused. Grows with content; the sheet
           below this line is what the keyboard overlays, so the caret always
           scrolls into view rather than the sheet moving. */}
@@ -313,6 +465,37 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1.4,
     borderStyle: "dashed",
+  },
+
+  // Tags — the note's flat labels. Header line + wrapping chip row + a slim
+  // add-field. Same chip vocabulary as the feed's relatedness tag.
+  tagSection: {
+    marginTop: tokens.space.md,
+    gap: tokens.space.sm,
+  },
+  tagHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+  },
+  tagRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: tokens.space.xs,
+  },
+  tagInput: {
+    fontFamily: tokens.type.fontInter.regular,
+    fontSize: 13,
+    lineHeight: 18,
+    paddingVertical: 2,
+    minHeight: 24,
+  },
+
+  // Suggestions — one horizontal line under the add-field, same chip
+  // vocabulary as the owned tags (the `+` marks "not yet on this note").
+  suggestionRow: {
+    flexDirection: "row",
+    gap: tokens.space.xs,
   },
   input: {
     flex: 1,

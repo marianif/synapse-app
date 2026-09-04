@@ -4,6 +4,7 @@ import {
   deleteDiaryEntry as dbDeleteDiaryEntry,
   ensureDb,
   getDiaryEntries,
+  getDiaryEntry,
   insertDiaryEntry,
   updateDiaryEntry as dbUpdateDiaryEntry,
 } from "@/lib/database";
@@ -24,11 +25,18 @@ export const addDiaryEntry = createAsyncThunk<
     mood: DiaryMood | null;
     linkedEntryId: string | null;
     linkedProjectId: string | null;
+    tags?: string[];
   }
->("diary/add", async ({ body, mood, linkedEntryId, linkedProjectId }) => {
+>("diary/add", async ({ body, mood, linkedEntryId, linkedProjectId, tags }) => {
   const trimmed = body.trim();
   if (!trimmed) throw new Error("Cannot add an empty diary note");
-  return insertDiaryEntry(trimmed, mood, linkedEntryId, linkedProjectId);
+  return insertDiaryEntry(
+    trimmed,
+    mood,
+    linkedEntryId,
+    linkedProjectId,
+    tags ?? [],
+  );
 });
 
 export const updateDiaryEntry = createAsyncThunk<
@@ -40,17 +48,12 @@ export const updateDiaryEntry = createAsyncThunk<
       mood?: DiaryMood | null;
       linkedEntryId?: string | null;
       linkedProjectId?: string | null;
+      tags?: string[];
     };
   }
 >("diary/update", async ({ id, data }) => {
   await dbUpdateDiaryEntry(id, data);
-  const db = await ensureDb();
-  const row = await db.getFirstAsync<DbDiaryEntry>(
-    "SELECT * FROM diary_entries WHERE id = ?",
-    id,
-  );
-  if (!row) throw new Error(`Diary entry ${id} not found`);
-  return row;
+  return getDiaryEntry(id);
 });
 
 export const deleteDiaryEntry = createAsyncThunk<string, string>(

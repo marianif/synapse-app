@@ -40,7 +40,7 @@ import { useSharedIntake } from "@/hooks/use-shared-intake";
 import { countTags } from "@/lib/tags";
 import type { TagCount } from "@/lib/tags";
 
-import type { DbDiaryEntry } from "@/lib/types";
+import type { DbDiaryEntry, EntryType } from "@/lib/types";
 
 export default function NotesScreen(): React.ReactElement {
   const cap = useGlobalCapture();
@@ -166,9 +166,18 @@ export default function NotesScreen(): React.ReactElement {
     });
   }, [composerActive, composerActiveFlag, composerHidden, composerTranslate]);
 
-  const ideaTitles = useMemo(() => {
+  // Titles + types for EVERY board entry (todo / deadline / idea) — so a note
+  // linked to any entry from the editor shows its true title and glyph in the
+  // feed chip, not just idea-linked ones.
+  const entryTitles = useMemo(() => {
     const map: Record<string, string> = {};
-    for (const e of boardEntries) if (e.type === "idea") map[e.id] = e.title;
+    for (const e of boardEntries) map[e.id] = e.title;
+    return map;
+  }, [boardEntries]);
+
+  const entryKinds = useMemo(() => {
+    const map: Record<string, EntryType> = {};
+    for (const e of boardEntries) map[e.id] = e.type;
     return map;
   }, [boardEntries]);
 
@@ -259,7 +268,7 @@ export default function NotesScreen(): React.ReactElement {
 
   const targetLabel = target
     ? target.kind === "idea"
-      ? (ideaTitles[target.id] ?? "Idea")
+      ? (entryTitles[target.id] ?? "Idea")
       : (projectTitles[target.id] ?? "Project")
     : null;
 
@@ -361,7 +370,8 @@ export default function NotesScreen(): React.ReactElement {
 
         <DiaryFeed
           entries={visibleEntries}
-          ideaTitles={ideaTitles}
+          entryTitles={entryTitles}
+          entryKinds={entryKinds}
           projectTitles={projectTitles}
           projectEmojis={projectEmojis}
           filtered={

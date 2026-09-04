@@ -5,13 +5,16 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { DiaryNote } from "@/components/molecules/diary-note";
 import { tokens, useTheme } from "@/constants/theme";
 
-import type { DbDiaryEntry } from "@/lib/types";
+import type { EntryType, DbDiaryEntry } from "@/lib/types";
 
 interface DiaryFeedProps {
   /** Newest-first entries. The feed groups them by calendar day. */
   entries: DbDiaryEntry[];
-  /** id → idea title, for notes filed ON an idea. */
-  ideaTitles?: Record<string, string>;
+  /** id → entry title, for notes filed ON an action-board entry of any type. */
+  entryTitles?: Record<string, string>;
+  /** id → entry type, so a linked note's chip wears its true glyph (todo,
+   *  deadline, or idea). */
+  entryKinds?: Record<string, EntryType>;
   /** id → project title, for notes filed ON a project. */
   projectTitles?: Record<string, string>;
   /** id → project emoji, for notes filed ON a project. Shown on the relatedness
@@ -56,7 +59,8 @@ function groupByDay(
  */
 export function DiaryFeed({
   entries,
-  ideaTitles,
+  entryTitles,
+  entryKinds,
   projectTitles,
   projectEmojis,
   filtered = false,
@@ -99,15 +103,16 @@ export function DiaryFeed({
             const projectTitle = e.linked_project_id
               ? projectTitles?.[e.linked_project_id]
               : undefined;
-            const ideaTitle = e.linked_entry_id
-              ? ideaTitles?.[e.linked_entry_id]
+            const entryTitle = e.linked_entry_id
+              ? entryTitles?.[e.linked_entry_id]
               : undefined;
-            const title = projectTitle ?? ideaTitle;
+            const entryKind = e.linked_entry_id
+              ? entryKinds?.[e.linked_entry_id]
+              : undefined;
+            const title = projectTitle ?? entryTitle;
             const kind = projectTitle
               ? ("project" as const)
-              : ideaTitle
-                ? ("idea" as const)
-                : undefined;
+              : entryKind;
             const projectEmoji = e.linked_project_id
               ? projectEmojis?.[e.linked_project_id]
               : undefined;

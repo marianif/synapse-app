@@ -214,7 +214,7 @@ function Chip({
           <IconSymbol name="Folder" size={13} color={colors.inkMuted} />
         )
       ) : (
-        <SketchIcon type="idea" size={13} />
+        <SketchIcon type={linkedKind ?? "idea"} size={13} />
       )}
       <ThemedText
         type="micro"
@@ -288,7 +288,6 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 13,
-    lineHeight: 13,
   },
   pressed: {
     opacity: 0.7,

@@ -48,7 +48,7 @@ export function DiaryTagRail({
             key={tag}
             label={tag}
             variant="neutral"
-            size="sm"
+            size="md"
             count={count}
             selected={active}
             accentColor={colors.accent.clay}

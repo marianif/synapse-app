@@ -19,7 +19,11 @@ import { tokens, useTheme } from "@/constants/theme";
 // is short enough to graze and a search box would just be chrome.
 const SEARCH_THRESHOLD = 6;
 
-export type LinkableKind = "idea" | "project";
+/** Target kinds for note links: an action-board entry of any type, or a
+ *  project. (The link SHEET only offers project + idea, but a note already
+ *  linked to a todo/deadline — e.g. from the entry editor — must still render
+ *  its true type glyph in the feed.) */
+export type LinkableKind = "idea" | "todo" | "deadline" | "project";
 
 export interface LinkableTarget {
   id: string;

@@ -5,7 +5,7 @@ import {
   useNavigation,
   useRouter,
 } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   AppState,
@@ -32,6 +32,7 @@ import { ChipRail, SelectChip } from "@/components/atoms/select-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DetailHeaderRow } from "@/components/molecules/detail-header-row";
+import { DiaryNote } from "@/components/molecules/diary-note";
 import { MediaStrip } from "@/components/molecules/media-strip";
 import { TaskChecklist } from "@/components/molecules/task-checklist";
 import { WhenPicker } from "@/components/molecules/when-picker";
@@ -39,6 +40,7 @@ import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
 import { entryKicker, tokens, useTheme } from "@/constants/theme";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
+import { useDiary } from "@/hooks/use-diary";
 import { formatTime12h, parseDate, parseTimeToMinutes } from "@/lib/date-utils";
 import { daysUntil, doneStatus, isDone, openStatus } from "@/lib/direct-when";
 import { horizonEndDate } from "@/lib/horizons";
@@ -56,7 +58,6 @@ import type {
 type Draft = {
   title: string;
   subtitle: string;
-  notes: string;
   media: NoteMedia[];
   date: string;
   time: string;
@@ -113,7 +114,6 @@ function draftFromEntry(entry: DbEntry): Draft {
   return {
     title: entry.title,
     subtitle: entry.subtitle ?? "",
-    notes: entry.notes ?? "",
     media: entry.media,
     date: (deadline ? entry.due_date : entry.scheduled_date) ?? "",
     time: (deadline ? entry.due_time : entry.scheduled_time) ?? "",
@@ -146,7 +146,6 @@ function isDirty(draft: Draft, entry: DbEntry): boolean {
 
   if ((draft.title.trim() || entry.title) !== entry.title) return true;
   if (draft.subtitle.trim() !== (entry.subtitle ?? "")) return true;
-  if (draft.notes.trim() !== (entry.notes ?? "")) return true;
   if (JSON.stringify(draft.media) !== JSON.stringify(entry.media)) return true;
   if (draft.projectId !== entry.project_id) return true;
 
@@ -324,6 +323,33 @@ export default function EditScreen(): React.ReactElement {
 
   const entry = entries.find((item) => item.id === id);
 
+  // The entry's diary notes — reflections, logs, working lines. Read-only here
+  // beyond adding/deleting: tap a card to edit it in the /note modal (link is
+  // implied, so the relate chip is hidden on the cards).
+  const {
+    entries: diaryEntries,
+    addEntry: addDiaryEntry,
+    removeEntry: removeDiaryEntry,
+  } = useDiary();
+  const notesOnEntry = useMemo(
+    () =>
+      entry
+        ? diaryEntries.filter((n) => n.linked_entry_id === entry.id)
+        : [],
+    [diaryEntries, entry],
+  );
+
+  // The in-place note composer — writes a diary note linked to this entry.
+  const [noteDraft, setNoteDraft] = useState("");
+  const handleAddNote = (): void => {
+    const text = noteDraft.trim();
+    if (!text) return;
+    setNoteDraft("");
+    void addDiaryEntry(text, null, entry?.id ?? null, null).catch((err) =>
+      console.error("Failed to add note:", err),
+    );
+  };
+
   // The entry already lives in the store — the caller navigated here from a row
   // that reads it, and every write flows back through the slice. Fetch only as a
   // fallback so the loading gate can never hang on a deep-linked id.
@@ -370,7 +396,6 @@ export default function EditScreen(): React.ReactElement {
         title: draft.title.trim() || entry.title,
         subtitle: draft.subtitle.trim() || null,
         inspiration: null,
-        notes: draft.notes.trim() || null,
         scheduledDate: isDeadline || isIdea ? null : date,
         scheduledTime: isDeadline || isIdea ? null : time,
         dueDate: isDeadline ? date : null,
@@ -836,13 +861,59 @@ export default function EditScreen(): React.ReactElement {
                 swipeController={taskSwipe}
               />
 
-              <TextZone
-                label="MEMORY"
-                value={draft.notes}
-                placeholder="Leave a note for the next time you meet this"
-                onChange={(notes) => patchDraft(setDraft, { notes })}
-                accent={accent}
-              />
+              {/* Notes — diary lines attached to this entry, replacing the old
+                  MEMORY field. Composed in place (each write links to this
+                  entry), listed as DiaryNote cards with swipe-to-delete and
+                  tap-to-edit. The relatedness chip is hidden: a note here is by
+                  definition ON this entry. */}
+              <View style={styles.notesSection}>
+                <ThemedText type="micro" muted>
+                  NOTES
+                </ThemedText>
+
+                {notesOnEntry.length > 0 ? (
+                  <View style={styles.notesList}>
+                    {notesOnEntry.map((n) => (
+                      <DiaryNote
+                        key={n.id}
+                        entry={n}
+                        hideChip
+                        onEdit={() =>
+                          router.push({
+                            pathname: "/note",
+                            params: {
+                              id: n.id,
+                              body: n.body,
+                              tags: JSON.stringify(n.tags),
+                              media: JSON.stringify(n.media),
+                              relatable: "0",
+                            },
+                          })
+                        }
+                        onDelete={() => void removeDiaryEntry(n.id)}
+                      />
+                    ))}
+                  </View>
+                ) : null}
+
+                <View style={styles.noteComposer}>
+                  <View style={styles.noteLead}>
+                    <IconSymbol name="Pen" size={16} color={colors.inkMuted} />
+                  </View>
+                  <TextInput
+                    value={noteDraft}
+                    onChangeText={setNoteDraft}
+                    returnKeyType="send"
+                    submitBehavior="submit"
+                    onSubmitEditing={handleAddNote}
+                    placeholder="Add a note…"
+                    placeholderTextColor={colors.inkMuted}
+                    selectionColor={accent}
+                    style={[styles.noteInput, { color: colors.ink }]}
+                    accessibilityLabel="Add a note about this entry"
+                  />
+                </View>
+              </View>
 
               {error ? (
                 <ThemedText
@@ -997,40 +1068,6 @@ function FreqChip({
   );
 }
 
-function TextZone({
-  label,
-  value,
-  placeholder,
-  onChange,
-  accent,
-}: {
-  label: string;
-  value: string;
-  placeholder: string;
-  onChange: (value: string) => void;
-  accent: string;
-}): React.ReactElement {
-  const { colors } = useTheme();
-
-  return (
-    <View style={styles.textZone}>
-      <ThemedText type="micro" muted>
-        {label}
-      </ThemedText>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        multiline
-        placeholder={placeholder}
-        placeholderTextColor={colors.inkMuted}
-        selectionColor={accent}
-        style={[styles.notesInput, { color: colors.ink }]}
-        accessibilityLabel={label}
-      />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -1160,16 +1197,33 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: tokens.radius.sm,
   },
-  textZone: {
+
+  // Notes — diary lines attached to this entry. Cards stack with the content
+  // gap; the composer mirrors the task-checklist's add-row: a borderless line
+  // on tone, a leading pen glyph, and a save-on-return input.
+  notesSection: {
     gap: tokens.space.sm,
   },
-  notesInput: {
-    minHeight: 84,
-    paddingVertical: tokens.space.xs,
-    fontFamily: tokens.type.fontInter.regular,
-    fontSize: 15,
-    lineHeight: 22,
-    textAlignVertical: "top",
+  notesList: {
+    gap: tokens.space.md,
+  },
+  noteComposer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+    minHeight: 48,
+  },
+  noteLead: {
+    width: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noteInput: {
+    flex: 1,
+    paddingVertical: tokens.space.sm,
+    fontFamily: tokens.type.fontInter.medium,
+    fontSize: tokens.type.item.size,
+    lineHeight: tokens.type.item.lineHeight,
   },
   error: {
     marginTop: -tokens.space.sm,

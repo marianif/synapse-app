@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
-import { ThemedText } from "@/components/atoms/themed-text";
+import { MediaSourceSheet } from "@/components/molecules/media-source-sheet";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { deleteMediaFile, importPhoto } from "@/lib/media";
@@ -21,12 +21,12 @@ interface MediaStripProps {
 
 /**
  * The shared photo strip: thumbnails (tap to open the lightbox, X to remove,
- * which deletes the file from disk) plus an add-image key. The key toggles an
- * inline Library/Camera choice — instrument keys with a tonal fill-flip press
- * — instead of a nested sheet. Picked photos are downscaled + copied into the
- * app's media dir immediately via `importPhoto`, then handed to the caller
- * through `onChange`. Used by the note editor and the entry editor so both
- * surfaces share one capture vocabulary.
+ * which deletes the file from disk) plus an add-image key. The key opens the
+ * MediaSourceSheet — Photo library / Camera as a bottom sheet — instead of an
+ * inline row. Picked photos are downscaled + copied into the app's media dir
+ * immediately via `importPhoto`, then handed to the caller through `onChange`.
+ * Used by the note editor and the entry editor so both surfaces share one
+ * capture vocabulary.
  */
 export function MediaStrip({
   media,
@@ -34,7 +34,7 @@ export function MediaStrip({
 }: MediaStripProps): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
-  const [addMediaMenu, setAddMediaMenu] = useState(false);
+  const [sourceOpen, setSourceOpen] = useState(false);
   const [mediaBusy, setMediaBusy] = useState(false);
 
   const importPhotos = async (uris: string[]): Promise<void> => {
@@ -59,7 +59,6 @@ export function MediaStrip({
   };
 
   const pickFromLibrary = async (): Promise<void> => {
-    setAddMediaMenu(false);
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return;
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -74,7 +73,6 @@ export function MediaStrip({
   };
 
   const pickFromCamera = async (): Promise<void> => {
-    setAddMediaMenu(false);
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) return;
     const result = await ImagePicker.launchCameraAsync({ quality: 1 });
@@ -125,7 +123,7 @@ export function MediaStrip({
         })}
 
         <Pressable
-          onPress={() => setAddMediaMenu((v) => !v)}
+          onPress={() => setSourceOpen(true)}
           disabled={mediaBusy}
           hitSlop={10}
           accessibilityRole="button"
@@ -137,46 +135,12 @@ export function MediaStrip({
         </Pressable>
       </View>
 
-      {addMediaMenu ? (
-        <View style={styles.sourceRow}>
-          <Pressable
-            onPress={() => void pickFromLibrary()}
-            accessibilityRole="button"
-            accessibilityLabel="Pick from photo library"
-            style={({ pressed }) => [
-              styles.sourceKey,
-              {
-                backgroundColor: pressed
-                  ? colors.surface
-                  : colors.surfaceSubtle,
-              },
-            ]}
-          >
-            <IconSymbol name="Gallery" size={14} color={colors.inkMuted} />
-            <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-              LIBRARY
-            </ThemedText>
-          </Pressable>
-          <Pressable
-            onPress={() => void pickFromCamera()}
-            accessibilityRole="button"
-            accessibilityLabel="Take a photo"
-            style={({ pressed }) => [
-              styles.sourceKey,
-              {
-                backgroundColor: pressed
-                  ? colors.surface
-                  : colors.surfaceSubtle,
-              },
-            ]}
-          >
-            <IconSymbol name="Camera" size={14} color={colors.inkMuted} />
-            <ThemedText type="micro" style={{ color: colors.inkMuted }}>
-              CAMERA
-            </ThemedText>
-          </Pressable>
-        </View>
-      ) : null}
+      <MediaSourceSheet
+        visible={sourceOpen}
+        onPickLibrary={() => void pickFromLibrary()}
+        onPickCamera={() => void pickFromCamera()}
+        onClose={() => setSourceOpen(false)}
+      />
     </View>
   );
 }
@@ -225,18 +189,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: tokens.radius.pill,
-  },
-  sourceRow: {
-    flexDirection: "row",
-    gap: tokens.space.sm,
-  },
-  sourceKey: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.sm,
-    minHeight: 36,
-    paddingHorizontal: tokens.space.md,
-    borderRadius: tokens.radius.md,
   },
   pressed: {
     opacity: 0.7,

@@ -4,28 +4,65 @@ import {
   deleteTasksForEntry as dbDeleteTasksForEntry,
   ensureDb,
   generateId,
+  parseMedia,
+  serializeMedia,
 } from "@/lib/database";
+import { deleteMediaFile } from "@/lib/media";
 import { serializeRule } from "@/lib/recurrence";
 import type {
   CreateEntryInput,
   DbEntry,
   EntryType,
+  NoteMedia,
   UpdateEntryInput,
 } from "@/lib/types";
 
 import { run } from "@/store/thunks/utils";
 
+/**
+ * Map a raw `SELECT *` entries row into a `DbEntry`, parsing the JSON `media`
+ * cell. Kept private to the thunks — every read path funnels through it.
+ */
+function mapEntry(
+  row: Omit<DbEntry, "media"> & { media: string | null },
+): DbEntry {
+  return { ...row, media: parseMedia(row.media) };
+}
+
+/** Read one entry row (media parsed). Throws when missing. */
+async function readEntry(id: string): Promise<DbEntry> {
+  const db = await ensureDb();
+  const row = await db.getFirstAsync<
+    Omit<DbEntry, "media"> & { media: string | null }
+  >("SELECT * FROM entries WHERE id = ?", id);
+  if (!row) throw new Error(`Entry ${id} not found`);
+  return mapEntry(row);
+}
+
+/** Delete an entry's attached photo files from the media directory. */
+async function deleteEntryMedia(media: NoteMedia[]): Promise<void> {
+  for (const m of media) {
+    try {
+      await deleteMediaFile(m.uri);
+    } catch (error) {
+      console.error(`Failed to delete media file ${m.uri}:`, error);
+    }
+  }
+}
+
 export const fetchEntries = createAsyncThunk<DbEntry[], EntryType | undefined>(
   "entries/fetch",
   async (type) => {
     const db = await ensureDb();
-    if (type) {
-      return db.getAllAsync<DbEntry>(
-        "SELECT * FROM entries WHERE type = ? ORDER BY created_at DESC",
-        type,
-      );
-    }
-    return db.getAllAsync<DbEntry>("SELECT * FROM entries ORDER BY created_at DESC");
+    const rows = await db.getAllAsync<
+      Omit<DbEntry, "media"> & { media: string | null }
+    >(
+      type
+        ? "SELECT * FROM entries WHERE type = ? ORDER BY created_at DESC"
+        : "SELECT * FROM entries ORDER BY created_at DESC",
+      ...(type ? [type] : []),
+    );
+    return rows.map(mapEntry);
   },
 );
 
@@ -40,8 +77,8 @@ export const createEntry = createAsyncThunk<DbEntry, CreateEntryInput>(
 
       await db.runAsync(
         `INSERT INTO entries
-         (id, title, type, subtitle, inspiration, scheduled_date, scheduled_time, due_date, due_time, notes, status, recurrence_rule, recurrence_end_date, project_id, due_range, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, title, type, subtitle, inspiration, scheduled_date, scheduled_time, due_date, due_time, notes, status, recurrence_rule, recurrence_end_date, project_id, due_range, media, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         id,
         data.title,
         data.type,
@@ -57,16 +94,12 @@ export const createEntry = createAsyncThunk<DbEntry, CreateEntryInput>(
         data.recurrenceEndDate ?? null,
         data.projectId ?? null,
         data.dueRange ?? null,
+        null,
         now,
         now,
       );
 
-      const created = await db.getFirstAsync<DbEntry>(
-        "SELECT * FROM entries WHERE id = ?",
-        id,
-      );
-      if (!created) throw new Error("Entry was not persisted");
-      return created;
+      return readEntry(id);
     }),
 );
 
@@ -131,6 +164,10 @@ export const updateEntry = createAsyncThunk<
       updates.push("due_range = ?");
       values.push(data.dueRange);
     }
+    if (data.media !== undefined) {
+      updates.push("media = ?");
+      values.push(serializeMedia(data.media));
+    }
 
     if (updates.length > 0) {
       updates.push("updated_at = ?");
@@ -142,12 +179,7 @@ export const updateEntry = createAsyncThunk<
       );
     }
 
-    const updated = await db.getFirstAsync<DbEntry>(
-      "SELECT * FROM entries WHERE id = ?",
-      id,
-    );
-    if (!updated) throw new Error(`Entry ${id} not found`);
-    return updated;
+    return readEntry(id);
   }),
 );
 
@@ -164,12 +196,7 @@ export const updateEntryStatus = createAsyncThunk<
       now,
       id,
     );
-    const updated = await db.getFirstAsync<DbEntry>(
-      "SELECT * FROM entries WHERE id = ?",
-      id,
-    );
-    if (!updated) throw new Error(`Entry ${id} not found`);
-    return updated;
+    return readEntry(id);
   }),
 );
 
@@ -187,7 +214,12 @@ export const deleteEntry = createAsyncThunk<string, string>(
       // App-side ON DELETE CASCADE for subtasks: expo-sqlite leaves
       // `PRAGMA foreign_keys` off, so the clause on `tasks` never fires.
       await dbDeleteTasksForEntry(id);
+      const row = await db.getFirstAsync<{ media: string | null }>(
+        "SELECT media FROM entries WHERE id = ?",
+        id,
+      );
       await db.runAsync("DELETE FROM entries WHERE id = ?", id);
+      if (row?.media) await deleteEntryMedia(parseMedia(row.media));
       return id;
     }),
 );
@@ -217,12 +249,7 @@ export const deleteRecurringFuture = createAsyncThunk<
       now,
       id,
     );
-    const updated = await db.getFirstAsync<DbEntry>(
-      "SELECT * FROM entries WHERE id = ?",
-      id,
-    );
-    if (!updated) throw new Error(`Entry ${id} not found`);
-    return updated;
+    return readEntry(id);
   }),
 );
 
@@ -236,7 +263,12 @@ export const deleteRecurringSeries = createAsyncThunk<string, string>(
         id,
       );
       await dbDeleteTasksForEntry(id);
+      const row = await db.getFirstAsync<{ media: string | null }>(
+        "SELECT media FROM entries WHERE id = ?",
+        id,
+      );
       await db.runAsync("DELETE FROM entries WHERE id = ?", id);
+      if (row?.media) await deleteEntryMedia(parseMedia(row.media));
       return id;
     }),
 );

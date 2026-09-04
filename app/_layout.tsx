@@ -142,6 +142,10 @@ function ThemedNavigationShell(): React.ReactElement | null {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="note" options={{ presentation: "modal" }} />
           <Stack.Screen name="edit" options={{ presentation: "modal" }} />
+          <Stack.Screen
+            name="lightbox"
+            options={{ presentation: "fullScreenModal" }}
+          />
         </Stack>
       </ErrorBoundary>
       <StatusBar style={isDark ? "light" : "dark"} />

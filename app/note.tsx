@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { TagChip } from "@/components/atoms/tag-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
+import { MediaStrip } from "@/components/molecules/media-strip";
 import {
   LinkSheet,
   type LinkableTarget,
@@ -22,6 +23,7 @@ import { tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 import { countTags, suggestTags } from "@/lib/tags";
+import type { NoteMedia } from "@/lib/types";
 
 /**
  * Parse the `tags` nav param (a JSON array string) into a label array. Same
@@ -34,6 +36,28 @@ function parseTagsParam(raw: string | undefined): string[] {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
     return parsed.filter((t): t is string => typeof t === "string");
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Parse the `media` nav param (a JSON array string) into a media list. Same
+ * relaxed contract as the DB reader: absent or malformed reads as empty.
+ */
+function parseMediaParam(raw: string | undefined): NoteMedia[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (m): m is NoteMedia =>
+        !!m &&
+        typeof m === "object" &&
+        typeof m.uri === "string" &&
+        typeof m.width === "number" &&
+        typeof m.height === "number",
+    );
   } catch {
     return [];
   }
@@ -67,7 +91,7 @@ export default function NoteScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { id, body, relatable, linkedProjectId, linkedEntryId, tags } =
+  const { id, body, relatable, linkedProjectId, linkedEntryId, tags, media } =
     useLocalSearchParams<{
       id?: string;
       body?: string;
@@ -77,6 +101,8 @@ export default function NoteScreen(): React.ReactElement {
       linkedEntryId?: string;
       /** The note's tags, as a JSON array string — seeds the tag editor. */
       tags?: string;
+      /** The note's photos, as a JSON array string — seeds the media strip. */
+      media?: string;
     }>();
 
   const { updateEntry, entries: diaryEntries } = useDiary();
@@ -113,6 +139,13 @@ export default function NoteScreen(): React.ReactElement {
   const [tagSet, setTagSet] = useState<string[]>(seedTags);
   const [tagDraft, setTagDraft] = useState("");
 
+  // Photos — seeded from the param, replaced wholesale on save. The strip's
+  // imports/removals flow back through `handleMediaChange`, which mirrors the
+  // result onto latestRef synchronously so a dismissal racing a picker close
+  // never writes a stale set.
+  const seedMedia = parseMediaParam(media);
+  const [mediaSet, setMediaSet] = useState<NoteMedia[]>(seedMedia);
+
   // The tag vocabulary — every distinct tag across notes, with counts. Same
   // `countTags` the notes tab's rail uses, so the editor and the feed agree
   // on what "already existing" means.
@@ -131,8 +164,8 @@ export default function NoteScreen(): React.ReactElement {
 
   // Live values for the unmount write below — a cleanup would capture the
   // first render's values otherwise.
-  const latestRef = useRef({ draft, selection, tags: tagSet });
-  latestRef.current = { draft, selection, tags: tagSet };
+  const latestRef = useRef({ draft, selection, tags: tagSet, media: mediaSet });
+  latestRef.current = { draft, selection, tags: tagSet, media: mediaSet };
 
   // Add one tag through the shared normalization path (dedupe + latestRef
   // mirror), used by the suggestion chips. The field's own commit reuses it.
@@ -160,6 +193,12 @@ export default function NoteScreen(): React.ReactElement {
     latestRef.current = { ...latestRef.current, tags: next };
   };
 
+  // The photo strip's replace hook — syncs state and the unmount mirror.
+  const handleMediaChange = (next: NoteMedia[]): void => {
+    setMediaSet(next);
+    latestRef.current = { ...latestRef.current, media: next };
+  };
+
   // Write once as the screen unmounts. Dismissing the modal (X, swipe-down,
   // back) unmounts it, the thunk updates SQLite and the diary slice, and every
   // consumer reading the slice re-renders the saved note — no refresh, no
@@ -168,8 +207,12 @@ export default function NoteScreen(): React.ReactElement {
   useEffect(() => {
     return () => {
       if (!id) return;
-      const { draft: latestDraft, selection: latestSelection, tags: latestTags } =
-        latestRef.current;
+      const {
+        draft: latestDraft,
+        selection: latestSelection,
+        tags: latestTags,
+        media: latestMedia,
+      } = latestRef.current;
       const trimmed = latestDraft.trim();
       if (!trimmed) return;
       const unchangedLink =
@@ -181,10 +224,20 @@ export default function NoteScreen(): React.ReactElement {
             : latestSelection.id === (linkedEntryId ?? ""));
       const unchangedTags =
         JSON.stringify(latestTags) === JSON.stringify(seedTags);
-      if (trimmed === (body ?? "") && unchangedLink && unchangedTags) return;
+      const unchangedMedia =
+        JSON.stringify(latestMedia) === JSON.stringify(seedMedia);
+      if (
+        trimmed === (body ?? "") &&
+        unchangedLink &&
+        unchangedTags &&
+        unchangedMedia
+      ) {
+        return;
+      }
       void updateEntry(id, {
         body: trimmed,
         tags: latestTags,
+        media: latestMedia,
         ...(canRelate
           ? {
               linkedEntryId:
@@ -323,6 +376,13 @@ export default function NoteScreen(): React.ReactElement {
         </Pressable>
       ) : null}
 
+{/* Photos — the shared MediaStrip: thumbs (tap → lightbox, X → remove),
+          dashed add tile, and an inline Library/Camera source choice. Picked
+          photos are downscaled + copied into the media dir immediately; the
+          strip hands the new set back to the autosave. Sits above the body so
+          the keyboard never covers it. */}
+      <MediaStrip media={mediaSet} onChange={handleMediaChange} />
+
       {/* Tags — the note's flat labels. A wrapping row of existing chips
           (each #tag with an X to remove) plus an inline add-field; commits on
           return / comma / blur, normalized to trimmed lowercase + deduped.
@@ -341,7 +401,7 @@ export default function NoteScreen(): React.ReactElement {
               <TagChip
                 key={t}
                 label={t}
-                variant="hue"
+                variant="ghost"
                 trailing="remove"
                 onPress={() => {
                   const next = tagSet.filter((x) => x !== t);
@@ -491,12 +551,13 @@ const styles = StyleSheet.create({
     minHeight: 24,
   },
 
-  // Suggestions — one horizontal line under the add-field, same chip
+// Suggestions — one horizontal line under the add-field, same chip
   // vocabulary as the owned tags (the `+` marks "not yet on this note").
   suggestionRow: {
     flexDirection: "row",
     gap: tokens.space.xs,
   },
+
   input: {
     flex: 1,
     marginTop: tokens.space.md,

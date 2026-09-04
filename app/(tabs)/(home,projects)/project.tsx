@@ -809,6 +809,7 @@ export default function ProjectScreen(): React.ReactElement {
                             id: note.id,
                             body: note.body,
                             tags: JSON.stringify(note.tags),
+                            media: JSON.stringify(note.media),
                             relatable: "0",
                           },
                         })

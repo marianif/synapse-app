@@ -34,6 +34,12 @@ export interface DbEntry {
    * survives as provenance; the narrative layer stops resurfacing it.
    */
   promoted_project_id: string | null;
+  /**
+   * Photos attached to the entry (todo, deadline, or idea), in order. Same
+   * shape as note media: each entry references a file in the app's media
+   * directory; stored as a JSON array.
+   */
+  media: NoteMedia[];
   created_at: number;
   updated_at: number;
 }
@@ -98,6 +104,19 @@ export interface DbTask {
 export type DiaryMood = "calm" | "low" | "charged" | "tired" | "bright";
 
 /**
+ * A photo attached to a diary note. The `uri` is an app-scoped path inside the
+ * document directory (never the picker's temp URI), so it survives restarts;
+ * imported photos are downscaled and stored as JPEG. Dimensions recorded at
+ * import time for the thumbnail strip's aspect ratio.
+ */
+export interface NoteMedia {
+  uri: string;
+  kind: "image";
+  width: number;
+  height: number;
+}
+
+/**
  * A diary / journal entry. Lives in its own `diary_entries` table, deliberately
  * separate from action-item `entries` so it never surfaces in the Field,
  * Incoming, or Calendar zones. A free body, an auto timestamp, an optional mood.
@@ -122,6 +141,11 @@ export interface DbDiaryEntry {
    * exact membership.
    */
   tags: string[];
+  /**
+   * Photos attached to the note, in order. Stored as a JSON array in SQLite;
+   * each entry references a file in the app's media directory.
+   */
+  media: NoteMedia[];
   created_at: number;
   updated_at: number;
 }
@@ -189,4 +213,6 @@ export interface UpdateEntryInput {
   recurrenceEndDate?: string | null;
   projectId?: string | null;
   dueRange?: DueRange | null;
+  /** Replace the entry's photo set. Files already copied into the media dir. */
+  media?: NoteMedia[];
 }

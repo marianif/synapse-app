@@ -5,6 +5,7 @@ import {
   ensureDb,
   getProjects,
   insertProject as dbInsertProject,
+  parseMedia,
   setProjectFeatured as dbSetProjectFeatured,
   touchProject as dbTouchProject,
   updateProject as dbUpdateProject,
@@ -104,10 +105,9 @@ export const promoteIdeaToProject = createAsyncThunk<
 >("projects/promoteIdea", (ideaId) =>
   run("promoteIdeaToProject", async () => {
     const db = await ensureDb();
-    const idea = await db.getFirstAsync<DbEntry>(
-      "SELECT * FROM entries WHERE id = ?",
-      ideaId,
-    );
+    const idea = await db.getFirstAsync<
+      Omit<DbEntry, "media"> & { media: string | null }
+    >("SELECT * FROM entries WHERE id = ?", ideaId);
     if (!idea) throw new Error(`Idea ${ideaId} not found`);
     if (idea.type !== "idea")
       throw new Error(`Entry ${ideaId} is a '${idea.type}', not an idea`);
@@ -121,11 +121,10 @@ export const promoteIdeaToProject = createAsyncThunk<
       ideaId,
     );
 
-    const updatedIdea = await db.getFirstAsync<DbEntry>(
-      "SELECT * FROM entries WHERE id = ?",
-      ideaId,
-    );
+    const updatedIdea = await db.getFirstAsync<
+      Omit<DbEntry, "media"> & { media: string | null }
+    >("SELECT * FROM entries WHERE id = ?", ideaId);
     if (!updatedIdea) throw new Error(`Idea ${ideaId} not found`);
-    return { project, ideaId, updatedIdea };
+    return { project, ideaId, updatedIdea: { ...updatedIdea, media: parseMedia(updatedIdea.media) } };
   }),
 );

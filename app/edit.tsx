@@ -32,6 +32,7 @@ import { ChipRail, SelectChip } from "@/components/atoms/select-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DetailHeaderRow } from "@/components/molecules/detail-header-row";
+import { MediaStrip } from "@/components/molecules/media-strip";
 import { TaskChecklist } from "@/components/molecules/task-checklist";
 import { WhenPicker } from "@/components/molecules/when-picker";
 import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
@@ -47,6 +48,7 @@ import type {
   DbEntry,
   DueRange,
   EntryType,
+  NoteMedia,
   RecurrenceFrequency,
   RecurrenceRule,
 } from "@/lib/types";
@@ -55,6 +57,7 @@ type Draft = {
   title: string;
   subtitle: string;
   notes: string;
+  media: NoteMedia[];
   date: string;
   time: string;
   dueRange: DueRange | null;
@@ -111,6 +114,7 @@ function draftFromEntry(entry: DbEntry): Draft {
     title: entry.title,
     subtitle: entry.subtitle ?? "",
     notes: entry.notes ?? "",
+    media: entry.media,
     date: (deadline ? entry.due_date : entry.scheduled_date) ?? "",
     time: (deadline ? entry.due_time : entry.scheduled_time) ?? "",
     dueRange: entry.due_range,
@@ -143,6 +147,7 @@ function isDirty(draft: Draft, entry: DbEntry): boolean {
   if ((draft.title.trim() || entry.title) !== entry.title) return true;
   if (draft.subtitle.trim() !== (entry.subtitle ?? "")) return true;
   if (draft.notes.trim() !== (entry.notes ?? "")) return true;
+  if (JSON.stringify(draft.media) !== JSON.stringify(entry.media)) return true;
   if (draft.projectId !== entry.project_id) return true;
 
   if (!isDeadline && !isIdea) {
@@ -376,6 +381,7 @@ export default function EditScreen(): React.ReactElement {
           ? null
           : draft.recurrenceEndDate.trim() || null,
         projectId: draft.projectId,
+        media: draft.media,
       });
       dirtyRef.current = false;
       return true;
@@ -654,6 +660,15 @@ export default function EditScreen(): React.ReactElement {
                   multiline
                 />
               </View>
+
+              {/* Photos — the shared MediaStrip. Attachments are part of the
+                  entry's identity (a reference shot for a task, a mockup for
+                  an idea), so they sit with the hero; changes ride the draft
+                  through the normal autosave. */}
+              <MediaStrip
+                media={draft.media}
+                onChange={(media) => patchDraft(setDraft, { media })}
+              />
 
               <View style={styles.readout}>
                 {!isIdea ? (

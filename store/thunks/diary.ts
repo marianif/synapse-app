@@ -8,7 +8,7 @@ import {
   insertDiaryEntry,
   updateDiaryEntry as dbUpdateDiaryEntry,
 } from "@/lib/database";
-import type { DbDiaryEntry, DiaryMood } from "@/lib/types";
+import type { DbDiaryEntry, DiaryMood, NoteMedia } from "@/lib/types";
 
 export const fetchDiary = createAsyncThunk<DbDiaryEntry[], void>(
   "diary/fetch",
@@ -26,18 +26,23 @@ export const addDiaryEntry = createAsyncThunk<
     linkedEntryId: string | null;
     linkedProjectId: string | null;
     tags?: string[];
+    media?: NoteMedia[];
   }
->("diary/add", async ({ body, mood, linkedEntryId, linkedProjectId, tags }) => {
-  const trimmed = body.trim();
-  if (!trimmed) throw new Error("Cannot add an empty diary note");
-  return insertDiaryEntry(
-    trimmed,
-    mood,
-    linkedEntryId,
-    linkedProjectId,
-    tags ?? [],
-  );
-});
+>(
+  "diary/add",
+  async ({ body, mood, linkedEntryId, linkedProjectId, tags, media }) => {
+    const trimmed = body.trim();
+    if (!trimmed) throw new Error("Cannot add an empty diary note");
+    return insertDiaryEntry(
+      trimmed,
+      mood,
+      linkedEntryId,
+      linkedProjectId,
+      tags ?? [],
+      media ?? [],
+    );
+  },
+);
 
 export const updateDiaryEntry = createAsyncThunk<
   DbDiaryEntry,
@@ -49,6 +54,7 @@ export const updateDiaryEntry = createAsyncThunk<
       linkedEntryId?: string | null;
       linkedProjectId?: string | null;
       tags?: string[];
+      media?: NoteMedia[];
     };
   }
 >("diary/update", async ({ id, data }) => {

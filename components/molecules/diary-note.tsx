@@ -1,4 +1,6 @@
 import dayjs from "dayjs";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef } from "react";
 import {
   findNodeHandle,
@@ -59,6 +61,7 @@ export function DiaryNote({
   onDelete,
 }: DiaryNoteProps): React.ReactElement {
   const { colors } = useTheme();
+  const router = useRouter();
   const registry = useTendrilRegistry();
   const noteRef = useRef<View | null>(null);
 
@@ -105,7 +108,9 @@ export function DiaryNote({
       confirmKicker="DELETE NOTE"
       confirmMessage="This note is just for you — deleting it can't be undone."
     >
-      <View
+      <Pressable
+        onPress={onEdit}
+        accessibilityRole="button"
         ref={noteRef}
         onLayout={reportPosition}
         style={[styles.note, { backgroundColor: colors.surface }]}
@@ -128,24 +133,44 @@ export function DiaryNote({
           )}
         </View>
 
-        {onEdit ? (
-          <Pressable
-            onPress={onEdit}
-            accessibilityRole="button"
-            accessibilityLabel={`Note from ${dayjs.unix(entry.created_at).format("HH:mm")}`}
-            accessibilityHint="Tap to edit"
-          >
-            <ThemedText style={[styles.noteBody, { color: colors.ink }]}>
-              {entry.body}
-            </ThemedText>
-          </Pressable>
-        ) : (
-          <ThemedText style={[styles.noteBody, { color: colors.ink }]}>
-            {entry.body}
-          </ThemedText>
-        )}
+        <ThemedText style={[styles.noteBody, { color: colors.ink }]}>
+          {entry.body}
+        </ThemedText>
 
-{/* Tags — readonly flat labels under the body, quieter than the meta
+        {/* Photos — a quiet horizontal strip of thumbnails under the tags.
+            Tap one to open the full-screen lightbox. */}
+        {entry.media.length > 0 ? (
+          <View style={styles.mediaRow}>
+            {entry.media.map((item) => {
+              const aspect = item.width / item.height;
+              return (
+                <Pressable
+                  key={item.uri}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/lightbox",
+                      params: { uri: item.uri },
+                    })
+                  }
+                  accessibilityRole="imagebutton"
+                  accessibilityLabel="Open photo"
+                >
+                  <Image
+                    source={item.uri}
+                    style={[
+                      styles.mediaThumb,
+                      { aspectRatio: aspect, maxWidth: 88 },
+                    ]}
+                    contentFit="cover"
+                    transition={120}
+                  />
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
+        {/* Tags — readonly flat labels under the body, quieter than the meta
             row. Display only; editing happens in the note modal. Rendered
             ghost (the tag's own pastel ink, no fill) so the card surface
             stays clean and the chips read as whispered labels. */}
@@ -156,7 +181,7 @@ export function DiaryNote({
             ))}
           </View>
         ) : null}
-      </View>
+      </Pressable>
     </SwipeableRow>
   );
 }
@@ -286,6 +311,21 @@ const styles = StyleSheet.create({
   tagRow: {
     flexDirection: "row",
     flexWrap: "wrap",
+    gap: tokens.space.xs,
+  },
+
+  // Photos — a quiet strip under the tags, flat and wrapping like the tag row
+  // so a many-photo note stacks instead of clipping off the card's edge.
+  // Thumbs keep a portrait-ish footprint so the strip reads as a margin of
+  // the note, not a gallery.
+  mediaRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: tokens.space.sm,
+  },
+  mediaThumb: {
+    height: 56,
+    borderRadius: tokens.radius.sm,
+    backgroundColor: tokens.color.scrim.shadow,
   },
 });

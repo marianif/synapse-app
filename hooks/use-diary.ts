@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import type { DbDiaryEntry, DiaryMood } from "@/lib/types";
+import type { DbDiaryEntry, DiaryMood, NoteMedia } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   addDiaryEntry as addDiaryEntryThunk,
@@ -20,10 +20,11 @@ interface UseDiaryResult {
     linkedEntryId?: string | null,
     linkedProjectId?: string | null,
     tags?: string[],
+    media?: NoteMedia[],
   ) => Promise<void>;
-  /** Patch a note. Pass any link target as `null` to clear it, `tags` to
-   *  replace the whole set. Used by the project surface to file a free note
-   *  under a project. */
+  /** Patch a note. Pass any link target as `null` to clear it, `tags` or
+   *  `media` to replace the whole set. Used by the project surface to file a
+   *  free note under a project. */
   updateEntry: (
     id: string,
     data: {
@@ -32,6 +33,7 @@ interface UseDiaryResult {
       linkedEntryId?: string | null;
       linkedProjectId?: string | null;
       tags?: string[];
+      media?: NoteMedia[];
     },
   ) => Promise<void>;
   removeEntry: (id: string) => Promise<void>;
@@ -66,6 +68,7 @@ export function useDiary(): UseDiaryResult {
           linkedEntryId: string | null = null,
           linkedProjectId: string | null = null,
           tags: string[] = [],
+          media: NoteMedia[] = [],
         ): Promise<void> =>
           toVoid(
             dispatch(
@@ -75,6 +78,7 @@ export function useDiary(): UseDiaryResult {
                 linkedEntryId,
                 linkedProjectId,
                 tags,
+                media,
               }),
             )
               .unwrap()
@@ -90,6 +94,7 @@ export function useDiary(): UseDiaryResult {
             linkedEntryId?: string | null;
             linkedProjectId?: string | null;
             tags?: string[];
+            media?: NoteMedia[];
           },
         ): Promise<void> =>
           toVoid(

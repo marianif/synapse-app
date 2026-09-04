@@ -59,7 +59,15 @@
         }
       ],
       "./modules/speech-recognizer/plugin/withSpeechRecognizerPermissions",
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Synapse keeps the photos you add to notes in your library — they are stored only on this device.",
+          "cameraPermission": "Synapse uses the camera to attach a photo to a note.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

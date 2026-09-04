@@ -1,8 +1,9 @@
 import * as SQLite from 'expo-sqlite';
 
 import { ALL_STATEMENTS, CREATE_DIARY_TABLE, CREATE_PROJECTS_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, CREATE_TASKS_ENTRY_INDEX, CREATE_TASKS_TABLE, SCHEMA_VERSION } from './schema';
+import { deleteMediaFile } from './media';
 import { isTaskable } from './types';
-import type { DbDiaryEntry, DbProject, DbTask, DiaryMood, EntryType } from './types';
+import type { DbDiaryEntry, DbProject, DbTask, DiaryMood, EntryType, NoteMedia } from './types';
 
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 let isInitialized = false;
@@ -399,6 +400,42 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 16) {
+    // Migration 16: note photos — a JSON array of media descriptors on
+    // diary_entries, attached in the note modal and shown as thumbnails in the
+    // feed. Nullable so existing notes survive with no photos; the UI treats
+    // null as an empty set. The files themselves live in the document dir and
+    // are cleaned up app-side alongside the row.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync('ALTER TABLE diary_entries ADD COLUMN media TEXT');
+      } catch {
+        // column already exists (fresh installs got it from CREATE_DIARY_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
+
+  if (currentVersion < 17) {
+    // Migration 17: entry photos — the same JSON media array, now on
+    // action-item entries (todo / deadline / idea), attached in the edit
+    // screen. Nullable so existing entries survive with no photos.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync('ALTER TABLE entries ADD COLUMN media TEXT');
+      } catch {
+        // column already exists (fresh installs got it from CREATE_ENTRIES_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────
@@ -759,9 +796,38 @@ function serializeTags(tags: string[]): string | null {
 }
 
 /**
+ * Parse a stored `media` cell (JSON array of media descriptors) into a list.
+ * NULL and malformed payloads read as an empty set — same relaxed guarantee
+ * as `parseTags`, so no reader can crash on a hand-edited or pre-16 row.
+ */
+export function parseMedia(raw: string | null | undefined): NoteMedia[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (m): m is NoteMedia =>
+        !!m &&
+        typeof m === "object" &&
+        typeof m.uri === "string" &&
+        typeof m.width === "number" &&
+        typeof m.height === "number",
+    );
+  } catch {
+    return [];
+  }
+}
+
+/** Serialize a media list for the `media` cell. Null when empty. */
+export function serializeMedia(media: NoteMedia[]): string | null {
+  return media.length > 0 ? JSON.stringify(media) : null;
+}
+
+/**
  * Insert a diary entry, returning the persisted row. `linkedEntryId` ties the
  * note to an action-board entry (an 'idea') — a reflection ON that idea; null
- * for an autonomous note. Tags are stored normalized (trimmed, lowercase).
+ * for an autonomous note. Tags are stored normalized (trimmed, lowercase);
+ * media references are app-scoped file paths owned by the note.
  */
 export async function insertDiaryEntry(
   body: string,
@@ -769,18 +835,20 @@ export async function insertDiaryEntry(
   linkedEntryId: string | null = null,
   linkedProjectId: string | null = null,
   tags: string[] = [],
+  media: NoteMedia[] = [],
 ): Promise<DbDiaryEntry> {
   const db = await ensureDb();
   const id = generateId();
   const now = Math.floor(Date.now() / 1000);
   await db.runAsync(
-    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, linked_project_id, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, linked_project_id, tags, media, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     id,
     body,
     mood,
     linkedEntryId,
     linkedProjectId,
     serializeTags(tags),
+    serializeMedia(media),
     now,
     now,
   );
@@ -791,40 +859,62 @@ export async function insertDiaryEntry(
     linked_entry_id: linkedEntryId,
     linked_project_id: linkedProjectId,
     tags,
+    media,
     created_at: now,
     updated_at: now,
   };
 }
 
-/** All diary entries, newest first, tags parsed. */
+/** All diary entries, newest first, tags and media parsed. */
 export async function getDiaryEntries(): Promise<DbDiaryEntry[]> {
   const db = await ensureDb();
   const rows = await db.getAllAsync<
-    Omit<DbDiaryEntry, "tags"> & { tags: string | null }
+    Omit<DbDiaryEntry, "tags" | "media"> & { tags: string | null; media: string | null }
   >('SELECT * FROM diary_entries ORDER BY created_at DESC');
-  return rows.map((row) => ({ ...row, tags: parseTags(row.tags) }));
+  return rows.map((row) => ({
+    ...row,
+    tags: parseTags(row.tags),
+    media: parseMedia(row.media),
+  }));
 }
 
-/** One diary entry by id, tags parsed. Throws when missing. */
+/** One diary entry by id, tags and media parsed. Throws when missing. */
 export async function getDiaryEntry(id: string): Promise<DbDiaryEntry> {
   const db = await ensureDb();
   const row = await db.getFirstAsync<
-    Omit<DbDiaryEntry, "tags"> & { tags: string | null }
+    Omit<DbDiaryEntry, "tags" | "media"> & { tags: string | null; media: string | null }
   >('SELECT * FROM diary_entries WHERE id = ?', id);
   if (!row) throw new Error(`Diary entry ${id} not found`);
-  return { ...row, tags: parseTags(row.tags) };
-}
-
-/** Delete a diary entry by id. */
-export async function deleteDiaryEntry(id: string): Promise<void> {
-  const db = await ensureDb();
-  await db.runAsync('DELETE FROM diary_entries WHERE id = ?', id);
+  return { ...row, tags: parseTags(row.tags), media: parseMedia(row.media) };
 }
 
 /**
- * Update a diary entry's body, mood, link targets, or tags. Pass
- * `linkedProjectId` or `linkedEntryId` as `null` to clear; pass `tags` to
- * replace the whole set. Bumps updated_at.
+ * Delete a diary entry by id, removing its attached photo files from the
+ * media directory first — the app-side counterpart to a cascading delete, so
+ * a gone note never leaves orphaned bytes on disk.
+ */
+export async function deleteDiaryEntry(id: string): Promise<void> {
+  const db = await ensureDb();
+  const row = await db.getFirstAsync<{
+    media: string | null;
+  }>('SELECT media FROM diary_entries WHERE id = ?', id);
+  await db.runAsync('DELETE FROM diary_entries WHERE id = ?', id);
+  if (row?.media) {
+    const media = parseMedia(row.media);
+    for (const m of media) {
+      try {
+        await deleteMediaFile(m.uri);
+      } catch (error) {
+        console.error(`Failed to delete media file ${m.uri}:`, error);
+      }
+    }
+  }
+}
+
+/**
+ * Update a diary entry's body, mood, link targets, tags, or media. Pass
+ * `linkedProjectId` or `linkedEntryId` as `null` to clear; pass `tags` or
+ * `media` to replace the whole set. Bumps updated_at.
  */
 export async function updateDiaryEntry(
   id: string,
@@ -834,6 +924,7 @@ export async function updateDiaryEntry(
     linkedEntryId?: string | null;
     linkedProjectId?: string | null;
     tags?: string[];
+    media?: NoteMedia[];
   },
 ): Promise<void> {
   const db = await ensureDb();
@@ -858,6 +949,10 @@ export async function updateDiaryEntry(
   if (data.tags !== undefined) {
     updates.push('tags = ?');
     values.push(serializeTags(data.tags));
+  }
+  if (data.media !== undefined) {
+    updates.push('media = ?');
+    values.push(serializeMedia(data.media));
   }
   if (updates.length === 0) return;
   updates.push('updated_at = ?');

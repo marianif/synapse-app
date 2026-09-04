@@ -375,6 +375,7 @@ export default function NotesScreen(): React.ReactElement {
                 id: entry.id,
                 body: entry.body,
                 tags: JSON.stringify(entry.tags),
+                media: JSON.stringify(entry.media),
                 linkedProjectId: entry.linked_project_id ?? "",
                 linkedEntryId: entry.linked_entry_id ?? "",
               },

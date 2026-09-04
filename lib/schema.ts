@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 15;
+export const SCHEMA_VERSION = 17;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -25,6 +25,10 @@ export const CREATE_ENTRIES_TABLE = `
     due_range TEXT,
     -- For ideas: the project this idea was promoted into (provenance).
     promoted_project_id TEXT,
+    -- Attached photos (JSON array of {uri,kind,width,height}). Same shape as
+    -- diary_entries.media: app-scoped document-directory paths, files deleted
+    -- alongside the row. NULL = no photos.
+    media TEXT,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
   );
@@ -69,6 +73,11 @@ export const CREATE_DIARY_TABLE = `
     -- NULL = no tags. Normalized to trimmed lowercase at write time; the notes
     -- tab's tag rail filters on exact membership.
     tags TEXT,
+    -- Attached photos (JSON array of {uri,kind,width,height}, e.g.
+    -- '[{"uri":"...media/ab12.jpg","kind":"image","width":1600,"height":900}]').
+    -- NULL = no photos. URIs are app-scoped document-directory paths; the
+    -- files live in the media dir and are deleted alongside the note.
+    media TEXT,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
   );

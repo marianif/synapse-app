@@ -51,6 +51,7 @@ export const InputStage = forwardRef<
           returnKeyType="done"
           submitBehavior="submit"
           accessibilityLabel="Put something in"
+          multiline
           style={[styles.input, { color: ink }]}
         />
       </View>
@@ -119,6 +120,9 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.body.size,
     lineHeight: tokens.type.body.lineHeight,
     fontFamily: tokens.type.fontInter.medium,
+    // Cap the multiline field so a long paste grows to a bounded block, then
+    // scrolls internally — the composer never balloons to fill the screen.
+    maxHeight: tokens.space.xxxl * 3,
   },
   // Shared action slab — 40pt visual, pill radius, 44pt touch target via hitSlop.
   // Voice uses a tonal ink tint so it reads as its own slab; send uses the inverse.

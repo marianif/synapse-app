@@ -380,6 +380,9 @@ const styles = StyleSheet.create({
     fontSize: tokens.type.body.size,
     lineHeight: tokens.type.body.lineHeight,
     fontFamily: tokens.type.fontInter.medium,
+    // Cap the multiline note field so a long paste grows to a bounded block,
+    // then scrolls internally — the composer never balloons to fill the screen.
+    maxHeight: tokens.space.xxxl * 3,
   },
   primaryRound: {
     width: 40,

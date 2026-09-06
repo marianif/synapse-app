@@ -24,7 +24,7 @@ import * as Notifications from "expo-notifications";
 import { Redirect, Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
 import "react-native-reanimated";
@@ -104,24 +104,35 @@ function ThemedNavigationShell(): React.ReactElement | null {
     });
   }, []);
 
+  const handleNotificationResponse = useCallback(
+    (response: Notifications.NotificationResponse): void => {
+      const data = response.notification.request.content.data as {
+        kind?: unknown;
+        projectId?: unknown;
+      };
+      if (data.kind !== "project-return" || typeof data.projectId !== "string") {
+        return;
+      }
+      router.push({
+        pathname: "/(tabs)/(projects)/project",
+        params: { id: data.projectId },
+      });
+    },
+    [router],
+  );
+
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const data = response.notification.request.content.data as {
-          kind?: unknown;
-          projectId?: unknown;
-        };
-        if (data.kind !== "project-return" || typeof data.projectId !== "string") {
-          return;
-        }
-        router.push({
-          pathname: "/(tabs)/(projects)/project",
-          params: { id: data.projectId },
-        });
-      },
+      handleNotificationResponse,
     );
+    // A notification tap that launched the app is delivered as a "last
+    // response" rather than a live event — handle it on mount so the tap
+    // actually navigates instead of just opening the app.
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) handleNotificationResponse(response);
+    });
     return () => subscription.remove();
-  }, [router]);
+  }, [handleNotificationResponse]);
 
   // Reveal the app only once the persisted theme preference has loaded, so an
   // override never flashes the wrong scheme on cold start.

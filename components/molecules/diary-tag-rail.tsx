@@ -47,7 +47,7 @@ export function DiaryTagRail({
           <TagChip
             key={tag}
             label={tag}
-            variant="neutral"
+            variant="ghost"
             size="md"
             count={count}
             selected={active}
@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
   // swiping the rail sideways instead of stacking into the feed.
   scroller: {
     flexGrow: 0,
+    marginTop: tokens.space.md,
   },
   rail: {
     flexDirection: "row",

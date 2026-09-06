@@ -11,9 +11,8 @@ import { tokens, useTheme } from "@/constants/theme";
 import type { AgendaPrompt } from "@/lib/agenda-prompts";
 
 /**
- * The Agenda is not a feed. It is a small set of invitations: one primary way
- * in, then at most two alternatives. Each card has one action and opens the
- * thing it names.
+ * The Agenda is not a feed. It is a small editorial list: one place to start,
+ * then at most two alternatives. Each row has context and one direct action.
  *
  * The list stays intentionally shallow. More options would turn activation
  * back into another board to process.
@@ -63,7 +62,17 @@ export function AgendaFeed({
                 )
           }
         >
-          <AgendaPromptCard prompt={primary} featured onPress={onSelect} />
+          <Animated.Text
+            style={[styles.sectionLabel, { color: colors.inkMuted }]}
+          >
+            Start here
+          </Animated.Text>
+          <AgendaPromptCard
+            prompt={primary}
+            index={0}
+            featured
+            onPress={onSelect}
+          />
         </Animated.View>
       ) : (
         <EmptyState
@@ -83,9 +92,9 @@ export function AgendaFeed({
                     .duration(tokens.motion.duration.base)
                     .easing(Easing.bezier(...tokens.motion.bezier))
             }
-            style={[styles.secondaryLabel, { color: colors.inkMuted }]}
+            style={[styles.sectionLabel, { color: colors.inkMuted }]}
           >
-            Other ways in
+            If you want another thread
           </Animated.Text>
           {secondary.map((prompt, index) => (
             <Animated.View
@@ -100,7 +109,11 @@ export function AgendaFeed({
                       .easing(Easing.bezier(...tokens.motion.bezier))
               }
             >
-              <AgendaPromptCard prompt={prompt} onPress={onSelect} />
+              <AgendaPromptCard
+                prompt={prompt}
+                index={index + 1}
+                onPress={onSelect}
+              />
               {index < secondary.length - 1 ? (
                 <View style={styles.separator} />
               ) : null}
@@ -117,17 +130,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space.lg,
   },
   secondarySection: {
-    marginTop: tokens.space.xxxl,
+    marginTop: tokens.space.xl,
   },
-  secondaryLabel: {
+  sectionLabel: {
     fontFamily: tokens.type.fontMono.medium,
     fontSize: tokens.type.kicker.size,
     lineHeight: tokens.type.kicker.lineHeight,
     letterSpacing: tokens.type.kicker.tracking,
-    marginBottom: tokens.space.md,
+    marginBottom: tokens.space.sm,
     textTransform: "uppercase",
   },
   separator: {
-    height: tokens.space.sm,
+    height: tokens.space.xs,
   },
 });

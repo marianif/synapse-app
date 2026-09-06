@@ -1,18 +1,22 @@
 import * as Haptics from "expo-haptics";
 import { TabTrigger } from "expo-router/ui";
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useMemo, useState } from "react";
 import type { View as RNView } from "react-native";
-import { Pressable, StyleSheet, View } from "react-native";
+import { AppState, Pressable, StyleSheet, View } from "react-native";
 
 import type { IconSymbolName } from "@/components/ui/icon-symbol";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useGlobalCapture } from "@/contexts/global-capture-context";
+import { useDatabase } from "@/hooks/use-database/use-database";
+import { agendaPrompts } from "@/lib/agenda-prompts";
 
 type TabButtonProps = {
   icon: IconSymbolName;
   label: string;
   hint?: string;
+  /** Waiting count shown as a dot on the icon; hidden while focused. */
+  badgeCount?: number;
   // Injected by <TabTrigger asChild> — the focused state comes from real
   // navigator state, so the bar never has to guess from the URL. It must stay
   // optional: TypeScript can't see the prop the Slot forwards at runtime.
@@ -23,17 +27,20 @@ type TabButtonProps = {
 // injects, so the button is a forwardRef component rather than an inline
 // render — otherwise TabTrigger has nothing to attach its press behavior to.
 const TabButton = forwardRef<RNView, TabButtonProps>(function TabButton(
-  { icon, label, hint, isFocused, ...pressProps },
+  { icon, label, hint, badgeCount, isFocused, ...pressProps },
   ref,
 ) {
   const { colors } = useTheme();
+  const hasWaiting = (badgeCount ?? 0) > 0 && !isFocused;
 
   return (
     <Pressable
       ref={ref}
       {...pressProps}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={
+        hasWaiting ? `${label}, ${badgeCount} waiting` : label
+      }
       accessibilityHint={hint}
       accessibilityState={{ selected: isFocused }}
       style={({ pressed }) => [
@@ -46,6 +53,17 @@ const TabButton = forwardRef<RNView, TabButtonProps>(function TabButton(
         size={24}
         color={isFocused ? colors.accent.clay : colors.inkMuted}
       />
+      {hasWaiting ? (
+        <View
+          style={[
+            styles.badge,
+            {
+              backgroundColor: colors.feedback.danger,
+              borderColor: colors.surfaceSubtle,
+            },
+          ]}
+        />
+      ) : null}
     </Pressable>
   );
 });
@@ -53,6 +71,26 @@ const TabButton = forwardRef<RNView, TabButtonProps>(function TabButton(
 export function CustomTabBar(): React.ReactElement {
   const { colors } = useTheme();
   const cap = useGlobalCapture();
+  const { entries, tasks, projects } = useDatabase();
+
+  // Same derivation as the Agenda screen, so the dot appears exactly when the
+  // tab has an invitation to show. `now` is anchored once per mount and re-set
+  // on focus so a day passing is reflected without recomputing on every render.
+  const [now, setNow] = useState(() => Date.now());
+
+  // Re-anchor "now" whenever the app returns to the foreground so the dot
+  // reflects the current moment after a day has passed in the background.
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active") setNow(Date.now());
+    });
+    return () => sub.remove();
+  }, []);
+
+  const agendaCount = useMemo(
+    () => agendaPrompts({ entries, tasks, projects, now }).length,
+    [entries, tasks, projects, now],
+  );
 
   return (
     <View
@@ -78,7 +116,7 @@ export function CustomTabBar(): React.ReactElement {
             <TabButton icon="Folder" label="Projects" />
           </TabTrigger>
           <TabTrigger name="home" asChild resetOnFocus>
-            <TabButton icon="Grid" label="Field" />
+            <TabButton icon="Home6" label="Field" />
           </TabTrigger>
         </View>
 
@@ -127,6 +165,7 @@ export function CustomTabBar(): React.ReactElement {
             <TabButton
               icon="DirectNotification2"
               label="Agenda"
+              badgeCount={agendaCount}
               hint="What the board has to say about your open items."
             />
           </TabTrigger>
@@ -161,6 +200,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: tokens.radius.sm,
+  },
+  // Waiting dot on the Agenda icon — sits on the tab button, not the icon, so
+  // it stays within the 44pt touch target and reads as a badge on the tab.
+  badge: {
+    position: "absolute",
+    top: 9,
+    right: 9,
+    width: 10,
+    height: 10,
+    borderRadius: 999,
+    borderWidth: 1,
   },
   tabButtonPressed: {
     opacity: 0.7,

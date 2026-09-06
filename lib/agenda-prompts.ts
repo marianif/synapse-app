@@ -16,12 +16,16 @@ export type AgendaPromptTarget =
 export interface AgendaPrompt {
   id: string;
   kind: AgendaPromptKind;
-  /** Small human label above the invitation. */
-  label: string;
   /** The sentence that earns the user's attention. */
   title: string;
+  /** Sentence pieces used to give only the entity the handwritten treatment. */
+  titlePrefix: string;
+  titleSuffix: string;
+  subject: string;
   /** The smallest useful next move. */
   body: string;
+  /** Compact evidence explaining why this is here now. */
+  detail: string;
   actionLabel: string;
   target: AgendaPromptTarget;
   /** Used only to choose the primary invitation. Never shown as a score. */
@@ -51,6 +55,12 @@ const daysSince = (timestamp: number | null, now: number): number | null => {
 const projectLastSeen = (project: DbProject): number | null =>
   project.last_opened_at ?? project.updated_at ?? project.created_at;
 
+function dayPhrase(days: number): string {
+  if (days <= 0) return "today";
+  if (days === 1) return "tomorrow";
+  return `in ${days} days`;
+}
+
 function returnPrompts(
   entries: DbEntry[],
   projects: DbProject[],
@@ -72,11 +82,14 @@ function returnPrompts(
       {
         id: `return-${project.id}`,
         kind: "return" as const,
-        label: "A way back in",
         title: `There's a thread waiting in ${project.title}.`,
+        titlePrefix: "There's a thread waiting in ",
+        titleSuffix: ".",
+        subject: project.title,
         body: hasOneThing
           ? "Open it and choose your next move."
           : "Open it and choose one thing to move.",
+        detail: `${open.length} open ${open.length === 1 ? "thing" : "things"} · quiet for ${idle} days`,
         actionLabel: "Open project",
         target: { kind: "project", id: project.id } as const,
         priority: 900 + Math.min(idle, 30),
@@ -107,9 +120,12 @@ function continuePrompts(
       {
         id: `continue-${entry.id}`,
         kind: "continue" as const,
-        label: "Keep going",
         title: `You already started ${entry.title}.`,
+        titlePrefix: "You already started ",
+        titleSuffix: ".",
+        subject: entry.title,
         body: "Continue from where you left off.",
+        detail: `${done} of ${own.length} steps complete`,
         actionLabel: "Continue",
         target: { kind: "entry", id: entry.id } as const,
         priority: 720 + done,
@@ -130,13 +146,18 @@ function preparePrompts(entries: DbEntry[]): AgendaPrompt[] {
       {
         id: `prepare-${entry.id}`,
         kind: "prepare" as const,
-        label: "Make room",
         title: urgent
           ? `${entry.title} needs a place to start.`
           : `${entry.title} is coming up.`,
+        titlePrefix: "",
+        titleSuffix: urgent ? " needs a place to start." : " is coming up.",
+        subject: entry.title,
         body: urgent
           ? "Choose one small step and put it somewhere."
           : "Give it a place to start.",
+        detail: urgent
+          ? `${Math.abs(days)} ${Math.abs(days) === 1 ? "day" : "days"} past due`
+          : `Due ${dayPhrase(days)}`,
         actionLabel: urgent ? "Open item" : "Plan it",
         target: { kind: "entry", id: entry.id } as const,
         priority: urgent ? 850 + Math.min(Math.abs(days), 30) : 800 - days,
@@ -146,7 +167,7 @@ function preparePrompts(entries: DbEntry[]): AgendaPrompt[] {
   });
 }
 
-function decidePrompts(entries: DbEntry[]): AgendaPrompt[] {
+function decidePrompts(entries: DbEntry[], now: number): AgendaPrompt[] {
   return entries.flatMap((entry) => {
     if (entry.type !== "idea" || isDone(entry) || entry.promoted_project_id)
       return [];
@@ -155,9 +176,12 @@ function decidePrompts(entries: DbEntry[]): AgendaPrompt[] {
       {
         id: `decide-${entry.id}`,
         kind: "decide" as const,
-        label: "Give it a place",
         title: `That idea is still here: ${entry.title}.`,
+        titlePrefix: "That idea is still here: ",
+        titleSuffix: ".",
+        subject: entry.title,
         body: "Give it a home, keep it for later, or let it go.",
+        detail: `Captured ${daysSince(entry.created_at, now) ?? 0} days ago · no project yet`,
         actionLabel: "Open idea",
         target: { kind: "entry", id: entry.id } as const,
         priority: 500,
@@ -205,6 +229,6 @@ export function agendaPrompts(input: {
     ...returnPrompts(entries, projects, now),
     ...preparePrompts(entries),
     ...continuePrompts(entries, tasks),
-    ...decidePrompts(entries),
+    ...decidePrompts(entries, now),
   ]);
 }

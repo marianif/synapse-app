@@ -96,6 +96,7 @@ describe("agendaPrompts", () => {
       kind: "return",
       title: "There's a thread waiting in Salute.",
       body: "Open it and choose your next move.",
+      detail: "1 open thing · quiet for 10 days",
       actionLabel: "Open project",
       target: { kind: "project", id: "project-1" },
     });
@@ -129,6 +130,7 @@ describe("agendaPrompts", () => {
         kind: "continue",
         title: "You already started Pack kitchen.",
         body: "Continue from where you left off.",
+        detail: "1 of 2 steps complete",
         actionLabel: "Continue",
       }),
     );
@@ -150,6 +152,7 @@ describe("agendaPrompts", () => {
     expect(prepare).toMatchObject({
       title: "Book dentist is coming up.",
       body: "Give it a place to start.",
+      detail: expect.stringContaining("Due"),
       actionLabel: "Plan it",
     });
     expect(prepare?.title).not.toMatch(/\d+d|tomorrow|today/);
@@ -171,6 +174,7 @@ describe("agendaPrompts", () => {
         kind: "decide",
         title: "That idea is still here: Summer studio.",
         body: "Give it a home, keep it for later, or let it go.",
+        detail: expect.stringContaining("no project yet"),
         actionLabel: "Open idea",
       }),
     );

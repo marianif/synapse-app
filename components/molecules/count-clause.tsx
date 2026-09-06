@@ -36,22 +36,34 @@ interface CountClauseProps {
   scheme: Scheme;
   /** Muted ink for the connective words ("and", commas). */
   muted: string;
+  /** Optional tap per span — lets a count-phrase drill into its cut. */
+  onSelect?: (type: EntryType) => void;
 }
 
 /** A run of colored count-phrases joined with commas + "and", as one sentence
  *  flowing into the surrounding text. Numbers + nouns take the AA-safe type
- *  shade (entryKicker), the connective words stay muted ink. */
+ *  shade (entryKicker), the connective words stay muted ink. Each count-phrase
+ *  is individually tappable when `onSelect` is supplied, so the summary voice
+ *  can drill into the register without turning the whole line into a button. */
 export function CountClause({
   spans,
   scheme,
   muted,
+  onSelect,
 }: CountClauseProps): React.ReactElement {
   return (
     <>
       {spans.map((s, i) => {
         const sep = i === 0 ? "" : i === spans.length - 1 ? " and " : ", ";
         return (
-          <Text key={s.type}>
+          <Text
+            key={s.type}
+            onPress={onSelect ? () => onSelect(s.type) : undefined}
+            accessibilityRole={onSelect ? "button" : undefined}
+            accessibilityLabel={
+              onSelect ? `Show ${s.n} ${s.noun}` : undefined
+            }
+          >
             <Text style={{ color: muted }}>{sep}</Text>
             <Text style={[styles.count, { color: entryKicker(s.type, scheme) }]}>
               {`${s.n} ${s.noun}`}

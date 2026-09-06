@@ -5,12 +5,15 @@ import { CountClause, spansFor } from "@/components/molecules/count-clause";
 import { tokens, useTheme } from "@/constants/theme";
 
 import type { FieldRowItem } from "@/components/molecules/field-row";
+import type { EntryType } from "@/lib/types";
 
 interface FieldSummaryProps {
   /** STAKES rows (deadlines + todos). */
   stakes: FieldRowItem[];
   /** PRESENT rows (ideas). */
   present: FieldRowItem[];
+  /** Optional tap per count-phrase — lets the voice drill into a cut. */
+  onSelectType?: (type: EntryType) => void;
 }
 
 /**
@@ -22,6 +25,7 @@ interface FieldSummaryProps {
 export function FieldSummary({
   stakes,
   present,
+  onSelectType,
 }: FieldSummaryProps): React.ReactElement {
   const { scheme, colors } = useTheme();
 
@@ -48,14 +52,24 @@ export function FieldSummary({
     <ThemedText type="body" style={[styles.line, { color: colors.inkMuted }]}>
       {stakeSpans.length > 0 ? (
         <>
-          <CountClause spans={stakeSpans} scheme={scheme} muted={colors.inkMuted} />
+          <CountClause
+            spans={stakeSpans}
+            scheme={scheme}
+            muted={colors.inkMuted}
+            onSelect={onSelectType}
+          />
           {stakeVerb}
           {presentSpans.length > 0 ? "; " : "."}
         </>
       ) : null}
       {presentSpans.length > 0 ? (
         <>
-          <CountClause spans={presentSpans} scheme={scheme} muted={colors.inkMuted} />
+          <CountClause
+            spans={presentSpans}
+            scheme={scheme}
+            muted={colors.inkMuted}
+            onSelect={onSelectType}
+          />
           {presentTail}
         </>
       ) : null}

@@ -1,9 +1,11 @@
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import isoWeek from "dayjs/plugin/isoWeek";
 
 import type { DbEntry, EntryType } from "@/lib/types";
 
 dayjs.extend(customParseFormat);
+dayjs.extend(isoWeek);
 
 // Pure when/runway/status logic for the direct zone (deadlines + todos + ideas;
 // undated ideas fall into the calm band, never charged). Kept React-free so the
@@ -46,6 +48,59 @@ export function whenLabel(
 export function isWhenCharged(days: number | null): boolean {
   if (days === null) return false;
   return days < 7; // < 0 = expired, 0..6 = approaching
+}
+
+/**
+ * Which slice of the direct zone is shown — the resting type axis.
+ */
+export type DirectFilter = "all" | "deadline" | "todo" | "idea";
+
+/**
+ * Temporal circumscription for a scoped direct view — the second, optional axis
+ * a summary tap adds on top of the type filter. `null` = no temporal narrowing
+ * (the resting "all time" register).
+ */
+export type HorizonScope = "week" | "month" | "year" | "overdue" | null;
+
+/** The direct register's active cut: the resting type axis × optional horizon. */
+export interface DirectScope {
+  type: DirectFilter;
+  horizon: HorizonScope;
+}
+
+/** The resting scope — behaves exactly like the pre-scope register. */
+export const RESTING_SCOPE: DirectScope = { type: "all", horizon: null };
+
+/** Editorial copy for a horizon, e.g. "This week". */
+export function horizonLabel(horizon: Exclude<HorizonScope, null>): string {
+  switch (horizon) {
+    case "week":
+      return "This week";
+    case "month":
+      return "This month";
+    case "year":
+      return "This year";
+    case "overdue":
+      return "Overdue";
+  }
+}
+
+/**
+ * True when an entry's date falls within the temporal scope. Overdue entries are
+ * always in scope — they "need you" in every window — while undated entries are
+ * never in a dated window (they have no date pressure to circumscribe).
+ */
+export function withinHorizon(e: DbEntry, horizon: HorizonScope): boolean {
+  if (horizon === null) return true;
+  const dateStr = e.due_date ?? e.scheduled_date ?? null;
+  const days = daysUntil(dateStr);
+  if (days === null) return false; // undated — never in a dated window
+  if (horizon === "overdue") return days < 0;
+  if (days < 0) return true; // overdue counts in every window
+  const d = dayjs(dateStr!, "DD/MM/YYYY").startOf("day");
+  if (horizon === "week") return d.isSame(dayjs(), "isoWeek");
+  if (horizon === "month") return d.isSame(dayjs(), "month");
+  return d.isSame(dayjs(), "year");
 }
 
 /** Order: most burnt-down first (overdue → soonest), undated last. */

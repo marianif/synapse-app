@@ -1,7 +1,5 @@
 import { SectionTabs, type SectionTab } from "@/components/molecules/section-tabs";
-
-/** Which slice of the direct zone is shown. */
-export type DirectFilter = "all" | "deadline" | "todo" | "idea";
+import type { DirectFilter } from "@/lib/direct-when";
 
 /** Live tally of the whole direct zone (open + done together). */
 export interface DirectCounts {

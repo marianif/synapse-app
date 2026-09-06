@@ -19,9 +19,18 @@ import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useCalendarData } from "@/hooks/use-calendar-data";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { getEntriesForDay } from "@/hooks/use-database/use-database.helpers";
-import { byRunway, daysUntil } from "@/lib/direct-when";
+import {
+  RESTING_SCOPE,
+  byRunway,
+  daysUntil,
+  withinHorizon,
+} from "@/lib/direct-when";
 import { horizonLabel } from "@/lib/horizons";
 
+import type {
+  DirectScope,
+  HorizonScope,
+} from "@/lib/direct-when";
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
 import type { DbEntry, EntryType } from "@/lib/types";
 
@@ -81,6 +90,14 @@ const DIRECT_TYPES: EntryType[] = ["deadline", "todo", "idea"];
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
+
+  // The direct register's active cut, lifted from DirectOverview so the summary
+  // voice can drive it. Resting = type "all", no temporal window.
+  const [scope, setScope] = useState<DirectScope>(RESTING_SCOPE);
+  // Scroll target for a summary drill — DirectOverview's offset within the
+  // home ScrollView, measured on layout so a tap can land the register in view.
+  const directOffset = useRef(0);
+  const scrollRef = useRef<ScrollView>(null);
 
   // Capture intent param — set by the widget deep link (synapseapp:///?capture=voice)
   // and by the tab-bar pen key (tap → text, long-press → voice). Consumed once below.
@@ -148,8 +165,10 @@ export default function HomeScreen(): React.ReactElement {
   // The direct zone: deadlines + todos + ideas. DirectOverview owns the full set
   // (open AND done — it sinks completed lines to the bottom and strikes them
   // through), so it gets every status. FieldGreeting's summary voice reads the
-  // OPEN streams (stakes + present); ideas feed the greeting's narrative line
-  // AND appear as direct rows — held in sight in both zones.
+  // OPEN streams; stakes are narrowed to a true "this week" cut (overdue or
+  // inside the current ISO week) so the spoken count equals the scoped view a
+  // tap lands on — the summary never claims more than the register will show.
+  // Ideas are undated by design, so "present" stays the whole open stream.
   const { directEntries, stakes, present } = useMemo(() => {
     const isDone = (e: DbEntry): boolean =>
       e.status === "completed" || e.status === "met";
@@ -160,7 +179,11 @@ export default function HomeScreen(): React.ReactElement {
     return {
       directEntries: direct,
       stakes: open
-        .filter((e) => DIRECT_TYPES.includes(e.type as EntryType))
+        .filter(
+          (e) =>
+            (e.type === "deadline" || e.type === "todo") &&
+            withinHorizon(e, "week"),
+        )
         .sort(byRunway)
         .map(toRowItem),
       present: open.filter((e) => e.type === "idea").map(toRowItem),
@@ -178,9 +201,26 @@ export default function HomeScreen(): React.ReactElement {
     [projects],
   );
 
+  // A summary count-phrase tap lands the direct register in view and narrows it
+  // to that cut. Stakes are "this week" (matching how the summary counts them);
+  // ideas have no date axis, so their tap just filters to the type.
+  const handleSelectType = (type: EntryType): void => {
+    const horizon: HorizonScope = type === "idea" ? null : "week";
+    setScope({ type, horizon });
+    scrollRef.current?.scrollTo({
+      y: Math.max(0, directOffset.current - tokens.space.md),
+      animated: true,
+    });
+  };
+
+  const handleScopeChange = (next: DirectScope): void => {
+    setScope(next);
+  };
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <ScrollView
+        ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -191,6 +231,7 @@ export default function HomeScreen(): React.ReactElement {
           seasonalNote={seasonalNote(today.getMonth(), today.getHours())}
           stakes={stakes}
           present={present}
+          onSelectType={handleSelectType}
         />
 
         {/* TODO(flow): visual shaping pass — this is a minimal projects +
@@ -205,16 +246,24 @@ export default function HomeScreen(): React.ReactElement {
           // there rather than raising a home-dock bar.
           onAddProject={() => router.push("/(tabs)/(projects)")}
         />
-        <DirectOverview
-          entries={directEntries}
-          onCapture={(type) => {
-            // A type-specific empty state (No deadlines / todos / ideas yet)
-            // seeds the resolver so it opens on that door; the neutral "all"
-            // empty state passes nothing and the resolver stays neutral.
-            cap.setSeedType(type ?? null);
-            cap.setComposerOpen(true);
+        <View
+          onLayout={(e) => {
+            directOffset.current = e.nativeEvent.layout.y;
           }}
-        />
+        >
+          <DirectOverview
+            entries={directEntries}
+            scope={scope}
+            onScopeChange={handleScopeChange}
+            onCapture={(type) => {
+              // A type-specific empty state (No deadlines / todos / ideas yet)
+              // seeds the resolver so it opens on that door; the neutral "all"
+              // empty state passes nothing and the resolver stays neutral.
+              cap.setSeedType(type ?? null);
+              cap.setComposerOpen(true);
+            }}
+          />
+        </View>
 
         <View style={styles.captureSpacer} />
       </ScrollView>

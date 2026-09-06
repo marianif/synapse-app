@@ -1,22 +1,35 @@
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
+import { ThemedText } from "@/components/atoms/themed-text";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import {
   DirectFilterBar,
   type DirectCounts,
-  type DirectFilter,
 } from "@/components/molecules/direct-filter-bar";
 import { DirectPager } from "@/components/molecules/direct-pager";
 import { DirectRow } from "@/components/molecules/direct-row";
 import { EmptyState } from "@/components/molecules/empty-state";
-import { tokens, useEntryKicker, useTheme } from "@/constants/theme";
+import {
+  entryKicker,
+  tokens,
+  useEntryKicker,
+  useTheme,
+} from "@/constants/theme";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
-import { doneStatus, sortDirect } from "@/lib/direct-when";
+import {
+  doneStatus,
+  horizonLabel,
+  isDone,
+  sortDirect,
+  withinHorizon,
+} from "@/lib/direct-when";
 import { ConfirmKey } from "@/lib/settings";
 
+import type { DirectFilter, DirectScope } from "@/lib/direct-when";
 import type { DbEntry, EntryType } from "@/lib/types";
 
 // Rows shown per page — the home holds a fixed, predictable height no matter how
@@ -38,6 +51,14 @@ interface DirectOverviewProps {
    * nothing and the resolver stays type-agnostic.
    */
   onCapture?: (type?: EntryType) => void;
+  /**
+   * The active cut — the resting type axis × an optional temporal horizon. Owned
+   * by the parent so the summary voice can drive it (tap a span → scroll here +
+   * narrow). `RESTING_SCOPE` behaves exactly like the pre-scope register.
+   */
+  scope: DirectScope;
+  /** Applies a new cut; set by the type tabs and the scope chip's clear. */
+  onScopeChange: (scope: DirectScope) => void;
 }
 
 /**
@@ -53,18 +74,20 @@ interface DirectOverviewProps {
 export function DirectOverview({
   entries,
   onCapture,
+  scope,
+  onScopeChange,
 }: DirectOverviewProps): React.ReactElement | null {
   const router = useRouter();
   const { updateEntryStatus, deleteEntry } = useDatabase();
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   // AA-safe type shades for the empty-state title + CTA. Hooks must resolve at
   // the top level, so pre-compute both and pick by filter inside the memo.
   const deadlineShade = useEntryKicker("deadline");
   const todoShade = useEntryKicker("todo");
   const ideaShade = useEntryKicker("idea");
-  const [filter, setFilter] = useState<DirectFilter>("all");
   const [page, setPage] = useState(0);
   const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteEntry });
+  const filter = scope.type;
 
   // Live counts off the unfiltered set so the header reads the true field, not
   // the current cut. Counts are the whole direct zone (open + done together).
@@ -80,33 +103,26 @@ export function DirectOverview({
     return { all: deadline + todo + idea, deadline, todo, idea };
   }, [entries]);
 
-  // Filter, then order charged-first. Pagination slices this ordered list.
+  // Scope, then order charged-first. The type cut is the resting axis; the
+  // temporal cut (a summary-span drill) narrows before sorting — and because a
+  // temporal scope answers "what needs you in this window", settled lines drop
+  // out so the visible count matches the summary's spoken count. Pagination
+  // slices this ordered list.
   const ordered = useMemo(() => {
-    const cut =
+    const typed =
       filter === "all" ? entries : entries.filter((e) => e.type === filter);
-    return sortDirect(cut);
-  }, [entries, filter]);
+    if (!scope.horizon) return sortDirect(typed);
+    return sortDirect(
+      typed.filter((e) => !isDone(e) && withinHorizon(e, scope.horizon)),
+    );
+  }, [entries, filter, scope.horizon]);
 
-  const pageCount = Math.max(1, Math.ceil(ordered.length / PAGE_SIZE));
-  // Clamp during render so a deletion on the last page (or a filter change)
-  // can't strand us on a page that no longer exists.
-  const safePage = Math.min(page, pageCount - 1);
-  // Reconcile the render-time clamp back into state so a later change (e.g. items
-  // added back) resumes from the page the user is actually viewing, not a stale
-  // out-of-range page.
-  useEffect(() => {
-    if (page > pageCount - 1) setPage(pageCount - 1);
-  }, [page, pageCount]);
-  const pageItems = ordered.slice(
-    safePage * PAGE_SIZE,
-    safePage * PAGE_SIZE + PAGE_SIZE,
-  );
-
-  // When the ordered cut is empty the rows view would otherwise render a bare
-  // gap. Two semantically distinct blanks reach here — resolve which, so the
+  // When the active cut is empty the rows view would otherwise render a bare
+  // gap. Three semantically distinct blanks reach here — resolve which, so the
   // consequence zone always states a fact instead of showing a void:
-  //   • zone-empty — no deadlines/todos exist at all (first-run / cleared board)
-  //   • filtered   — items exist but the active cut has none
+  //   • zone-empty  — no deadlines/todos exist at all (first-run / cleared board)
+  //   • scoped      — items exist but the temporal scope has none in its window
+  //   • filtered    — items exist but the active type cut has none
   // (An all-done zone is NOT blank: done rows still render, struck through and
   // sunk to the bottom, so ordered is non-empty and this branch never fires.)
   const empty = useMemo<{
@@ -120,6 +136,29 @@ export function DirectOverview({
     captureType?: EntryType;
   } | null>(() => {
     if (ordered.length > 0) return null;
+    const scopeType = filter === "all" ? null : filter;
+    // A temporal scope is active and nothing falls inside its window — offer to
+    // widen the lens back out rather than add (the item isn't missing, the
+    // window is just empty of it).
+    if (scope.horizon && scopeType === null) {
+      return {
+        title: scope.horizon === "overdue"
+          ? "Nothing overdue"
+          : `Nothing ${horizonLabel(scope.horizon).toLowerCase()}`,
+        description:
+          "Widen the lens to see the whole field, or add something new.",
+        accent: colors.inkMuted,
+      };
+    }
+    if (scope.horizon && scopeType) {
+      return {
+        title: scope.horizon === "overdue"
+          ? `No ${scopeType}s overdue`
+          : `No ${scopeType}s ${horizonLabel(scope.horizon).toLowerCase()}`,
+        description: "Widen the lens, or add something to this stretch of time.",
+        accent: colors.inkMuted,
+      };
+    }
     // On "all" with a truly empty board there's no single type to add — point
     // at the pen, which resolves the type from whatever thought lands.
     if (filter === "all") {
@@ -166,15 +205,36 @@ export function DirectOverview({
   }, [
     ordered.length,
     filter,
+    scope.horizon,
     colors.inkMuted,
     deadlineShade,
     todoShade,
     ideaShade,
   ]);
 
+  const pageCount = Math.max(1, Math.ceil(ordered.length / PAGE_SIZE));
+  // Clamp during render so a deletion on the last page (or a filter change)
+  // can't strand us on a page that no longer exists.
+  const safePage = Math.min(page, pageCount - 1);
+  // Reconcile the render-time clamp back into state so a later change (e.g. items
+  // added back) resumes from the page the user is actually viewing, not a stale
+  // out-of-range page.
+  useEffect(() => {
+    if (page > pageCount - 1) setPage(pageCount - 1);
+  }, [page, pageCount]);
+  const pageItems = ordered.slice(
+    safePage * PAGE_SIZE,
+    safePage * PAGE_SIZE + PAGE_SIZE,
+  );
+
   const changeFilter = (next: DirectFilter): void => {
-    setFilter(next);
+    onScopeChange({ ...scope, type: next });
     setPage(0); // a new cut always opens on its most pressing page
+  };
+
+  const clearScope = (): void => {
+    onScopeChange({ type: "all", horizon: null });
+    setPage(0);
   };
 
   const handleMarkDone = (entry: DbEntry): void => {
@@ -195,16 +255,51 @@ export function DirectOverview({
     <View style={styles.section}>
       <DirectFilterBar value={filter} counts={counts} onChange={changeFilter} />
 
+      {scope.horizon ? (
+        <View style={styles.scopeRow}>
+          <Pressable
+            onPress={clearScope}
+            hitSlop={6}
+            accessibilityRole="button"
+            accessibilityLabel={`Clear ${horizonLabel(scope.horizon)} scope`}
+            style={({ pressed }) => [
+              styles.scopeChip,
+              { backgroundColor: colors.surfaceSubtle },
+              pressed && styles.pressed,
+            ]}
+          >
+            <ThemedText
+              type="caption"
+              style={[
+                styles.scopeLabel,
+                { color: filter !== "all" ? entryKicker(filter, scheme) : colors.inkMuted },
+              ]}
+            >
+              {filter !== "all" ? filter : "All"} · {horizonLabel(scope.horizon)}
+            </ThemedText>
+            <IconSymbol name="X" size={12} color={colors.inkMuted} />
+          </Pressable>
+        </View>
+      ) : null}
+
       {empty ? (
         <EmptyState
           title={empty.title}
           description={empty.description}
           accentColor={empty.accent}
-          ctaLabel={empty.cta && onCapture ? empty.cta : undefined}
-          onCta={
+          ctaLabel={
             empty.cta && onCapture
-              ? () => onCapture(empty.captureType)
-              : undefined
+              ? empty.cta
+              : scope.horizon
+                ? "Widen the lens"
+                : undefined
+          }
+          onCta={
+            scope.horizon
+              ? clearScope
+              : empty.cta && onCapture
+                ? () => onCapture(empty.captureType)
+                : undefined
           }
         />
       ) : (
@@ -250,5 +345,22 @@ const styles = StyleSheet.create({
   },
   rows: {
     gap: tokens.space.sm,
+  },
+  scopeRow: {
+    flexDirection: "row",
+  },
+  scopeChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+    minHeight: 24,
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.pill,
+  },
+  scopeLabel: {
+    textTransform: "capitalize",
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });

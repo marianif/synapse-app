@@ -5,6 +5,7 @@ import { FieldSummary } from "@/components/molecules/field-summary";
 import { tokens, useTheme } from "@/constants/theme";
 
 import type { FieldRowItem } from "@/components/molecules/field-row";
+import type { EntryType } from "@/lib/types";
 
 /**
  * The home's "greetings" block. A quiet kicker (today's date, plus a seasonal
@@ -127,6 +128,8 @@ interface FieldGreetingProps {
   stakes: FieldRowItem[];
   /** PRESENT rows (ideas). */
   present: FieldRowItem[];
+  /** Optional tap per summary count-phrase — drill into that cut. */
+  onSelectType?: (type: EntryType) => void;
 }
 
 export function FieldGreeting({
@@ -135,6 +138,7 @@ export function FieldGreeting({
   seasonalNote,
   stakes,
   present,
+  onSelectType,
 }: FieldGreetingProps): React.ReactElement {
   const { colors } = useTheme();
 
@@ -167,7 +171,11 @@ export function FieldGreeting({
           of your head.
         </ThemedText>
       ) : (
-        <FieldSummary stakes={stakes} present={present} />
+        <FieldSummary
+          stakes={stakes}
+          present={present}
+          onSelectType={onSelectType}
+        />
       )}
     </View>
   );

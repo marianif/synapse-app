@@ -9,13 +9,15 @@ description: "Cool graphite instrument-panel ground, three electric type-colors 
 
 **Creative North Star: "Your whole brain as a living instrument panel — switched on, never soothed."**
 
-Field Lab is built for an ADHD-adjacent user who opens the app mid-thought and needs to feel activated, not sedated. The previous system (The Field: warm oat-cream, pastels, Fraunces serif) read as soothing; Field Lab flips everything cool, sharp, and charged. Every entry type glows in its own electric color at **equal volume** — an idea is as alive as a looming deadline, it just glows in a different color. The direct zone (projects + the deadline/todo/idea overview) and the narrative zone are two readings of the same board, not two disjoint sets: an idea appears as a direct row **and** in the narrative voice, so a captured thought is held in sight two ways, never just skimmable prose. Nothing fades, because for this brain, out of sight is gone.
+Field Lab is built for an ADHD-adjacent user who opens the app mid-thought and needs to feel activated, not sedated. The previous system (The Field: warm oat-cream, pastels, Fraunces serif) read as soothing; Field Lab flips everything cool, sharp, and charged. Every entry type glows in its own electric color at **equal volume** — an idea is as alive as a looming deadline, it just glows in a different color. The direct zone keeps the whole board visible; the Agenda is a separate activation surface that offers one useful way back in, not a second report about the database. Nothing fades, because for this brain, out of sight is gone.
 
 The system explicitly rejects: corporate productivity tools, gamified habit-trackers (streaks, badges, confetti), pastel-illustration journaling apps, pure white / pure black interfaces, and plain checklist task managers with no projects and no memory.
 
+**The Agenda is an invitation, not a narrator.** It notices a useful opening, gives it a human reason, and offers one direct action: return, continue, prepare, or decide. It never narrates stale state, guilts the user, or creates a wall of choices. The copy should sound like a person making it easier to begin, not a system explaining what it measured.
+
 **Core-model note (Jun 11 pivot).** The model is now four board things — **idea · todo · deadline · diary note** — over **projects**. **Events are removed** (the persona doesn't live event-to-event), which frees the ultraviolet code from the palette. **Someday is no longer a type or a color**: an undated todo IS a "someday", marked by a quiet mono **badge**, never a lime downgrade — so lime also leaves the type palette. The palette drops from five electric codes to three (deadline coral, todo cyan, idea amber).
 
-Three voices carry the typography: **Host Grotesk** (display/body — Inter was removed as too neutral), **IBM Plex Mono** (the signal layer: counts, status lines, time, kickers — the instrument-panel feel), and **Caveat** (the handwritten layer: agenda margin-notes and the narrative voice — a thing you scrawled to remember it).
+Three voices carry the typography: **Host Grotesk** (display/body — Inter was removed as too neutral), **IBM Plex Mono** (the signal layer: counts, status lines, time, kickers — the instrument-panel feel), and **Caveat** (the handwritten layer: Agenda invitations and the companion voice).
 
 **Key characteristics:**
 
@@ -102,7 +104,7 @@ const type = {
   // fontFraunces / fontInter are legacy KEYS repointed at Host Grotesk; the fonts are gone.
   fontFraunces: { regular: "HostGrotesk_500Medium", medium: "HostGrotesk_600SemiBold", semiBold: "HostGrotesk_700Bold" },
   fontInter: { regular: "HostGrotesk_400Regular", medium: "HostGrotesk_500Medium", semiBold: "HostGrotesk_600SemiBold", bold: "HostGrotesk_700Bold" },
-  // Handwritten layer — agenda margin-notes / narrative voice. Caveat renders ~30%
+  // Handwritten layer — Agenda invitation labels / companion voice. Caveat renders ~30%
   // larger than Host Grotesk at the same size; bump size at call-sites accordingly.
   fontHand: { regular: "Caveat_500Medium", medium: "Caveat_600SemiBold", bold: "Caveat_700Bold" },
   // Mono signal layer — counts, status line, time, kickers. Instrument-panel feel.
@@ -266,7 +268,7 @@ const styles = StyleSheet.create({
 
 ### Handwritten margin note
 
-The narrative voice (greeting margin-notes, the agenda-that-talks layer). Caveat runs optically small — size up ~30% versus the Host Grotesk step it sits beside.
+The companion voice (greeting margin-notes and Agenda invitations). Caveat runs optically small — size up ~30% versus the Host Grotesk step it sits beside. The hand should make an invitation feel personal, never like a generated status report. Warmth comes from a clear human action, not sentiment emojis or decorative softness.
 
 ```tsx
 import { StyleSheet, Text } from "react-native";

@@ -1,30 +1,28 @@
-import { FlatList, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   FadeInDown,
   useReducedMotion,
 } from "react-native-reanimated";
 
-import { DispatchRow } from "@/components/molecules/dispatch-row";
+import { AgendaPromptCard } from "@/components/molecules/agenda-prompt-card";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { tokens, useTheme } from "@/constants/theme";
-
-import type { Dispatch } from "@/lib/agenda-voice";
+import type { AgendaPrompt } from "@/lib/agenda-prompts";
 
 /**
- * The feed: the board's dispatches, loudest first. A flat stream with no
- * sections, no filters, and no "today" cut — an RSS reader for your own life,
- * where every line is a fact about time and a way back into the thing it names.
+ * The Agenda is not a feed. It is a small set of invitations: one primary way
+ * in, then at most two alternatives. Each card has one action and opens the
+ * thing it names.
  *
- * The list is deliberately shallow (the voice caps itself at ~14 lines), so
- * FlatList is here for the row recycling and the stable keys, not for
- * virtualizing thousands of rows.
+ * The list stays intentionally shallow. More options would turn activation
+ * back into another board to process.
  */
 
 interface AgendaFeedProps {
-  dispatches: Dispatch[];
-  onSelect: (dispatch: Dispatch) => void;
-  /** Rendered above the first dispatch — the screen's spine. */
+  prompts: AgendaPrompt[];
+  onSelect: (prompt: AgendaPrompt) => void;
+  /** Rendered above the primary invitation. */
   header?: React.ReactElement;
   /** Clears the tab bar and the resting capture dock. */
   bottomInset: number;
@@ -35,63 +33,99 @@ const STAGGER_MS = 45;
 const STAGGER_CAP = 8;
 
 export function AgendaFeed({
-  dispatches,
+  prompts,
   onSelect,
   header,
   bottomInset,
 }: AgendaFeedProps): React.ReactElement {
   const reduced = useReducedMotion();
   const { colors } = useTheme();
+  const primary = prompts[0];
+  const secondary = prompts.slice(1);
 
   return (
-    <FlatList
-      data={dispatches}
-      keyExtractor={(d) => d.id}
-      ListHeaderComponent={header}
-      renderItem={({ item, index }) => (
-        <Animated.View
-          // The feed prints itself in, line by line, like a page being written.
-          // A calm timing fade on the standard exit bezier — no spring, no
-          // overshoot. Reduced motion gets the finished page instead.
-          entering={
-            reduced
-              ? undefined
-              : FadeInDown.delay(Math.min(index, STAGGER_CAP) * STAGGER_MS)
-                  .duration(tokens.motion.duration.base)
-                  .easing(Easing.bezier(...tokens.motion.bezier))
-          }
-        >
-          <DispatchRow dispatch={item} onPress={onSelect} />
-        </Animated.View>
-      )}
-      ItemSeparatorComponent={Separator}
-      ListEmptyComponent={
-        <EmptyState
-          title="The board has nothing to say."
-          description="Nothing is running out and nothing has gone quiet. Put something in and it starts talking."
-          accentColor={colors.inkMuted}
-        />
-      }
+    <ScrollView
       contentContainerStyle={[
         styles.content,
         { paddingBottom: bottomInset + tokens.space.xxxl },
       ]}
       showsVerticalScrollIndicator={false}
-    />
-  );
-}
+    >
+      {header}
 
-/**
- * Breathing room, not a rule. DESIGN.md forbids 1px structural borders — the
- * spacing and the dot gutter carry the separation between dispatches.
- */
-function Separator(): React.ReactElement {
-  return <View style={styles.separator} />;
+      {primary ? (
+        <Animated.View
+          entering={
+            reduced
+              ? undefined
+              : FadeInDown.duration(tokens.motion.duration.base).easing(
+                  Easing.bezier(...tokens.motion.bezier),
+                )
+          }
+        >
+          <AgendaPromptCard prompt={primary} featured onPress={onSelect} />
+        </Animated.View>
+      ) : (
+        <EmptyState
+          title="Nothing needs a nudge right now."
+          description="Capture a thought when one arrives, or leave the board alone for a while."
+          accentColor={colors.inkMuted}
+        />
+      )}
+
+      {secondary.length > 0 ? (
+        <View style={styles.secondarySection}>
+          <Animated.Text
+            entering={
+              reduced
+                ? undefined
+                : FadeInDown.delay(STAGGER_MS)
+                    .duration(tokens.motion.duration.base)
+                    .easing(Easing.bezier(...tokens.motion.bezier))
+            }
+            style={[styles.secondaryLabel, { color: colors.inkMuted }]}
+          >
+            Other ways in
+          </Animated.Text>
+          {secondary.map((prompt, index) => (
+            <Animated.View
+              key={prompt.id}
+              entering={
+                reduced
+                  ? undefined
+                  : FadeInDown.delay(
+                      Math.min(index + 2, STAGGER_CAP) * STAGGER_MS,
+                    )
+                      .duration(tokens.motion.duration.base)
+                      .easing(Easing.bezier(...tokens.motion.bezier))
+              }
+            >
+              <AgendaPromptCard prompt={prompt} onPress={onSelect} />
+              {index < secondary.length - 1 ? (
+                <View style={styles.separator} />
+              ) : null}
+            </Animated.View>
+          ))}
+        </View>
+      ) : null}
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: tokens.space.lg,
+  },
+  secondarySection: {
+    marginTop: tokens.space.xxxl,
+  },
+  secondaryLabel: {
+    fontFamily: tokens.type.fontMono.medium,
+    fontSize: tokens.type.kicker.size,
+    lineHeight: tokens.type.kicker.lineHeight,
+    letterSpacing: tokens.type.kicker.tracking,
+    marginBottom: tokens.space.md,
+    textTransform: "uppercase",
   },
   separator: {
     height: tokens.space.sm,

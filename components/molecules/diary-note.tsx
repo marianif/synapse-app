@@ -1,14 +1,17 @@
 import dayjs from "dayjs";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   findNodeHandle,
+  NativeSyntheticEvent,
   Pressable,
   StyleSheet,
   Text,
+  TextLayoutEventData,
   View,
 } from "react-native";
+import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { TagChip } from "@/components/atoms/tag-chip";
@@ -21,6 +24,10 @@ import { useTendrilRegistry } from "@/hooks/use-tendril-registry";
 import { ConfirmKey } from "@/lib/settings";
 
 import type { DbDiaryEntry } from "@/lib/types";
+
+/** Line cap for the collapsed body. Long notes clamp here and offer an
+ *  expand/collapse toggle; short notes are unaffected. */
+const COLLAPSED_LINES = 5;
 
 interface DiaryNoteProps {
   entry: DbDiaryEntry;
@@ -64,6 +71,21 @@ export function DiaryNote({
   const router = useRouter();
   const registry = useTendrilRegistry();
   const noteRef = useRef<View | null>(null);
+
+  // Expand/collapse: the body clamps at COLLAPSED_LINES and, when the text
+  // actually overflows that cap (handwriting has variable metrics, so we ask
+  // the renderer rather than guessing by character count), a quiet footer
+  // lets the reader unfold the note in place.
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+
+  const onBodyTextLayout = useCallback((e: NativeSyntheticEvent<TextLayoutEventData>) => {
+    setOverflows(e.nativeEvent.lines.length > COLLAPSED_LINES);
+  }, []);
+
+  const toggleExpanded = useCallback(() => {
+    setExpanded((prev) => !prev);
+  }, []);
 
   // Measure this note's y in the outer ScrollView's coordinate system whenever
   // it lays out. The registry may be null (component used outside the diary
@@ -133,9 +155,64 @@ export function DiaryNote({
           )}
         </View>
 
-        <ThemedText style={[styles.noteBody, { color: colors.ink }]}>
-          {entry.body}
-        </ThemedText>
+        {/* Body — clamped to COLLAPSED_LINES when collapsed. The handwriting
+            font has variable metrics, so we can't guess overflow by character
+            count. A hidden measuring copy (same width, no clamp) reports the
+            true line count via onTextLayout; only that decides whether the
+            note is long enough to deserve the expand/collapse toggle. */}
+        <View style={styles.bodyWrap}>
+          <ThemedText
+            style={[styles.noteBody, { color: colors.ink }]}
+            numberOfLines={expanded ? undefined : COLLAPSED_LINES}
+          >
+            {entry.body}
+          </ThemedText>
+          {!expanded ? (
+            <ThemedText
+              style={[styles.noteBody, styles.bodyMeasure, { color: colors.ink }]}
+              onTextLayout={onBodyTextLayout}
+              pointerEvents="none"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              {entry.body}
+            </ThemedText>
+          ) : null}
+        </View>
+
+        {/* Collapsed long note — a quiet expand/collapse toggle that appears
+            only when the body overflows its cap, so short notes stay chrome-free.
+            The chevron + micro label mirror the composer's expand affordance. */}
+        {overflows ? (
+          <Animated.View
+            layout={LinearTransition.duration(220)}
+            entering={FadeIn.duration(160)}
+            exiting={FadeOut.duration(120)}
+          >
+            <Pressable
+              onPress={toggleExpanded}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityState={{ expanded }}
+              accessibilityLabel={
+                expanded ? "Collapse note" : "Expand note to full height"
+              }
+              style={({ pressed }) => [
+                styles.expandRow,
+                pressed && styles.pressed,
+              ]}
+            >
+              <ThemedText type="micro" muted>
+                {expanded ? "Collapse" : "Show more"}
+              </ThemedText>
+              <IconSymbol
+                name={expanded ? "ChevronUp" : "ChevronDown"}
+                size={13}
+                color={colors.inkMuted}
+              />
+            </Pressable>
+          </Animated.View>
+        ) : null}
 
         {/* Photos — a quiet horizontal strip of thumbnails under the tags.
             Tap one to open the full-screen lightbox. */}
@@ -303,6 +380,30 @@ const styles = StyleSheet.create({
     fontFamily: tokens.type.fontHand.regular,
     fontSize: 20,
     lineHeight: 26,
+  },
+
+  // Relative wrapper so the hidden measuring copy (absolute) can share the
+  // exact body width and report the true, unclamped line count.
+  bodyWrap: {
+    position: "relative",
+  },
+  bodyMeasure: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    opacity: 0,
+  },
+
+  // Expand/collapse toggle for long notes — quiet, right-aligned, reads as a
+  // whispered instruction rather than a button. Only rendered when overflowing.
+  expandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: tokens.space.xs,
+    marginTop: tokens.space.xs,
+    paddingVertical: 2,
   },
 
   // Tags — wrapped pills in the same tonal vocabulary as the relatedness chip,

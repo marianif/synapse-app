@@ -96,6 +96,7 @@ export default function ProjectScreen(): React.ReactElement {
     deleteEntry,
     deleteProject,
     updateProject,
+    touchProject,
   } = useDatabase();
 
   const {
@@ -105,6 +106,12 @@ export default function ProjectScreen(): React.ReactElement {
   } = useDiary();
 
   const project = projects.find((p) => p.id === id);
+  const projectId = project?.id;
+
+  useEffect(() => {
+    if (!projectId) return;
+    void touchProject(projectId);
+  }, [projectId, touchProject]);
 
   const entryDeleteConfirm = useConfirm({
     confirmKey: ConfirmKey.deleteEntry,

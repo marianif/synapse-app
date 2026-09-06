@@ -2,7 +2,7 @@
 
 The behavioral architecture: every goal's paths through the product.
 
-Capture is the spine — one pen key, one trigger, a four-stage machine that takes any thought and files it as the right thing. The board then reads back through two surfaces: the field (what exists, at equal volume, never curated) and the dispatch (what time has done to it, ranked and de-stacked). Projects are triage zones over one macro life area; the diary is the reflective layer that never touches the board.
+Capture is the spine — one pen key, one trigger, a four-stage machine that takes any thought and files it as the right thing. The board then appears through two surfaces: the field (what exists, at equal volume, never curated) and the Agenda (one useful way back in, plus at most two alternatives). Projects are triage zones over one macro life area; the diary is the reflective layer that never touches the board.
 
 Ambition order — what must exist before the app is real: capture spine → the field → the dispatch → project triage → reflective note-taking.
 
@@ -164,8 +164,8 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Meaning: a line struck through and sunk to the bottom
 - Next: done
 
-### State — Stale <!-- flow:state:stale -->
-- Meaning: an unpromoted idea over a week old — resurfaced in the narrative voice
+### State — Needs a decision <!-- flow:state:stale -->
+- Meaning: an idea without a home, still visible and available for a deliberate choice
 - Next: done
 - Recovery: promote it, file it, or leave it — it stays visible
 
@@ -174,42 +174,41 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Next: exit
 - Recovery: create a project — handoff to browse-and-triage-a-project
 
-## Flow — The dispatch <!-- flow:flow:the-dispatch -->
+## Flow — The agenda <!-- flow:flow:the-dispatch -->
 - Serves: Goal 2 — See it all at a glance
 - Entry: the user opens the agenda tab
-- Success: the board has told you what time has done to it
-- Exit: the user leaves the agenda — a dispatch followed, or a tab switch
+- Success: the user sees one useful way in and can take it in one tap
+- Exit: the user leaves the agenda — an invitation followed, or a tab switch
 - Handoff: the-field
 - Handoff: browse-and-triage-a-project
 - Handoff: reflective-note-taking
 - Status: complete
 
-### Step — Read the feed <!-- flow:step:read-the-feed -->
-- Intent: hear what happened — ranked, never filtered
-- Action: read the dispatch lines (weight-ranked, de-stacked, one line per subject)
-- State: dispatched
-- Next: follow-a-dispatch
-- Branch: empty board → quiet-empty
-- Branch: hot lines breathe wider (space, never color); a collision absorbs calm due lines → dispatched
-- Component: agenda-feed
+### Step — Choose a way in <!-- flow:step:read-the-feed -->
+- Intent: find one useful action without scanning the whole board
+- Action: read the primary invitation, then at most two alternatives
+- State: invited
+- Next: follow-an-invitation
+- Branch: no clear invitation → quiet-empty
+- Component: agenda-feed / agenda-prompt-card
 
-### Step — Follow a dispatch <!-- flow:step:follow-a-dispatch -->
-- Intent: act on what the board said
-- Action: tap a line — entry opens its detail, project pushes the project, note goes to notes, board goes to the field
-- State: dispatched
+### Step — Follow an invitation <!-- flow:step:follow-a-dispatch -->
+- Intent: make the suggested next move
+- Action: tap the invitation — an entry opens its detail, a project opens its spine
+- State: invited
 - Next: done
-- Component: agenda-feed / direct-detail-sheet
+- Component: agenda-feed / agenda-prompt-card / direct-detail-sheet
 - Exit: true
 
-### State — Dispatched <!-- flow:state:dispatched -->
-- Meaning: a line about what time has done — the board reading itself back
-- Next: follow-a-dispatch
-- Recovery: scroll on — nothing here is urgent by color
+### State — Invited <!-- flow:state:dispatched -->
+- Meaning: one clear way in, with a small action and a direct target
+- Next: follow-an-invitation
+- Recovery: choose another invitation, or leave it for later
 
 ### State — Quiet empty <!-- flow:state:quiet-empty -->
-- Meaning: the board has nothing to say on an empty board — the voice goes silent
+- Meaning: there is no clear next move worth interrupting for
 - Next: exit
-- Recovery: capture something, and the voice returns
+- Recovery: capture something, or return when there is a reason to move
 
 ## Flow — Browse and triage a project <!-- flow:flow:browse-and-triage-a-project -->
 - Serves: Goal 2 — See it all at a glance

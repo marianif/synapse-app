@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     fontFamily: tokens.type.fontInter.medium,
     // Cap the multiline field so a long paste grows to a bounded block, then
     // scrolls internally — the composer bar never balloons to fill the screen.
-    maxHeight: tokens.space.xxxl * 3,
+    maxHeight: tokens.space.xxxl * 2,
   },
   primaryRound: {
     width: 40,

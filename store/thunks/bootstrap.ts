@@ -2,7 +2,10 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import { ensureDb, seedDefaultProjectsOnce } from "@/lib/database";
 import { seedDevDataIfEmpty } from "@/lib/dev-seed";
-import { rescheduleAllEntries } from "@/lib/notifications";
+import {
+  rescheduleAllEntries,
+  rescheduleAllProjectNotifications,
+} from "@/lib/notifications";
 import type {
   DbDiaryEntry,
   DbEntry,
@@ -39,7 +42,7 @@ export const initApp = createAsyncThunk("app/init", async (_arg, { dispatch }) =
     console.warn("[store] default-project seed failed:", err);
   }
 
-  const [entries] = await Promise.all([
+  const [entries, projects] = await Promise.all([
     dispatch(fetchEntries()).unwrap().catch(() => [] as DbEntry[]),
     dispatch(fetchProjects()).unwrap().catch(() => [] as DbProject[]),
     dispatch(fetchTasks()).unwrap().catch(() => [] as DbTask[]),
@@ -52,8 +55,13 @@ export const initApp = createAsyncThunk("app/init", async (_arg, { dispatch }) =
   // After the initial load, rebuild all scheduled notifications from scratch.
   // This self-heals any stale state from a previous launch.
   if (entries.length > 0) {
-    rescheduleAllEntries(entries).catch((err) => {
+    await rescheduleAllEntries(entries).catch((err) => {
       console.warn("[store] rescheduleAllEntries failed:", err);
+    });
+  }
+  if (projects.length > 0) {
+    await rescheduleAllProjectNotifications(projects, entries).catch((err) => {
+      console.warn("[store] rescheduleAllProjectNotifications failed:", err);
     });
   }
 

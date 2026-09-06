@@ -1,12 +1,15 @@
 import { ExtensionStorage } from "@bacons/apple-targets";
 import { createListenerMiddleware, isAnyOf } from "@reduxjs/toolkit";
 import dayjs from "dayjs";
+import * as Notifications from "expo-notifications";
 import { AppState } from "react-native";
 
 import {
+  cancelProjectReturnNotification,
   cancelNotificationForEntry,
   requestNotificationPermissions,
   scheduleEntryNotification,
+  scheduleProjectReturnNotification,
 } from "@/lib/notifications";
 import type { DbEntry } from "@/lib/types";
 import { SpeechRecognizerModule } from "@/modules/speech-recognizer";
@@ -19,6 +22,10 @@ import {
   updateEntry,
   updateEntryStatus,
 } from "@/store/thunks/entries";
+import {
+  deleteProject,
+  touchProject,
+} from "@/store/thunks/projects";
 
 const storage = new ExtensionStorage("group.dev.the-wedge.synapse-app");
 
@@ -90,6 +97,63 @@ listenerMiddleware.startListening({
     ).catch((err) => {
       console.warn("[store] cancelNotificationForEntry failed:", err);
     });
+  },
+});
+
+// ─── Project return invitations ──────────────────────────────────────────────
+
+listenerMiddleware.startListening({
+  actionCreator: touchProject.fulfilled,
+  effect: async (action, api) => {
+    const { id, at } = action.payload;
+    if (at === null) return;
+
+    const state = api.getState() as RootState;
+    const project = state.projects.projects.find((candidate) => candidate.id === id);
+    if (!project) return;
+    const hasOpenWork = state.entries.entries.some(
+      (entry) =>
+        entry.project_id === id &&
+        entry.status !== "completed" &&
+        entry.status !== "met",
+    );
+    if (!hasOpenWork) {
+      await cancelProjectReturnNotification(id);
+      return;
+    }
+
+    // The first project-return invitation is the one notification permission
+    // is for: the user has just entered a project and there is work to return
+    // to later. Existing permission checks return immediately.
+    const granted = await requestNotificationPermissions();
+    if (!granted) return;
+    await scheduleProjectReturnNotification(project, state.entries.entries);
+  },
+});
+
+listenerMiddleware.startListening({
+  matcher: isAnyOf(
+    createEntry.fulfilled,
+    updateEntry.fulfilled,
+    updateEntryStatus.fulfilled,
+    deleteEntry.fulfilled,
+  ),
+  effect: async (_action, api) => {
+    const state = api.getState() as RootState;
+    const { projects, entries } = state;
+    const permission = await Notifications.getPermissionsAsync();
+    if (permission.status !== "granted") return;
+
+    for (const project of projects.projects) {
+      await scheduleProjectReturnNotification(project, entries.entries);
+    }
+  },
+});
+
+listenerMiddleware.startListening({
+  actionCreator: deleteProject.fulfilled,
+  effect: (action) => {
+    void cancelProjectReturnNotification(action.payload);
   },
 });
 

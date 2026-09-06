@@ -147,7 +147,7 @@ export function ProjectsOverview({
 
   return (
     <View style={styles.section}>
-      <SectionHeader title="Projects and Life Areas" />
+      <SectionHeader title="Featured projects and life areas" />
       <View style={styles.grid}>
         <View style={styles.gridColumn}>
           {leftColumn.map((p) => (

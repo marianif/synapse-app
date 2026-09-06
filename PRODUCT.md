@@ -14,7 +14,7 @@ A capture-first person who opens the app mid-thought to get something down befor
 
 ## Product Purpose
 
-Synapse is a second brain for an ADHD mind: a place to dump what's in your head the instant you think it, and a board that talks the dumped material back to you so it never disappears. **Capture is the core action** — the pen key in the tab bar takes any thought and resolves it into the right thing: an idea, a note, a todo, or a deadline. Tap for text, long-press for voice. That global capture is one trigger, no second add-path — but inside a project surface, a **scoped FAB** arms the composer by kind (idea / todo / deadline) so a user who already knows what they're adding skips the classify stage. Scoped, per-surface FABs are legal; a second *global* add-path is not. **The core affordance is visibility** — your projects and your live deadlines are present and glanceable the moment you open, never curated down to a "today" view or hidden behind filters. A narrative voice, written in your own handwriting, reads the board back to you: the deadline you've been carrying for ten days, the idea you sketched a week ago and never returned to, last night's diary trace. Projects organize macro life areas; ideas, todos, and deadlines attach to a project or stand free; reflective notes live in the diary, linkable to an idea or a project but never actionable.
+Synapse is a second brain for an ADHD mind: a place to dump what's in your head the instant you think it, and a board that talks the dumped material back to you so it never disappears. **Capture is the core action** — the pen key in the tab bar takes any thought and resolves it into the right thing: an idea, a note, a todo, or a deadline. Tap for text, long-press for voice. That global capture is one trigger, no second add-path — but inside a project surface, a **scoped FAB** arms the composer by kind (idea / todo / deadline) so a user who already knows what they're adding skips the classify stage. Scoped, per-surface FABs are legal; a second *global* add-path is not. **The core affordance is visibility** — your projects and your live deadlines are present and glanceable the moment you open, never curated down to a "today" view or hidden behind filters. The Agenda is a separate activation surface: it chooses one useful way back in, plus at most two alternatives, instead of narrating the database. Projects organize macro life areas; ideas, todos, and deadlines attach to a project or stand free; reflective notes live in the diary, linkable to an idea or a project but never actionable.
 
 ## Platform Fidelity
 
@@ -26,10 +26,10 @@ phone-only
 
 ## Brand Personality
 
-Activating, charged, direct. Cool and sharp the way an instrument panel is — switched on, never soothed. The narrative layer is **your own handwriting, not the app being cozy**: margin scrawls on the panel, observational statements of fact about time ("The dentist has been waiting 10 days"), never comfort, never nagging, never celebration.
+Activating, charged, direct. Cool and sharp the way an instrument panel is — switched on, never soothed. The narrative layer is **your own handwriting, not the app being cozy**: margin scrawls on the panel, a voice that is **on your side** — it holds everything you capture, acknowledges what you did as a plain fact ("that came off the board today", "you came back to it and it moved"), and resurfaces the things you'd forget with a next step small enough to take. Never guilt, never nagging, never empty celebration.
 
-**Is:** activating · charged · alive · direct
-**Is not:** warm-cozy · gamified · corporate · sedating
+**Is:** activating · charged · alive · direct · on your side
+**Is not:** warm-cozy · gamified · corporate · sedating · guilt-tripping
 
 ## Anti-references
 
@@ -44,17 +44,17 @@ Activating, charged, direct. Cool and sharp the way an instrument panel is — s
 
 1. **Capture is the core action.** The pen key in the tab bar is the primary affordance: tap for text, long-press for voice. One thumb gesture takes any thought and resolves it into an idea, a note, a todo, or a deadline. No *second global* add-path — but scoped FABs inside a specific surface (a project, the projects list) are legal when they arm a pre-classified composer, since they shorten the path rather than duplicate it. Anything actionable becomes a todo, deadline, or idea; anything reflective is a diary note. Friction here is the one unforgivable failure.
 2. **Show projects and deadlines first.** The core glanceable affordance is an immediate overview of your projects and your live deadlines — present the moment the app opens, never behind a filter or a "today" curation. For this brain, out of sight is gone.
-3. **Everything at a glance — narrative is a layer, never a curtain.** Every open item stays visible and tappable. The narrative block references items and reads them back; it never replaces or hides them.
-4. **Equal volume.** Every entry type glows in its own electric color at the same intensity. An idea is as alive as a looming deadline; it just glows in a different color. Ideas live in **both** zones — they surface in the narrative voice *and* earn a direct row in the overview, so a captured idea is never only a line of prose the eye can skim past. Presence, not pressure — never dim the non-urgent, never let urgency drown the board.
+3. **Everything at a glance — activation is a layer, never a curtain.** Every open item stays visible and tappable on the Field. The Agenda may select a few invitations, but it never replaces or hides the complete board.
+4. **Equal volume.** Every entry type glows in its own electric color at the same intensity. An idea is as alive as a looming deadline; it just glows in a different color. Ideas stay present as direct rows and may receive a decision invitation in the Agenda, so a captured idea is never only a line of prose the eye can skim past. Presence, not pressure — never dim the non-urgent, never let urgency drown the board.
 5. **Commit to horizons, not fake dates.** A deadline takes a precise date or a window — this week, this month, this year — and warms up as the window closes. A todo with no date is not a failed todo; it's a "someday", marked by a quiet badge, never a color downgrade.
-6. **Speak in your own handwriting.** The agenda voice states facts about time, plainly and briefly. It may hold you accountable; it may not shame, nag, comfort, or celebrate.
+6. **Make the next move obvious.** The Agenda is activating, not descriptive. Every invitation has a reason, a small next move, and one direct action: return to a quiet project, continue something already started, prepare for what is coming, or decide what an idea wants to become. It never shames, nags, guilts, or floods the user with choices.
 
 ## Entity Model
 
 The board is built from four things, plus projects and the diary:
 
 - **Project** — a top-level macro life area (a dev project, an art collective). Not a board item itself; referenced by name and shown in the projects overview. Ideas, todos, and deadlines can be attributed to a project or stand autonomous.
-- **Idea** — an autonomous capture, promotable into a project. It shows both as a direct row in the overview (undated, so it rests in the calm band) and, when stale and unpromoted, as a resurfaced line in the narrative voice.
+- **Idea** — an autonomous capture, promotable into a project. It shows as a direct row in the overview and can receive a decision invitation in the Agenda when it needs a home, a later place, or release.
 - **Todo** — the actionable spine; autonomous or project-linked. **Deadline** is a flavor of todo that keeps its strong color identity and takes a date or a horizon. A todo with **no date** is the "someday" case: recognizable by a **badge, never by a separate color**.
 - **Diary note** — reflective, never actionable, never on the board. Linkable to an idea or a project, or free.
 - **Task (subtask)** — a checklist line owned by a todo or deadline (never an idea). It has no date, no status enum, no project of its own — it's crossed in or crossed out. The UI surfaces progress (e.g. "3/5") only. **Completing every subtask does not complete the parent** — closing the entry stays a deliberate user decision, never automated.

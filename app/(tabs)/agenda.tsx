@@ -7,21 +7,16 @@ import { AgendaFeed } from "@/components/organisms/agenda-feed";
 import { tokens, useTheme } from "@/constants/theme";
 import { useGlobalCapture } from "@/contexts/global-capture-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
-import { useDiary } from "@/hooks/use-diary";
-import { agendaVoice } from "@/lib/agenda-voice";
+import { agendaPrompts } from "@/lib/agenda-prompts";
 
-import type { Dispatch } from "@/lib/agenda-voice";
+import type { AgendaPrompt } from "@/lib/agenda-prompts";
 
 /**
- * AGENDA — the board's dispatch.
+ * AGENDA — the activation surface.
  *
- * The Field shows you WHAT is on the board. This is a ranked stream of what
- * has HAPPENED to it: the deadline that ran out, the idea that has sat a
- * week, the checklist you stopped halfway, last night's note. An RSS feed of
- * your own life, in your own handwriting, newest and loudest first.
- *
- * It curates nothing away — the full board still lives on the Field. This is a
- * ranking of what time has done, not a filter over what exists.
+ * The Field shows the whole board. This surface does one smaller job: offer a
+ * few useful ways back in. It never reports the database; it chooses one clear
+ * invitation and, when useful, two alternatives.
  */
 export default function AgendaScreen(): React.ReactElement {
   const router = useRouter();
@@ -29,7 +24,6 @@ export default function AgendaScreen(): React.ReactElement {
   const cap = useGlobalCapture();
 
   const { entries, tasks, projects } = useDatabase();
-  const { entries: notes } = useDiary();
 
   // Anchor "now" once per mount: every dispatch's age is measured from it, so a
   // fresh Date.now() per render would make the feed re-score on every keystroke
@@ -42,17 +36,16 @@ export default function AgendaScreen(): React.ReactElement {
     }, []),
   );
 
-  const dispatches = useMemo(
-    () => agendaVoice({ entries, tasks, notes, projects, now }),
-    [entries, tasks, notes, projects, now],
+  const prompts = useMemo(
+    () => agendaPrompts({ entries, tasks, projects, now }),
+    [entries, tasks, projects, now],
   );
 
-  // The feed is a pointer into the board, never a dead end: an entry line opens
-  // its detail+edit modal, a project line pushes the project, a note line hands
-  // off to the Notes tab where that trace lives.
+  // Every invitation has one direct way in. The Agenda is useful only if the
+  // action it suggests is one tap away.
   const handleSelect = useCallback(
-    (d: Dispatch) => {
-      const target = d.target;
+    (prompt: AgendaPrompt) => {
+      const target = prompt.target;
       switch (target.kind) {
         case "entry": {
           router.push({ pathname: "/edit", params: { id: target.id } });
@@ -69,14 +62,6 @@ export default function AgendaScreen(): React.ReactElement {
             params: { id: target.id },
           });
           return;
-        case "note":
-          router.push("/(tabs)/notes");
-          return;
-        case "board":
-          // A board-level line (a collision, a silence, the orphan count) is
-          // about the whole field, so it hands you back to the field itself.
-          router.push("/");
-          return;
       }
     },
     [router],
@@ -86,7 +71,10 @@ export default function AgendaScreen(): React.ReactElement {
     <View style={styles.header}>
       <Text style={[styles.kicker, { color: colors.inkMuted }]}>AGENDA</Text>
       <ThemedText type="display" style={styles.title}>
-        The board&apos;s dispatch
+        What could move?
+      </ThemedText>
+      <ThemedText type="body" muted style={styles.subtitle}>
+        One useful way in is enough.
       </ThemedText>
     </View>
   );
@@ -94,7 +82,7 @@ export default function AgendaScreen(): React.ReactElement {
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <AgendaFeed
-        dispatches={dispatches}
+        prompts={prompts}
         onSelect={handleSelect}
         header={header}
         bottomInset={cap.tabBarHeight}
@@ -120,5 +108,8 @@ const styles = StyleSheet.create({
   },
   title: {
     letterSpacing: tokens.type.display.tracking,
+  },
+  subtitle: {
+    marginTop: tokens.space.sm,
   },
 });

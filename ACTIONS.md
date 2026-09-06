@@ -11,7 +11,7 @@ The wow moment. One or two actions; never more.
 | Action | Surfaces | Affordance | Success signal |
 | --- | --- | --- | --- |
 | Capture a thought | Center tab-bar key on every screen (Field, Notes, Project, Projects) | `capture-composer` / `capture-flow` — tap = text, long-press = voice; auto-classifies to idea / todo / deadline / note | User dumped something within 5 s of opening |
-| See it all at a glance | Field (`(tabs)/(home)/index.tsx`), Project (`project.tsx`), Projects (`projects.tsx`) | Direct overview + narrative voice, equal-volume, no filters, no "today" curation | User opens app and sees projects + live deadlines instantly, without tapping |
+| See it all at a glance | Field (`(tabs)/(home)/index.tsx`), Project (`project.tsx`), Projects (`projects.tsx`) | Direct overview + equal-volume board, no filters, no "today" curation | User opens app and sees projects + live deadlines instantly, without tapping |
 
 ## Tier 2 — Secondary
 

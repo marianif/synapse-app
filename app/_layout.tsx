@@ -21,7 +21,7 @@ import {
   ThemeProvider as NavThemeProvider,
 } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
-import { Redirect, Stack, useSegments } from "expo-router";
+import { Redirect, Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
@@ -64,6 +64,7 @@ function ThemedNavigationShell(): React.ReactElement | null {
   const { complete: onboardingComplete, isReady: onboardingReady } =
     useOnboarding();
   const segments = useSegments();
+  const router = useRouter();
   const dispatch = useAppDispatch();
 
   // Boot the data layer once: seeds, full fetch, notification self-heal, Watch.
@@ -89,8 +90,8 @@ function ThemedNavigationShell(): React.ReactElement | null {
     Caveat_700Bold,
   });
 
-  // Configure foreground notification display once. Permission is requested when
-  // a user creates a deadline, after the notification has a clear purpose.
+  // Configure foreground notification display once. Permission is requested
+  // when a deadline or a project return invitation has a clear purpose.
   useEffect(() => {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -102,6 +103,25 @@ function ThemedNavigationShell(): React.ReactElement | null {
       }),
     });
   }, []);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = response.notification.request.content.data as {
+          kind?: unknown;
+          projectId?: unknown;
+        };
+        if (data.kind !== "project-return" || typeof data.projectId !== "string") {
+          return;
+        }
+        router.push({
+          pathname: "/(tabs)/(projects)/project",
+          params: { id: data.projectId },
+        });
+      },
+    );
+    return () => subscription.remove();
+  }, [router]);
 
   // Reveal the app only once the persisted theme preference has loaded, so an
   // override never flashes the wrong scheme on cold start.

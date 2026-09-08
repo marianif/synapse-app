@@ -489,6 +489,31 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 20) {
+    // Migration 20: note weight (rating) is replaced by a bookmark flag. The
+    // +/− weight stepper is gone; a note is now either kept (bookmarked=1) or
+    // not. Drop the signed integer column and add the 0/1 bookmark column,
+    // same boolean convention as tasks.done / projects.is_featured.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync('ALTER TABLE diary_entries DROP COLUMN rating');
+      } catch {
+        // column missing (fresh installs never had it)
+      }
+      try {
+        await db.execAsync(
+          'ALTER TABLE diary_entries ADD COLUMN bookmarked INTEGER NOT NULL DEFAULT 0',
+        );
+      } catch {
+        // column already exists (fresh installs got it from CREATE_DIARY_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────
@@ -889,13 +914,13 @@ export async function insertDiaryEntry(
   linkedProjectId: string | null = null,
   tags: string[] = [],
   media: NoteMedia[] = [],
-  rating: number = 0,
+  bookmarked: 0 | 1 = 0,
 ): Promise<DbDiaryEntry> {
   const db = await ensureDb();
   const id = generateId();
   const now = Math.floor(Date.now() / 1000);
   await db.runAsync(
-    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, linked_project_id, tags, media, rating, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, linked_project_id, tags, media, bookmarked, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     id,
     body,
     mood,
@@ -903,7 +928,7 @@ export async function insertDiaryEntry(
     linkedProjectId,
     serializeTags(tags),
     serializeMedia(media),
-    rating,
+    bookmarked,
     now,
     now,
   );
@@ -915,7 +940,7 @@ export async function insertDiaryEntry(
     linked_project_id: linkedProjectId,
     tags,
     media,
-    rating,
+    bookmarked,
     created_at: now,
     updated_at: now,
   };
@@ -981,8 +1006,8 @@ export async function updateDiaryEntry(
     linkedProjectId?: string | null;
     tags?: string[];
     media?: NoteMedia[];
-    /** Signed delta applied to the note's weight (e.g. +1 or -1). */
-    rating?: number;
+    /** Set (not toggle) the bookmark flag: 1 = kept, 0 = not. */
+    bookmarked?: 0 | 1;
   },
 ): Promise<void> {
   const db = await ensureDb();
@@ -1012,9 +1037,9 @@ export async function updateDiaryEntry(
     updates.push('media = ?');
     values.push(serializeMedia(data.media));
   }
-  if (data.rating !== undefined) {
-    updates.push('rating = rating + ?');
-    values.push(data.rating);
+  if (data.bookmarked !== undefined) {
+    updates.push('bookmarked = ?');
+    values.push(data.bookmarked);
   }
   if (updates.length === 0) return;
   updates.push('updated_at = ?');

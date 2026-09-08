@@ -55,8 +55,8 @@ export const updateDiaryEntry = createAsyncThunk<
       linkedProjectId?: string | null;
       tags?: string[];
       media?: NoteMedia[];
-      /** Signed delta applied to the note's weight (e.g. +1 or -1). */
-      rating?: number;
+      /** Set (not toggle) the bookmark flag: 1 = kept, 0 = not. */
+      bookmarked?: 0 | 1;
     };
   }
 >("diary/update", async ({ id, data }) => {

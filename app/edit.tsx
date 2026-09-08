@@ -879,8 +879,10 @@ export default function EditScreen(): React.ReactElement {
                         key={n.id}
                         entry={n}
                         hideChip
-                        onRate={(delta) =>
-                          void updateDiaryEntry(n.id, { rating: delta })
+                        onToggleBookmark={() =>
+                          void updateDiaryEntry(n.id, {
+                            bookmarked: n.bookmarked ? 0 : 1,
+                          })
                         }
                         onEdit={() =>
                           router.push({

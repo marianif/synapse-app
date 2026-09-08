@@ -34,8 +34,8 @@ interface UseDiaryResult {
       linkedProjectId?: string | null;
       tags?: string[];
       media?: NoteMedia[];
-      /** Signed delta applied to the note's weight (e.g. +1 or -1). */
-      rating?: number;
+      /** Set (not toggle) the bookmark flag: 1 = kept, 0 = not. */
+      bookmarked?: 0 | 1;
     },
   ) => Promise<void>;
   removeEntry: (id: string) => Promise<void>;
@@ -97,7 +97,7 @@ export function useDiary(): UseDiaryResult {
             linkedProjectId?: string | null;
             tags?: string[];
             media?: NoteMedia[];
-            rating?: number;
+            bookmarked?: 0 | 1;
           },
         ): Promise<void> =>
           toVoid(

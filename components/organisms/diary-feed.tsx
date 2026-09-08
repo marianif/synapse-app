@@ -32,9 +32,9 @@ interface DiaryFeedProps {
   onRelate?: (entry: DbDiaryEntry) => void;
   /** Tap a note's body to edit it. Omit to render bodies as static text. */
   onEdit?: (entry: DbDiaryEntry) => void;
-  /** Apply a signed delta to a note's weight (e.g. +1 or -1). Omit to render
-   *  the weight stepper statically. */
-  onRate?: (entry: DbDiaryEntry, delta: number) => void;
+  /** Toggle a note's bookmark (keep/pin). Omit to hide the footer bookmark
+   *  control. */
+  onToggleBookmark?: (entry: DbDiaryEntry) => void;
   onDelete: (id: string) => void;
 }
 
@@ -74,7 +74,7 @@ export function DiaryFeed({
   filtered = false,
   onRelate,
   onEdit,
-  onRate,
+  onToggleBookmark,
   onDelete,
 }: DiaryFeedProps): React.ReactElement {
   const { colors } = useTheme();
@@ -149,7 +149,9 @@ export function DiaryFeed({
                 linkedProjectEmoji={parentProjectEmoji}
                 onEdit={onEdit ? () => onEdit(e) : undefined}
                 onRelate={onRelate ? () => onRelate(e) : undefined}
-                onRate={onRate ? (delta) => onRate(e, delta) : undefined}
+                onToggleBookmark={
+                  onToggleBookmark ? () => onToggleBookmark(e) : undefined
+                }
                 onDelete={() => onDelete(e.id)}
               />
             );

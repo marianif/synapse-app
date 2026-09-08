@@ -147,11 +147,11 @@ export interface DbDiaryEntry {
    */
   media: NoteMedia[];
   /**
-   * Incremental/decremental weight stamp on the note. A signed integer (0 = no
-   * weight). Positive → the note earns points relative to its peers; negative →
-   * it loses them. Bumped with the +/− stepper in the note footer.
+   * Whether this note is kept. SQLite stores booleans as 0/1 — `bookmarked ===
+   * 1` means the user pinned it in the diary. Set (not toggled) by the bookmark
+   * button in the note footer.
    */
-  rating: number;
+  bookmarked: 0 | 1;
   created_at: number;
   updated_at: number;
 }

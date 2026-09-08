@@ -387,8 +387,10 @@ export default function NotesScreen(): React.ReactElement {
             target !== null || macro !== "all" || selectedTags.length > 0
           }
           onRelate={setRelatingNote}
-          onRate={(entry, delta) =>
-            void updateEntry(entry.id, { rating: delta })
+          onToggleBookmark={(entry) =>
+            void updateEntry(entry.id, {
+              bookmarked: entry.bookmarked ? 0 : 1,
+            })
           }
           onEdit={(entry) =>
             router.push({

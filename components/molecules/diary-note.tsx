@@ -11,7 +11,15 @@ import {
   TextLayoutEventData,
   View,
 } from "react-native";
-import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
 import { TagChip } from "@/components/atoms/tag-chip";
@@ -55,9 +63,9 @@ interface DiaryNoteProps {
   /** Tap the relatedness chip to re-link this note (pull it into a project or
    *  idea). Omit to render the chip as a static label. */
   onRelate?: () => void;
-  /** Apply a signed delta to this note's weight (e.g. +1 or -1). Omit to
-   *  render the footer's weight stepper as a static (hidden) control. */
-  onRate?: (delta: number) => void;
+  /** Toggle the note's bookmark (keep/pin). Omit to hide the footer's bookmark
+   *  control entirely. */
+  onToggleBookmark?: () => void;
   onDelete: () => void;
 }
 
@@ -76,7 +84,7 @@ export function DiaryNote({
   hideChip = false,
   onEdit,
   onRelate,
-  onRate,
+  onToggleBookmark,
   onDelete,
 }: DiaryNoteProps): React.ReactElement {
   const { colors } = useTheme();
@@ -196,8 +204,8 @@ export function DiaryNote({
 
         {/* Footer — a quiet strip that anchors the note: the expand/collapse
             toggle on the left (only when the body overflows its cap, so short
-            notes stay chrome-free) and, on the right, the weight stepper so
-            any note can be incremented or decremented at a glance. */}
+            notes stay chrome-free) and, on the right, the bookmark toggle so
+            any note can be kept at a glance. */}
         <View style={styles.footerRow}>
           {overflows ? (
             <Animated.View
@@ -232,30 +240,11 @@ export function DiaryNote({
             <View />
           )}
 
-          {onRate ? (
-            <View style={styles.rateGroup}>
-              <StepperButton
-                label="Decrease note weight"
-                glyph="−"
-                onPress={() => onRate(-1)}
-                dim
-              />
-              <ThemedText
-                type="mono"
-                style={{
-                  color: entry.rating !== 0 ? colors.ink : colors.inkMuted,
-                  minWidth: 20,
-                  textAlign: "center",
-                }}
-              >
-                {entry.rating > 0 ? `+${entry.rating}` : entry.rating}
-              </ThemedText>
-              <StepperButton
-                label="Increase note weight"
-                glyph="+"
-                onPress={() => onRate(1)}
-              />
-            </View>
+          {onToggleBookmark ? (
+            <BookmarkButton
+              bookmarked={entry.bookmarked === 1}
+              onPress={onToggleBookmark}
+            />
           ) : null}
         </View>
 
@@ -427,31 +416,53 @@ function Chip({
   );
 }
 
-/** One glyph of the note's weight stepper. The −/+ buttons nudge the note's
- *  signed weight up or down; the count between them reads the current value at
- *  full ink once it's non-zero, so a weighted note is scannable at a glance. */
-function StepperButton({
-  label,
-  glyph,
+/**
+ * The note's bookmark toggle. A filled ribbon reads as "kept" at full ink; the
+ * outline ribbon is the quiet affordance for the unkept note. Pressing springs
+ * the ribbon in a tiny direct-manipulation scale (respects reduced motion).
+ */
+function BookmarkButton({
+  bookmarked,
   onPress,
-  dim = false,
 }: {
-  label: string;
-  glyph: string;
+  bookmarked: boolean;
   onPress: () => void;
-  dim?: boolean;
 }): React.ReactElement {
   const { colors } = useTheme();
-  const color = dim ? colors.inkMuted : colors.ink;
+  const reducedMotion = useReducedMotion();
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const springTo = (value: number) => {
+    if (reducedMotion) {
+      scale.value = value;
+    } else {
+      scale.value = withSpring(value, tokens.motion.spring);
+    }
+  };
+
   return (
     <Pressable
       onPress={onPress}
+      onPressIn={() => springTo(0.84)}
+      onPressOut={() => springTo(1)}
       hitSlop={10}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityState={{ selected: bookmarked }}
+      accessibilityLabel={bookmarked ? "Remove bookmark" : "Bookmark this note"}
       style={({ pressed }) => [pressed && styles.pressed]}
     >
-      <Text style={[styles.stepGlyph, { color }]}>{glyph}</Text>
+      <Animated.View style={animatedStyle}>
+        <IconSymbol
+          name="Bookmark"
+          weight={bookmarked ? "Filled" : "Outline"}
+          size={16}
+          color={bookmarked ? colors.ink : colors.inkMuted}
+        />
+      </Animated.View>
     </Pressable>
   );
 }
@@ -512,7 +523,7 @@ const styles = StyleSheet.create({
   },
 
   // Footer — anchors the note: expand/collapse toggle (left, only when the
-  // body overflows) and the rating thumbs (right, always when rateable). The
+  // body overflows) and the bookmark toggle (right, always when enabled). The
   // space-between spread keeps the two ends of the strip visually distinct.
   footerRow: {
     flexDirection: "row",
@@ -520,16 +531,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: tokens.space.xs,
     gap: tokens.space.sm,
-  },
-  rateGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.sm,
-  },
-  stepGlyph: {
-    fontSize: 18,
-    lineHeight: 20,
-    fontFamily: tokens.type.fontInter.regular,
   },
 
   // Expand/collapse toggle for long notes — quiet, reads as a whispered

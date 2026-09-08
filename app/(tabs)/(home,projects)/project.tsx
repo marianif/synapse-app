@@ -807,8 +807,10 @@ export default function ProjectScreen(): React.ReactElement {
                       key={note.id}
                       entry={note}
                       hideChip
-                      onRate={(delta) =>
-                        void updateDiaryEntry(note.id, { rating: delta })
+                      onToggleBookmark={() =>
+                        void updateDiaryEntry(note.id, {
+                          bookmarked: note.bookmarked ? 0 : 1,
+                        })
                       }
                       onDelete={() => void removeDiaryEntry(note.id)}
                       onEdit={() =>

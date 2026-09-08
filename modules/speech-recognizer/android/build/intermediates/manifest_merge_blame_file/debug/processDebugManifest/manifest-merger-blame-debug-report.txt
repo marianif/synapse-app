@@ -1,0 +1,22 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="expo.modules.speechrecognizer" >
+4
+5    <uses-sdk android:minSdkVersion="24" />
+6
+7    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+7-->/Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:3:3-69
+7-->/Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:3:20-66
+8
+9    <!-- Required on Android 11+ to discover the on-device speech recognition service -->
+10    <queries>
+10-->/Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:6:3-10:13
+11        <intent>
+11-->/Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:7:5-9:14
+12            <action android:name="android.speech.RecognitionService" />
+12-->/Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:8:7-66
+12-->/Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:8:15-63
+13        </intent>
+14    </queries>
+15
+16</manifest>

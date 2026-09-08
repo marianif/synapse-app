@@ -1,0 +1,28 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:1:1-12:12
+INJECTED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:1:1-12:12
+	package
+		INJECTED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:1:11-69
+uses-permission#android.permission.RECORD_AUDIO
+ADDED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:3:3-69
+	android:name
+		ADDED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:3:20-66
+queries
+ADDED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:6:3-10:13
+intent#action:name:android.speech.RecognitionService
+ADDED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:7:5-9:14
+action#android.speech.RecognitionService
+ADDED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:8:7-66
+	android:name
+		ADDED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml:8:15-63
+uses-sdk
+INJECTED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml
+INJECTED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/federicamariani/Desktop/the-wedge/synapse-app/modules/speech-recognizer/android/src/main/AndroidManifest.xml

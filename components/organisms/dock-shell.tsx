@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   FadeInDown,
@@ -34,6 +34,19 @@ interface DockShellProps {
   children: React.ReactNode;
   /** Optional silhouette override for alternative dock organisms. */
   radius?: number;
+  /**
+   * Draws a hairline frame border around the shell so the dock separates from
+   * content behind it (the shared capture elevation is deliberately quiet —
+   * some surfaces need the outline instead).
+   */
+  bordered?: boolean;
+  /**
+   * Optional floating layer rendered ABOVE the shell frame, outside its layout
+   * flow — e.g. a contextual chip palette that hovers over the dock without
+   * expanding it. Positioned from the shell's top edge upward; the shell never
+   * reshapes for it.
+   */
+  overlay?: React.ReactNode;
 }
 
 /**
@@ -57,6 +70,8 @@ export function DockShell({
   contentKey,
   children,
   radius = tokens.radius.pill,
+  overlay,
+  bordered = false,
 }: DockShellProps): React.ReactElement {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
@@ -131,30 +146,60 @@ export function DockShell({
   const bodyStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Animated.View
-      entering={entering}
-      layout={layout}
-      style={[styles.shellShadow, { borderRadius: radius }, tokens.elevation.capture]}
-    >
-      {/* The inner frame owns the clip (radius + overflow) so the animated fill
-          and the readouts stay inside the pill; the shadow lives on the outer
-          wrapper because `overflow: hidden` clips iOS shadows off the frame. */}
-        <Animated.View style={[styles.shell, { borderRadius: radius }, fillStyle]}>
-        {/* The body sizes the shell (in-flow), and cross-fades on contentKey so
-            the readout swaps inside one persistent frame. */}
+    <View style={styles.stack}>
+      <Animated.View
+        entering={entering}
+        layout={layout}
+        style={[
+          styles.shellShadow,
+          { borderRadius: radius },
+          tokens.elevation.capture,
+        ]}
+      >
+        {/* The inner frame owns the clip (radius + overflow) so the animated fill
+            and the readouts stay inside the pill; the shadow lives on the outer
+            wrapper because `overflow: hidden` clips iOS shadows off the frame. */}
         <Animated.View
-          key={contentKey}
-          layout={layout}
-          style={[styles.body, bodyStyle]}
+          style={[
+            styles.shell,
+            { borderRadius: radius },
+            bordered && {
+              borderWidth: StyleSheet.hairlineWidth,
+              borderColor: `${colors.ink}24`,
+            },
+            fillStyle,
+          ]}
         >
-          {children}
+          {/* The body sizes the shell (in-flow), and cross-fades on contentKey so
+              the readout swaps inside one persistent frame. */}
+          <Animated.View
+            key={contentKey}
+            layout={layout}
+            style={[styles.body, bodyStyle]}
+          >
+            {children}
+          </Animated.View>
         </Animated.View>
       </Animated.View>
-    </Animated.View>
+
+      {/* Floating layer: positioned off the shell's top edge so it hovers over
+          the dock without participating in its layout — the console never
+          reshapes for it. The shell above keeps its own clip; this is a
+          sibling, so it stays unclipped. */}
+      {overlay ? (
+        <View style={styles.overlay} pointerEvents="box-none">
+          {overlay}
+        </View>
+      ) : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Anchors the floating overlay to the shell's frame.
+  stack: {
+    position: "relative",
+  },
   // Outer wrapper: carries the elevation so the pill keeps its shadow — the
   // frame itself clips (overflow hidden) and would mask it off on iOS.
   shellShadow: {
@@ -170,5 +215,13 @@ const styles = StyleSheet.create({
   body: {
     // In-flow so it sizes the shell; children own their internal padding.
     width: "100%",
+  },
+  overlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: "100%",
+    marginBottom: tokens.space.md,
+    zIndex: 2,
   },
 });

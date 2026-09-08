@@ -1,4 +1,10 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import {
   Pressable,
   ScrollView,
@@ -7,29 +13,35 @@ import {
   TextInput,
   View,
 } from "react-native";
-import Animated, { FadeIn, FadeOut, useReducedMotion } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  FadeOutUp,
+  useReducedMotion,
+} from "react-native-reanimated";
 
+import { WaveformVisualizer } from "@/components/atoms/waveform-bar";
+import type { CaptureResolution } from "@/components/molecules/capture-resolver";
+import { DockShell } from "@/components/organisms/dock-shell";
 import { ExactDateMenu } from "@/components/organisms/exact-date-menu";
+import type { InputStageHandle } from "@/components/organisms/input-stage-view";
 import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
-import {
-  entryKicker,
-  entryTint,
-  tokens,
-  useTheme,
-} from "@/constants/theme";
-import { useUiPreference } from "@/hooks/use-ui-preference";
+import { entryKicker, entryTint, tokens, useTheme } from "@/constants/theme";
 import type { UseCaptureReturn } from "@/hooks/use-capture";
+import { useUiPreference } from "@/hooks/use-ui-preference";
 import { horizonEndDate, horizonLabel } from "@/lib/horizons";
 import type { DbProject, DueRange, EntryType } from "@/lib/types";
-import type { InputStageHandle } from "@/components/organisms/input-stage-view";
-import { DockShell } from "@/components/organisms/dock-shell";
 
 type CaptureKind = EntryType | "note";
-type ContextMenu = "kind" | "project" | "when" | "more" | null;
+type ContextMenu = "kind" | "project" | "when" | null;
 type DatedKind = "todo" | "deadline";
 
 type WhenOption =
-  | { kind: "concrete"; label: string; icon: IconSymbolName; date: () => string }
+  | {
+      kind: "concrete";
+      label: string;
+      icon: IconSymbolName;
+      date: () => string;
+    }
   | { kind: "horizon"; label: string; icon: IconSymbolName; range: DueRange };
 
 const LAST_KIND_KEY = "capture.last-kind";
@@ -94,415 +106,483 @@ export interface CaptureConsoleProps {
  * filing choices appear as contextual chips above the action rail instead of
  * moving the user through a horizontal stage track.
  */
-export const CaptureConsole = forwardRef<
-  InputStageHandle,
-  CaptureConsoleProps
->(function CaptureConsole({ cap, projects }, ref): React.ReactElement | null {
-  const { colors, scheme } = useTheme();
-  const reduced = useReducedMotion();
-  const inputRef = useRef<TextInput | null>(null);
-  const whenAnchorRef = useRef<View | null>(null);
+export const CaptureConsole = forwardRef<InputStageHandle, CaptureConsoleProps>(
+  function CaptureConsole({ cap, projects }, ref): React.ReactElement | null {
+    const { colors, scheme } = useTheme();
+    const reduced = useReducedMotion();
+    const inputRef = useRef<TextInput | null>(null);
+    const whenAnchorRef = useRef<View | null>(null);
 
-  const [lastKind, setLastKind, preferenceLoaded] = useUiPreference(
-    LAST_KIND_KEY,
-    FIRST_CAPTURE_KIND,
-    isCaptureKind,
-  );
-  const [kind, setKind] = useState<CaptureKind>(FIRST_CAPTURE_KIND);
-  const [kindTouched, setKindTouched] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [projectId, setProjectId] = useState<string | null>(
-    cap.lockedProjectId,
-  );
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [dueRange, setDueRange] = useState<DueRange | null>(null);
-  const [exact, setExact] = useState(false);
-  const [menu, setMenu] = useState<ContextMenu>(null);
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [anchorRect, setAnchorRect] = useState<{
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-  } | null>(null);
+    const [lastKind, setLastKind, preferenceLoaded] = useUiPreference(
+      LAST_KIND_KEY,
+      FIRST_CAPTURE_KIND,
+      isCaptureKind,
+    );
+    const [kind, setKind] = useState<CaptureKind>(FIRST_CAPTURE_KIND);
+    const [kindTouched, setKindTouched] = useState(false);
+    const [draft, setDraft] = useState("");
+    const [projectId, setProjectId] = useState<string | null>(
+      cap.lockedProjectId,
+    );
+    const [date, setDate] = useState("");
+    const [time, setTime] = useState("");
+    const [dueRange, setDueRange] = useState<DueRange | null>(null);
+    const [exact, setExact] = useState(false);
+    const [menu, setMenu] = useState<ContextMenu>(null);
+    const [datePickerOpen, setDatePickerOpen] = useState(false);
+    const [anchorRect, setAnchorRect] = useState<{
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+    } | null>(null);
+    // A typed draft files in one tap: `capture` arms the pending thought, and
+    // this ref carries the resolution the pending-thought effect applies once
+    // the hook's state lands. Voice keeps the pending review beat (transcript is
+    // committed only when the user presses File).
+    const pendingResolutionRef = useRef<CaptureResolution | null>(null);
 
-  const activeProjects = projects.filter((project) => project.status === "active");
-  const pendingThought = cap.pendingThought;
-  const hasDraft = draft.trim().length > 0;
-  const hasThought = pendingThought !== null;
-  const projectName =
-    projectId === null
-      ? "Unfiled"
-      : (activeProjects.find((project) => project.id === projectId)?.title ??
-        "Unfiled");
-  const lockedProjectName =
-    cap.lockedProjectId === null
-      ? null
-      : (activeProjects.find((project) => project.id === cap.lockedProjectId)
-          ?.title ?? "Project");
-  const displayedProject = lockedProjectName ?? projectName;
+    const activeProjects = projects.filter(
+      (project) => project.status === "active",
+    );
+    const pendingThought = cap.pendingThought;
+    const hasDraft = draft.trim().length > 0;
+    const hasThought = pendingThought !== null;
+    const projectName =
+      projectId === null
+        ? "Unfiled"
+        : (activeProjects.find((project) => project.id === projectId)?.title ??
+          "Unfiled");
+    const lockedProjectName =
+      cap.lockedProjectId === null
+        ? null
+        : (activeProjects.find((project) => project.id === cap.lockedProjectId)
+            ?.title ?? "Project");
+    const displayedProject = lockedProjectName ?? projectName;
 
-  useImperativeHandle(ref, () => ({
-    focus: () => inputRef.current?.focus(),
-  }));
+    useImperativeHandle(ref, () => ({
+      focus: () => inputRef.current?.focus(),
+    }));
 
-  // The scoped project composer can seed a dated kind before any text exists.
-  // Otherwise the console follows the last successfully filed kind.
-  useEffect(() => {
-    if (pendingThought !== null || cap.isRecording) return;
-    if (cap.seedType === "todo" || cap.seedType === "deadline") {
-      setKind(cap.seedType);
-      setKindTouched(true);
-      return;
-    }
-    if (preferenceLoaded && !kindTouched) setKind(lastKind);
-  }, [
-    cap.isRecording,
-    cap.seedType,
-    kindTouched,
-    lastKind,
-    pendingThought,
-    preferenceLoaded,
-  ]);
+    // The scoped project composer can seed a dated kind before any text exists.
+    // Otherwise the console follows the last successfully filed kind.
+    useEffect(() => {
+      if (pendingThought !== null || cap.isRecording) return;
+      if (cap.seedType === "todo" || cap.seedType === "deadline") {
+        setKind(cap.seedType);
+        setKindTouched(true);
+        return;
+      }
+      if (preferenceLoaded && !kindTouched) setKind(lastKind);
+    }, [
+      cap.isRecording,
+      cap.seedType,
+      kindTouched,
+      lastKind,
+      pendingThought,
+      preferenceLoaded,
+    ]);
 
-  useEffect(() => {
-    if (cap.lockedProjectId !== null) setProjectId(cap.lockedProjectId);
-  }, [cap.lockedProjectId]);
+    useEffect(() => {
+      if (cap.lockedProjectId !== null) setProjectId(cap.lockedProjectId);
+    }, [cap.lockedProjectId]);
 
-  const resetTransient = (nextKind: CaptureKind = lastKind): void => {
-    setDraft("");
-    setKind(nextKind);
-    setKindTouched(false);
-    setProjectId(cap.lockedProjectId);
-    setDate("");
-    setTime("");
-    setDueRange(null);
-    setExact(false);
-    setMenu(null);
-    setDatePickerOpen(false);
-    setAnchorRect(null);
-  };
-
-  const submitDraft = (): void => {
-    if (!hasDraft) return;
-    cap.capture(draft.trim());
-    setDraft("");
-    setMenu(null);
-  };
-
-  const closeEmpty = (): void => {
-    if (!hasDraft && !hasThought) {
-      cap.setComposerOpen(false);
-      resetTransient();
-    }
-  };
-
-  const discard = (): void => {
-    cap.dismissPending();
-    cap.setComposerOpen(false);
-    resetTransient();
-  };
-
-  const selectKind = (nextKind: CaptureKind): void => {
-    setKind(nextKind);
-    setKindTouched(true);
-    setMenu(null);
-    if (!isDatedKind(nextKind)) {
+    const resetTransient = (nextKind: CaptureKind = lastKind): void => {
+      setDraft("");
+      setKind(nextKind);
+      setKindTouched(false);
+      setProjectId(cap.lockedProjectId);
       setDate("");
       setTime("");
       setDueRange(null);
       setExact(false);
-    }
-  };
-
-  const selectProject = (nextProjectId: string | null): void => {
-    setProjectId(nextProjectId);
-    setMenu(null);
-  };
-
-  const openExactDate = (): void => {
-    setMenu(null);
-    setExact(true);
-    setDueRange(null);
-    whenAnchorRef.current?.measureInWindow((x, y, w, h) => {
-      setAnchorRect({ x, y, w, h });
-      setDatePickerOpen(true);
-    });
-  };
-
-  const selectWhen = (option: WhenOption): void => {
-    if (option.kind === "concrete") {
-      setExact(false);
-      setDueRange(null);
-      setDate(option.date());
-      setTime("");
       setMenu(null);
-      return;
-    }
-    setExact(false);
-    setDueRange(option.range);
-    setDate("");
-    setTime("");
-    setMenu(null);
-  };
+      setDatePickerOpen(false);
+      setAnchorRect(null);
+    };
 
-  const commit = (): void => {
-    if (!hasThought) return;
+    // A typed thought files in one action — there is nothing to review between
+    // typing and filing (the chips are the classification). Voice still stops on
+    // a reviewable transcript and files on a second tap.
+    const fileDraft = (): void => {
+      const text = draft.trim();
+      if (!text) return;
+      setDraft("");
+      setMenu(null);
+      pendingResolutionRef.current = buildResolution();
+      setLastKind(kind);
+      cap.capture(text);
+      cap.setComposerOpen(false);
+      resetTransient(kind);
+    };
 
-    setLastKind(kind);
-    if (kind === "idea") {
-      cap.resolveCapture({
-        kind: "idea",
-        projectId: projectId ?? undefined,
-      });
-    } else if (kind === "note") {
-      cap.resolveCapture({
-        kind: "note",
-        projectId: projectId ?? undefined,
-      });
-    } else if (kind === "deadline") {
-      cap.resolveCapture({
-        kind: "deadline",
-        dueDate: dueRange ? horizonEndDate(dueRange) : date.trim() || undefined,
-        dueTime: dueRange ? undefined : time.trim() || undefined,
-        dueRange: dueRange ?? undefined,
-        projectId: projectId ?? undefined,
-      });
-    } else {
-      cap.resolveCapture({
+    const buildResolution = (): CaptureResolution => {
+      if (kind === "idea") {
+        return { kind: "idea", projectId: projectId ?? undefined };
+      }
+      if (kind === "note") {
+        return { kind: "note", projectId: projectId ?? undefined };
+      }
+      if (kind === "deadline") {
+        return {
+          kind: "deadline",
+          dueDate: dueRange
+            ? horizonEndDate(dueRange)
+            : date.trim() || undefined,
+          dueTime: dueRange ? undefined : time.trim() || undefined,
+          dueRange: dueRange ?? undefined,
+          projectId: projectId ?? undefined,
+        };
+      }
+      return {
         kind: "todo",
         scheduledDate: dueRange
           ? horizonEndDate(dueRange)
           : date.trim() || undefined,
         scheduledTime: dueRange ? undefined : time.trim() || undefined,
         projectId: projectId ?? undefined,
+      };
+    };
+
+    // Applies a staged typed-draft resolution as soon as the hook commits the
+    // pending thought. Voice is unaffected: pendingResolutionRef stays null, so a
+    // voice capture waits for the explicit File press.
+    useEffect(() => {
+      if (
+        cap.pendingThought === null ||
+        pendingResolutionRef.current === null
+      ) {
+        return;
+      }
+      const resolution = pendingResolutionRef.current;
+      pendingResolutionRef.current = null;
+      cap.resolveCapture(resolution);
+    }, [cap]);
+
+    const closeEmpty = (): void => {
+      if (!hasDraft && !hasThought) {
+        cap.setComposerOpen(false);
+        resetTransient();
+      }
+    };
+
+    const discard = (): void => {
+      cap.dismissPending();
+      cap.setComposerOpen(false);
+      resetTransient();
+    };
+
+    const selectKind = (nextKind: CaptureKind): void => {
+      setKind(nextKind);
+      setKindTouched(true);
+      setMenu(null);
+      if (!isDatedKind(nextKind)) {
+        setDate("");
+        setTime("");
+        setDueRange(null);
+        setExact(false);
+      }
+    };
+
+    const selectProject = (nextProjectId: string | null): void => {
+      setProjectId(nextProjectId);
+      setMenu(null);
+    };
+
+    const openExactDate = (): void => {
+      setMenu(null);
+      setExact(true);
+      setDueRange(null);
+      whenAnchorRef.current?.measureInWindow((x, y, w, h) => {
+        setAnchorRect({ x, y, w, h });
+        setDatePickerOpen(true);
       });
+    };
+
+    const selectWhen = (option: WhenOption): void => {
+      if (option.kind === "concrete") {
+        setExact(false);
+        setDueRange(null);
+        setDate(option.date());
+        setTime("");
+        setMenu(null);
+        return;
+      }
+      setExact(false);
+      setDueRange(option.range);
+      setDate("");
+      setTime("");
+      setMenu(null);
+    };
+
+    const file = (): void => {
+      if (!hasThought) return;
+
+      setLastKind(kind);
+      cap.resolveCapture(buildResolution());
+      cap.setComposerOpen(false);
+      resetTransient(kind);
+    };
+
+    const openMenu = (nextMenu: Exclude<ContextMenu, null>): void => {
+      if (cap.isRecording) return;
+      setMenu((current) => (current === nextMenu ? null : nextMenu));
+    };
+
+    const menuEntering = reduced
+      ? undefined
+      : FadeInDown.duration(tokens.motion.duration.fast);
+    const menuExiting = reduced
+      ? undefined
+      : FadeOutUp.duration(tokens.motion.duration.fast);
+
+    if (
+      !cap.composerOpen &&
+      !cap.isRecording &&
+      cap.pendingThought === null &&
+      !cap.dockAlwaysVisible
+    ) {
+      return null;
     }
-    cap.setComposerOpen(false);
-    resetTransient(kind);
-  };
 
-  const openMenu = (nextMenu: Exclude<ContextMenu, null>): void => {
-    if (cap.isRecording) return;
-    setMenu((current) => (current === nextMenu ? null : nextMenu));
-  };
-
-  const menuEntering = reduced
-    ? undefined
-    : FadeIn.duration(tokens.motion.duration.fast);
-  const menuExiting = reduced
-    ? undefined
-    : FadeOut.duration(tokens.motion.duration.fast);
-
-  if (
-    !cap.composerOpen &&
-    !cap.isRecording &&
-    cap.pendingThought === null &&
-    !cap.dockAlwaysVisible
-  ) {
-    return null;
-  }
-
-  const actionLabel = cap.isRecording
-    ? "Done"
-    : hasThought
-      ? "File"
-      : hasDraft
-        ? "Continue"
-        : "Speak";
-
-  return (
-    <DockShell
-      register="surface"
-      contentKey="capture-console"
-      radius={tokens.radius.lg}
-    >
-      <View style={styles.console}>
-        {menu ? (
-          <Animated.View
-            entering={menuEntering}
-            exiting={menuExiting}
-            style={[styles.menu, { backgroundColor: colors.surfaceSubtle }]}
-          >
-            {renderMenu({
-              menu,
-              kind,
-              projectId,
-              activeProjects,
-              dateLabel: whenLabel(exact, date, time, dueRange),
-              muted: colors.inkMuted,
-              scheme,
-              onSelectKind: selectKind,
-              onSelectProject: selectProject,
-              onSelectWhen: selectWhen,
-              onOpenExactDate: openExactDate,
-              onOpenMenu: openMenu,
-            })}
-          </Animated.View>
-        ) : null}
-
-        <View style={styles.thoughtRow}>
-          <View style={styles.signalMark}>
-            <IconSymbol
-              name={cap.isRecording ? "Microphone" : "Pen"}
-              size={18}
-              color={colors.inkMuted}
-            />
-          </View>
-          {cap.isRecording ? (
-            <View style={styles.readout}>
-              <Text style={[styles.kicker, { color: colors.inkMuted }]}>LISTENING</Text>
-              <Text
-                style={[styles.readoutText, { color: colors.ink }]}
-                numberOfLines={2}
-              >
-                {cap.transcript || "Speak your thought"}
-              </Text>
-            </View>
-          ) : hasThought ? (
-            <View style={styles.readout}>
-              <Text style={[styles.kicker, { color: colors.inkMuted }]}>THOUGHT</Text>
-              <Text
-                style={[styles.readoutText, { color: colors.ink }]}
-                numberOfLines={2}
-              >
-                {pendingThought}
-              </Text>
-            </View>
-          ) : (
-            <TextInput
-              ref={inputRef}
-              value={draft}
-              onChangeText={setDraft}
-              onSubmitEditing={submitDraft}
-              onBlur={closeEmpty}
-              placeholder="Put something in"
-              placeholderTextColor={colors.inkMuted}
-              selectionColor={colors.ink}
-              returnKeyType="done"
-              submitBehavior="submit"
-              accessibilityLabel="Put something in"
-              multiline
-              style={[styles.input, { color: colors.ink }]}
-            />
-          )}
-          {hasThought ? (
-            <Pressable
-              onPress={discard}
-              accessibilityRole="button"
-              accessibilityLabel="Discard capture"
-              hitSlop={8}
-              style={({ pressed }) => [styles.closeButton, pressed && styles.pressed]}
+    return (
+      <DockShell
+        register="surface"
+        contentKey="capture-console"
+        radius={tokens.radius.lg}
+        bordered
+        overlay={
+          menu ? (
+            <Animated.View
+              entering={menuEntering}
+              exiting={menuExiting}
+              style={styles.menu}
             >
-              <IconSymbol name="X" size={18} color={colors.inkMuted} />
-            </Pressable>
-          ) : null}
-        </View>
-
-        <View style={styles.rail}>
-          <ScrollView
-            horizontal
-            style={styles.contextScroll}
-            contentContainerStyle={styles.contextRail}
-            showsHorizontalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <Pressable
-              onPress={() => openMenu("more")}
-              accessibilityRole="button"
-              accessibilityLabel="Add capture detail"
-              accessibilityState={{ disabled: cap.isRecording }}
-              disabled={cap.isRecording}
-              hitSlop={4}
-              style={({ pressed }) => [
-                styles.plusButton,
-                { backgroundColor: colors.surfaceSubtle },
-                pressed && styles.pressed,
-                cap.isRecording && styles.disabled,
-              ]}
-            >
-              <IconSymbol name="Plus" size={18} color={colors.ink} />
-            </Pressable>
-
-            <ContextChip
-              label={kindLabel(kind)}
-              icon={kindIcon(kind)}
-              semanticKind={kind}
-              scheme={scheme}
-              onPress={() => openMenu("kind")}
-              disabled={cap.isRecording}
-            />
-
-            <ContextChip
-              label={displayedProject}
-              icon="Folder"
-              scheme={scheme}
-              onPress={() => openMenu("project")}
-              disabled={cap.isRecording || cap.lockedProjectId !== null}
-            />
-
-            {isDatedKind(kind) ? (
-              <View ref={whenAnchorRef} collapsable={false}>
-                <ContextChip
-                  label={whenLabel(exact, date, time, dueRange)}
-                  icon="Calendar"
-                  scheme={scheme}
-                  onPress={() => openMenu("when")}
-                  disabled={cap.isRecording}
-                />
+              {renderMenu({
+                menu,
+                kind,
+                projectId,
+                activeProjects,
+                dateLabel: whenLabel(exact, date, time, dueRange),
+                scheme,
+                onSelectKind: selectKind,
+                onSelectProject: selectProject,
+                onSelectWhen: selectWhen,
+                onOpenExactDate: openExactDate,
+              })}
+            </Animated.View>
+          ) : undefined
+        }
+      >
+        <View style={styles.console}>
+          <View style={styles.thoughtRow}>
+            {cap.isRecording ? (
+              <View
+                style={[
+                  styles.iconButton,
+                  { backgroundColor: colors.surfaceSubtle },
+                ]}
+              >
+                <IconSymbol name="Microphone" size={18} color={colors.ink} />
               </View>
-            ) : null}
-          </ScrollView>
-
-          <View style={styles.actionGroup}>
+            ) : (
+              <View style={styles.signalMark}>
+                <IconSymbol name="Pen" size={18} color={colors.inkMuted} />
+              </View>
+            )}
             {cap.isRecording ? (
               <>
-                <RailAction
-                  label="Cancel"
-                  icon="X"
+                <View style={[styles.readout, styles.recordingReadout]}>
+                  {cap.transcript ? (
+                    <Text
+                      style={[styles.readoutText, { color: colors.ink }]}
+                      numberOfLines={2}
+                    >
+                      {cap.transcript}
+                    </Text>
+                  ) : (
+                    <WaveformVisualizer barCount={9} color={colors.ink} />
+                  )}
+                </View>
+                <Pressable
                   onPress={() => void cap.cancelRecording()}
-                  muted
-                />
-                <RailAction
-                  label={actionLabel}
-                  icon="ArrowRight"
+                  accessibilityRole="button"
+                  accessibilityLabel="Discard recording"
+                  hitSlop={6}
+                  style={({ pressed }) => [
+                    styles.iconButton,
+                    { backgroundColor: colors.surfaceSubtle },
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <IconSymbol name="X" size={18} color={colors.ink} />
+                </Pressable>
+                <Pressable
                   onPress={() => void cap.stopRecording()}
-                />
+                  accessibilityRole="button"
+                  accessibilityLabel="Continue"
+                  hitSlop={6}
+                  style={({ pressed }) => [
+                    styles.iconButton,
+                    { backgroundColor: colors.accent.clay },
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <IconSymbol
+                    name="ArrowRight"
+                    size={18}
+                    color={colors.accent.onClay}
+                  />
+                </Pressable>
               </>
+            ) : hasThought ? (
+              <View style={styles.readout}>
+                <Text style={[styles.kicker, { color: colors.inkMuted }]}>
+                  THOUGHT
+                </Text>
+                <Text
+                  style={[styles.readoutText, { color: colors.ink }]}
+                  numberOfLines={2}
+                >
+                  {pendingThought}
+                </Text>
+              </View>
             ) : (
-              <RailAction
-                label={actionLabel}
-                icon={hasThought ? "Check" : hasDraft ? "ArrowRight" : "Microphone"}
-                onPress={hasThought ? commit : hasDraft ? submitDraft : cap.startRecording}
-              />
+              <>
+                <TextInput
+                  ref={inputRef}
+                  value={draft}
+                  onChangeText={setDraft}
+                  onSubmitEditing={fileDraft}
+                  onBlur={closeEmpty}
+                  placeholder="Put something in"
+                  placeholderTextColor={colors.inkMuted}
+                  selectionColor={colors.ink}
+                  returnKeyType="done"
+                  submitBehavior="submit"
+                  accessibilityLabel="Put something in"
+                  multiline
+                  style={[styles.input, { color: colors.ink }]}
+                />
+                <Pressable
+                  onPress={() => void cap.startRecording()}
+                  accessibilityRole="button"
+                  accessibilityLabel="Capture by voice"
+                  hitSlop={6}
+                  style={({ pressed }) => [
+                    styles.iconButton,
+                    { backgroundColor: colors.surfaceSubtle },
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <IconSymbol name="Microphone" size={18} color={colors.ink} />
+                </Pressable>
+              </>
             )}
+            {hasThought ? (
+              <Pressable
+                onPress={discard}
+                accessibilityRole="button"
+                accessibilityLabel="Discard capture"
+                hitSlop={8}
+                style={({ pressed }) => [
+                  styles.closeButton,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <IconSymbol name="X" size={18} color={colors.inkMuted} />
+              </Pressable>
+            ) : null}
+          </View>
+
+          <View style={styles.rail}>
+            <ScrollView
+              horizontal
+              style={styles.contextScroll}
+              contentContainerStyle={styles.contextRail}
+              showsHorizontalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              <ContextChip
+                label={kindLabel(kind)}
+                icon={kindIcon(kind)}
+                semanticKind={kind}
+                scheme={scheme}
+                onPress={() => openMenu("kind")}
+                disabled={cap.isRecording}
+              />
+
+              <ContextChip
+                label={displayedProject}
+                icon="Folder"
+                scheme={scheme}
+                onPress={() => openMenu("project")}
+                disabled={cap.isRecording || cap.lockedProjectId !== null}
+              />
+
+              {isDatedKind(kind) ? (
+                <View ref={whenAnchorRef} collapsable={false}>
+                  <ContextChip
+                    label={whenLabel(exact, date, time, dueRange)}
+                    icon="Calendar"
+                    scheme={scheme}
+                    onPress={() => openMenu("when")}
+                    disabled={cap.isRecording}
+                  />
+                </View>
+              ) : null}
+            </ScrollView>
+
+            <View style={styles.actionGroup}>
+              {(hasThought || hasDraft) && !cap.isRecording ? (
+                <Pressable
+                  onPress={hasThought ? file : fileDraft}
+                  accessibilityRole="button"
+                  accessibilityLabel="File"
+                  hitSlop={6}
+                  style={({ pressed }) => [
+                    styles.iconButton,
+                    { backgroundColor: colors.accent.clay },
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <IconSymbol
+                    name="Check"
+                    size={18}
+                    color={colors.accent.onClay}
+                  />
+                </Pressable>
+              ) : null}
+            </View>
           </View>
         </View>
-      </View>
 
-      <ExactDateMenu
-        visible={datePickerOpen}
-        initialDate={date}
-        initialTime={time}
-        accentColor={entryKicker(kind === "deadline" ? "deadline" : "todo", scheme)}
-        anchor={anchorRect}
-        onDismiss={() => {
-          setDatePickerOpen(false);
-          setAnchorRect(null);
-        }}
-        onConfirm={(nextDate, nextTime) => {
-          setExact(true);
-          setDate(nextDate);
-          setTime(nextTime);
-          setDueRange(null);
-          setDatePickerOpen(false);
-          setAnchorRect(null);
-        }}
-      />
-    </DockShell>
-  );
-});
+        <ExactDateMenu
+          visible={datePickerOpen}
+          initialDate={date}
+          initialTime={time}
+          accentColor={entryKicker(
+            kind === "deadline" ? "deadline" : "todo",
+            scheme,
+          )}
+          anchor={anchorRect}
+          onDismiss={() => {
+            setDatePickerOpen(false);
+            setAnchorRect(null);
+          }}
+          onConfirm={(nextDate, nextTime) => {
+            setExact(true);
+            setDate(nextDate);
+            setTime(nextTime);
+            setDueRange(null);
+            setDatePickerOpen(false);
+            setAnchorRect(null);
+          }}
+        />
+      </DockShell>
+    );
+  },
+);
 
 function ContextChip({
   label,
@@ -546,53 +626,15 @@ function ContextChip({
       ]}
     >
       <IconSymbol name={icon} size={14} color={semantic.color} />
-      <Text style={[styles.contextChipLabel, { color: semantic.color }]} numberOfLines={1}>
-        {label}
-      </Text>
-      {!disabled ? <IconSymbol name="ChevronDown" size={13} color={semantic.color} /> : null}
-    </Pressable>
-  );
-}
-
-function RailAction({
-  label,
-  icon,
-  onPress,
-  muted = false,
-}: {
-  label: string;
-  icon: IconSymbolName;
-  onPress: () => void;
-  muted?: boolean;
-}): React.ReactElement {
-  const { colors } = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      hitSlop={4}
-      style={({ pressed }) => [
-        styles.railAction,
-        {
-          backgroundColor: muted ? colors.surfaceSubtle : colors.accent.clay,
-        },
-        pressed && styles.pressed,
-      ]}
-    >
-      <IconSymbol
-        name={icon}
-        size={17}
-        color={muted ? colors.ink : colors.accent.onClay}
-      />
       <Text
-        style={[
-          styles.railActionLabel,
-          { color: muted ? colors.ink : colors.accent.onClay },
-        ]}
+        style={[styles.contextChipLabel, { color: semantic.color }]}
+        numberOfLines={1}
       >
         {label}
       </Text>
+      {!disabled ? (
+        <IconSymbol name="ChevronDown" size={13} color={semantic.color} />
+      ) : null}
     </Pressable>
   );
 }
@@ -618,7 +660,7 @@ function ContextOption({
       ? entryTint(semanticKind, scheme)
       : selected
         ? colors.accent.clay
-        : colors.surface;
+        : colors.surfaceSubtle;
   const foreground =
     selected && semanticKind && semanticKind !== "note"
       ? entryKicker(semanticKind, scheme)
@@ -638,7 +680,10 @@ function ContextOption({
       ]}
     >
       {icon ? <IconSymbol name={icon} size={14} color={foreground} /> : null}
-      <Text style={[styles.menuOptionLabel, { color: foreground }]} numberOfLines={1}>
+      <Text
+        style={[styles.menuOptionLabel, { color: foreground }]}
+        numberOfLines={1}
+      >
         {label}
       </Text>
     </Pressable>
@@ -651,48 +696,52 @@ function renderMenu({
   projectId,
   activeProjects,
   dateLabel,
-  muted,
   scheme,
   onSelectKind,
   onSelectProject,
   onSelectWhen,
   onOpenExactDate,
-  onOpenMenu,
 }: {
   menu: Exclude<ContextMenu, null>;
   kind: CaptureKind;
   projectId: string | null;
   activeProjects: DbProject[];
   dateLabel: string;
-  muted: string;
   scheme: "light" | "dark";
   onSelectKind: (kind: CaptureKind) => void;
   onSelectProject: (projectId: string | null) => void;
   onSelectWhen: (option: WhenOption) => void;
   onOpenExactDate: () => void;
-  onOpenMenu: (menu: Exclude<ContextMenu, null>) => void;
-}): React.ReactElement {
+}): React.ReactElement | null {
   if (menu === "kind") {
     return (
-      <MenuBlock title="FILE AS" color={muted}>
-        {(["idea", "todo", "deadline", "note"] as CaptureKind[]).map((nextKind) => (
-          <ContextOption
-            key={nextKind}
-            label={kindLabel(nextKind)}
-            icon={kindIcon(nextKind)}
-            selected={kind === nextKind}
-            semanticKind={nextKind}
-            scheme={scheme}
-            onPress={() => onSelectKind(nextKind)}
-          />
-        ))}
+      <MenuBlock>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.menuRail}
+        >
+          {(["idea", "todo", "deadline", "note"] as CaptureKind[]).map(
+            (nextKind) => (
+              <ContextOption
+                key={nextKind}
+                label={kindLabel(nextKind)}
+                icon={kindIcon(nextKind)}
+                selected={kind === nextKind}
+                semanticKind={nextKind}
+                scheme={scheme}
+                onPress={() => onSelectKind(nextKind)}
+              />
+            ),
+          )}
+        </ScrollView>
       </MenuBlock>
     );
   }
 
   if (menu === "project") {
     return (
-      <MenuBlock title="PROJECT" color={muted}>
+      <MenuBlock>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -721,7 +770,7 @@ function renderMenu({
 
   if (menu === "when") {
     return (
-      <MenuBlock title={`WHEN  ·  ${dateLabel}`} color={muted}>
+      <MenuBlock>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -753,56 +802,15 @@ function renderMenu({
     );
   }
 
-  return (
-    <MenuBlock title="ADD DETAIL" color={muted}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.menuRail}
-      >
-        <ContextOption
-          label="Type"
-          icon="Sparkles"
-          selected={false}
-          onPress={() => onOpenMenu("kind")}
-          scheme={scheme}
-        />
-        <ContextOption
-          label="Project"
-          icon="Folder"
-          selected={false}
-          onPress={() => onOpenMenu("project")}
-          scheme={scheme}
-        />
-        {isDatedKind(kind) ? (
-          <ContextOption
-            label="When"
-            icon="Calendar"
-            selected={false}
-            onPress={() => onOpenMenu("when")}
-            scheme={scheme}
-          />
-        ) : null}
-      </ScrollView>
-    </MenuBlock>
-  );
+  return null;
 }
 
 function MenuBlock({
-  title,
-  color,
   children,
 }: {
-  title: string;
-  color: string;
   children: React.ReactNode;
 }): React.ReactElement {
-  return (
-    <View>
-      <Text style={[styles.menuTitle, { color }]}>{title}</Text>
-      {children}
-    </View>
-  );
+  return <View style={styles.menuBlock}>{children}</View>;
 }
 
 function whenLabel(
@@ -852,20 +860,15 @@ function daysToWeekend(): number {
 
 const styles = StyleSheet.create({
   console: {
-    padding: tokens.space.sm,
-    gap: tokens.space.sm,
-  },
-  menu: {
-    borderRadius: tokens.radius.lg,
-    padding: tokens.space.sm,
+    padding: tokens.space.xs,
     gap: tokens.space.xs,
   },
-  menuTitle: {
-    fontFamily: tokens.type.fontMono.medium,
-    fontSize: tokens.type.micro.size,
-    lineHeight: tokens.type.micro.lineHeight,
-    letterSpacing: tokens.type.micro.tracking,
+  menu: {
+    gap: tokens.space.xs,
     paddingHorizontal: tokens.space.xs,
+  },
+  menuBlock: {
+    gap: tokens.space.xs,
   },
   menuRail: {
     flexDirection: "row",
@@ -889,7 +892,7 @@ const styles = StyleSheet.create({
     lineHeight: tokens.type.body.lineHeight,
   },
   thoughtRow: {
-    minHeight: 52,
+    minHeight: 44,
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.sm,
@@ -903,9 +906,9 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    minHeight: 40,
-    maxHeight: tokens.space.xxxl * 3,
+    maxHeight: tokens.space.xxxl * 2,
     paddingVertical: 0,
+    textAlignVertical: "center",
     fontFamily: tokens.type.fontInter.medium,
     fontSize: tokens.type.body.size,
     lineHeight: tokens.type.body.lineHeight,
@@ -914,6 +917,11 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: tokens.space.xs,
     paddingVertical: tokens.space.xs,
+  },
+  recordingReadout: {
+    paddingVertical: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   kicker: {
     fontFamily: tokens.type.fontMono.medium,
@@ -934,10 +942,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   rail: {
-    minHeight: 48,
+    minHeight: 40,
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.xs,
+    paddingHorizontal: tokens.space.sm,
   },
   contextScroll: {
     flex: 1,
@@ -948,15 +957,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: tokens.space.xs,
   },
-  plusButton: {
-    width: 40,
-    height: 40,
-    borderRadius: tokens.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   contextChip: {
-    minHeight: 40,
+    minHeight: 32,
     maxWidth: 150,
     borderRadius: tokens.radius.pill,
     paddingHorizontal: tokens.space.sm,
@@ -975,19 +977,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: tokens.space.xs,
   },
-  railAction: {
-    minHeight: 40,
+  iconButton: {
+    width: 30,
+    height: 30,
     borderRadius: tokens.radius.pill,
-    paddingHorizontal: tokens.space.md,
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: tokens.space.xs,
-  },
-  railActionLabel: {
-    fontFamily: tokens.type.fontInter.semiBold,
-    fontSize: tokens.type.body.size,
-    lineHeight: tokens.type.body.lineHeight,
   },
   pressed: {
     opacity: 0.68,

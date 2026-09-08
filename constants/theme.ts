@@ -219,10 +219,10 @@ const elevation = {
     ios: {
       shadowColor: "#28384f",
       shadowOffset: { width: 0, height: -2 },
-      shadowOpacity: 0.5,
-      shadowRadius: 10,
+      shadowOpacity: 0.22,
+      shadowRadius: 8,
     },
-    android: { elevation: 8 },
+    android: { elevation: 5 },
     default: {},
   }),
   // floating context-menu / popover card — tighter lift than a tile so it

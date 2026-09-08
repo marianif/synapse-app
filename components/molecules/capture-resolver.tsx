@@ -7,9 +7,10 @@ export type { LinkableIdea };
 
 /**
  * Where a captured thought is filed. `todo`/`deadline` carry the optional detail
- * the writer set in the inline panel; `idea`/`note`/`note-on` are bare. There is
- * no "more" escape hatch — the rich modal was retired and capture is the single
- * creation path (PRODUCT.md: one trigger, no second add).
+ * the writer set in the inline panel; `idea`, `note`, and `note-on` can carry an
+ * optional `projectId` so the console can keep attribution in one rail.
+ * There is no "more" escape hatch — the rich modal was retired and capture is
+ * the single creation path (PRODUCT.md: one trigger, no second add).
  */
 export type CaptureResolution =
   | {
@@ -25,6 +26,6 @@ export type CaptureResolution =
       dueRange?: DueRange;
       projectId?: string;
     }
-  | { kind: "idea" }
-  | { kind: "note" }
-  | { kind: "note-on"; entryId: string };
+  | { kind: "idea"; projectId?: string }
+  | { kind: "note"; projectId?: string }
+  | { kind: "note-on"; entryId: string; projectId?: string };

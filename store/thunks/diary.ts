@@ -55,6 +55,8 @@ export const updateDiaryEntry = createAsyncThunk<
       linkedProjectId?: string | null;
       tags?: string[];
       media?: NoteMedia[];
+      /** Signed delta applied to the note's weight (e.g. +1 or -1). */
+      rating?: number;
     };
   }
 >("diary/update", async ({ id, data }) => {

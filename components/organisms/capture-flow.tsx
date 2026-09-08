@@ -152,12 +152,7 @@ export const CaptureFlow = forwardRef<InputStageHandle, CaptureFlowProps>(
       return;
     }
     if (type === "note") {
-      if (cap.recentIdeas.length > 0) {
-        setStage("note-link");
-        return;
-      }
-      cap.resolveCapture({ kind: "note" });
-      cap.setComposerOpen(false);
+      setStage("note-link");
       return;
     }
     setSelected(type);
@@ -326,15 +321,15 @@ export const CaptureFlow = forwardRef<InputStageHandle, CaptureFlowProps>(
               muted={muted}
               raised={raised}
               quiet={quiet}
-              recentIdeas={cap.recentIdeas}
+              activeProjects={activeProjects}
               onBack={back}
               onDiscard={discard}
               onFileFree={() => {
                 cap.resolveCapture({ kind: "note" });
                 cap.setComposerOpen(false);
               }}
-              onFileOnIdea={(entryId) => {
-                cap.resolveCapture({ kind: "note-on", entryId });
+              onFileOnProject={(pid) => {
+                cap.resolveCapture({ kind: "note", projectId: pid });
                 cap.setComposerOpen(false);
               }}
             />

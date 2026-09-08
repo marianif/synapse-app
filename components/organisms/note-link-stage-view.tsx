@@ -1,20 +1,19 @@
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
-import { ThemedText } from "@/components/atoms/themed-text";
-import { StageHeader } from "@/components/molecules/stage-header";
+import { OptionChip } from "@/components/atoms/option-chip";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { entryColor, tokens } from "@/constants/theme";
+import { tokens } from "@/constants/theme";
 
 export interface NoteLinkStageViewProps {
   ink: string;
   muted: string;
   raised: string;
   quiet: string;
-  recentIdeas: { id: string; title: string }[];
+  activeProjects: { id: string; title: string; emoji: string | null }[];
   onBack: () => void;
   onDiscard: () => void;
   onFileFree: () => void;
-  onFileOnIdea: (entryId: string) => void;
+  onFileOnProject: (projectId: string) => void;
 }
 
 export function NoteLinkStageView({
@@ -22,119 +21,84 @@ export function NoteLinkStageView({
   muted,
   raised,
   quiet,
-  recentIdeas,
+  activeProjects,
   onBack,
   onDiscard,
   onFileFree,
-  onFileOnIdea,
+  onFileOnProject,
 }: NoteLinkStageViewProps): React.ReactElement {
   return (
-    <View style={styles.detailStage}>
-      <StageHeader
-        label="Note"
-        onBack={onBack}
-        onDiscard={onDiscard}
-        ink={ink}
-        muted={muted}
-      />
-      <View style={styles.noteChoices}>
-        <Pressable
+    <View style={styles.stage}>
+      <Pressable
+        onPress={onBack}
+        accessibilityRole="button"
+        accessibilityLabel="Back"
+        style={styles.headerButton}
+      >
+        <IconSymbol name="ChevronLeft" size={18} color={muted} />
+      </Pressable>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        style={styles.chipScroll}
+        contentContainerStyle={styles.chipRail}
+      >
+        <OptionChip
+          label="Free note"
+          icon="Note2"
+          selected={false}
+          ink={ink}
+          muted={muted}
+          raised={quiet}
           onPress={onFileFree}
-          accessibilityRole="button"
-          accessibilityLabel="File as free note"
-          style={({ pressed }) => [
-            styles.freeNote,
-            { backgroundColor: raised },
-            pressed && styles.pressed,
-          ]}
-        >
-          <IconSymbol name="Note2" size={14} color={ink} />
-          <ThemedText type="bodyBold" style={{ color: ink }}>
-            Free note
-          </ThemedText>
-        </Pressable>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.ideaRail}
-        >
-          {recentIdeas.map((idea) => (
-            <Pressable
-              key={idea.id}
-              onPress={() => onFileOnIdea(idea.id)}
-              accessibilityRole="button"
-              accessibilityLabel={`Note on idea: ${idea.title}`}
-              style={({ pressed }) => [
-                styles.ideaChip,
-                { backgroundColor: quiet },
-                pressed && styles.pressed,
-              ]}
-            >
-              <View
-                style={[
-                  styles.ideaDot,
-                  { backgroundColor: entryColor("idea") },
-                ]}
-              />
-              <ThemedText
-                type="body"
-                numberOfLines={1}
-                style={[styles.ideaLabel, { color: ink }]}
-              >
-                {idea.title}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
+        />
+        {activeProjects.map((project) => (
+          <OptionChip
+            key={project.id}
+            label={project.title}
+            emoji={project.emoji}
+            selected={false}
+            ink={ink}
+            muted={muted}
+            raised={quiet}
+            onPress={() => onFileOnProject(project.id)}
+          />
+        ))}
+      </ScrollView>
+      <Pressable
+        onPress={onDiscard}
+        accessibilityRole="button"
+        accessibilityLabel="Discard"
+        style={styles.headerButton}
+      >
+        <IconSymbol name="X" size={16} color={muted} />
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  detailStage: {
-    paddingHorizontal: tokens.space.sm,
-    paddingTop: 6,
-    paddingBottom: tokens.space.sm,
+  stage: {
+    flexDirection: "row",
+    alignItems: "center",
+    minHeight: tokens.size.dockBar,
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.sm,
     gap: tokens.space.xs,
   },
-  noteChoices: {
-    gap: tokens.space.xs,
+  headerButton: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  freeNote: {
-    minHeight: 36,
-    borderRadius: tokens.radius.sm,
+  chipScroll: {
+    flex: 1,
+  },
+  chipRail: {
     flexDirection: "row",
     alignItems: "center",
     gap: tokens.space.xs,
-    paddingHorizontal: tokens.space.sm,
-  },
-  ideaRail: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.xs,
-    paddingRight: tokens.space.sm,
-  },
-  ideaChip: {
-    minHeight: 34,
-    maxWidth: 200,
-    borderRadius: tokens.radius.sm,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.xs,
-    paddingHorizontal: tokens.space.sm,
-  },
-  ideaDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  ideaLabel: {
-    maxWidth: 160,
-  },
-  pressed: {
-    opacity: 0.62,
   },
 });

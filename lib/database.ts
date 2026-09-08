@@ -436,6 +436,59 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 18) {
+    // Migration 18: note rating — an up/down stamp on diary_entries, set with
+    // the two thumbs in the note footer. Nullable so existing notes survive
+    // unrated; the UI treats null as "no rating yet".
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync('ALTER TABLE diary_entries ADD COLUMN rating TEXT');
+      } catch {
+        // column already exists (fresh installs got it from CREATE_DIARY_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
+
+  if (currentVersion < 19) {
+    // Migration 19: note rating becomes a signed INTEGER weight (increment /
+    // decrement) instead of a binary up/down stamp. Rewrite any 18-era text
+    // values ('up'/'down') into ±1 so existing ratings survive the pivot, then
+    // ensure the column is a non-null integer defaulting to 0.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync(
+          "UPDATE diary_entries SET rating = CASE rating WHEN 'up' THEN 1 WHEN 'down' THEN -1 ELSE 0 END",
+        );
+      } catch {
+        // column missing / not yet text — nothing to rewrite
+      }
+      try {
+        await db.execAsync(
+          'ALTER TABLE diary_entries ADD COLUMN rating_new INTEGER NOT NULL DEFAULT 0',
+        );
+        await db.execAsync(
+          'UPDATE diary_entries SET rating_new = CAST(COALESCE(rating, 0) AS INTEGER)',
+        );
+        await db.execAsync(
+          'ALTER TABLE diary_entries DROP COLUMN rating',
+        );
+        await db.execAsync(
+          'ALTER TABLE diary_entries RENAME COLUMN rating_new TO rating',
+        );
+      } catch {
+        // fresh installs already have the integer column (CREATE_DIARY_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────
@@ -836,12 +889,13 @@ export async function insertDiaryEntry(
   linkedProjectId: string | null = null,
   tags: string[] = [],
   media: NoteMedia[] = [],
+  rating: number = 0,
 ): Promise<DbDiaryEntry> {
   const db = await ensureDb();
   const id = generateId();
   const now = Math.floor(Date.now() / 1000);
   await db.runAsync(
-    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, linked_project_id, tags, media, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO diary_entries (id, body, mood, linked_entry_id, linked_project_id, tags, media, rating, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     id,
     body,
     mood,
@@ -849,6 +903,7 @@ export async function insertDiaryEntry(
     linkedProjectId,
     serializeTags(tags),
     serializeMedia(media),
+    rating,
     now,
     now,
   );
@@ -860,6 +915,7 @@ export async function insertDiaryEntry(
     linked_project_id: linkedProjectId,
     tags,
     media,
+    rating,
     created_at: now,
     updated_at: now,
   };
@@ -925,6 +981,8 @@ export async function updateDiaryEntry(
     linkedProjectId?: string | null;
     tags?: string[];
     media?: NoteMedia[];
+    /** Signed delta applied to the note's weight (e.g. +1 or -1). */
+    rating?: number;
   },
 ): Promise<void> {
   const db = await ensureDb();
@@ -953,6 +1011,10 @@ export async function updateDiaryEntry(
   if (data.media !== undefined) {
     updates.push('media = ?');
     values.push(serializeMedia(data.media));
+  }
+  if (data.rating !== undefined) {
+    updates.push('rating = rating + ?');
+    values.push(data.rating);
   }
   if (updates.length === 0) return;
   updates.push('updated_at = ?');

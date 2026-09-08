@@ -264,7 +264,7 @@ export function useCapture(
             // An idea captured INSIDE a project belongs to that project too —
             // it's the project's thinking. The shelf's pull-in is the path
             // out if the user later decides otherwise.
-            projectId: lockedProjectId ?? undefined,
+            projectId: lockedProjectId ?? resolution.projectId,
           }).catch((err) => console.error("Failed to capture idea:", err));
           break;
         case "todo":
@@ -293,16 +293,19 @@ export function useCapture(
           }).catch((err) => console.error("Failed to capture deadline:", err));
           break;
         case "note":
-          addDiaryEntry(text, null, null, lockedProjectId ?? null).catch(
-            (err) => console.error("Failed to file diary note:", err),
-          );
+          addDiaryEntry(
+            text,
+            null,
+            null,
+            resolution.projectId ?? lockedProjectId ?? null,
+          ).catch((err) => console.error("Failed to file diary note:", err));
           break;
         case "note-on":
           addDiaryEntry(
             text,
             null,
             resolution.entryId,
-            lockedProjectId ?? null,
+            resolution.projectId ?? lockedProjectId ?? null,
           ).catch((err) =>
             console.error("Failed to file linked diary note:", err),
           );

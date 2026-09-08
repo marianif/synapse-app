@@ -146,6 +146,12 @@ export interface DbDiaryEntry {
    * each entry references a file in the app's media directory.
    */
   media: NoteMedia[];
+  /**
+   * Incremental/decremental weight stamp on the note. A signed integer (0 = no
+   * weight). Positive → the note earns points relative to its peers; negative →
+   * it loses them. Bumped with the +/− stepper in the note footer.
+   */
+  rating: number;
   created_at: number;
   updated_at: number;
 }

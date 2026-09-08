@@ -181,6 +181,14 @@ export default function NotesScreen(): React.ReactElement {
     return map;
   }, [boardEntries]);
 
+  // id → owning project, so a note linked to an entry that is itself filed in
+  // a project can show that project on its relatedness chip as a breadcrumb.
+  const entryProjectIds = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const e of boardEntries) if (e.project_id) map[e.id] = e.project_id;
+    return map;
+  }, [boardEntries]);
+
   const projectTitles = useMemo(() => {
     const map: Record<string, string> = {};
     for (const p of projects) map[p.id] = p.title;
@@ -372,12 +380,16 @@ export default function NotesScreen(): React.ReactElement {
           entries={visibleEntries}
           entryTitles={entryTitles}
           entryKinds={entryKinds}
+          entryProjectIds={entryProjectIds}
           projectTitles={projectTitles}
           projectEmojis={projectEmojis}
           filtered={
             target !== null || macro !== "all" || selectedTags.length > 0
           }
           onRelate={setRelatingNote}
+          onRate={(entry, delta) =>
+            void updateEntry(entry.id, { rating: delta })
+          }
           onEdit={(entry) =>
             router.push({
               pathname: "/note",

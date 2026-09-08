@@ -9,8 +9,8 @@ import Animated, {
 
 import {
   CaptureBackdrop,
-  CaptureComposer,
-} from "@/components/organisms/capture-composer";
+  CaptureComposerVariantView,
+} from "@/components/organisms/capture-composer-variant";
 import type { InputStageHandle } from "@/components/organisms/input-stage-view";
 import { tokens } from "@/constants/theme";
 import type { UseCaptureReturn } from "@/hooks/use-capture";
@@ -121,7 +121,11 @@ export function CaptureDock({
         style={[styles.captureDock, { bottom: restOffset }, dockStyle]}
         pointerEvents="box-none"
       >
-        <CaptureComposer ref={inputRef} cap={cap} projects={projects} />
+        <CaptureComposerVariantView
+          ref={inputRef}
+          cap={cap}
+          projects={projects}
+        />
       </Animated.View>
     </>
   );

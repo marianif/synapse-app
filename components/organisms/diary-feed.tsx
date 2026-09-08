@@ -15,6 +15,10 @@ interface DiaryFeedProps {
   /** id → entry type, so a linked note's chip wears its true glyph (todo,
    *  deadline, or idea). */
   entryKinds?: Record<string, EntryType>;
+  /** id → owning project id, for notes linked to an ENTRY that is itself filed
+   *  in a project. When set, the relatedness chip becomes an entry ⇾ project
+   *  breadcrumb. */
+  entryProjectIds?: Record<string, string>;
   /** id → project title, for notes filed ON a project. */
   projectTitles?: Record<string, string>;
   /** id → project emoji, for notes filed ON a project. Shown on the relatedness
@@ -28,6 +32,9 @@ interface DiaryFeedProps {
   onRelate?: (entry: DbDiaryEntry) => void;
   /** Tap a note's body to edit it. Omit to render bodies as static text. */
   onEdit?: (entry: DbDiaryEntry) => void;
+  /** Apply a signed delta to a note's weight (e.g. +1 or -1). Omit to render
+   *  the weight stepper statically. */
+  onRate?: (entry: DbDiaryEntry, delta: number) => void;
   onDelete: (id: string) => void;
 }
 
@@ -61,11 +68,13 @@ export function DiaryFeed({
   entries,
   entryTitles,
   entryKinds,
+  entryProjectIds,
   projectTitles,
   projectEmojis,
   filtered = false,
   onRelate,
   onEdit,
+  onRate,
   onDelete,
 }: DiaryFeedProps): React.ReactElement {
   const { colors } = useTheme();
@@ -116,6 +125,19 @@ export function DiaryFeed({
             const projectEmoji = e.linked_project_id
               ? projectEmojis?.[e.linked_project_id]
               : undefined;
+            // A note linked to an ENTRY that is itself filed in a project shows
+            // both on the chip as a breadcrumb — the note's home in both
+            // registers at once. (Notes linked straight to a project, or to an
+            // entry with no project, keep the single-target chip.)
+            const parentProjectId = e.linked_entry_id
+              ? entryProjectIds?.[e.linked_entry_id]
+              : undefined;
+            const parentProjectTitle = parentProjectId
+              ? projectTitles?.[parentProjectId]
+              : undefined;
+            const parentProjectEmoji = parentProjectId
+              ? projectEmojis?.[parentProjectId]
+              : undefined;
             return (
               <DiaryNote
                 key={e.id}
@@ -123,8 +145,11 @@ export function DiaryFeed({
                 linkedTitle={title}
                 linkedKind={kind}
                 linkedEmoji={projectEmoji}
+                linkedProjectTitle={parentProjectTitle}
+                linkedProjectEmoji={parentProjectEmoji}
                 onEdit={onEdit ? () => onEdit(e) : undefined}
                 onRelate={onRelate ? () => onRelate(e) : undefined}
+                onRate={onRate ? (delta) => onRate(e, delta) : undefined}
                 onDelete={() => onDelete(e.id)}
               />
             );

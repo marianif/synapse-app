@@ -40,6 +40,12 @@ interface DiaryNoteProps {
    *  glyph on a project chip so the project's identity carries through to the
    *  note. */
   linkedEmoji?: string | null;
+  /** Parent project of the linked ENTRY, when that entry is filed in a project.
+   *  Only meaningful when `linkedTitle` is an entry, not a project. When set,
+   *  the relatedness chip becomes a breadcrumb — entry ⇾ project. */
+  linkedProjectTitle?: string;
+  /** Emoji of the linked entry's parent project, when it has one. */
+  linkedProjectEmoji?: string | null;
   /** Hide the relatedness chip entirely. Use on surfaces that already imply
    *  the link (e.g. a project's own notes), where the chip would be redundant
    *  or misleading. */
@@ -49,6 +55,9 @@ interface DiaryNoteProps {
   /** Tap the relatedness chip to re-link this note (pull it into a project or
    *  idea). Omit to render the chip as a static label. */
   onRelate?: () => void;
+  /** Apply a signed delta to this note's weight (e.g. +1 or -1). Omit to
+   *  render the footer's weight stepper as a static (hidden) control. */
+  onRate?: (delta: number) => void;
   onDelete: () => void;
 }
 
@@ -62,9 +71,12 @@ export function DiaryNote({
   linkedTitle,
   linkedKind,
   linkedEmoji,
+  linkedProjectTitle,
+  linkedProjectEmoji,
   hideChip = false,
   onEdit,
   onRelate,
+  onRate,
   onDelete,
 }: DiaryNoteProps): React.ReactElement {
   const { colors } = useTheme();
@@ -151,6 +163,8 @@ export function DiaryNote({
               linkedTitle={linkedTitle}
               linkedKind={linkedKind}
               linkedEmoji={linkedEmoji}
+              linkedProjectTitle={linkedProjectTitle}
+              linkedProjectEmoji={linkedProjectEmoji}
             />
           )}
         </View>
@@ -180,39 +194,70 @@ export function DiaryNote({
           ) : null}
         </View>
 
-        {/* Collapsed long note — a quiet expand/collapse toggle that appears
-            only when the body overflows its cap, so short notes stay chrome-free.
-            The chevron + micro label mirror the composer's expand affordance. */}
-        {overflows ? (
-          <Animated.View
-            layout={LinearTransition.duration(220)}
-            entering={FadeIn.duration(160)}
-            exiting={FadeOut.duration(120)}
-          >
-            <Pressable
-              onPress={toggleExpanded}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityState={{ expanded }}
-              accessibilityLabel={
-                expanded ? "Collapse note" : "Expand note to full height"
-              }
-              style={({ pressed }) => [
-                styles.expandRow,
-                pressed && styles.pressed,
-              ]}
+        {/* Footer — a quiet strip that anchors the note: the expand/collapse
+            toggle on the left (only when the body overflows its cap, so short
+            notes stay chrome-free) and, on the right, the weight stepper so
+            any note can be incremented or decremented at a glance. */}
+        <View style={styles.footerRow}>
+          {overflows ? (
+            <Animated.View
+              layout={LinearTransition.duration(220)}
+              entering={FadeIn.duration(160)}
+              exiting={FadeOut.duration(120)}
             >
-              <ThemedText type="micro" muted>
-                {expanded ? "Collapse" : "Show more"}
-              </ThemedText>
-              <IconSymbol
-                name={expanded ? "ChevronUp" : "ChevronDown"}
-                size={13}
-                color={colors.inkMuted}
+              <Pressable
+                onPress={toggleExpanded}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityState={{ expanded }}
+                accessibilityLabel={
+                  expanded ? "Collapse note" : "Expand note to full height"
+                }
+                style={({ pressed }) => [
+                  styles.expandRow,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <ThemedText type="micro" muted>
+                  {expanded ? "Collapse" : "Show more"}
+                </ThemedText>
+                <IconSymbol
+                  name={expanded ? "ChevronUp" : "ChevronDown"}
+                  size={13}
+                  color={colors.inkMuted}
+                />
+              </Pressable>
+            </Animated.View>
+          ) : (
+            <View />
+          )}
+
+          {onRate ? (
+            <View style={styles.rateGroup}>
+              <StepperButton
+                label="Decrease note weight"
+                glyph="−"
+                onPress={() => onRate(-1)}
+                dim
               />
-            </Pressable>
-          </Animated.View>
-        ) : null}
+              <ThemedText
+                type="mono"
+                style={{
+                  color: entry.rating !== 0 ? colors.ink : colors.inkMuted,
+                  minWidth: 20,
+                  textAlign: "center",
+                }}
+              >
+                {entry.rating > 0 ? `+${entry.rating}` : entry.rating}
+              </ThemedText>
+              <StepperButton
+                label="Increase note weight"
+                glyph="+"
+                onPress={() => onRate(1)}
+              />
+            </View>
+          ) : null}
+        </View>
 
         {/* Photos — a quiet horizontal strip of thumbnails under the tags.
             Tap one to open the full-screen lightbox. */}
@@ -268,39 +313,81 @@ export function DiaryNote({
  * `onRelate` is provided the chip becomes a button that pulls the note into a
  * project or idea (a trailing link glyph signals the affordance); otherwise it
  * renders as a static label.
+ *
+ * When the linked target is an ENTRY that belongs to a project, the chip
+ * renders a single breadcrumb — entry ⇾ project — so the note's place in both
+ * registers is visible at once. (A note linked directly to a project, or to an
+ * entry with no project, keeps the single-target chip.)
  */
 function Chip({
   onRelate,
   linkedTitle,
   linkedKind,
   linkedEmoji,
+  linkedProjectTitle,
+  linkedProjectEmoji,
 }: {
   onRelate?: () => void;
   linkedTitle?: string;
   linkedKind?: LinkableKind;
   linkedEmoji?: string | null;
+  linkedProjectTitle?: string;
+  linkedProjectEmoji?: string | null;
 }): React.ReactElement {
   const { colors } = useTheme();
 
+  const entryLead =
+    linkedKind === "project" ? (
+      linkedEmoji ? (
+        <Text style={styles.emoji}>{linkedEmoji}</Text>
+      ) : (
+        <IconSymbol name="Folder" size={13} color={colors.inkMuted} />
+      )
+    ) : (
+      <SketchIcon type={linkedKind ?? "idea"} size={13} />
+    );
+
   const content = linkedTitle ? (
-    <>
-      {linkedKind === "project" ? (
-        linkedEmoji ? (
-          <Text style={styles.emoji}>{linkedEmoji}</Text>
+    linkedProjectTitle ? (
+      <>
+        {entryLead}
+        <ThemedText
+          type="micro"
+          numberOfLines={1}
+          style={[styles.relLabel, { color: colors.inkMuted }]}
+        >
+          {linkedTitle.toUpperCase()}
+        </ThemedText>
+        <IconSymbol
+          name="ChevronRight"
+          size={11}
+          color={colors.inkMuted}
+        />
+        {linkedProjectEmoji ? (
+          <Text style={styles.emoji}>{linkedProjectEmoji}</Text>
         ) : (
           <IconSymbol name="Folder" size={13} color={colors.inkMuted} />
-        )
-      ) : (
-        <SketchIcon type={linkedKind ?? "idea"} size={13} />
-      )}
-      <ThemedText
-        type="micro"
-        numberOfLines={1}
-        style={[styles.relLabel, { color: colors.inkMuted }]}
-      >
-        {linkedTitle.toUpperCase()}
-      </ThemedText>
-    </>
+        )}
+        <ThemedText
+          type="micro"
+          numberOfLines={1}
+          style={[styles.relLabel, { color: colors.inkMuted }]}
+        >
+          {linkedProjectTitle.toUpperCase()}
+        </ThemedText>
+      </>
+    ) : (
+      <>
+        {entryLead}
+        <ThemedText
+          type="micro"
+          numberOfLines={1}
+          style={[styles.relLabel, { color: colors.inkMuted }]}
+        >
+          {linkedTitle.toUpperCase()}
+        </ThemedText>
+      </>
+    )
   ) : (
     <>
       <View style={[styles.freeDot, { borderColor: colors.inkMuted }]} />
@@ -336,6 +423,35 @@ function Chip({
     >
       {content}
       <IconSymbol name="Link" size={13} color={colors.inkMuted} />
+    </Pressable>
+  );
+}
+
+/** One glyph of the note's weight stepper. The −/+ buttons nudge the note's
+ *  signed weight up or down; the count between them reads the current value at
+ *  full ink once it's non-zero, so a weighted note is scannable at a glance. */
+function StepperButton({
+  label,
+  glyph,
+  onPress,
+  dim = false,
+}: {
+  label: string;
+  glyph: string;
+  onPress: () => void;
+  dim?: boolean;
+}): React.ReactElement {
+  const { colors } = useTheme();
+  const color = dim ? colors.inkMuted : colors.ink;
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={10}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [pressed && styles.pressed]}
+    >
+      <Text style={[styles.stepGlyph, { color }]}>{glyph}</Text>
     </Pressable>
   );
 }
@@ -395,14 +511,33 @@ const styles = StyleSheet.create({
     opacity: 0,
   },
 
-  // Expand/collapse toggle for long notes — quiet, right-aligned, reads as a
-  // whispered instruction rather than a button. Only rendered when overflowing.
+  // Footer — anchors the note: expand/collapse toggle (left, only when the
+  // body overflows) and the rating thumbs (right, always when rateable). The
+  // space-between spread keeps the two ends of the strip visually distinct.
+  footerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: tokens.space.xs,
+    gap: tokens.space.sm,
+  },
+  rateGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+  },
+  stepGlyph: {
+    fontSize: 18,
+    lineHeight: 20,
+    fontFamily: tokens.type.fontInter.regular,
+  },
+
+  // Expand/collapse toggle for long notes — quiet, reads as a whispered
+  // instruction rather than a button. Only rendered when overflowing.
   expandRow: {
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "flex-start",
     gap: tokens.space.xs,
-    marginTop: tokens.space.xs,
     paddingVertical: 2,
   },
 

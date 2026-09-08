@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 17;
+export const SCHEMA_VERSION = 19;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -78,6 +78,9 @@ export const CREATE_DIARY_TABLE = `
     -- NULL = no photos. URIs are app-scoped document-directory paths; the
     -- files live in the media dir and are deleted alongside the note.
     media TEXT,
+    -- Incremental/decremental weight stamp on the note: a signed integer
+    -- (0 = no weight). Bumped with the +/− stepper in the note footer.
+    rating INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
   );

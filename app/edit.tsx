@@ -329,6 +329,7 @@ export default function EditScreen(): React.ReactElement {
   const {
     entries: diaryEntries,
     addEntry: addDiaryEntry,
+    updateEntry: updateDiaryEntry,
     removeEntry: removeDiaryEntry,
   } = useDiary();
   const notesOnEntry = useMemo(
@@ -878,6 +879,9 @@ export default function EditScreen(): React.ReactElement {
                         key={n.id}
                         entry={n}
                         hideChip
+                        onRate={(delta) =>
+                          void updateDiaryEntry(n.id, { rating: delta })
+                        }
                         onEdit={() =>
                           router.push({
                             pathname: "/note",

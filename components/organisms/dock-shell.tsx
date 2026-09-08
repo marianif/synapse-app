@@ -32,6 +32,8 @@ interface DockShellProps {
    */
   contentKey: string;
   children: React.ReactNode;
+  /** Optional silhouette override for alternative dock organisms. */
+  radius?: number;
 }
 
 /**
@@ -54,6 +56,7 @@ export function DockShell({
   register,
   contentKey,
   children,
+  radius = tokens.radius.pill,
 }: DockShellProps): React.ReactElement {
   const { colors } = useTheme();
   const reduced = useReducedMotion();
@@ -131,12 +134,12 @@ export function DockShell({
     <Animated.View
       entering={entering}
       layout={layout}
-      style={[styles.shellShadow, tokens.elevation.capture]}
+      style={[styles.shellShadow, { borderRadius: radius }, tokens.elevation.capture]}
     >
       {/* The inner frame owns the clip (radius + overflow) so the animated fill
           and the readouts stay inside the pill; the shadow lives on the outer
           wrapper because `overflow: hidden` clips iOS shadows off the frame. */}
-      <Animated.View style={[styles.shell, fillStyle]}>
+        <Animated.View style={[styles.shell, { borderRadius: radius }, fillStyle]}>
         {/* The body sizes the shell (in-flow), and cross-fades on contentKey so
             the readout swaps inside one persistent frame. */}
         <Animated.View

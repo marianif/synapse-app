@@ -31,8 +31,8 @@ import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sh
 import { ProjectStarters } from "@/components/molecules/project-starters";
 import {
   CaptureBackdrop,
-  CaptureComposer,
-} from "@/components/organisms/capture-composer";
+  CaptureComposerVariantView,
+} from "@/components/organisms/capture-composer-variant";
 import type {
   ProjectComposerKind,
   ProjectComposerSubmitPayload,
@@ -102,6 +102,7 @@ export default function ProjectScreen(): React.ReactElement {
   const {
     entries: diaryEntries,
     addEntry: addDiaryEntry,
+    updateEntry: updateDiaryEntry,
     removeEntry: removeDiaryEntry,
   } = useDiary();
 
@@ -808,6 +809,9 @@ export default function ProjectScreen(): React.ReactElement {
                       key={note.id}
                       entry={note}
                       hideChip
+                      onRate={(delta) =>
+                        void updateDiaryEntry(note.id, { rating: delta })
+                      }
                       onDelete={() => void removeDiaryEntry(note.id)}
                       onEdit={() =>
                         router.push({
@@ -900,7 +904,7 @@ export default function ProjectScreen(): React.ReactElement {
         style={[styles.dock, dockLiftStyle]}
         pointerEvents="box-none"
       >
-        <CaptureComposer
+        <CaptureComposerVariantView
           cap={{ ...cap, resolveCapture: handleResolveCapture }}
           projects={projects}
         />

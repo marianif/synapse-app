@@ -34,6 +34,8 @@ interface UseDiaryResult {
       linkedProjectId?: string | null;
       tags?: string[];
       media?: NoteMedia[];
+      /** Signed delta applied to the note's weight (e.g. +1 or -1). */
+      rating?: number;
     },
   ) => Promise<void>;
   removeEntry: (id: string) => Promise<void>;
@@ -95,6 +97,7 @@ export function useDiary(): UseDiaryResult {
             linkedProjectId?: string | null;
             tags?: string[];
             media?: NoteMedia[];
+            rating?: number;
           },
         ): Promise<void> =>
           toVoid(

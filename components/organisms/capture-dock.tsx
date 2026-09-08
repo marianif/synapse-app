@@ -7,10 +7,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import {
-  CaptureBackdrop,
-  CaptureComposerVariantView,
-} from "@/components/organisms/capture-composer-variant";
+import { CaptureBackdrop } from "@/components/organisms/capture-backdrop";
+import { CaptureConsole } from "@/components/organisms/capture-console";
 import type { InputStageHandle } from "@/components/organisms/input-stage-view";
 import { tokens } from "@/constants/theme";
 import type { UseCaptureReturn } from "@/hooks/use-capture";
@@ -121,11 +119,7 @@ export function CaptureDock({
         style={[styles.captureDock, { bottom: restOffset }, dockStyle]}
         pointerEvents="box-none"
       >
-        <CaptureComposerVariantView
-          ref={inputRef}
-          cap={cap}
-          projects={projects}
-        />
+        <CaptureConsole ref={inputRef} cap={cap} projects={projects} />
       </Animated.View>
     </>
   );

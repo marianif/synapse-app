@@ -29,10 +29,8 @@ import { EmojiPickerSheet } from "@/components/molecules/emoji-picker-sheet";
 import { IdeaActionSheet } from "@/components/molecules/idea-action-sheet";
 import { ProjectOverflowSheet } from "@/components/molecules/project-overflow-sheet";
 import { ProjectStarters } from "@/components/molecules/project-starters";
-import {
-  CaptureBackdrop,
-  CaptureComposerVariantView,
-} from "@/components/organisms/capture-composer-variant";
+import { CaptureBackdrop } from "@/components/organisms/capture-backdrop";
+import { CaptureConsole } from "@/components/organisms/capture-console";
 import type {
   ProjectComposerKind,
   ProjectComposerSubmitPayload,
@@ -904,7 +902,7 @@ export default function ProjectScreen(): React.ReactElement {
         style={[styles.dock, dockLiftStyle]}
         pointerEvents="box-none"
       >
-        <CaptureComposerVariantView
+        <CaptureConsole
           cap={{ ...cap, resolveCapture: handleResolveCapture }}
           projects={projects}
         />

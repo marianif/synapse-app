@@ -22,6 +22,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { SketchIcon } from "@/components/atoms/sketch-icon";
+import { LinkText } from "@/components/atoms/link-text";
 import { TagChip } from "@/components/atoms/tag-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import type { LinkableKind } from "@/components/organisms/link-sheet";
@@ -181,14 +182,18 @@ export function DiaryNote({
             font has variable metrics, so we can't guess overflow by character
             count. A hidden measuring copy (same width, no clamp) reports the
             true line count via onTextLayout; only that decides whether the
-            note is long enough to deserve the expand/collapse toggle. */}
+            note is long enough to deserve the expand/collapse toggle. The
+            measuring copy stays RAW plain text — only the visible body goes
+            through LinkText, so the line-count math never sees link styling.
+            URL runs inside the body render in the mono signal voice and tap
+            into the in-app browser (the card's tap-to-edit doesn't fire). */}
         <View style={styles.bodyWrap}>
-          <ThemedText
+          <LinkText
+            text={entry.body}
             style={[styles.noteBody, { color: colors.ink }]}
             numberOfLines={expanded ? undefined : COLLAPSED_LINES}
-          >
-            {entry.body}
-          </ThemedText>
+            linkStyle={styles.bodyLink}
+          />
           {!expanded ? (
             <ThemedText
               style={[styles.noteBody, styles.bodyMeasure, { color: colors.ink }]}
@@ -507,6 +512,16 @@ const styles = StyleSheet.create({
     fontFamily: tokens.type.fontHand.regular,
     fontSize: 20,
     lineHeight: 26,
+  },
+
+  // URL runs inside the handwritten body: mono signal voice at a size that
+  // optically matches the Caveat prose (Caveat runs ~30% larger, so 15pt mono
+  // sits beside 20pt hand at similar weight). No lineHeight — the outer hand
+  // line height governs the line box.
+  bodyLink: {
+    fontFamily: tokens.type.fontMono.medium,
+    fontSize: 15,
+    textDecorationLine: "underline",
   },
 
   // Relative wrapper so the hidden measuring copy (absolute) can share the

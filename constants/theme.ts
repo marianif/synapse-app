@@ -18,6 +18,11 @@ const color = {
     surfaceSubtle: "#E4E8EE", // recessed / gutter — tonal seating, no borders
     ink: "#1A1E25", // primary text — cool near-black, never #000
     inkMuted: "#5A6473", // secondary / metadata — cool grey-blue
+    // Tappable URL runs inside free text (note bodies, subtask titles). A cool
+    // indigo deliberately outside the three entry-type codes (coral / amber /
+    // cyan) so a link never reads as a content category. AA on surface:
+    // light #4338CA = 7.55:1, dark #A5B4FC = 7.82:1.
+    link: "#4338CA",
   },
   dark: {
     paper: "#171A20", // root background — cool graphite, never #000
@@ -25,6 +30,7 @@ const color = {
     surfaceSubtle: "#15181D", // recessed / gutter
     ink: "#E9EDF3", // primary text — cool near-white, never #FFF
     inkMuted: "#8A93A3", // secondary / metadata — cool slate-grey
+    link: "#A5B4FC",
   },
   // Entry-type codes — electric colors for dots, edge-bars, fills. Shared across schemes.
   // Three codes: deadline (coral), idea (amber), todo (cyan). Equal volume by design:
@@ -264,6 +270,7 @@ export type ThemeColors = {
   surfaceSubtle: string;
   ink: string;
   inkMuted: string;
+  link: string;
   type: typeof color.type;
   typeKicker:
     | (typeof color.typeKicker)["light"]
@@ -282,6 +289,7 @@ function resolveColors(scheme: Scheme): ThemeColors {
     surfaceSubtle: c.surfaceSubtle,
     ink: c.ink,
     inkMuted: c.inkMuted,
+    link: c.link,
     type: color.type,
     typeKicker: color.typeKicker[scheme],
     typeTint: color.typeTint[scheme],

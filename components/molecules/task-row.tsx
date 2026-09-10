@@ -2,7 +2,7 @@ import { useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
 
-import { ThemedText } from "@/components/atoms/themed-text";
+import { LinkText } from "@/components/atoms/link-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 
@@ -114,19 +114,27 @@ export function TaskRow({
           accessibilityLabel={`Rename ${task.title}`}
         />
       ) : readOnly ? (
-        <ThemedText
-          type="item"
+        // Read-only row: the same prose voice, no tap targets. URL runs are
+        // still recognized and tappable; a completed task drops them to muted
+        // ink (the mono voice + underline carry the affordance quietly).
+        <LinkText
+          text={task.title}
           muted={done}
           numberOfLines={3}
-          style={[styles.title, done && { textDecorationLine: "line-through" }]}
-        >
-          {task.title}
-        </ThemedText>
+          style={[
+            styles.title,
+            styles.itemText,
+            done && { textDecorationLine: "line-through" },
+          ]}
+          linkStyle={styles.linkRun}
+        />
       ) : (
         // Tap the resting title to open this row for inline rename. Delete is
         // a swipe on the row (the parent's SwipeableRow). A gesture-handler
         // RectButton is used (not an RN Pressable) so a swipe cancels the
-        // press instead of opening the rename input.
+        // press instead of opening the rename input. A URL run inside the
+        // title intercepts its own tap (stopPropagation) and opens the in-app
+        // browser instead of the rename input.
         <RectButton
           onPress={onPressTitle}
           style={styles.titleButton}
@@ -135,17 +143,17 @@ export function TaskRow({
           accessibilityRole="button"
           accessibilityLabel={`Edit ${task.title}`}
         >
-          <ThemedText
-            type="item"
+          <LinkText
+            text={task.title}
             muted={done}
             numberOfLines={2}
             style={[
               styles.titleButtonText,
+              styles.itemText,
               done && { textDecorationLine: "line-through" },
             ]}
-          >
-            {task.title}
-          </ThemedText>
+            linkStyle={styles.linkRun}
+          />
         </RectButton>
       )}
     </View>
@@ -168,6 +176,20 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
+  },
+  // The item prose voice — previously carried by ThemedText type="item"; the
+  // LinkText title needs it spelled out since it renders its own Text.
+  itemText: {
+    fontFamily: tokens.type.fontInter.medium,
+    fontSize: tokens.type.item.size,
+    lineHeight: tokens.type.item.lineHeight,
+  },
+  // URL runs inside a subtask title: mono signal voice at the mono step size,
+  // quiet underline. Inherits the row's line height from the outer text.
+  linkRun: {
+    fontFamily: tokens.type.fontMono.medium,
+    fontSize: tokens.type.mono.size,
+    textDecorationLine: "underline",
   },
   // Tap target for the resting title — stretches the full row height so the
   // whole title band is pressable, not just the glyphs. The inner text does

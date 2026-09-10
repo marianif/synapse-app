@@ -30,6 +30,15 @@ export async function setOnboardingComplete(): Promise<void> {
   }
 }
 
+/** Clears completion so the first-run story can be replayed (dev). */
+export async function clearOnboardingComplete(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(ONBOARDING_COMPLETE_KEY);
+  } catch (error) {
+    console.error("[settings] clearOnboardingComplete failed:", error);
+  }
+}
+
 function isThemePreference(value: string | null): value is ThemePreference {
   return value === "system" || value === "light" || value === "dark";
 }

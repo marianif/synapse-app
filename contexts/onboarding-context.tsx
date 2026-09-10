@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 import {
+  clearOnboardingComplete,
   getOnboardingComplete,
   setOnboardingComplete,
 } from "@/lib/settings";
@@ -9,6 +10,11 @@ type OnboardingContextValue = {
   complete: boolean | null;
   isReady: boolean;
   completeOnboarding: () => Promise<void>;
+  /**
+   * Dev-only: clears the persisted first-run flag (and the in-memory gate) so
+   * the onboarding story can be replayed from Settings.
+   */
+  resetOnboarding: () => Promise<void>;
 };
 
 const OnboardingContext = createContext<OnboardingContextValue | null>(null);
@@ -37,12 +43,20 @@ export function OnboardingProvider({
     await setOnboardingComplete();
   };
 
+  const resetOnboarding = async (): Promise<void> => {
+    // Flip the in-memory gate first so the router can't bounce a replay back to
+    // the tabs while the persisted flag is being cleared.
+    setComplete(false);
+    await clearOnboardingComplete();
+  };
+
   return (
     <OnboardingContext.Provider
       value={{
         complete,
         isReady: complete !== null,
         completeOnboarding,
+        resetOnboarding,
       }}
     >
       {children}

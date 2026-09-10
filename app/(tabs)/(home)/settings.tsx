@@ -19,12 +19,14 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ScreenHeader } from "@/components/organisms/screen-header";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import {
   tokens,
   useEntryKicker,
   useTheme,
   type Scheme,
 } from "@/constants/theme";
+import { useOnboarding } from "@/contexts/onboarding-context";
 import { useThemeContext } from "@/contexts/theme-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
@@ -42,6 +44,7 @@ export default function SettingsScreen(): React.ReactElement {
     refetchRecurrenceCompletions,
   } = useDatabase();
   const { refresh: refreshDiary } = useDiary();
+  const { resetOnboarding } = useOnboarding();
   const ideaAccent = useEntryKicker("idea");
   const deadlineAccent = useEntryKicker("deadline");
 
@@ -97,6 +100,13 @@ export default function SettingsScreen(): React.ReactElement {
         },
       ],
     );
+  };
+
+  const handleReplayOnboarding = (): void => {
+    // Clear the first-run gate, then open the story immediately. The root
+    // layout's onboarding redirect keeps us there until it is finished again.
+    void resetOnboarding();
+    router.replace("/onboarding");
   };
 
   return (
@@ -177,6 +187,43 @@ export default function SettingsScreen(): React.ReactElement {
                 </View>
               </Pressable>
             ))}
+          </View>
+        )}
+
+        {__DEV__ && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
+              Dev · Onboarding
+            </Text>
+            <Pressable
+              onPress={handleReplayOnboarding}
+              style={({ pressed }) => [
+                styles.scenarioRow,
+                {
+                  backgroundColor: colors.surface,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Show onboarding"
+              accessibilityHint="Resets the first-run flag and opens the onboarding story from chapter one."
+            >
+              <IconSymbol name="PlayCircle" size={16} color={ideaAccent} />
+              <View style={styles.scenarioCopy}>
+                <Text style={[styles.scenarioLabel, { color: colors.ink }]}>
+                  Show onboarding
+                </Text>
+                <Text
+                  style={[
+                    styles.scenarioDescription,
+                    { color: colors.inkMuted },
+                  ]}
+                  numberOfLines={2}
+                >
+                  Reopens the first-run story from chapter one. Dev only.
+                </Text>
+              </View>
+            </Pressable>
           </View>
         )}
 

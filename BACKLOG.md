@@ -8,16 +8,40 @@ The work register: milestones, epics, areas, and typed work items.
 
 ### Area — Detail & editing
 
-- [ ] [bug] swipe to delete a subtask in the edit screen glitches: it works once, then a second swipe snaps the row straight back to its unswiped state. [severity: P2]
-- [ ] [bug] entries marked done in the edit screen cannot be toggled back to undone; the done toggle must work both ways. [severity: P1]
 
 ### Area — Project surface
 
 - Serves: Goal 2 (See it all at a glance)
-- [ ] [bug] project screen: when the FAB pills fan out, the scroll view should clear its content out from under them, but content still peeks through underneath. [severity: P2]
-- [ ] [bug] project shelf grid caps at 2 cards per row; it should allow up to 3. [severity: P2]
 
 ### Area — Diary & notes
 
 - Serves: Goal 1 (Capture a thought) / Goal 2 (See it all at a glance)
-- [ ] [bug] the edit note modal loses edits; a changed note is not saved on either the Save press or the close gesture. [severity: P1]
+
+## Milestone — Official Release 1.0.0 <!-- flow:ms:m01vl4baw -->
+
+### Area — Onboarding & guidance
+
+- Serves: Goal 1 (Capture a thought) / Goal 2 (See it all at a glance)
+- [ ] [feature] per-section how-to sheets — a bottom sheet on each app section explaining what the page does. @month
+
+### Area — Brand & identity
+
+- [ ] [design] `craft splash-screen` — a charged first-load brand moment that clears before the board appears. @month
+
+### Area — Legal & compliance
+
+- [ ] [feature] privacy policy and legal — hosted policy plus in-app links (settings + onboarding). @month
+
+### Area — Localization
+
+- [ ] [feature] internationalization — i18n infrastructure, string extraction, locale switch. effort: L @week
+
+### Area — Widgets
+
+- Serves: Goal 2 (See it all at a glance)
+- [ ] [design] `redesign entries-widget` — bring the home-screen entries widget up to the Field Lab language. @month
+- [ ] [design] `redesign recording-widget` — align the recording widget with the Field Lab language. @month
+
+### Area — Settings
+
+- [ ] [design] `shape settings` — split settings into meaningful subroutes instead of one flat screen. @month

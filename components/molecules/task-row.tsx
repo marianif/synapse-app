@@ -124,6 +124,7 @@ export function TaskRow({
           style={[
             styles.title,
             styles.itemText,
+            { color: done ? colors.inkMuted : colors.ink },
             done && { textDecorationLine: "line-through" },
           ]}
           linkStyle={styles.linkRun}
@@ -150,6 +151,7 @@ export function TaskRow({
             style={[
               styles.titleButtonText,
               styles.itemText,
+              { color: done ? colors.inkMuted : colors.ink },
               done && { textDecorationLine: "line-through" },
             ]}
             linkStyle={styles.linkRun}

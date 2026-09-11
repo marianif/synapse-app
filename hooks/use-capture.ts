@@ -61,6 +61,13 @@ export interface UseCaptureReturn {
   /** Text composer visible. Summoned by a pen-tap; closes on empty blur. */
   composerOpen: boolean;
   setComposerOpen: (open: boolean) => void;
+  /**
+   * The console's text input currently holds focus. On surfaces where the dock
+   * rests always-visible (home), `composerOpen` stays false while the user
+   * types, so this is the signal that the dock is actively being acted on — it
+   * drives the outside-tap backdrop. */
+  consoleFocused: boolean;
+  setConsoleFocused: (focused: boolean) => void;
   /** Voice recording in progress; the bar shows the live waveform. */
   isRecording: boolean;
   /** Resolver is showing because a thought is pending; null = no thought. */
@@ -162,6 +169,7 @@ export function useCapture(
   const { transcript, startRecording, stopRecording } = useSpeechRecognizer();
 
   const [composerOpen, setComposerOpen] = useState(false);
+  const [consoleFocused, setConsoleFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [pendingThought, setPendingThought] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
@@ -348,6 +356,8 @@ export function useCapture(
   return {
     composerOpen,
     setComposerOpen: handleSetComposerOpen,
+    consoleFocused,
+    setConsoleFocused,
     isRecording,
     pendingThought,
     picking,

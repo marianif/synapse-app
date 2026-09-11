@@ -31,6 +31,9 @@ export interface LinkableTarget {
   kind: LinkableKind;
   /** Notes already filed on this target. Shown as a trailing mono count. */
   noteCount?: number;
+  /** Project emoji, when the target is a project that carries one. Prefixed to
+   *  the label in menus (capture console, notes composer). */
+  emoji?: string | null;
 }
 
 /** Back-compat alias — legacy call sites (capture-resolver, use-capture) still

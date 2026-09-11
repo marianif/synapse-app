@@ -19,6 +19,7 @@ import * as Notifications from "expo-notifications";
 
 import { parseDate } from "@/lib/date-utils";
 import { expandRecurringEntry, isRecurringEntry } from "@/lib/recurrence";
+import { getNotificationPref } from "@/lib/settings";
 import type { DbEntry, DbProject } from "@/lib/types";
 
 // ─── In-memory mapping ────────────────────────────────────────────────────────
@@ -193,6 +194,13 @@ export async function requestNotificationPermissions(): Promise<boolean> {
 export async function scheduleEntryNotification(
   entry: DbEntry,
 ): Promise<string | null> {
+  // User preference gates deadline reminders. When disabled, also drop any
+  // already-scheduled reminder for this entry so a mid-flight toggle sticks.
+  if (!(await getNotificationPref("deadlines"))) {
+    await cancelNotificationForEntry(entry.id);
+    return null;
+  }
+
   const triggerDate = buildTriggerDate(entry);
   if (!triggerDate) return null;
 
@@ -271,6 +279,11 @@ export async function scheduleProjectReturnNotification(
   entries: DbEntry[],
 ): Promise<string | null> {
   await cancelScheduledProjectNotifications(project.id);
+
+  // User preference gates dormant-project invitations. Cancel above already
+  // clears any pending one, so a mid-flight toggle-off sticks.
+  if (!(await getNotificationPref("projectReturns"))) return null;
+
   const triggerDate = projectReturnDate(project, entries);
   if (!triggerDate) return null;
 

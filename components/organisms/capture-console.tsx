@@ -164,6 +164,17 @@ export const CaptureConsole = forwardRef<InputStageHandle, CaptureConsoleProps>(
       focus: () => inputRef.current?.focus(),
     }));
 
+    const { composerOpen, dockAlwaysVisible, setConsoleFocused } = cap;
+
+    // Report text-input focus so the dock's outside-tap backdrop can dim the
+    // field behind the bar on always-visible surfaces (home), where
+    // `composerOpen` stays false while the user types. Reset when the console
+    // is torn down off those surfaces so a stale focus flag never leaves a
+    // backdrop floating with no input under it.
+    useEffect(() => {
+      if (!composerOpen && !dockAlwaysVisible) setConsoleFocused(false);
+    }, [composerOpen, dockAlwaysVisible, setConsoleFocused]);
+
     // The scoped project composer can seed a dated kind before any text exists.
     // Otherwise the console follows the last successfully filed kind.
     useEffect(() => {
@@ -454,7 +465,11 @@ export const CaptureConsole = forwardRef<InputStageHandle, CaptureConsoleProps>(
                   value={draft}
                   onChangeText={setDraft}
                   onSubmitEditing={fileDraft}
-                  onBlur={closeEmpty}
+                  onFocus={() => cap.setConsoleFocused(true)}
+                  onBlur={() => {
+                    cap.setConsoleFocused(false);
+                    closeEmpty();
+                  }}
                   placeholder="Put something in"
                   placeholderTextColor={colors.inkMuted}
                   selectionColor={colors.ink}
@@ -878,8 +893,7 @@ const styles = StyleSheet.create({
   },
   menuOption: {
     minHeight: 40,
-    maxWidth: 180,
-    borderRadius: tokens.radius.md,
+    borderRadius: tokens.radius.pill,
     paddingHorizontal: tokens.space.sm,
     flexDirection: "row",
     alignItems: "center",

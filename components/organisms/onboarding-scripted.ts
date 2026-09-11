@@ -70,6 +70,8 @@ export function useScriptedCapture(
     return {
       composerOpen: phase === 0,
       setComposerOpen: noop,
+      consoleFocused: false,
+      setConsoleFocused: noop,
       isRecording,
       pendingThought,
       picking: false,

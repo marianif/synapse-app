@@ -55,8 +55,9 @@ export function useConfirm({ confirmKey }: UseConfirmOptions): UseConfirmResult 
 
   const request = useCallback(
     async (action: () => void): Promise<void> => {
-      // Prefer the cached value; fall back to a read if the cache hasn't warmed.
-      const skip = skipRef.current ?? (await getConfirmSkip(confirmKey));
+      // Always read the persisted pref: the user can flip it in Settings while
+      // this hook stays mounted, so a mount-time cache would go stale.
+      const skip = await getConfirmSkip(confirmKey);
       skipRef.current = skip;
       if (skip) {
         action();

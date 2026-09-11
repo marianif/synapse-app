@@ -1,11 +1,14 @@
-import { Pressable, StyleSheet } from "react-native";
+import { Keyboard, Pressable, StyleSheet } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { tokens } from "@/constants/theme";
 import type { UseCaptureReturn } from "@/hooks/use-capture";
 
 export function isDockDismissible(cap: UseCaptureReturn): boolean {
-  return cap.composerOpen || cap.isRecording;
+  // `consoleFocused` matters on always-visible surfaces (home): there the dock
+  // rests with `composerOpen` false, so focus is the only signal that the user
+  // is actively typing and the field behind it should dim.
+  return cap.composerOpen || cap.isRecording || cap.consoleFocused;
 }
 
 /**
@@ -26,6 +29,11 @@ export function CaptureBackdrop({
 
   const dismiss = (): void => {
     if (cap.isRecording) void cap.cancelRecording();
+    // Blur the console first — on always-visible surfaces `setComposerOpen(false)`
+    // is a no-op, so dropping focus is what actually closes the keyboard and lets
+    // the bar settle back to its resting state.
+    Keyboard.dismiss();
+    cap.setConsoleFocused(false);
     cap.setComposerOpen(false);
   };
 

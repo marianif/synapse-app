@@ -173,3 +173,43 @@ export async function setUiPreference(
     console.error("[settings] setUiPreference failed:", error);
   }
 }
+
+// ─── Notification preferences ───────────────────────────────────────────────
+//
+// Two kinds of local notification exist (see lib/notifications.ts): deadline
+// reminders and dormant-project return invitations. Each has its own switch in
+// Settings. Both default to ON — a missing value means "send", so an existing
+// install keeps its current behavior, and the scheduler treats read errors as
+// enabled rather than silently dropping reminders.
+
+export type NotificationPref = "deadlines" | "projectReturns";
+
+const NOTIFICATION_PREF_PREFIX = "notification_pref:";
+
+/** Returns whether the given notification kind is enabled. Defaults to true. */
+export async function getNotificationPref(
+  pref: NotificationPref,
+): Promise<boolean> {
+  try {
+    const value = await AsyncStorage.getItem(NOTIFICATION_PREF_PREFIX + pref);
+    return value !== "false";
+  } catch (error) {
+    console.error("[settings] getNotificationPref failed:", error);
+    return true;
+  }
+}
+
+/** Persists whether the given notification kind is enabled. */
+export async function setNotificationPref(
+  pref: NotificationPref,
+  enabled: boolean,
+): Promise<void> {
+  try {
+    await AsyncStorage.setItem(
+      NOTIFICATION_PREF_PREFIX + pref,
+      String(enabled),
+    );
+  } catch (error) {
+    console.error("[settings] setNotificationPref failed:", error);
+  }
+}

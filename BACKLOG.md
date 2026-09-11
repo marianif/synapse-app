@@ -44,4 +44,12 @@ The work register: milestones, epics, areas, and typed work items.
 
 ### Area — Settings
 
-- [ ] [design] `shape settings` — split settings into meaningful subroutes instead of one flat screen. @month
+- [x] [design] `shape settings` — split settings into meaningful subroutes instead of one flat screen. @month → shipped 2026-09-10 — settings hub + Notifications / Confirmations / About subroutes shipped
+
+## Milestone — Release 1.1.0 <!-- flow:ms:m01tjqm0q -->
+
+### Area — Settings
+
+- [ ] [design] `shape appearance` — appearance subroute: multiple themes, left/right-hand layout toggle, and more. @month
+
+

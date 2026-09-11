@@ -230,6 +230,7 @@ export default function NotesScreen(): React.ReactElement {
       title: pr.title,
       kind: "project",
       noteCount: projectNoteCounts[pr.id],
+      emoji: pr.emoji,
     }));
     const i: LinkableTarget[] = boardEntries
       .filter((e) => e.type === "idea")
@@ -423,7 +424,10 @@ export default function NotesScreen(): React.ReactElement {
         >
           <Pressable
             style={[StyleSheet.absoluteFill, styles.scrim]}
-            onPress={() => Keyboard.dismiss()}
+            onPress={() => {
+              Keyboard.dismiss();
+              composerRef.current?.dismiss();
+            }}
             accessibilityLabel="Dismiss note composer"
           />
         </Animated.View>

@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import { Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
 import {
@@ -6,7 +6,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import Animated, {
@@ -18,6 +17,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { ThemedText } from "@/components/atoms/themed-text";
+import { SettingsRow } from "@/components/molecules/settings-row";
+import { SettingsSection } from "@/components/molecules/settings-section";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import {
@@ -32,6 +34,8 @@ import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 import { clearAllData, getDb, seedDefaultProjectsOnce } from "@/lib/database";
 import { SCENARIOS, seedScenario, type ScenarioKey } from "@/lib/dev-seed";
+
+const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
 
 export default function SettingsScreen(): React.ReactElement {
   const router = useRouter();
@@ -125,30 +129,36 @@ export default function SettingsScreen(): React.ReactElement {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
-            Appearance
-          </Text>
+        <SettingsSection label="Appearance">
           <ThemeToggle
             scheme={resolvedScheme}
             onChange={(next) => setPreference(next)}
           />
-        </View>
+        </SettingsSection>
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
-            About
-          </Text>
-          <Text style={[styles.version, { color: colors.inkMuted }]}>
-            v1.0.0
-          </Text>
-        </View>
+        <SettingsSection label="Preferences">
+          <SettingsRow
+            label="Notifications"
+            description="Deadline reminders and project returns."
+            onPress={() => router.push("/settings/notifications")}
+          />
+          <SettingsRow
+            label="Confirmations"
+            description="Ask before destructive actions."
+            onPress={() => router.push("/settings/confirmations")}
+          />
+        </SettingsSection>
 
-        {true && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
-              Dev · Seed Scenario
-            </Text>
+        <SettingsSection label="About">
+          <SettingsRow
+            label="About & Legal"
+            value={APP_VERSION}
+            onPress={() => router.push("/settings/about")}
+          />
+        </SettingsSection>
+
+        {__DEV__ && (
+          <SettingsSection label="Dev · Seed Scenario">
             {SCENARIOS.map((scenario) => (
               <Pressable
                 key={scenario.key}
@@ -156,7 +166,7 @@ export default function SettingsScreen(): React.ReactElement {
                   handleSeedScenario(scenario.key, scenario.label)
                 }
                 style={({ pressed }) => [
-                  styles.scenarioRow,
+                  styles.devRow,
                   {
                     backgroundColor: colors.surface,
                     opacity: pressed ? 0.7 : 1,
@@ -166,39 +176,31 @@ export default function SettingsScreen(): React.ReactElement {
                 accessibilityLabel={`Seed scenario ${scenario.label}`}
                 accessibilityHint={scenario.description}
               >
-                <MaterialCommunityIcons
-                  name="database-plus-outline"
-                  size={16}
-                  color={ideaAccent}
-                />
-                <View style={styles.scenarioCopy}>
-                  <Text style={[styles.scenarioLabel, { color: colors.ink }]}>
+                <IconSymbol name="Add2" size={16} color={ideaAccent} />
+                <View style={styles.devCopy}>
+                  <ThemedText type="item" style={{ color: colors.ink }}>
                     {scenario.label}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.scenarioDescription,
-                      { color: colors.inkMuted },
-                    ]}
+                  </ThemedText>
+                  <ThemedText
+                    type="caption"
+                    muted
                     numberOfLines={2}
+                    style={styles.devDescription}
                   >
                     {scenario.description}
-                  </Text>
+                  </ThemedText>
                 </View>
               </Pressable>
             ))}
-          </View>
+          </SettingsSection>
         )}
 
         {__DEV__ && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.inkMuted }]}>
-              Dev · Onboarding
-            </Text>
+          <SettingsSection label="Dev · Onboarding">
             <Pressable
               onPress={handleReplayOnboarding}
               style={({ pressed }) => [
-                styles.scenarioRow,
+                styles.devRow,
                 {
                   backgroundColor: colors.surface,
                   opacity: pressed ? 0.7 : 1,
@@ -209,22 +211,21 @@ export default function SettingsScreen(): React.ReactElement {
               accessibilityHint="Resets the first-run flag and opens the onboarding story from chapter one."
             >
               <IconSymbol name="PlayCircle" size={16} color={ideaAccent} />
-              <View style={styles.scenarioCopy}>
-                <Text style={[styles.scenarioLabel, { color: colors.ink }]}>
+              <View style={styles.devCopy}>
+                <ThemedText type="item" style={{ color: colors.ink }}>
                   Show onboarding
-                </Text>
-                <Text
-                  style={[
-                    styles.scenarioDescription,
-                    { color: colors.inkMuted },
-                  ]}
+                </ThemedText>
+                <ThemedText
+                  type="caption"
+                  muted
                   numberOfLines={2}
+                  style={styles.devDescription}
                 >
                   Reopens the first-run story from chapter one. Dev only.
-                </Text>
+                </ThemedText>
               </View>
             </Pressable>
-          </View>
+          </SettingsSection>
         )}
 
         {__DEV__ && (
@@ -240,14 +241,10 @@ export default function SettingsScreen(): React.ReactElement {
             accessibilityRole="button"
             accessibilityLabel="Clear database (dev only)"
           >
-            <MaterialCommunityIcons
-              name="database-remove-outline"
-              size={18}
-              color={deadlineAccent}
-            />
-            <Text style={[styles.devButtonLabel, { color: deadlineAccent }]}>
+            <IconSymbol name="Trash2" size={18} color={deadlineAccent} />
+            <ThemedText type="caption" style={{ color: deadlineAccent }}>
               Clear Database
-            </Text>
+            </ThemedText>
           </Pressable>
         )}
       </ScrollView>
@@ -308,15 +305,15 @@ function ThemeToggle({
         ]}
       />
       <Animated.View style={[styles.toggleWell, sunStyle]}>
-        <MaterialCommunityIcons
-          name="weather-sunny"
+        <IconSymbol
+          name="Sun"
           size={20}
           color={isDark ? colors.inkMuted : colors.accent.onClay}
         />
       </Animated.View>
       <Animated.View style={[styles.toggleWell, moonStyle]}>
-        <MaterialCommunityIcons
-          name="weather-night"
+        <IconSymbol
+          name="Moon"
           size={20}
           color={isDark ? colors.accent.onClay : colors.inkMuted}
         />
@@ -332,15 +329,6 @@ const styles = StyleSheet.create({
     padding: tokens.space.lg,
     paddingBottom: tokens.space.xxxl,
     gap: tokens.space.xl,
-  },
-  section: {
-    gap: tokens.space.md,
-  },
-  sectionLabel: {
-    fontSize: tokens.type.kicker.size,
-    textTransform: "uppercase",
-    letterSpacing: 0.55,
-    marginLeft: tokens.space.xs,
   },
   toggleTrack: {
     alignSelf: "flex-start",
@@ -364,26 +352,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  scenarioRow: {
+  devRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: tokens.space.sm,
     paddingVertical: tokens.space.sm,
     paddingHorizontal: tokens.space.md,
     borderRadius: tokens.radius.md,
-    marginBottom: tokens.space.xs,
   },
-  scenarioCopy: {
+  devCopy: {
     flex: 1,
+    gap: 2,
   },
-  scenarioLabel: {
-    fontSize: tokens.type.body.size,
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  scenarioDescription: {
-    fontSize: tokens.type.kicker.size,
-    lineHeight: tokens.type.kicker.size * 1.35,
+  devDescription: {
+    lineHeight: 16,
   },
   devButton: {
     flexDirection: "row",
@@ -392,13 +374,5 @@ const styles = StyleSheet.create({
     gap: tokens.space.xs,
     minHeight: 44,
     borderRadius: tokens.radius.md,
-  },
-  devButtonLabel: {
-    fontSize: tokens.type.kicker.size,
-    fontWeight: "600",
-  },
-  version: {
-    fontSize: tokens.type.kicker.size,
-    marginLeft: tokens.space.xs,
   },
 });

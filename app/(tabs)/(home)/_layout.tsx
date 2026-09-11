@@ -16,7 +16,10 @@ export default function HomeStackLayout(): React.ReactElement {
   return (
     <Stack screenOptions={{ headerShown: true }}>
       <Stack.Screen name="index" options={{ header: () => <AppHeader /> }} />
-      <Stack.Screen name="settings" />
+      <Stack.Screen name="settings/index" />
+      <Stack.Screen name="settings/notifications" />
+      <Stack.Screen name="settings/confirmations" />
+      <Stack.Screen name="settings/about" />
       {/* Shared routes: project.tsx and detail.tsx live in the (home,projects)
           array group, so each exists in this stack AND in the projects stack.
           Opening one from the Field pushes it here, which is what keeps Back

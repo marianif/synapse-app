@@ -9,15 +9,15 @@ description: "Cool graphite instrument-panel ground, three electric type-colors 
 
 **Creative North Star: "Your whole brain as a living instrument panel — switched on, never soothed."**
 
-Field Lab is built for an ADHD-adjacent user who opens the app mid-thought and needs to feel activated, not sedated. The previous system (The Field: warm oat-cream, pastels, Fraunces serif) read as soothing; Field Lab flips everything cool, sharp, and charged. Every entry type glows in its own electric color at **equal volume** — an idea is as alive as a looming deadline, it just glows in a different color. The direct zone keeps the whole board visible; the Agenda is a separate activation surface that offers one useful way back in, not a second report about the database. Nothing fades, because for this brain, out of sight is gone.
+Field Lab is built for an ADHD-adjacent user who opens the app mid-thought and needs to feel activated, not sedated. The previous system (The Field: warm oat-cream, pastels, Fraunces serif) read as soothing; Field Lab flips everything cool, sharp, and charged. Every entry type glows in its own electric color at **equal volume** — an idea is as alive as a looming deadline, it just glows in a different color. The direct zone keeps the whole board visible; the Agenda tab is a placeholder for a future activation surface that offers one useful way back in, not a second report about the database. Nothing fades, because for this brain, out of sight is gone.
 
 The system explicitly rejects: corporate productivity tools, gamified habit-trackers (streaks, badges, confetti), pastel-illustration journaling apps, pure white / pure black interfaces, and plain checklist task managers with no projects and no memory.
 
-**The Agenda is an invitation, not a narrator.** It leads with the entries the user themselves flagged as **next actions**, then gives every other opening a human reason and one direct action: return, continue, prepare, or decide. It never narrates stale state, guilts the user, or presents a flat wall: when it lists every opening, it groups them by kind so the set reads as structure. The copy should sound like a person making it easier to begin, not a system explaining what it measured.
+**The proposed activation surface is an invitation, not a narrator.** Whatever fills the Agenda tab should lead with the entries the user themselves flagged as **next actions**, then give every other opening a human reason and one direct action. It should never narrate stale state, guilt the user, or present a flat wall, and its copy should sound like a person making it easier to begin, not a system explaining what it measured.
 
 **Core-model note (Jun 11 pivot).** The model is now four board things — **idea · todo · deadline · diary note** — over **projects**. **Events are removed** (the persona doesn't live event-to-event), which frees the ultraviolet code from the palette. **Someday is no longer a type or a color**: an undated todo IS a "someday", marked by a quiet mono **badge**, never a lime downgrade — so lime also leaves the type palette. The palette drops from five electric codes to three (deadline coral, todo cyan, idea amber).
 
-Three voices carry the typography: **Host Grotesk** (display/body — Inter was removed as too neutral), **IBM Plex Mono** (the signal layer: counts, status lines, time, kickers — the instrument-panel feel), and **Caveat** (the handwritten layer: Agenda invitations and the companion voice).
+Three voices carry the typography: **Host Grotesk** (display/body — Inter was removed as too neutral), **IBM Plex Mono** (the signal layer: counts, status lines, time, kickers — the instrument-panel feel), and **Caveat** (the handwritten layer: the companion voice and margin-notes).
 
 **Key characteristics:**
 
@@ -104,7 +104,7 @@ const type = {
   // fontFraunces / fontInter are legacy KEYS repointed at Host Grotesk; the fonts are gone.
   fontFraunces: { regular: "HostGrotesk_500Medium", medium: "HostGrotesk_600SemiBold", semiBold: "HostGrotesk_700Bold" },
   fontInter: { regular: "HostGrotesk_400Regular", medium: "HostGrotesk_500Medium", semiBold: "HostGrotesk_600SemiBold", bold: "HostGrotesk_700Bold" },
-  // Handwritten layer — Agenda invitation labels / companion voice. Caveat renders ~30%
+  // Handwritten layer — companion voice / margin-notes. Caveat renders ~30%
   // larger than Host Grotesk at the same size; bump size at call-sites accordingly.
   fontHand: { regular: "Caveat_500Medium", medium: "Caveat_600SemiBold", bold: "Caveat_700Bold" },
   // Mono signal layer — counts, status line, time, kickers. Instrument-panel feel.
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
 
 ### Handwritten margin note
 
-The companion voice (greeting margin-notes and Agenda invitations). Caveat runs optically small — size up ~30% versus the Host Grotesk step it sits beside. The hand should make an invitation feel personal, never like a generated status report. Warmth comes from a clear human action, not sentiment emojis or decorative softness.
+The companion voice (greeting margin-notes and handwritten labels). Caveat runs optically small — size up ~30% versus the Host Grotesk step it sits beside. The hand should make an invitation feel personal, never like a generated status report. Warmth comes from a clear human action, not sentiment emojis or decorative softness.
 
 ```tsx
 import { StyleSheet, Text } from "react-native";
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
 
 ### Next-action mark
 
-A user-set state on any entry (todo / deadline / idea): "this is what I'm doing next." It is **not** a type and **not** a priority, so it never recolors a row, never dims the rows without it, and never reorders the register (Equal Volume holds). It is carried by a **neutral `NEXT` chip** in the row's trailing cluster — a seated `surfaceSubtle` chip with `inkMuted` mono text, the same informational treatment as `SOMEDAY`, never a type colour — and by a **seated key in `/edit`'s bottom commit bar that inverts to ink when latched**. It never takes the accent slab: a supporting state does not spend the action colour, and no new colour code is introduced. Clearing is automatic on completion; the latch is the only manual writer. It appears on the home voice as a Caveat clause naming up to three, and in full at the top of the Agenda.
+A user-set state on any entry (todo / deadline / idea): "this is what I'm doing next." It is **not** a type and **not** a priority, so it never recolors a row, never dims the rows without it, and never reorders the register (Equal Volume holds). It is carried by a **neutral `NEXT` chip** in the row's trailing cluster — a seated `surfaceSubtle` chip with `inkMuted` mono text, the same informational treatment as `SOMEDAY`, never a type colour — and by a **seated key in `/edit`'s bottom commit bar that inverts to ink when latched**. It never takes the accent slab: a supporting state does not spend the action colour, and no new colour code is introduced. Clearing is automatic on completion; the latch is the only manual writer. It appears on the home voice as a Caveat clause naming up to three.
 
 ```tsx
 // Row mark — a neutral chip, no recolor. Rendered only on open, flagged rows.

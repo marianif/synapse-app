@@ -32,8 +32,6 @@ interface FieldSummaryProps {
   onSelectType?: (type: EntryType) => void;
   /** Tapping a named next action opens its entry. */
   onSelectNext?: (id: string) => void;
-  /** Tapping "+N more" leaves the voice for the Agenda, where all are listed. */
-  onShowMoreNext?: () => void;
 }
 
 /** How many next actions the greeting names before folding the rest into +N. */
@@ -52,7 +50,6 @@ export function FieldSummary({
   nextActions,
   onSelectType,
   onSelectNext,
-  onShowMoreNext,
 }: FieldSummaryProps): React.ReactElement {
   const { scheme, colors } = useTheme();
 
@@ -129,11 +126,6 @@ export function FieldSummary({
             <>
               {", "}
               <Text
-                onPress={onShowMoreNext}
-                accessibilityRole={onShowMoreNext ? "button" : undefined}
-                accessibilityLabel={
-                  onShowMoreNext ? `Show ${more} more next actions` : undefined
-                }
                 style={[styles.more, { color: colors.inkMuted }]}
               >
                 {`+${more} more`}

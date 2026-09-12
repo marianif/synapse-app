@@ -147,7 +147,7 @@ const type = {
     semiBold: "HostGrotesk_600SemiBold",
     bold: "HostGrotesk_700Bold",
   },
-  // handwritten layer — agenda margin-notes. Caveat reads like a thing you
+  // handwritten layer — margin-notes. Caveat reads like a thing you
   // scrawled to remember it; runs ~30% larger than Host Grotesk at the same size, so
   // bump the size at call-sites to keep optical weight in line.
   fontHand: {

@@ -8,7 +8,7 @@ export interface ConfirmSheetProps {
   visible: boolean;
   /** Mono kicker above the body — e.g. "DELETE ENTRY". Uppercased by the label scale. */
   kicker: string;
-  /** The question, in the agenda voice. */
+  /** The question, in the companion voice. */
   message: string;
   /** Confirm button label — defaults to "Delete". */
   confirmLabel?: string;

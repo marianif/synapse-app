@@ -76,7 +76,7 @@ export function CountClause({
 }
 
 const styles = StyleSheet.create({
-  // Count-phrases are hand-scrawled agenda notes — Caveat carries "I jotted this
+  // Count-phrases are hand-scrawled margin notes — Caveat carries "I jotted this
   // down to remember it", the type-color carries the category. Caveat runs small
   // and light optically, so it's sized up from the body and pulled a touch off
   // the baseline so the loops sit level with the surrounding Inter.

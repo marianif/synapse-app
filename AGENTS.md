@@ -99,7 +99,6 @@ synapse-app/
 │   │   ├── wrapup-card.tsx     # End-of-day summary card
 │   │   └── week-strip.tsx
 │   ├── organisms/              # Complex UI sections
-│   │   ├── agenda-section.tsx  # Agenda list section
 │   │   ├── app-header.tsx      # Top navigation header
 │   │   ├── app-menu.tsx        # App menu/drawer
 │   │   ├── custom-tab-bar.tsx   # Custom tab bar

@@ -2,9 +2,9 @@
 
 The behavioral architecture: every goal's paths through the product.
 
-Capture is the spine — one pen key, one trigger, a four-stage machine that takes any thought and files it as the right thing. The board then appears through two surfaces: the field (what exists, at equal volume, never curated) and the Agenda (the next actions you flagged, then every opening the board offers, grouped by kind). Projects are triage zones over one macro life area; the diary is the reflective layer that never touches the board.
+Capture is the spine — one pen key, one trigger, a four-stage machine that takes any thought and files it as the right thing. The board then appears through the field (what exists, at equal volume, never curated). Projects are triage zones over one macro life area; the diary is the reflective layer that never touches the board. The Agenda tab is a placeholder for a future activation surface — its previous feed (flagged next actions plus the board's openings, grouped by kind) has been removed.
 
-Ambition order — what must exist before the app is real: capture spine → the field → the dispatch → project triage → reflective note-taking.
+Ambition order — what must exist before the app is real: capture spine → the field → project triage → reflective note-taking. The next activation surface on the Agenda tab is still to be designed.
 
 Open decision (flagged, not absorbed): GOALS.md says the share extension "funnels through the same capture," but the code routes share-in to the notes composer — a shared link resolves to a diary note, never through the classify spine. FLOWS.md models the code; GOALS.md's primary-action wording is a candidate follow-up.
 
@@ -117,7 +117,6 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Exit: the user leaves the field — a tab, a detail, or capture
 - Handoff: put-something-in
 - Handoff: browse-and-triage-a-project
-- Handoff: the-dispatch
 - Status: complete
 
 ### Step — Open the app <!-- flow:step:open-the-app -->
@@ -170,7 +169,7 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Recovery: dismiss the sheet
 
 ### State — Next action <!-- flow:state:next-action -->
-- Meaning: an entry the user flagged as what they're doing next — named in the greeting, leading the Agenda, never recolored, dimmed, or reordered
+- Meaning: an entry the user flagged as what they're doing next — named in the greeting, never recolored, dimmed, or reordered
 - Next: close-the-loop
 - Recovery: clear the latch; completing the entry clears it automatically
 
@@ -188,45 +187,9 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Next: exit
 - Recovery: create a project — handoff to browse-and-triage-a-project
 
-## Flow — The agenda <!-- flow:flow:the-dispatch -->
-- Serves: Goal 2 — See it all at a glance
-- Entry: the user opens the agenda tab
-- Success: the user sees their flagged next actions and every available opening, each one tap from the action it suggests
-- Exit: the user leaves the agenda — an invitation followed, or a tab switch
-- Handoff: the-field
-- Handoff: browse-and-triage-a-project
-- Handoff: reflective-note-taking
-- Status: complete
-
-### Step — Choose a way in <!-- flow:step:read-the-feed -->
-- Intent: find one useful action without scanning the whole board
-- Action: read the flagged next actions, then every opening, grouped by kind
-- State: invited
-- Next: follow-an-invitation
-- Branch: no clear invitation → quiet-empty
-- Component: agenda-feed (NEXT UP) / agenda-prompt-card
-
-### Step — Follow an invitation <!-- flow:step:follow-a-dispatch -->
-- Intent: make the suggested next move
-- Action: tap the invitation — an entry opens its detail, a project opens its spine
-- State: invited
-- Next: done
-- Component: agenda-feed / agenda-prompt-card / direct-detail-sheet
-- Exit: true
-
-### State — Invited <!-- flow:state:dispatched -->
-- Meaning: one clear way in, with a small action and a direct target
-- Next: follow-an-invitation
-- Recovery: choose another invitation, or leave it for later
-
-### State — Quiet empty <!-- flow:state:quiet-empty -->
-- Meaning: there is no clear next move worth interrupting for
-- Next: exit
-- Recovery: capture something, or return when there is a reason to move
-
 ## Flow — Browse and triage a project <!-- flow:flow:browse-and-triage-a-project -->
 - Serves: Goal 2 — See it all at a glance
-- Entry: the project shelf, a field project row, or an agenda dispatch
+- Entry: the project shelf or a field project row
 - Success: a life area is found and its open lines triaged in place
 - Exit: the user leaves the project — back to the shelf, a line closed, archived, or deleted
 - Handoff: put-something-in
@@ -293,7 +256,6 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Entry: the notes tab, the pen key (delegated), or the share extension
 - Success: a reflection is written, linked to its subject or free
 - Exit: the composer closes and the note is filed
-- Handoff: the-dispatch
 - Handoff: put-something-in
 - Status: complete
 

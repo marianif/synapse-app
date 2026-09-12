@@ -135,8 +135,6 @@ interface FieldGreetingProps {
   onSelectType?: (type: EntryType) => void;
   /** Tapping a named next action opens its entry. */
   onSelectNext?: (id: string) => void;
-  /** Tapping "+N more" routes to the Agenda, which lists them all. */
-  onShowMoreNext?: () => void;
 }
 
 export function FieldGreeting({
@@ -148,7 +146,6 @@ export function FieldGreeting({
   nextActions,
   onSelectType,
   onSelectNext,
-  onShowMoreNext,
 }: FieldGreetingProps): React.ReactElement {
   const { colors } = useTheme();
 
@@ -191,7 +188,6 @@ export function FieldGreeting({
           nextActions={nextActions}
           onSelectType={onSelectType}
           onSelectNext={onSelectNext}
-          onShowMoreNext={onShowMoreNext}
         />
       )}
     </View>

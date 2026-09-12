@@ -1,96 +1,14 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-12T18:02:52.435Z",
+  "generatedAt": "2026-09-12T11:17:01.717Z",
   "surface": "mobile",
   "componentsDir": "components",
   "register": null,
   "members": [
     {
-      "name": "DateInput",
-      "file": "components/atoms/DateInput.tsx",
+      "name": "BrandMark",
+      "file": "components/atoms/brand-mark.tsx",
       "line": 13,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "value",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onChange",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "style",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "backgroundColor",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "value",
-        "onChange",
-        "style"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "inline-style",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "TimeInput",
-      "file": "components/atoms/TimeInput.tsx",
-      "line": 13,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "value",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onChange",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "style",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "backgroundColor",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "value",
-        "onChange",
-        "style"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "inline-style",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "CalendarIcon",
-      "file": "components/atoms/calendar-icon.tsx",
-      "line": 31,
       "kind": "function",
       "exports": [
         "named"
@@ -102,8 +20,8 @@
           "usageCount": 0
         },
         {
-          "name": "days",
-          "required": false,
+          "name": "accessibilityLabel",
+          "required": true,
           "usageCount": 0
         }
       ],
@@ -113,117 +31,81 @@
       "tokensUsed": [],
       "styleSignal": "none",
       "composed": [],
-      "consumers": [],
+      "consumers": [
+        "app/(tabs)/(home)/settings/about.tsx"
+      ],
       "depth": 0
     },
     {
-      "name": "CapturePulse",
-      "file": "components/atoms/capture-pulse.tsx",
-      "line": 21,
+      "name": "DiscButton",
+      "file": "components/atoms/disc-button.tsx",
+      "line": 32,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
         {
-          "name": "tint",
+          "name": "icon",
+          "required": true,
+          "usageCount": 0,
+          "type": "IconSymbolName"
+        },
+        {
+          "name": "label",
           "required": true,
           "usageCount": 0,
           "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "inline-style",
-      "composed": [
-        "IconSymbol"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "CounterDisplay",
-      "file": "components/atoms/counter-display.tsx",
-      "line": 18,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "value",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "accentType",
-          "required": true,
-          "usageCount": 0,
-          "type": "EntryType"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "DayCell",
-      "file": "components/atoms/day-cell.tsx",
-      "line": 17,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "date",
-          "required": true,
-          "usageCount": 0,
-          "type": "Date"
-        },
-        {
-          "name": "dayNumber",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "isCurrentMonth",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "isToday",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "entries",
-          "required": true,
-          "usageCount": 0,
-          "type": "CalendarEntry[]"
         },
         {
           "name": "onPress",
           "required": true,
           "usageCount": 0,
-          "type": "(date: Date) => void"
+          "type": "() => void"
+        },
+        {
+          "name": "tone",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "selected",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "fill",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "accessibilityLabel",
+          "required": false,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "accessibilityHint",
+          "required": false,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "accessibilityState",
+          "required": false,
+          "usageCount": 0,
+          "type": "AccessibilityState"
         }
       ],
       "variants": [
-        "isCurrentMonth",
-        "isToday"
+        "tone",
+        "fill"
       ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "ThemedText"
+        "ThemedText",
+        "IconSymbol"
       ],
       "consumers": [],
       "depth": 1
@@ -296,180 +178,55 @@
       "styleSignal": "StyleSheet.create",
       "composed": [],
       "consumers": [
-        "app/(tabs)/(home,projects)/project.tsx"
+        "app/(tabs)/(home,projects)/project.tsx",
+        "app/edit.tsx"
       ],
       "depth": 0
     },
     {
-      "name": "IconPill",
-      "file": "components/atoms/icon-pill.tsx",
-      "line": 19,
+      "name": "LinkText",
+      "file": "components/atoms/link-text.tsx",
+      "line": 38,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
         {
-          "name": "icon",
+          "name": "text",
           "required": true,
           "usageCount": 0
         },
         {
-          "name": "color",
+          "name": "style",
           "required": true,
           "usageCount": 0
         },
         {
-          "name": "onPress",
+          "name": "linkStyle",
           "required": true,
           "usageCount": 0
         },
         {
-          "name": "accessibilityLabel",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "label",
-          "required": true,
+          "name": "muted",
+          "required": false,
           "usageCount": 0
         }
       ],
       "variants": [
-        "color",
-        "label"
+        "text",
+        "style"
       ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "MonthNavigator",
-      "file": "components/atoms/month-navigator.tsx",
-      "line": 15,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "label",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "isCurrentMonth",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "onPrev",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onNext",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onToday",
-          "required": false,
-          "usageCount": 0,
-          "type": "() => void"
-        }
-      ],
-      "variants": [
-        "isCurrentMonth",
-        "onToday"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "MoodGlyph",
-      "file": "components/atoms/mood-glyph.tsx",
-      "line": 24,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "mood",
-          "required": true,
-          "usageCount": 0,
-          "type": "DiaryMood"
-        },
-        {
-          "name": "size",
-          "required": false,
-          "usageCount": 0
-        },
-        {
-          "name": "color",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [
-        "size",
-        "color"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "none",
       "composed": [],
       "consumers": [],
       "depth": 0
     },
     {
-      "name": "NotificationBadge",
-      "file": "components/atoms/notification-badge.tsx",
-      "line": 17,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "count",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "max",
-          "required": false,
-          "usageCount": 0,
-          "type": "number"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
       "name": "OptionChip",
       "file": "components/atoms/option-chip.tsx",
-      "line": 6,
+      "line": 7,
       "kind": "function",
       "exports": [
         "named"
@@ -486,6 +243,12 @@
           "required": false,
           "usageCount": 0,
           "type": "string | null"
+        },
+        {
+          "name": "icon",
+          "required": false,
+          "usageCount": 0,
+          "type": "IconSymbolName"
         },
         {
           "name": "selected",
@@ -524,170 +287,8 @@
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "ProjectBreadcrumb",
-      "file": "components/atoms/project-breadcrumb.tsx",
-      "line": 14,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "emoji",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "title",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "ResolverSep",
-      "file": "components/atoms/resolver-sep.tsx",
-      "line": 6,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "color",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [
-        "color"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "ResolverValue",
-      "file": "components/atoms/resolver-value.tsx",
-      "line": 12,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "label",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "color",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "mutedColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "selected",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "onPress",
-          "required": true,
-          "usageCount": 0,
-          "type": "("
-        }
-      ],
-      "variants": [
-        "color"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "ResolverVerb",
-      "file": "components/atoms/resolver-verb.tsx",
-      "line": 13,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "label",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "color",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "selected",
-          "required": false,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "onPress",
-          "required": true,
-          "usageCount": 0,
-          "type": "("
-        },
-        {
-          "name": "accessibilityLabel",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "accessibilityState",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "color",
-        "selected"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
+        "ThemedText",
+        "IconSymbol"
       ],
       "consumers": [],
       "depth": 1
@@ -695,7 +296,7 @@
     {
       "name": "SelectChip",
       "file": "components/atoms/select-chip.tsx",
-      "line": 19,
+      "line": 21,
       "kind": "function",
       "exports": [
         "named"
@@ -725,23 +326,31 @@
           "name": "fill",
           "required": false,
           "usageCount": 0
+        },
+        {
+          "name": "compact",
+          "required": false,
+          "usageCount": 0
         }
       ],
       "variants": [
-        "fill"
+        "fill",
+        "compact"
       ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
         "ThemedText"
       ],
-      "consumers": [],
+      "consumers": [
+        "app/edit.tsx"
+      ],
       "depth": 1
     },
     {
       "name": "ChipRail",
       "file": "components/atoms/select-chip.tsx",
-      "line": 58,
+      "line": 62,
       "kind": "function",
       "exports": [
         "named"
@@ -758,13 +367,15 @@
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [],
-      "consumers": [],
+      "consumers": [
+        "app/edit.tsx"
+      ],
       "depth": 0
     },
     {
       "name": "ChipRow",
       "file": "components/atoms/select-chip.tsx",
-      "line": 76,
+      "line": 80,
       "kind": "function",
       "exports": [
         "named"
@@ -818,38 +429,81 @@
       "styleSignal": "none",
       "composed": [],
       "consumers": [
-        "app/(tabs)/(home,projects)/edit.tsx"
+        "app/note.tsx"
       ],
       "depth": 0
     },
     {
-      "name": "StreakBadge",
-      "file": "components/atoms/streak-badge.tsx",
-      "line": 18,
+      "name": "TagChip",
+      "file": "components/atoms/tag-chip.tsx",
+      "line": 49,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
         {
+          "name": "label",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "variant",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "size",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "trailing",
+          "required": true,
+          "usageCount": 0
+        },
+        {
           "name": "count",
           "required": true,
-          "usageCount": 0,
-          "type": "number"
+          "usageCount": 0
+        },
+        {
+          "name": "selected",
+          "required": false,
+          "usageCount": 0
         },
         {
           "name": "accentColor",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "onPress",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "accessibilityLabel",
+          "required": true,
+          "usageCount": 0
         }
       ],
-      "variants": [],
+      "variants": [
+        "label",
+        "variant",
+        "size",
+        "count",
+        "selected"
+      ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "ThemedText"
+        "ThemedText",
+        "IconSymbol"
       ],
-      "consumers": [],
+      "consumers": [
+        "app/note.tsx"
+      ],
       "depth": 1
     },
     {
@@ -891,143 +545,18 @@
       "styleSignal": "StyleSheet.create",
       "composed": [],
       "consumers": [
-        "app/(tabs)/(home,projects)/edit.tsx",
+        "app/(tabs)/(home)/settings/about.tsx",
+        "app/(tabs)/(home)/settings/confirmations.tsx",
+        "app/(tabs)/(home)/settings/index.tsx",
+        "app/(tabs)/(home)/settings/notifications.tsx",
         "app/(tabs)/(home,projects)/project.tsx",
         "app/(tabs)/(projects)/index.tsx",
         "app/(tabs)/agenda.tsx",
-        "app/list.tsx"
+        "app/edit.tsx",
+        "app/list.tsx",
+        "app/note.tsx"
       ],
       "depth": 0
-    },
-    {
-      "name": "ThemedView",
-      "file": "components/atoms/themed-view.tsx",
-      "line": 19,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "surface",
-          "required": false,
-          "usageCount": 0
-        },
-        {
-          "name": "style",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "children",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "surface",
-        "style"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "inline-style",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "TimeStepper",
-      "file": "components/atoms/time-stepper.tsx",
-      "line": 27,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "value",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onChange",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "accentColor",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
-        "StepperColumn"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
-      "name": "StepperColumn",
-      "file": "components/atoms/time-stepper.tsx",
-      "line": 91,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "value",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "ink",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "muted",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "upLabel",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "downLabel",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onUp",
-          "required": true,
-          "usageCount": 0,
-          "type": "("
-        },
-        {
-          "name": "onDown",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
     },
     {
       "name": "WaveformBar",
@@ -1094,63 +623,9 @@
       "depth": 1
     },
     {
-      "name": "Waveform",
-      "file": "components/atoms/waveform.tsx",
-      "line": 14,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "tint",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "WaveformBar"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "WaveformBar",
-      "file": "components/atoms/waveform.tsx",
-      "line": 24,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "index",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "tint",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
       "name": "WheelPicker",
       "file": "components/atoms/wheel-picker.tsx",
-      "line": 42,
+      "line": 50,
       "kind": "function",
       "exports": [
         "named"
@@ -1184,6 +659,31 @@
         {
           "name": "flex",
           "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "rowHeight",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "visibleRows",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "selectedColor",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "textColor",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "mutedColor",
+          "required": true,
           "usageCount": 0
         }
       ],
@@ -1219,228 +719,6 @@
       "styleSignal": "StyleSheet.create",
       "composed": [
         "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "HapticTab",
-      "file": "components/haptic-tab.tsx",
-      "line": 10,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "children",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onPress",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "style",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "children",
-        "onPress",
-        "style"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "inline-style",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "AgendaHeader",
-      "file": "components/molecules/agenda-header.tsx",
-      "line": 29,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "now",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "BentoCardHeader",
-      "file": "components/molecules/bento-card-header.tsx",
-      "line": 22,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "count",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "accentType",
-          "required": true,
-          "usageCount": 0,
-          "type": "EntryType"
-        },
-        {
-          "name": "label",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "description",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "icon",
-          "required": true,
-          "usageCount": 0,
-          "type": "React.ReactElement"
-        }
-      ],
-      "variants": [
-        "label"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "CounterDisplay",
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "CaptureResolver",
-      "file": "components/molecules/capture-resolver.tsx",
-      "line": 190,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "text",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "ideas",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "projects",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "picking",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onTogglePicking",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onResolve",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onDismiss",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "lockedProjectId",
-          "required": false,
-          "usageCount": 0
-        },
-        {
-          "name": "seedType",
-          "required": false,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "picking"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ResolverSep",
-        "ResolverValue",
-        "ResolverVerb",
-        "SketchIcon",
-        "ThemedText",
-        "ExactWhen",
-        "PenLine",
-        "ValueRow",
-        "IconSymbol"
-      ],
-      "consumers": [],
-      "depth": 3
-    },
-    {
-      "name": "CompactCalendar",
-      "file": "components/molecules/compact-calendar.tsx",
-      "line": 26,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "value",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onSelect",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "accentColor",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
-        "IconSymbol"
       ],
       "consumers": [],
       "depth": 1
@@ -1507,14 +785,15 @@
         "IconSymbol"
       ],
       "consumers": [
-        "app/(tabs)/(home,projects)/project.tsx"
+        "app/(tabs)/(home,projects)/project.tsx",
+        "app/edit.tsx"
       ],
       "depth": 1
     },
     {
       "name": "CountClause",
       "file": "components/molecules/count-clause.tsx",
-      "line": 44,
+      "line": 48,
       "kind": "function",
       "exports": [
         "named"
@@ -1536,6 +815,11 @@
           "name": "muted",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "onSelect",
+          "required": true,
+          "usageCount": 0
         }
       ],
       "variants": [
@@ -1546,51 +830,6 @@
       "composed": [],
       "consumers": [],
       "depth": 0
-    },
-    {
-      "name": "DetailActionBar",
-      "file": "components/molecules/detail-action-bar.tsx",
-      "line": 22,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "primary",
-          "required": false,
-          "usageCount": 0,
-          "type": "PrimaryAction"
-        },
-        {
-          "name": "accentColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onEdit",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onDelete",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        }
-      ],
-      "variants": [
-        "primary"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
     },
     {
       "name": "DetailHeaderRow",
@@ -1638,273 +877,15 @@
         "EntryDot",
         "ThemedText"
       ],
-      "consumers": [],
+      "consumers": [
+        "app/edit.tsx"
+      ],
       "depth": 1
-    },
-    {
-      "name": "DetailHero",
-      "file": "components/molecules/detail-hero.tsx",
-      "line": 63,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "entryType",
-          "required": true,
-          "usageCount": 0,
-          "type": "EntryType"
-        },
-        {
-          "name": "isRecurring",
-          "required": false,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "title",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "titleSlot",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "readout",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "chips",
-          "required": false,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "titleSlot",
-        "readout",
-        "chips"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "DetailMetadataRow",
-      "file": "components/molecules/detail-metadata-row.tsx",
-      "line": 20,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "icon",
-          "required": true,
-          "usageCount": 0,
-          "type": "React.ComponentProps<typeof MaterialCommunityIcons>['name']"
-        },
-        {
-          "name": "label",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "value",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "accentColor",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "DetailNoteBlock",
-      "file": "components/molecules/detail-note-block.tsx",
-      "line": 13,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "label",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "value",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "DetailViewMeta",
-      "file": "components/molecules/detail-view-meta.tsx",
-      "line": 31,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "entry",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "charged",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "whenText",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "recurrenceText",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "done",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "entry",
-        "recurrenceText"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
-        "DetailNoteBlock"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
-      "name": "DiaryComposer",
-      "file": "components/molecules/diary-composer.tsx",
-      "line": 40,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "targets",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onSave",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
-        "Waveform",
-        "LinkSheet"
-      ],
-      "consumers": [],
-      "depth": 3
-    },
-    {
-      "name": "Waveform",
-      "file": "components/molecules/diary-composer.tsx",
-      "line": 232,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "tint",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "WaveformBar"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "WaveformBar",
-      "file": "components/molecules/diary-composer.tsx",
-      "line": 242,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "index",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "tint",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
     },
     {
       "name": "DiaryFilterBar",
       "file": "components/molecules/diary-filter-bar.tsx",
-      "line": 39,
+      "line": 40,
       "kind": "function",
       "exports": [
         "named"
@@ -1966,7 +947,7 @@
     {
       "name": "DiaryNote",
       "file": "components/molecules/diary-note.tsx",
-      "line": 34,
+      "line": 78,
       "kind": "function",
       "exports": [
         "named"
@@ -1989,7 +970,37 @@
           "usageCount": 0
         },
         {
+          "name": "linkedEmoji",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "linkedProjectTitle",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "linkedProjectEmoji",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "hideChip",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "onEdit",
+          "required": true,
+          "usageCount": 0
+        },
+        {
           "name": "onRelate",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onToggleBookmark",
           "required": true,
           "usageCount": 0
         },
@@ -2000,21 +1011,30 @@
           "type": "() => void"
         }
       ],
-      "variants": [],
+      "variants": [
+        "entry"
+      ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
+        "LinkText",
+        "TagChip",
         "ThemedText",
         "Chip",
-        "SwipeableRow"
+        "BookmarkButton",
+        "SwipeableRow",
+        "IconSymbol"
       ],
-      "consumers": [],
+      "consumers": [
+        "app/(tabs)/(home,projects)/project.tsx",
+        "app/edit.tsx"
+      ],
       "depth": 3
     },
     {
       "name": "Chip",
       "file": "components/molecules/diary-note.tsx",
-      "line": 119,
+      "line": 316,
       "kind": "function",
       "exports": [
         "named"
@@ -2035,9 +1055,28 @@
           "name": "linkedKind",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "linkedEmoji",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "linkedProjectTitle",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "linkedProjectEmoji",
+          "required": true,
+          "usageCount": 0
         }
       ],
-      "variants": [],
+      "variants": [
+        "linkedKind",
+        "linkedEmoji",
+        "linkedProjectEmoji"
+      ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
@@ -2049,9 +1088,76 @@
       "depth": 1
     },
     {
+      "name": "BookmarkButton",
+      "file": "components/molecules/diary-note.tsx",
+      "line": 429,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "bookmarked",
+          "required": true,
+          "usageCount": 0,
+          "type": "boolean"
+        },
+        {
+          "name": "onPress",
+          "required": true,
+          "usageCount": 0,
+          "type": "("
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "IconSymbol"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "DiaryTagRail",
+      "file": "components/molecules/diary-tag-rail.tsx",
+      "line": 27,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "tags",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "selected",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onToggle",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "TagChip"
+      ],
+      "consumers": [
+        "app/(tabs)/notes.tsx"
+      ],
+      "depth": 2
+    },
+    {
       "name": "DirectFilterBar",
       "file": "components/molecules/direct-filter-bar.tsx",
-      "line": 36,
+      "line": 32,
       "kind": "function",
       "exports": [
         "named"
@@ -2078,12 +1184,10 @@
       ],
       "variants": [],
       "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
+      "styleSignal": "none",
+      "composed": [],
       "consumers": [],
-      "depth": 1
+      "depth": 0
     },
     {
       "name": "DirectPager",
@@ -2125,7 +1229,7 @@
     {
       "name": "DirectRow",
       "file": "components/molecules/direct-row.tsx",
-      "line": 38,
+      "line": 44,
       "kind": "function",
       "exports": [
         "named"
@@ -2156,7 +1260,9 @@
           "type": "(entry: DbEntry) => void"
         }
       ],
-      "variants": [],
+      "variants": [
+        "entry"
+      ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
@@ -2169,33 +1275,124 @@
       "depth": 1
     },
     {
-      "name": "DispatchRow",
-      "file": "components/molecules/dispatch-row.tsx",
-      "line": 53,
+      "name": "EmojiPickerSheet",
+      "file": "components/molecules/emoji-picker-sheet.tsx",
+      "line": 14,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
         {
-          "name": "dispatch",
+          "name": "visible",
           "required": true,
           "usageCount": 0,
-          "type": "Dispatch"
+          "type": "boolean"
         },
         {
-          "name": "onPress",
+          "name": "selected",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onSelect",
           "required": true,
           "usageCount": 0,
-          "type": "(dispatch: Dispatch) => void"
+          "type": "(next: string"
+        },
+        {
+          "name": "onClear",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onClose",
+          "required": true,
+          "usageCount": 0
         }
       ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "EmojiPicker"
+      ],
+      "consumers": [
+        "app/(tabs)/(home,projects)/project.tsx"
+      ],
+      "depth": 2
+    },
+    {
+      "name": "CATEGORIES",
+      "file": "components/molecules/emoji-picker.tsx",
+      "line": 62,
+      "kind": "arrow",
+      "exports": [
+        "named"
+      ],
+      "props": [],
       "variants": [],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [],
       "consumers": [],
       "depth": 0
+    },
+    {
+      "name": "ALL_ROWS",
+      "file": "components/molecules/emoji-picker.tsx",
+      "line": 88,
+      "kind": "arrow",
+      "exports": [
+        "named"
+      ],
+      "props": [],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [],
+      "consumers": [],
+      "depth": 0
+    },
+    {
+      "name": "EmojiPicker",
+      "file": "components/molecules/emoji-picker.tsx",
+      "line": 167,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "selected",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onSelect",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onClear",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onCancel",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText",
+        "IconSymbol"
+      ],
+      "consumers": [],
+      "depth": 1
     },
     {
       "name": "EmptyState",
@@ -2249,6 +1446,54 @@
       "depth": 1
     },
     {
+      "name": "EntryActionBar",
+      "file": "components/molecules/entry-action-bar.tsx",
+      "line": 35,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "type",
+          "required": true,
+          "usageCount": 0,
+          "type": "EntryType"
+        },
+        {
+          "name": "done",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "isNext",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onComplete",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onToggleNext",
+          "required": true,
+          "usageCount": 0,
+          "type": "() => void"
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "DiscButton"
+      ],
+      "consumers": [
+        "app/edit.tsx"
+      ],
+      "depth": 2
+    },
+    {
       "name": "EntryRow",
       "file": "components/molecules/entry-row.tsx",
       "line": 21,
@@ -2295,132 +1540,9 @@
       "depth": 1
     },
     {
-      "name": "ExactInline",
-      "file": "components/molecules/exact-inline.tsx",
-      "line": 5,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "date",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "time",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "color",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "muted",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "raised",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onDateChange",
-          "required": true,
-          "usageCount": 0,
-          "type": "(value: string"
-        },
-        {
-          "name": "onTimeChange",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "date",
-        "time",
-        "color"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "ExactWhen",
-      "file": "components/molecules/exact-when.tsx",
-      "line": 24,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "date",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "time",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "accent",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "inkColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "mutedColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onDateChange",
-          "required": true,
-          "usageCount": 0,
-          "type": "(value: string"
-        },
-        {
-          "name": "onTimeChange",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
-        "WhenStepper"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
       "name": "FieldGreeting",
       "file": "components/molecules/field-greeting.tsx",
-      "line": 132,
+      "line": 140,
       "kind": "function",
       "exports": [
         "named"
@@ -2450,6 +1572,21 @@
           "name": "present",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "nextActions",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onSelectType",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onSelectNext",
+          "required": true,
+          "usageCount": 0
         }
       ],
       "variants": [],
@@ -2465,43 +1602,9 @@
       "depth": 2
     },
     {
-      "name": "FieldRow",
-      "file": "components/molecules/field-row.tsx",
-      "line": 35,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "item",
-          "required": true,
-          "usageCount": 0,
-          "type": "FieldRowItem"
-        },
-        {
-          "name": "href",
-          "required": true,
-          "usageCount": 0,
-          "type": "Href"
-        }
-      ],
-      "variants": [
-        "item"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "EntryDot",
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
       "name": "FieldSummary",
       "file": "components/molecules/field-summary.tsx",
-      "line": 22,
+      "line": 47,
       "kind": "function",
       "exports": [
         "named"
@@ -2516,6 +1619,21 @@
           "name": "present",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "nextActions",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onSelectType",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onSelectNext",
+          "required": true,
+          "usageCount": 0
         }
       ],
       "variants": [],
@@ -2524,89 +1642,6 @@
       "composed": [
         "ThemedText",
         "CountClause"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "FloatNote",
-      "file": "components/molecules/float-note.tsx",
-      "line": 58,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "subject",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "tag",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "paletteType",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "slot",
-          "required": true,
-          "usageCount": 0,
-          "type": "FloatSlot"
-        },
-        {
-          "name": "width",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "onPress",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "accessibilityLabel",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "HorizonStrip",
-      "file": "components/molecules/horizon-strip.tsx",
-      "line": 21,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "entries",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "EntryDot",
-        "ThemedText"
       ],
       "consumers": [],
       "depth": 1
@@ -2713,7 +1748,7 @@
         "ThemedText"
       ],
       "consumers": [
-        "app/(tabs)/(home,projects)/edit.tsx"
+        "app/edit.tsx"
       ],
       "depth": 1
     },
@@ -2739,174 +1774,6 @@
       "composed": [],
       "consumers": [],
       "depth": 0
-    },
-    {
-      "name": "NodeReticle",
-      "file": "components/molecules/idea-node.tsx",
-      "line": 56,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "node",
-          "required": true,
-          "usageCount": 0,
-          "type": "IdeaNode"
-        },
-        {
-          "name": "homeX",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "homeY",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "clock",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "magnetX",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "magnetY",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "selected",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "faded",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "amber",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "inkColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "inkMutedColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "stalePulseColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "NodeInteractive",
-      "file": "components/molecules/idea-node.tsx",
-      "line": 327,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "node",
-          "required": true,
-          "usageCount": 0,
-          "type": "IdeaNode"
-        },
-        {
-          "name": "homeX",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "homeY",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "clock",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "magnetX",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "magnetY",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "selected",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "onPress",
-          "required": true,
-          "usageCount": 0,
-          "type": "(id: string | null) => void"
-        },
-        {
-          "name": "inkColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "inkMutedColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
     },
     {
       "name": "ListFilterBar",
@@ -2943,18 +1810,15 @@
         }
       ],
       "variants": [
-        "type",
         "status"
       ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
+      "composed": [],
       "consumers": [
         "app/list.tsx"
       ],
-      "depth": 1
+      "depth": 0
     },
     {
       "name": "ListItem",
@@ -3049,47 +1913,63 @@
       "depth": 3
     },
     {
-      "name": "NextUpChip",
-      "file": "components/molecules/next-up-chip.tsx",
-      "line": 25,
+      "name": "MediaSourceSheet",
+      "file": "components/molecules/media-source-sheet.tsx",
+      "line": 22,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
         {
-          "name": "item",
+          "name": "visible",
+          "required": true,
+          "usageCount": 0,
+          "type": "boolean"
+        },
+        {
+          "name": "onPickLibrary",
           "required": true,
           "usageCount": 0
         },
         {
-          "name": "onDelete",
+          "name": "onPickCamera",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "onClose",
+          "required": true,
+          "usageCount": 0,
+          "type": "() => void"
         }
       ],
-      "variants": [
-        "item"
-      ],
+      "variants": [],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "EntryDot",
         "ThemedText",
-        "SwipeableRow"
+        "Row",
+        "Divider"
       ],
       "consumers": [],
-      "depth": 3
+      "depth": 2
     },
     {
-      "name": "OptionRow",
-      "file": "components/molecules/option-row.tsx",
-      "line": 6,
+      "name": "Row",
+      "file": "components/molecules/media-source-sheet.tsx",
+      "line": 81,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
+        {
+          "name": "icon",
+          "required": true,
+          "usageCount": 0,
+          "type": "React.ComponentProps<typeof IconSymbol>[\"name\"]"
+        },
         {
           "name": "label",
           "required": true,
@@ -3097,58 +1977,87 @@
           "type": "string"
         },
         {
-          "name": "muted",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "children",
-          "required": true,
-          "usageCount": 0,
-          "type": "React.ReactNode"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "PenLine",
-      "file": "components/molecules/pen-line.tsx",
-      "line": 8,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
           "name": "color",
           "required": true,
           "usageCount": 0,
           "type": "string"
         },
         {
-          "name": "size",
-          "required": false,
+          "name": "onPress",
+          "required": true,
           "usageCount": 0,
-          "type": "number"
+          "type": "("
         }
       ],
       "variants": [
-        "color",
-        "size"
+        "color"
       ],
       "tokensUsed": [],
-      "styleSignal": "none",
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText",
+        "IconSymbol"
+      ],
+      "consumers": [
+        "app/edit.tsx"
+      ],
+      "depth": 1
+    },
+    {
+      "name": "Divider",
+      "file": "components/molecules/media-source-sheet.tsx",
+      "line": 107,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0,
+          "type": "ReturnType<typeof useTheme>[\"colors\"]"
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
       "composed": [],
       "consumers": [],
       "depth": 0
+    },
+    {
+      "name": "MediaStrip",
+      "file": "components/molecules/media-strip.tsx",
+      "line": 31,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "media",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onChange",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "MediaSourceSheet",
+        "IconSymbol"
+      ],
+      "consumers": [
+        "app/edit.tsx",
+        "app/note.tsx"
+      ],
+      "depth": 3
     },
     {
       "name": "ProjectCard",
@@ -3184,92 +2093,65 @@
       "depth": 1
     },
     {
-      "name": "ProjectEntryComposerSheet",
-      "file": "components/molecules/project-entry-composer-sheet.tsx",
-      "line": 30,
+      "name": "ProjectGridCard",
+      "file": "components/molecules/project-grid-card.tsx",
+      "line": 24,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
-        {
-          "name": "visible",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "projectTitle",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "typeLabel",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "accentColor",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "placeholder",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "pickerSlot",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "canSave",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onClose",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onSave",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "ProjectOverflowSheet",
-      "file": "components/molecules/project-overflow-sheet.tsx",
-      "line": 49,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "visible",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
         {
           "name": "project",
           "required": true,
           "usageCount": 0,
           "type": "DbProject"
+        },
+        {
+          "name": "signal",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onToggleFeatured",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [
+        "project",
+        "signal"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText",
+        "IconSymbol"
+      ],
+      "consumers": [
+        "app/(tabs)/(projects)/index.tsx"
+      ],
+      "depth": 1
+    },
+    {
+      "name": "ProjectOverflowSheet",
+      "file": "components/molecules/project-overflow-sheet.tsx",
+      "line": 21,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "visible",
+          "required": true,
+          "usageCount": 0,
+          "type": "boolean"
+        },
+        {
+          "name": "title",
+          "required": true,
+          "usageCount": 0
         },
         {
           "name": "onClose",
@@ -3278,34 +2160,12 @@
           "type": "("
         },
         {
-          "name": "onRename",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onChangeEmoji",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onToggleArchive",
-          "required": true,
-          "usageCount": 0
-        },
-        {
           "name": "onDelete",
           "required": true,
           "usageCount": 0
-        },
-        {
-          "name": "initialMode",
-          "required": false,
-          "usageCount": 0
         }
       ],
-      "variants": [
-        "project"
-      ],
+      "variants": [],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
@@ -3321,7 +2181,7 @@
     {
       "name": "Row",
       "file": "components/molecules/project-overflow-sheet.tsx",
-      "line": 338,
+      "line": 80,
       "kind": "function",
       "exports": [
         "named"
@@ -3331,10 +2191,16 @@
           "name": "icon",
           "required": true,
           "usageCount": 0,
-          "type": "React.ComponentProps<typeof MaterialCommunityIcons>[\"name\"]"
+          "type": "React.ComponentProps<typeof IconSymbol>[\"name\"]"
         },
         {
           "name": "label",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "color",
           "required": true,
           "usageCount": 0,
           "type": "string"
@@ -3344,35 +2210,26 @@
           "required": true,
           "usageCount": 0,
           "type": "("
-        },
-        {
-          "name": "colors",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "tone",
-          "required": false,
-          "usageCount": 0
         }
       ],
       "variants": [
-        "tone"
+        "color"
       ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "ThemedText"
+        "ThemedText",
+        "IconSymbol"
       ],
       "consumers": [
-        "app/(tabs)/(home,projects)/edit.tsx"
+        "app/edit.tsx"
       ],
       "depth": 1
     },
     {
       "name": "Divider",
       "file": "components/molecules/project-overflow-sheet.tsx",
-      "line": 372,
+      "line": 106,
       "kind": "function",
       "exports": [
         "named"
@@ -3472,96 +2329,6 @@
       "depth": 1
     },
     {
-      "name": "RecurrencePicker",
-      "file": "components/molecules/recurrence-picker.tsx",
-      "line": 58,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "frequency",
-          "required": true,
-          "usageCount": 0,
-          "type": "RecurrenceFrequency | null"
-        },
-        {
-          "name": "days",
-          "required": true,
-          "usageCount": 0,
-          "type": "number[]"
-        },
-        {
-          "name": "endDate",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "accentColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onFrequencyChange",
-          "required": true,
-          "usageCount": 0,
-          "type": "(freq: RecurrenceFrequency | null) => void"
-        },
-        {
-          "name": "onDaysChange",
-          "required": true,
-          "usageCount": 0,
-          "type": "(days: number[]) => void"
-        },
-        {
-          "name": "onEndDateChange",
-          "required": true,
-          "usageCount": 0,
-          "type": "(date: string) => void"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "SelectChip",
-        "ChipRail",
-        "ChipRow",
-        "ThemedText",
-        "CompactCalendar",
-        "IconSymbol"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
-      "name": "RelatedNotes",
-      "file": "components/molecules/related-notes.tsx",
-      "line": 20,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "notes",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
       "name": "SectionHeader",
       "file": "components/molecules/section-header.tsx",
       "line": 29,
@@ -3599,6 +2366,177 @@
         "IconSymbol"
       ],
       "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "SettingsRow",
+      "file": "components/molecules/settings-row.tsx",
+      "line": 41,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "value",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onPress",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "accessibilityHint",
+          "required": false,
+          "usageCount": 0,
+          "type": "string"
+        }
+      ],
+      "variants": [
+        "description"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText",
+        "IconSymbol"
+      ],
+      "consumers": [
+        "app/(tabs)/(home)/settings/about.tsx",
+        "app/(tabs)/(home)/settings/index.tsx",
+        "app/(tabs)/(home)/settings/notifications.tsx"
+      ],
+      "depth": 1
+    },
+    {
+      "name": "SettingsSwitchRow",
+      "file": "components/molecules/settings-row.tsx",
+      "line": 118,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "value",
+          "required": true,
+          "usageCount": 0,
+          "type": "boolean"
+        },
+        {
+          "name": "onValueChange",
+          "required": true,
+          "usageCount": 0,
+          "type": "(next: boolean) => void"
+        },
+        {
+          "name": "disabled",
+          "required": false,
+          "usageCount": 0,
+          "type": "boolean"
+        },
+        {
+          "name": "accessibilityHint",
+          "required": false,
+          "usageCount": 0,
+          "type": "string"
+        }
+      ],
+      "variants": [
+        "description"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText",
+        "SettingsSwitch"
+      ],
+      "consumers": [
+        "app/(tabs)/(home)/settings/confirmations.tsx",
+        "app/(tabs)/(home)/settings/notifications.tsx"
+      ],
+      "depth": 1
+    },
+    {
+      "name": "SettingsSwitch",
+      "file": "components/molecules/settings-row.tsx",
+      "line": 162,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "value",
+          "required": true,
+          "usageCount": 0,
+          "type": "boolean"
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [],
+      "consumers": [],
+      "depth": 0
+    },
+    {
+      "name": "SettingsSection",
+      "file": "components/molecules/settings-section.tsx",
+      "line": 17,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "children",
+          "required": true,
+          "usageCount": 0,
+          "type": "React.ReactNode"
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText"
+      ],
+      "consumers": [
+        "app/(tabs)/(home)/settings/about.tsx",
+        "app/(tabs)/(home)/settings/confirmations.tsx",
+        "app/(tabs)/(home)/settings/index.tsx",
+        "app/(tabs)/(home)/settings/notifications.tsx"
+      ],
       "depth": 1
     },
     {
@@ -3661,43 +2599,65 @@
       "depth": 1
     },
     {
-      "name": "StakeRow",
-      "file": "components/molecules/stake-row.tsx",
-      "line": 50,
+      "name": "TaskChecklist",
+      "file": "components/molecules/task-checklist.tsx",
+      "line": 53,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
         {
-          "name": "item",
+          "name": "entryId",
           "required": true,
-          "usageCount": 0,
-          "type": "RunwayItem"
+          "usageCount": 0
         },
         {
-          "name": "href",
+          "name": "accent",
           "required": true,
-          "usageCount": 0,
-          "type": "Href"
+          "usageCount": 0
+        },
+        {
+          "name": "label",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "readOnly",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "toggleOnly",
+          "required": false,
+          "usageCount": 0
+        },
+        {
+          "name": "swipeController",
+          "required": true,
+          "usageCount": 0
         }
       ],
       "variants": [
-        "item"
+        "readOnly"
       ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "SketchIcon",
-        "ThemedText"
+        "ThemedText",
+        "TaskRow",
+        "SwipeableRow",
+        "IconSymbol"
       ],
-      "consumers": [],
-      "depth": 1
+      "consumers": [
+        "app/edit.tsx"
+      ],
+      "depth": 3
     },
     {
       "name": "TaskRow",
-      "file": "components/molecules/task-checklist.tsx",
-      "line": 29,
+      "file": "components/molecules/task-row.tsx",
+      "line": 34,
       "kind": "function",
       "exports": [
         "named"
@@ -3725,216 +2685,48 @@
           "name": "onToggle",
           "required": true,
           "usageCount": 0,
-          "type": "("
+          "type": "() => void"
         },
         {
           "name": "onRename",
           "required": true,
+          "usageCount": 0,
+          "type": "(title: string) => void"
+        },
+        {
+          "name": "onPressTitle",
+          "required": true,
           "usageCount": 0
         },
         {
-          "name": "onDelete",
+          "name": "autoFocus",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onEndEdit",
           "required": true,
           "usageCount": 0
         },
         {
           "name": "readOnly",
           "required": true,
-          "usageCount": 0
+          "usageCount": 0,
+          "type": "boolean"
         },
         {
           "name": "toggleOnly",
           "required": true,
-          "usageCount": 0
+          "usageCount": 0,
+          "type": "boolean"
         }
       ],
       "variants": [],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "TaskChecklist",
-      "file": "components/molecules/task-checklist.tsx",
-      "line": 161,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "entryId",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "accent",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "readOnly",
-          "required": false,
-          "usageCount": 0
-        },
-        {
-          "name": "toggleOnly",
-          "required": false,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "readOnly"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
-        "TaskRow"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
-      "name": "TypeLane",
-      "file": "components/molecules/type-lane.tsx",
-      "line": 28,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "variant",
-          "required": true,
-          "usageCount": 0,
-          "type": "EntryType | \"note\""
-        },
-        {
-          "name": "label",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "scheme",
-          "required": true,
-          "usageCount": 0,
-          "type": "Scheme"
-        },
-        {
-          "name": "ink",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "raised",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onPress",
-          "required": true,
-          "usageCount": 0,
-          "type": "("
-        }
-      ],
-      "variants": [
-        "variant",
-        "label",
-        "scheme"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
+        "LinkText",
         "IconSymbol"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "ValueRow",
-      "file": "components/molecules/value-row.tsx",
-      "line": 13,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "label",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "keyColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "children",
-          "required": true,
-          "usageCount": 0,
-          "type": "React.ReactNode"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "WeekdayRow",
-      "file": "components/molecules/weekday-row.tsx",
-      "line": 22,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "day",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "title",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "entryType",
-          "required": false,
-          "usageCount": 0
-        },
-        {
-          "name": "status",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "status"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "EntryDot",
-        "ThemedText"
       ],
       "consumers": [],
       "depth": 1
@@ -3942,7 +2734,7 @@
     {
       "name": "DAY_ITEMS",
       "file": "components/molecules/when-picker.tsx",
-      "line": 49,
+      "line": 52,
       "kind": "arrow",
       "exports": [
         "named"
@@ -3958,7 +2750,7 @@
     {
       "name": "TIME_ITEMS",
       "file": "components/molecules/when-picker.tsx",
-      "line": 60,
+      "line": 63,
       "kind": "arrow",
       "exports": [
         "named"
@@ -3974,7 +2766,7 @@
     {
       "name": "WhenPicker",
       "file": "components/molecules/when-picker.tsx",
-      "line": 90,
+      "line": 96,
       "kind": "function",
       "exports": [
         "named"
@@ -3991,12 +2783,22 @@
           "usageCount": 0
         },
         {
+          "name": "dueRange",
+          "required": true,
+          "usageCount": 0
+        },
+        {
           "name": "onDateChange",
           "required": true,
           "usageCount": 0
         },
         {
           "name": "onTimeChange",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onDueRangeChange",
           "required": true,
           "usageCount": 0
         },
@@ -4035,140 +2837,9 @@
         "IconSymbol"
       ],
       "consumers": [
-        "app/(tabs)/(home,projects)/edit.tsx"
+        "app/edit.tsx"
       ],
       "depth": 2
-    },
-    {
-      "name": "WhenStepper",
-      "file": "components/molecules/when-stepper.tsx",
-      "line": 12,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "accent",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onLeft",
-          "required": true,
-          "usageCount": 0,
-          "type": "("
-        },
-        {
-          "name": "onRight",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onLeftHold",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "onRightHold",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "accessibilityLabel",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "children",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "RepeatButton",
-        "IconSymbol"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "RepeatButton",
-      "file": "components/molecules/when-stepper.tsx",
-      "line": 55,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "onTrigger",
-          "required": true,
-          "usageCount": 0,
-          "type": "("
-        },
-        {
-          "name": "onRepeat",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "accessibilityLabel",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "children",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "WireMarker",
-      "file": "components/molecules/wire-marker.tsx",
-      "line": 19,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "kind",
-          "required": true,
-          "usageCount": 0,
-          "type": "\"now\" | \"band\" | \"terminator\""
-        },
-        {
-          "name": "label",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "tone",
-          "required": false,
-          "usageCount": 0
-        }
-      ],
-      "variants": [
-        "kind",
-        "tone"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
     },
     {
       "name": "WrapupCard",
@@ -4206,113 +2877,9 @@
       "depth": 1
     },
     {
-      "name": "AgendaFeed",
-      "file": "components/organisms/agenda-feed.tsx",
-      "line": 37,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "dispatches",
-          "required": true,
-          "usageCount": 0,
-          "type": "Dispatch[]"
-        },
-        {
-          "name": "onSelect",
-          "required": true,
-          "usageCount": 0,
-          "type": "(dispatch: Dispatch) => void"
-        },
-        {
-          "name": "header",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "bottomInset",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "DispatchRow",
-        "EmptyState"
-      ],
-      "consumers": [
-        "app/(tabs)/agenda.tsx"
-      ],
-      "depth": 2
-    },
-    {
-      "name": "Separator",
-      "file": "components/organisms/agenda-feed.tsx",
-      "line": 88,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "AgendaSection",
-      "file": "components/organisms/agenda-section.tsx",
-      "line": 30,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "date",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "entries",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "isEmpty",
-          "required": false,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "onAdd",
-          "required": false,
-          "usageCount": 0,
-          "type": "() => void"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
-        "EmptyState",
-        "EntryRow"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
       "name": "AppHeader",
       "file": "components/organisms/app-header.tsx",
-      "line": 15,
+      "line": 14,
       "kind": "function",
       "exports": [
         "named"
@@ -4335,18 +2902,18 @@
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "EntryCluster",
+        "BrandMark",
         "ThemedText"
       ],
       "consumers": [
         "app/(tabs)/(home)/_layout.tsx"
       ],
-      "depth": 2
+      "depth": 1
     },
     {
       "name": "CaptureBackdrop",
       "file": "components/organisms/capture-backdrop.tsx",
-      "line": 20,
+      "line": 23,
       "kind": "function",
       "exports": [
         "named"
@@ -4369,75 +2936,183 @@
       "depth": 0
     },
     {
-      "name": "CaptureBar",
-      "file": "components/organisms/capture-bar.tsx",
-      "line": 52,
+      "name": "CaptureConsole",
+      "file": "components/organisms/capture-console.tsx",
+      "line": 111,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
         {
-          "name": "onSubmit",
+          "name": "cap",
           "required": true,
+          "type": "UseCaptureReturn",
           "usageCount": 0
         },
         {
-          "name": "onVoice",
+          "name": "projects",
           "required": true,
+          "type": "DbProject[]",
           "usageCount": 0
-        },
+        }
+      ],
+      "variants": [
+        "cap"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "WaveformVisualizer",
+        "ContextChip",
+        "DockShell",
+        "ExactDateMenu",
+        "IconSymbol"
+      ],
+      "consumers": [
+        "app/(tabs)/(home,projects)/project.tsx"
+      ],
+      "depth": 3
+    },
+    {
+      "name": "ContextChip",
+      "file": "components/organisms/capture-console.tsx",
+      "line": 602,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
         {
-          "name": "isRecording",
-          "required": false,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "transcript",
-          "required": false,
+          "name": "label",
+          "required": true,
           "usageCount": 0,
           "type": "string"
         },
         {
-          "name": "onStop",
-          "required": false,
+          "name": "icon",
+          "required": true,
           "usageCount": 0,
-          "type": "() => void"
+          "type": "IconSymbolName"
         },
         {
-          "name": "onCancel",
+          "name": "semanticKind",
           "required": false,
           "usageCount": 0,
-          "type": "() => void"
+          "type": "CaptureKind"
         },
         {
-          "name": "autoFocus",
+          "name": "scheme",
+          "required": true,
+          "usageCount": 0,
+          "type": "\"light\" | \"dark\""
+        },
+        {
+          "name": "onPress",
+          "required": true,
+          "usageCount": 0,
+          "type": "("
+        },
+        {
+          "name": "disabled",
           "required": false,
           "usageCount": 0
+        }
+      ],
+      "variants": [
+        "scheme",
+        "disabled"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "IconSymbol"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "ContextOption",
+      "file": "components/organisms/capture-console.tsx",
+      "line": 657,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "label",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
         },
         {
-          "name": "onDismissEmpty",
+          "name": "icon",
+          "required": false,
+          "usageCount": 0,
+          "type": "IconSymbolName"
+        },
+        {
+          "name": "selected",
+          "required": true,
+          "usageCount": 0,
+          "type": "boolean"
+        },
+        {
+          "name": "onPress",
+          "required": true,
+          "usageCount": 0,
+          "type": "("
+        },
+        {
+          "name": "semanticKind",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "scheme",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [
+        "scheme"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "IconSymbol"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "MenuBlock",
+      "file": "components/organisms/capture-console.tsx",
+      "line": 823,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "children",
+          "required": true,
+          "usageCount": 0,
+          "type": "React.ReactNode"
         }
       ],
       "variants": [],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
-      "composed": [
-        "CapturePulse",
-        "ThemedText",
-        "Waveform",
-        "IconSymbol"
-      ],
+      "composed": [],
       "consumers": [],
-      "depth": 2
+      "depth": 0
     },
     {
       "name": "CaptureDock",
       "file": "components/organisms/capture-dock.tsx",
-      "line": 35,
+      "line": 33,
       "kind": "function",
       "exports": [
         "named"
@@ -4465,115 +3140,18 @@
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "CaptureBackdrop"
+        "CaptureBackdrop",
+        "CaptureConsole"
       ],
       "consumers": [
         "app/(tabs)/_layout.tsx"
       ],
-      "depth": 1
-    },
-    {
-      "name": "CaptureFlow",
-      "file": "components/organisms/capture-flow.tsx",
-      "line": 32,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "cap",
-          "required": true,
-          "type": "UseCaptureReturn",
-          "usageCount": 0
-        },
-        {
-          "name": "projects",
-          "required": true,
-          "type": "DbProject[]",
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ClassifyStageView",
-        "DetailsStageView",
-        "NoteLinkStageView",
-        "RecordingStage"
-      ],
-      "consumers": [],
       "depth": 4
-    },
-    {
-      "name": "ClassifyStageView",
-      "file": "components/organisms/classify-stage-view.tsx",
-      "line": 19,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "scheme",
-          "required": true,
-          "usageCount": 0,
-          "type": "Scheme"
-        },
-        {
-          "name": "ink",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "muted",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "raised",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onBack",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onDiscard",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onSelectType",
-          "required": true,
-          "usageCount": 0,
-          "type": "(type: EntryType | \"note\") => void"
-        }
-      ],
-      "variants": [
-        "scheme"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "TypeLane",
-        "IconSymbol"
-      ],
-      "consumers": [],
-      "depth": 2
     },
     {
       "name": "CustomTabBar",
       "file": "components/organisms/custom-tab-bar.tsx",
-      "line": 53,
+      "line": 69,
       "kind": "function",
       "exports": [
         "named"
@@ -4589,141 +3167,6 @@
         "app/(tabs)/_layout.tsx"
       ],
       "depth": 1
-    },
-    {
-      "name": "HOURS",
-      "file": "components/organisms/date-picker-sheet.tsx",
-      "line": 50,
-      "kind": "arrow",
-      "exports": [
-        "named"
-      ],
-      "props": [],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "MINUTES",
-      "file": "components/organisms/date-picker-sheet.tsx",
-      "line": 52,
-      "kind": "arrow",
-      "exports": [
-        "named"
-      ],
-      "props": [],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "VerticalWheel",
-      "file": "components/organisms/date-picker-sheet.tsx",
-      "line": 127,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "values",
-          "required": true,
-          "usageCount": 0,
-          "type": "string[]"
-        },
-        {
-          "name": "initialValue",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onValueChange",
-          "required": true,
-          "usageCount": 0,
-          "type": "(value: string"
-        },
-        {
-          "name": "itemHeight",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "wheelHeight",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "wheelWidth",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "DatePickerSheet",
-      "file": "components/organisms/date-picker-sheet.tsx",
-      "line": 273,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "visible",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "initialDate",
-          "required": false,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "initialTime",
-          "required": false,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onDismiss",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onConfirm",
-          "required": true,
-          "usageCount": 0,
-          "type": "(date: string, time: string) => void"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
-        "VerticalWheel",
-        "IconSymbol"
-      ],
-      "consumers": [],
-      "depth": 2
     },
     {
       "name": "DayDetailSheet",
@@ -4786,109 +3229,9 @@
       "depth": 2
     },
     {
-      "name": "DeadlinesCard",
-      "file": "components/organisms/deadlines-card.tsx",
-      "line": 29,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "totalCount",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "entries",
-          "required": true,
-          "usageCount": 0,
-          "type": "DeadlineEntry[]"
-        },
-        {
-          "name": "isEmpty",
-          "required": false,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "onAdd",
-          "required": false,
-          "usageCount": 0,
-          "type": "() => void"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "BentoCardHeader",
-        "EmptyState",
-        "WeekdayRow"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
-      "name": "DeleteScopeSheet",
-      "file": "components/organisms/delete-scope-sheet.tsx",
-      "line": 16,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "visible",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "onClose",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onDeleteThis",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onDeleteFuture",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onDeleteAll",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "colors",
-          "required": true,
-          "usageCount": 0,
-          "type": "ThemeColors"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
       "name": "DetailsStageView",
       "file": "components/organisms/details-stage-view.tsx",
-      "line": 60,
+      "line": 76,
       "kind": "function",
       "exports": [
         "named"
@@ -5036,7 +3379,7 @@
       "styleSignal": "StyleSheet.create",
       "composed": [
         "OptionChip",
-        "DatePickerSheet",
+        "ExactDateMenu",
         "IconSymbol"
       ],
       "consumers": [],
@@ -5045,7 +3388,7 @@
     {
       "name": "DiaryFeed",
       "file": "components/organisms/diary-feed.tsx",
-      "line": 52,
+      "line": 67,
       "kind": "function",
       "exports": [
         "named"
@@ -5057,12 +3400,27 @@
           "usageCount": 0
         },
         {
-          "name": "ideaTitles",
+          "name": "entryTitles",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "entryKinds",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "entryProjectIds",
           "required": true,
           "usageCount": 0
         },
         {
           "name": "projectTitles",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "projectEmojis",
           "required": true,
           "usageCount": 0
         },
@@ -5073,6 +3431,16 @@
         },
         {
           "name": "onRelate",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onEdit",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onToggleBookmark",
           "required": true,
           "usageCount": 0
         },
@@ -5096,74 +3464,9 @@
       "depth": 4
     },
     {
-      "name": "DirectDetailSheet",
-      "file": "components/organisms/direct-detail-sheet.tsx",
-      "line": 114,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "entry",
-          "required": true,
-          "usageCount": 0,
-          "type": "DbEntry | null"
-        },
-        {
-          "name": "project",
-          "required": true,
-          "usageCount": 0,
-          "type": "DbProject | null"
-        },
-        {
-          "name": "visible",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "onClose",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onMarkDone",
-          "required": true,
-          "usageCount": 0,
-          "type": "(entry: DbEntry) => void"
-        },
-        {
-          "name": "onDelete",
-          "required": true,
-          "usageCount": 0,
-          "type": "(entry: DbEntry) => void"
-        }
-      ],
-      "variants": [
-        "entry"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ProjectBreadcrumb",
-        "ThemedText",
-        "DetailActionBar",
-        "DetailHeaderRow",
-        "DetailViewMeta",
-        "TaskChecklist"
-      ],
-      "consumers": [
-        "app/(tabs)/(home,projects)/project.tsx",
-        "app/(tabs)/agenda.tsx"
-      ],
-      "depth": 3
-    },
-    {
       "name": "DirectOverview",
       "file": "components/organisms/direct-overview.tsx",
-      "line": 53,
+      "line": 74,
       "kind": "function",
       "exports": [
         "named"
@@ -5178,28 +3481,41 @@
           "name": "onCapture",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "scope",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onScopeChange",
+          "required": true,
+          "usageCount": 0
         }
       ],
-      "variants": [],
+      "variants": [
+        "scope"
+      ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
+        "ThemedText",
         "ConfirmSheet",
         "DirectFilterBar",
         "DirectPager",
         "DirectRow",
         "EmptyState",
-        "DirectDetailSheet"
+        "IconSymbol"
       ],
       "consumers": [
         "app/(tabs)/(home)/index.tsx"
       ],
-      "depth": 4
+      "depth": 2
     },
     {
       "name": "DockShell",
       "file": "components/organisms/dock-shell.tsx",
-      "line": 53,
+      "line": 68,
       "kind": "function",
       "exports": [
         "named"
@@ -5220,164 +3536,25 @@
           "required": true,
           "usageCount": 0,
           "type": "React.ReactNode"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "Fab",
-      "file": "components/organisms/fab.tsx",
-      "line": 25,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "onPress",
-          "required": false,
-          "usageCount": 0,
-          "type": "() => void"
         },
         {
-          "name": "onLongPress",
+          "name": "radius",
           "required": false,
-          "usageCount": 0,
-          "type": "() => void"
+          "usageCount": 0
         },
         {
-          "name": "isRecording",
-          "required": false,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "transcript",
-          "required": false,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onStop",
-          "required": false,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "onCancel",
-          "required": false,
-          "usageCount": 0,
-          "type": "() => void"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "RecordingFab"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
-      "name": "WaveformBar",
-      "file": "components/organisms/fab.tsx",
-      "line": 65,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "index",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "RecordingFab",
-      "file": "components/organisms/fab.tsx",
-      "line": 98,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "transcript",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onStop",
-          "required": false,
-          "usageCount": 0,
-          "type": "("
-        },
-        {
-          "name": "onCancel",
+          "name": "overlay",
           "required": true,
           "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "WaveformBar"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "FocusLine",
-      "file": "components/organisms/field-console/focus-line.tsx",
-      "line": 178,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "type",
-          "required": true,
-          "usageCount": 0,
-          "type": "EntryType"
         },
         {
-          "name": "rows",
-          "required": true,
-          "usageCount": 0,
-          "type": "FieldRowItem[]"
-        },
-        {
-          "name": "scheme",
-          "required": true,
-          "usageCount": 0,
-          "type": "Scheme"
-        },
-        {
-          "name": "muted",
-          "required": true,
+          "name": "bordered",
+          "required": false,
           "usageCount": 0
         }
       ],
       "variants": [
-        "scheme"
+        "overlay"
       ],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
@@ -5386,49 +3563,101 @@
       "depth": 0
     },
     {
-      "name": "IdeaConstellation",
-      "file": "components/organisms/idea-constellation.tsx",
-      "line": 73,
+      "name": "DAY_ITEMS",
+      "file": "components/organisms/exact-date-menu.tsx",
+      "line": 27,
+      "kind": "arrow",
+      "exports": [
+        "named"
+      ],
+      "props": [],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [],
+      "consumers": [],
+      "depth": 0
+    },
+    {
+      "name": "TIME_ITEMS",
+      "file": "components/organisms/exact-date-menu.tsx",
+      "line": 38,
+      "kind": "arrow",
+      "exports": [
+        "named"
+      ],
+      "props": [],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [],
+      "consumers": [],
+      "depth": 0
+    },
+    {
+      "name": "ExactDateMenu",
+      "file": "components/organisms/exact-date-menu.tsx",
+      "line": 76,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
         {
-          "name": "entries",
+          "name": "visible",
           "required": true,
           "usageCount": 0,
-          "type": "readonly DbEntry[]"
+          "type": "boolean"
         },
         {
-          "name": "notes",
-          "required": true,
+          "name": "initialDate",
+          "required": false,
           "usageCount": 0,
-          "type": "readonly DbDiaryEntry[]"
+          "type": "string"
         },
         {
-          "name": "selectedIdeaId",
-          "required": true,
+          "name": "initialTime",
+          "required": false,
           "usageCount": 0,
-          "type": "string | null"
+          "type": "string"
         },
         {
-          "name": "onSelectIdea",
+          "name": "accentColor",
           "required": true,
-          "usageCount": 0,
-          "type": "(id: string | null) => void"
+          "usageCount": 0
         },
         {
-          "name": "freeNoteCount",
+          "name": "anchor",
           "required": true,
-          "usageCount": 0,
-          "type": "number"
+          "usageCount": 0
         },
         {
-          "name": "onSelectFree",
+          "name": "onDismiss",
           "required": true,
-          "usageCount": 0,
-          "type": "() => void"
+          "usageCount": 0
+        },
+        {
+          "name": "onConfirm",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "y",
+          "required": true,
+          "type": "number",
+          "usageCount": 0
+        },
+        {
+          "name": "w",
+          "required": true,
+          "type": "number",
+          "usageCount": 0
+        },
+        {
+          "name": "h",
+          "required": true,
+          "type": "number",
+          "usageCount": 0
         }
       ],
       "variants": [],
@@ -5436,255 +3665,16 @@
       "styleSignal": "StyleSheet.create",
       "composed": [
         "ThemedText",
-        "NodeReticle",
-        "NodeInteractive",
-        "GridLayer",
-        "FreeThoughtsGauge",
-        "TendrilLayer"
+        "WheelPicker",
+        "IconSymbol"
       ],
       "consumers": [],
       "depth": 2
     },
     {
-      "name": "GridLayer",
-      "file": "components/organisms/idea-constellation.tsx",
-      "line": 468,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "width",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "color",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [
-        "color"
-      ],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
-      "name": "FreeThoughtsGauge",
-      "file": "components/organisms/idea-constellation.tsx",
-      "line": 524,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "count",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "onPress",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        },
-        {
-          "name": "width",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "amber",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "inkColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "inkMutedColor",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "TendrilLayer",
-      "file": "components/organisms/idea-constellation.tsx",
-      "line": 625,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "originX",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "originY",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "width",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "height",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "linkedNoteIds",
-          "required": true,
-          "usageCount": 0,
-          "type": "string[]"
-        },
-        {
-          "name": "scrollY",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "stripBottomY",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "getNoteY",
-          "required": true,
-          "usageCount": 0,
-          "type": "(noteId: string) => SharedValue<number> | undefined"
-        },
-        {
-          "name": "amber",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "Tendril"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "Tendril",
-      "file": "components/organisms/idea-constellation.tsx",
-      "line": 674,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "index",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "total",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "originX",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "originY",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "width",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "height",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "noteY",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "scrollY",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "stripBottomY",
-          "required": true,
-          "usageCount": 0,
-          "type": "SharedValue<number>"
-        },
-        {
-          "name": "amber",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [],
-      "consumers": [],
-      "depth": 0
-    },
-    {
       "name": "LinkSheet",
       "file": "components/organisms/link-sheet.tsx",
-      "line": 65,
+      "line": 72,
       "kind": "function",
       "exports": [
         "named"
@@ -5736,14 +3726,15 @@
         "IconSymbol"
       ],
       "consumers": [
-        "app/(tabs)/notes.tsx"
+        "app/(tabs)/notes.tsx",
+        "app/note.tsx"
       ],
       "depth": 2
     },
     {
       "name": "TargetRow",
       "file": "components/organisms/link-sheet.tsx",
-      "line": 267,
+      "line": 274,
       "kind": "function",
       "exports": [
         "named"
@@ -5783,237 +3774,157 @@
       "depth": 1
     },
     {
-      "name": "ListProgress",
-      "file": "components/organisms/list-progress.tsx",
-      "line": 21,
+      "name": "ContextChip",
+      "file": "components/organisms/notes-composer.tsx",
+      "line": 450,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
         {
-          "name": "completed",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "total",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "streak",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "entryType",
-          "required": true,
-          "usageCount": 0,
-          "type": "EntryType"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "StreakBadge",
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
-      "name": "MonthGrid",
-      "file": "components/organisms/month-grid.tsx",
-      "line": 24,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "currentMonth",
-          "required": true,
-          "usageCount": 0,
-          "type": "Date"
-        },
-        {
-          "name": "currentMonthLabel",
+          "name": "label",
           "required": true,
           "usageCount": 0,
           "type": "string"
         },
         {
-          "name": "isCurrentMonth",
+          "name": "icon",
           "required": true,
           "usageCount": 0,
-          "type": "boolean"
+          "type": "IconSymbolName"
         },
         {
-          "name": "calendarDays",
+          "name": "onPress",
           "required": true,
           "usageCount": 0,
-          "type": "Date[]"
-        },
-        {
-          "name": "today",
-          "required": true,
-          "usageCount": 0,
-          "type": "Date"
-        },
-        {
-          "name": "getEntriesForDay",
-          "required": true,
-          "usageCount": 0,
-          "type": "(date: Date) => CalendarEntry[]"
-        },
-        {
-          "name": "onMonthChange",
-          "required": true,
-          "usageCount": 0,
-          "type": "(direction: 'prev' | 'next') => void"
-        },
-        {
-          "name": "onDayPress",
-          "required": true,
-          "usageCount": 0,
-          "type": "(date: Date) => void"
-        },
-        {
-          "name": "onGoToToday",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
+          "type": "("
         }
       ],
       "variants": [],
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "DayCell",
-        "MonthNavigator",
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
-      "name": "MoodSheet",
-      "file": "components/organisms/mood-sheet.tsx",
-      "line": 31,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "visible",
-          "required": true,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "selected",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "options",
-          "required": true,
-          "usageCount": 0,
-          "type": "MoodOption[]"
-        },
-        {
-          "name": "onSelect",
-          "required": true,
-          "usageCount": 0,
-          "type": "(mood: DiaryMood | null) => void"
-        },
-        {
-          "name": "onClose",
-          "required": true,
-          "usageCount": 0,
-          "type": "() => void"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "MoodGlyph",
-        "ThemedText"
+        "IconSymbol"
       ],
       "consumers": [],
       "depth": 1
     },
     {
-      "name": "NoteLinkStageView",
-      "file": "components/organisms/note-link-stage-view.tsx",
-      "line": 20,
+      "name": "LinkOption",
+      "file": "components/organisms/notes-composer.tsx",
+      "line": 485,
       "kind": "function",
       "exports": [
         "named"
       ],
       "props": [
         {
-          "name": "ink",
+          "name": "label",
           "required": true,
           "usageCount": 0,
           "type": "string"
         },
         {
-          "name": "muted",
+          "name": "icon",
           "required": true,
           "usageCount": 0,
-          "type": "string"
+          "type": "IconSymbolName"
         },
         {
-          "name": "raised",
+          "name": "selected",
           "required": true,
           "usageCount": 0,
-          "type": "string"
+          "type": "boolean"
         },
         {
-          "name": "quiet",
+          "name": "semantic",
+          "required": false,
+          "usageCount": 0,
+          "type": "\"idea\""
+        },
+        {
+          "name": "onPress",
           "required": true,
           "usageCount": 0,
-          "type": "string"
-        },
+          "type": "("
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "IconSymbol"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "OnboardingCarousel",
+      "file": "components/organisms/onboarding-carousel.tsx",
+      "line": 129,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "BrandMark",
+        "ThemedText",
+        "Chapter"
+      ],
+      "consumers": [
+        "app/onboarding.tsx"
+      ],
+      "depth": 7
+    },
+    {
+      "name": "Chapter",
+      "file": "components/organisms/onboarding-carousel.tsx",
+      "line": 331,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
         {
-          "name": "recentIdeas",
+          "name": "panel",
           "required": true,
           "usageCount": 0,
-          "type": "{ id: string"
+          "type": "Panel"
         },
         {
-          "name": "onBack",
+          "name": "active",
           "required": true,
-          "usageCount": 0
+          "usageCount": 0,
+          "type": "boolean"
         },
         {
-          "name": "onDiscard",
+          "name": "screenWidth",
           "required": true,
-          "usageCount": 0
+          "usageCount": 0,
+          "type": "number"
         },
         {
-          "name": "onFileFree",
+          "name": "screenHeight",
           "required": true,
-          "usageCount": 0
+          "usageCount": 0,
+          "type": "number"
         },
         {
-          "name": "onFileOnIdea",
+          "name": "colors",
           "required": true,
-          "usageCount": 0
+          "usageCount": 0,
+          "type": "ThemeColors"
         },
         {
-          "name": "title",
+          "name": "onBegin",
           "required": true,
-          "type": "string",
-          "usageCount": 0
+          "usageCount": 0,
+          "type": "("
         }
       ],
       "variants": [],
@@ -6021,11 +3932,893 @@
       "styleSignal": "StyleSheet.create",
       "composed": [
         "ThemedText",
-        "StageHeader",
+        "TypeHero",
+        "PromiseLines",
+        "ChapterCopy",
+        "ChapterScene",
+        "ChapterStage"
+      ],
+      "consumers": [],
+      "depth": 6
+    },
+    {
+      "name": "TypeHero",
+      "file": "components/organisms/onboarding-carousel.tsx",
+      "line": 441,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "width",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0,
+          "type": "SharedValue<number>"
+        },
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0,
+          "type": "ThemeColors"
+        },
+        {
+          "name": "headline",
+          "required": true,
+          "usageCount": 0,
+          "type": "readonly string[]"
+        },
+        {
+          "name": "sub",
+          "required": true,
+          "usageCount": 0,
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "cta",
+          "required": false,
+          "usageCount": 0,
+          "type": "{ label: string"
+        },
+        {
+          "name": "hint",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "onPress",
+          "required": true,
+          "type": "(",
+          "usageCount": 0
+        }
+      ],
+      "variants": [
+        "cta",
+        "hint"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "BrandMark",
+        "ThemedText",
+        "HeroLine",
+        "ColdOpenWash",
         "IconSymbol"
       ],
       "consumers": [],
       "depth": 2
+    },
+    {
+      "name": "HeroLine",
+      "file": "components/organisms/onboarding-carousel.tsx",
+      "line": 538,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "text",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0,
+          "type": "SharedValue<number>"
+        },
+        {
+          "name": "start",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "end",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "PromiseLines",
+      "file": "components/organisms/onboarding-carousel.tsx",
+      "line": 562,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0,
+          "type": "ThemeColors"
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "ChapterCopy",
+      "file": "components/organisms/onboarding-carousel.tsx",
+      "line": 607,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "panel",
+          "required": true,
+          "usageCount": 0,
+          "type": "Panel"
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0,
+          "type": "SharedValue<number>"
+        },
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0,
+          "type": "ThemeColors"
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText",
+        "ChapterBody"
+      ],
+      "consumers": [],
+      "depth": 2
+    },
+    {
+      "name": "ChapterBody",
+      "file": "components/organisms/onboarding-carousel.tsx",
+      "line": 639,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "id",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0,
+          "type": "ThemeColors"
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "ChapterScene",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 53,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "kind",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "SceneTurn",
+        "SceneCapture",
+        "SceneEntities"
+      ],
+      "consumers": [],
+      "depth": 3
+    },
+    {
+      "name": "ColdOpenWash",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 93,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "width",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "height",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "WashBand"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "WashBand",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 132,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "start",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "end",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "color",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "width",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0,
+          "type": "SharedValue<number>"
+        }
+      ],
+      "variants": [
+        "color"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [],
+      "consumers": [],
+      "depth": 0
+    },
+    {
+      "name": "SceneTurn",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 179,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "TurnCanvas",
+        "WebSceneFallback"
+      ],
+      "consumers": [],
+      "depth": 2
+    },
+    {
+      "name": "TurnCanvas",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 186,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "width",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "height",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "PingRing",
+        "IgniteNode"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "PingRing",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 339,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "cx",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "cy",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "color",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "at",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0,
+          "type": "SharedValue<number>"
+        },
+        {
+          "name": "scale",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        }
+      ],
+      "variants": [
+        "color"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [],
+      "consumers": [],
+      "depth": 0
+    },
+    {
+      "name": "IgniteNode",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 379,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "cx",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "cy",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "r",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "color",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "from",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "to",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0,
+          "type": "SharedValue<number>"
+        },
+        {
+          "name": "pulse",
+          "required": false,
+          "usageCount": 0,
+          "type": "SharedValue<number>"
+        }
+      ],
+      "variants": [
+        "color"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [],
+      "consumers": [],
+      "depth": 0
+    },
+    {
+      "name": "SceneCapture",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 417,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "CaptureCanvas",
+        "WebSceneFallback"
+      ],
+      "consumers": [],
+      "depth": 2
+    },
+    {
+      "name": "CaptureCanvas",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 424,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "width",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "height",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "LandingRing"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "LandingRing",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 456,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "cx",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "cy",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "reach",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "at",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "strokeWidth",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "color",
+          "required": true,
+          "usageCount": 0,
+          "type": "string"
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0,
+          "type": "SharedValue<number>"
+        }
+      ],
+      "variants": [
+        "color"
+      ],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [],
+      "consumers": [],
+      "depth": 0
+    },
+    {
+      "name": "SceneEntities",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 500,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "EntitiesCanvas",
+        "WebSceneFallback"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "EntitiesCanvas",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 507,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "width",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "height",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [],
+      "consumers": [],
+      "depth": 0
+    },
+    {
+      "name": "WebSceneFallback",
+      "file": "components/organisms/onboarding-scenes.tsx",
+      "line": 547,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0,
+          "type": "ThemeColors"
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [],
+      "consumers": [],
+      "depth": 0
+    },
+    {
+      "name": "ChapterStage",
+      "file": "components/organisms/onboarding-stages.tsx",
+      "line": 59,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "kind",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "StageTools",
+        "StageCaptureConsole",
+        "StageEntities"
+      ],
+      "consumers": [],
+      "depth": 5
+    },
+    {
+      "name": "StageTools",
+      "file": "components/organisms/onboarding-stages.tsx",
+      "line": 77,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText"
+      ],
+      "consumers": [],
+      "depth": 1
+    },
+    {
+      "name": "StageCaptureConsole",
+      "file": "components/organisms/onboarding-stages.tsx",
+      "line": 172,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "active",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "CaptureConsole"
+      ],
+      "consumers": [],
+      "depth": 4
+    },
+    {
+      "name": "StageEntities",
+      "file": "components/organisms/onboarding-stages.tsx",
+      "line": 216,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0
+        },
+        {
+          "name": "active",
+          "required": true,
+          "usageCount": 0
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "FabPill",
+        "ProjectEmptyFabPointer",
+        "IconSymbol"
+      ],
+      "consumers": [],
+      "depth": 2
+    },
+    {
+      "name": "FabPill",
+      "file": "components/organisms/onboarding-stages.tsx",
+      "line": 266,
+      "kind": "function",
+      "exports": [
+        "named"
+      ],
+      "props": [
+        {
+          "name": "action",
+          "required": true,
+          "usageCount": 0,
+          "type": "FabActionSpec"
+        },
+        {
+          "name": "index",
+          "required": true,
+          "usageCount": 0,
+          "type": "number"
+        },
+        {
+          "name": "progress",
+          "required": true,
+          "usageCount": 0,
+          "type": "SharedValue<number>"
+        },
+        {
+          "name": "colors",
+          "required": true,
+          "usageCount": 0,
+          "type": "ThemeColors"
+        }
+      ],
+      "variants": [],
+      "tokensUsed": [],
+      "styleSignal": "StyleSheet.create",
+      "composed": [
+        "ThemedText",
+        "IconSymbol"
+      ],
+      "consumers": [],
+      "depth": 1
     },
     {
       "name": "ProjectComposer",
@@ -6168,7 +4961,8 @@
       "composed": [
         "ThemedText",
         "WaveformVisualizer",
-        "DetailsStageView"
+        "DetailsStageView",
+        "IconSymbol"
       ],
       "consumers": [],
       "depth": 4
@@ -6201,7 +4995,7 @@
     {
       "name": "ProjectFab",
       "file": "components/organisms/project-fab.tsx",
-      "line": 96,
+      "line": 102,
       "kind": "function",
       "exports": [
         "named"
@@ -6240,7 +5034,7 @@
     {
       "name": "ActionPill",
       "file": "components/organisms/project-fab.tsx",
-      "line": 189,
+      "line": 195,
       "kind": "function",
       "exports": [
         "named"
@@ -6344,58 +5138,15 @@
       "tokensUsed": [],
       "styleSignal": "StyleSheet.create",
       "composed": [
-        "ThemedText",
         "IconSymbol"
       ],
       "consumers": [],
       "depth": 1
     },
     {
-      "name": "RecordingStage",
-      "file": "components/organisms/recording-stage-view.tsx",
-      "line": 10,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "transcript",
-          "required": true,
-          "usageCount": 0,
-          "type": "string"
-        },
-        {
-          "name": "onCancel",
-          "required": true,
-          "usageCount": 0,
-          "type": "("
-        },
-        {
-          "name": "onStop",
-          "required": true,
-          "usageCount": 0
-        },
-        {
-          "name": "ink",
-          "required": true,
-          "usageCount": 0
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "ThemedText",
-        "WaveformVisualizer"
-      ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
       "name": "ScreenHeader",
       "file": "components/organisms/screen-header.tsx",
-      "line": 57,
+      "line": 64,
       "kind": "function",
       "exports": [
         "named"
@@ -6437,6 +5188,11 @@
           "name": "headerRight",
           "required": true,
           "usageCount": 0
+        },
+        {
+          "name": "titleSlot",
+          "required": true,
+          "usageCount": 0
         }
       ],
       "variants": [
@@ -6448,11 +5204,14 @@
       "composed": [
         "EntryCluster",
         "SketchIcon",
-        "ThemedText"
+        "ThemedText",
+        "IconSymbol"
       ],
       "consumers": [
-        "app/(tabs)/(home)/settings.tsx",
-        "app/(tabs)/(home,projects)/edit.tsx",
+        "app/(tabs)/(home)/settings/about.tsx",
+        "app/(tabs)/(home)/settings/confirmations.tsx",
+        "app/(tabs)/(home)/settings/index.tsx",
+        "app/(tabs)/(home)/settings/notifications.tsx",
         "app/(tabs)/(home,projects)/project.tsx",
         "app/(tabs)/(projects)/index.tsx",
         "app/list.tsx"
@@ -6462,7 +5221,7 @@
     {
       "name": "SwipeableRow",
       "file": "components/organisms/swipeable-row.tsx",
-      "line": 32,
+      "line": 35,
       "kind": "function",
       "exports": [
         "named"
@@ -6501,6 +5260,11 @@
           "required": false,
           "usageCount": 0,
           "type": "string"
+        },
+        {
+          "name": "onSwipeOpen",
+          "required": true,
+          "usageCount": 0
         }
       ],
       "variants": [],
@@ -6509,134 +5273,15 @@
       "composed": [
         "ConfirmSheet"
       ],
-      "consumers": [],
-      "depth": 2
-    },
-    {
-      "name": "UpcomingPreviewCard",
-      "file": "components/organisms/upcoming-preview-card.tsx",
-      "line": 46,
-      "kind": "function",
-      "exports": [
-        "named"
+      "consumers": [
+        "app/(tabs)/(projects)/index.tsx"
       ],
-      "props": [
-        {
-          "name": "upcomingEntries",
-          "required": true,
-          "usageCount": 0,
-          "type": "UpcomingEntry[]"
-        },
-        {
-          "name": "onAdd",
-          "required": false,
-          "usageCount": 0,
-          "type": "() => void"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "EntryDot",
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "WeekStrip",
-      "file": "components/organisms/week-strip.tsx",
-      "line": 26,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "weekCounts",
-          "required": true,
-          "usageCount": 0,
-          "type": "DayCount[]"
-        },
-        {
-          "name": "today",
-          "required": true,
-          "usageCount": 0,
-          "type": "Date"
-        },
-        {
-          "name": "onDayPress",
-          "required": false,
-          "usageCount": 0,
-          "type": "(date: Date) => void"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "EntryDot",
-        "ThemedText"
-      ],
-      "consumers": [],
-      "depth": 1
-    },
-    {
-      "name": "WeeklyOverviewCard",
-      "file": "components/organisms/weekly-overview-card.tsx",
-      "line": 32,
-      "kind": "function",
-      "exports": [
-        "named"
-      ],
-      "props": [
-        {
-          "name": "totalCount",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "spanDays",
-          "required": true,
-          "usageCount": 0,
-          "type": "number"
-        },
-        {
-          "name": "entries",
-          "required": true,
-          "usageCount": 0,
-          "type": "WeekdayEntry[]"
-        },
-        {
-          "name": "isEmpty",
-          "required": false,
-          "usageCount": 0,
-          "type": "boolean"
-        },
-        {
-          "name": "onAdd",
-          "required": false,
-          "usageCount": 0,
-          "type": "() => void"
-        }
-      ],
-      "variants": [],
-      "tokensUsed": [],
-      "styleSignal": "StyleSheet.create",
-      "composed": [
-        "BentoCardHeader",
-        "EmptyState",
-        "WeekdayRow"
-      ],
-      "consumers": [],
       "depth": 2
     },
     {
       "name": "IconSymbol",
       "file": "components/ui/icon-symbol.tsx",
-      "line": 16,
+      "line": 18,
       "kind": "function",
       "exports": [
         "named"
@@ -6659,6 +5304,11 @@
           "required": true,
           "usageCount": 0,
           "type": "string"
+        },
+        {
+          "name": "weight",
+          "required": false,
+          "usageCount": 0
         }
       ],
       "variants": [
@@ -6669,75 +5319,77 @@
       "styleSignal": "none",
       "composed": [],
       "consumers": [
+        "app/(tabs)/(home)/settings/index.tsx",
         "app/(tabs)/(home,projects)/project.tsx",
-        "app/(tabs)/(projects)/index.tsx"
+        "app/(tabs)/(projects)/index.tsx",
+        "app/edit.tsx",
+        "app/lightbox.tsx",
+        "app/note.tsx"
       ],
       "depth": 0
     }
   ],
   "consumers": {
-    "DateInput": [],
-    "TimeInput": [],
-    "CalendarIcon": [],
-    "CapturePulse": [],
-    "CounterDisplay": [],
-    "DayCell": [],
+    "BrandMark": [
+      "app/(tabs)/(home)/settings/about.tsx"
+    ],
+    "DiscButton": [],
     "EntryCluster": [],
     "EntryDot": [
-      "app/(tabs)/(home,projects)/project.tsx"
+      "app/(tabs)/(home,projects)/project.tsx",
+      "app/edit.tsx"
     ],
-    "IconPill": [],
-    "MonthNavigator": [],
-    "MoodGlyph": [],
-    "NotificationBadge": [],
+    "LinkText": [],
     "OptionChip": [],
-    "ProjectBreadcrumb": [],
-    "ResolverSep": [],
-    "ResolverValue": [],
-    "ResolverVerb": [],
-    "SelectChip": [],
-    "ChipRail": [],
+    "SelectChip": [
+      "app/edit.tsx"
+    ],
+    "ChipRail": [
+      "app/edit.tsx"
+    ],
     "ChipRow": [],
     "SketchIcon": [
-      "app/(tabs)/(home,projects)/edit.tsx"
+      "app/note.tsx"
     ],
-    "StreakBadge": [],
+    "TagChip": [
+      "app/note.tsx"
+    ],
     "ThemedText": [
-      "app/(tabs)/(home,projects)/edit.tsx",
+      "app/(tabs)/(home)/settings/about.tsx",
+      "app/(tabs)/(home)/settings/confirmations.tsx",
+      "app/(tabs)/(home)/settings/index.tsx",
+      "app/(tabs)/(home)/settings/notifications.tsx",
       "app/(tabs)/(home,projects)/project.tsx",
       "app/(tabs)/(projects)/index.tsx",
       "app/(tabs)/agenda.tsx",
-      "app/list.tsx"
+      "app/edit.tsx",
+      "app/list.tsx",
+      "app/note.tsx"
     ],
-    "ThemedView": [],
-    "TimeStepper": [],
-    "StepperColumn": [],
     "WaveformBar": [],
     "WaveformVisualizer": [],
-    "Waveform": [],
     "WheelPicker": [],
     "ErrorFallback": [],
-    "HapticTab": [],
-    "AgendaHeader": [],
-    "BentoCardHeader": [],
-    "CaptureResolver": [],
-    "CompactCalendar": [],
     "ConfirmSheet": [
-      "app/(tabs)/(home,projects)/project.tsx"
+      "app/(tabs)/(home,projects)/project.tsx",
+      "app/edit.tsx"
     ],
     "CountClause": [],
-    "DetailActionBar": [],
-    "DetailHeaderRow": [],
-    "DetailHero": [],
-    "DetailMetadataRow": [],
-    "DetailNoteBlock": [],
-    "DetailViewMeta": [],
-    "DiaryComposer": [],
+    "DetailHeaderRow": [
+      "app/edit.tsx"
+    ],
     "DiaryFilterBar": [
       "app/(tabs)/notes.tsx"
     ],
-    "DiaryNote": [],
+    "DiaryNote": [
+      "app/(tabs)/(home,projects)/project.tsx",
+      "app/edit.tsx"
+    ],
     "Chip": [],
+    "BookmarkButton": [],
+    "DiaryTagRail": [
+      "app/(tabs)/notes.tsx"
+    ],
     "DirectFilterBar": [],
     "DirectPager": [
       "app/(tabs)/(home,projects)/project.tsx"
@@ -6745,40 +5397,45 @@
     "DirectRow": [
       "app/(tabs)/(home,projects)/project.tsx"
     ],
-    "DispatchRow": [],
+    "EmojiPickerSheet": [
+      "app/(tabs)/(home,projects)/project.tsx"
+    ],
+    "CATEGORIES": [],
+    "ALL_ROWS": [],
+    "EmojiPicker": [],
     "EmptyState": [
       "app/list.tsx"
     ],
+    "EntryActionBar": [
+      "app/edit.tsx"
+    ],
     "EntryRow": [],
-    "ExactInline": [],
-    "ExactWhen": [],
     "FieldGreeting": [
       "app/(tabs)/(home)/index.tsx"
     ],
-    "FieldRow": [],
     "FieldSummary": [],
-    "FloatNote": [],
-    "HorizonStrip": [],
     "IdeaActionSheet": [
       "app/(tabs)/(home,projects)/project.tsx"
     ],
     "Row": [
-      "app/(tabs)/(home,projects)/edit.tsx"
+      "app/edit.tsx"
     ],
     "Divider": [],
-    "NodeReticle": [],
-    "NodeInteractive": [],
     "ListFilterBar": [
       "app/list.tsx"
     ],
     "ListItem": [
       "app/list.tsx"
     ],
-    "NextUpChip": [],
-    "OptionRow": [],
-    "PenLine": [],
+    "MediaSourceSheet": [],
+    "MediaStrip": [
+      "app/edit.tsx",
+      "app/note.tsx"
+    ],
     "ProjectCard": [],
-    "ProjectEntryComposerSheet": [],
+    "ProjectGridCard": [
+      "app/(tabs)/(projects)/index.tsx"
+    ],
     "ProjectOverflowSheet": [
       "app/(tabs)/(home,projects)/project.tsx"
     ],
@@ -6788,84 +5445,99 @@
     "ProjectStarters": [
       "app/(tabs)/(home,projects)/project.tsx"
     ],
-    "RecurrencePicker": [],
-    "RelatedNotes": [],
     "SectionHeader": [],
+    "SettingsRow": [
+      "app/(tabs)/(home)/settings/about.tsx",
+      "app/(tabs)/(home)/settings/index.tsx",
+      "app/(tabs)/(home)/settings/notifications.tsx"
+    ],
+    "SettingsSwitchRow": [
+      "app/(tabs)/(home)/settings/confirmations.tsx",
+      "app/(tabs)/(home)/settings/notifications.tsx"
+    ],
+    "SettingsSwitch": [],
+    "SettingsSection": [
+      "app/(tabs)/(home)/settings/about.tsx",
+      "app/(tabs)/(home)/settings/confirmations.tsx",
+      "app/(tabs)/(home)/settings/index.tsx",
+      "app/(tabs)/(home)/settings/notifications.tsx"
+    ],
     "StageHeader": [],
-    "StakeRow": [],
+    "TaskChecklist": [
+      "app/edit.tsx"
+    ],
     "TaskRow": [],
-    "TaskChecklist": [],
-    "TypeLane": [],
-    "ValueRow": [],
-    "WeekdayRow": [],
     "DAY_ITEMS": [],
     "TIME_ITEMS": [],
     "WhenPicker": [
-      "app/(tabs)/(home,projects)/edit.tsx"
+      "app/edit.tsx"
     ],
-    "WhenStepper": [],
-    "RepeatButton": [],
-    "WireMarker": [],
     "WrapupCard": [
       "app/list.tsx"
     ],
-    "AgendaFeed": [
-      "app/(tabs)/agenda.tsx"
-    ],
-    "Separator": [],
-    "AgendaSection": [],
     "AppHeader": [
       "app/(tabs)/(home)/_layout.tsx"
     ],
     "CaptureBackdrop": [
       "app/(tabs)/(home,projects)/project.tsx"
     ],
-    "CaptureBar": [],
+    "CaptureConsole": [
+      "app/(tabs)/(home,projects)/project.tsx"
+    ],
+    "ContextChip": [],
+    "ContextOption": [],
+    "MenuBlock": [],
     "CaptureDock": [
       "app/(tabs)/_layout.tsx"
     ],
-    "CaptureFlow": [],
-    "ClassifyStageView": [],
     "CustomTabBar": [
       "app/(tabs)/_layout.tsx"
     ],
-    "HOURS": [],
-    "MINUTES": [],
-    "VerticalWheel": [],
-    "DatePickerSheet": [],
     "DayDetailSheet": [
       "app/(tabs)/(home)/index.tsx"
     ],
-    "DeadlinesCard": [],
-    "DeleteScopeSheet": [],
     "DetailsStageView": [],
     "DiaryFeed": [
       "app/(tabs)/notes.tsx"
-    ],
-    "DirectDetailSheet": [
-      "app/(tabs)/(home,projects)/project.tsx",
-      "app/(tabs)/agenda.tsx"
     ],
     "DirectOverview": [
       "app/(tabs)/(home)/index.tsx"
     ],
     "DockShell": [],
-    "Fab": [],
-    "RecordingFab": [],
-    "FocusLine": [],
-    "IdeaConstellation": [],
-    "GridLayer": [],
-    "FreeThoughtsGauge": [],
-    "TendrilLayer": [],
-    "Tendril": [],
+    "ExactDateMenu": [],
     "LinkSheet": [
-      "app/(tabs)/notes.tsx"
+      "app/(tabs)/notes.tsx",
+      "app/note.tsx"
     ],
     "TargetRow": [],
-    "ListProgress": [],
-    "MonthGrid": [],
-    "MoodSheet": [],
-    "NoteLinkStageView": [],
+    "LinkOption": [],
+    "OnboardingCarousel": [
+      "app/onboarding.tsx"
+    ],
+    "Chapter": [],
+    "TypeHero": [],
+    "HeroLine": [],
+    "PromiseLines": [],
+    "ChapterCopy": [],
+    "ChapterBody": [],
+    "ChapterScene": [],
+    "ColdOpenWash": [],
+    "WashBand": [],
+    "SceneTurn": [],
+    "TurnCanvas": [],
+    "PingRing": [],
+    "IgniteNode": [],
+    "SceneCapture": [],
+    "CaptureCanvas": [],
+    "LandingRing": [],
+    "SceneEntities": [],
+    "EntitiesCanvas": [],
+    "WebSceneFallback": [],
+    "ChapterStage": [],
+    "StageTools": [],
+    "StageCaptureConsole": [],
+    "StageEntities": [],
+    "FabPill": [],
     "ProjectComposer": [
       "app/(tabs)/(home,projects)/project.tsx"
     ],
@@ -6879,21 +5551,25 @@
       "app/(tabs)/(home)/index.tsx"
     ],
     "AddProjectTile": [],
-    "RecordingStage": [],
     "ScreenHeader": [
-      "app/(tabs)/(home)/settings.tsx",
-      "app/(tabs)/(home,projects)/edit.tsx",
+      "app/(tabs)/(home)/settings/about.tsx",
+      "app/(tabs)/(home)/settings/confirmations.tsx",
+      "app/(tabs)/(home)/settings/index.tsx",
+      "app/(tabs)/(home)/settings/notifications.tsx",
       "app/(tabs)/(home,projects)/project.tsx",
       "app/(tabs)/(projects)/index.tsx",
       "app/list.tsx"
     ],
-    "SwipeableRow": [],
-    "UpcomingPreviewCard": [],
-    "WeekStrip": [],
-    "WeeklyOverviewCard": [],
-    "IconSymbol": [
-      "app/(tabs)/(home,projects)/project.tsx",
+    "SwipeableRow": [
       "app/(tabs)/(projects)/index.tsx"
+    ],
+    "IconSymbol": [
+      "app/(tabs)/(home)/settings/index.tsx",
+      "app/(tabs)/(home,projects)/project.tsx",
+      "app/(tabs)/(projects)/index.tsx",
+      "app/edit.tsx",
+      "app/lightbox.tsx",
+      "app/note.tsx"
     ]
   },
   "candidates": [
@@ -6934,8 +5610,30 @@
       "isSystemMaterial": false
     },
     {
-      "name": "settings",
-      "file": "app/(tabs)/(home)/settings.tsx",
+      "name": "about",
+      "file": "app/(tabs)/(home)/settings/about.tsx",
+      "declarations": [
+        "AboutSettingsScreen"
+      ],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
+      "name": "confirmations",
+      "file": "app/(tabs)/(home)/settings/confirmations.tsx",
+      "declarations": [
+        "ConfirmationsSettingsScreen"
+      ],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
+      "name": "index",
+      "file": "app/(tabs)/(home)/settings/index.tsx",
       "declarations": [
         "SettingsScreen",
         "ThemeToggle"
@@ -6946,16 +5644,10 @@
       "isSystemMaterial": false
     },
     {
-      "name": "edit",
-      "file": "app/(tabs)/(home,projects)/edit.tsx",
+      "name": "notifications",
+      "file": "app/(tabs)/(home)/settings/notifications.tsx",
       "declarations": [
-        "EditScreen",
-        "ReadoutRow",
-        "InlineOptionRail",
-        "HorizonOptionGrid",
-        "HorizonOption",
-        "InlineOption",
-        "TextZone"
+        "NotificationsSettingsScreen"
       ],
       "usageCount": 0,
       "consumers": [],
@@ -6989,6 +5681,7 @@
       "file": "app/(tabs)/(projects)/index.tsx",
       "declarations": [
         "ProjectsScreen",
+        "ViewToggle",
         "CreateRow",
         "ArchivedRow"
       ],
@@ -7043,6 +5736,41 @@
       "isSystemMaterial": false
     },
     {
+      "name": "edit",
+      "file": "app/edit.tsx",
+      "declarations": [
+        "EditScreen",
+        "ReadoutRow",
+        "FreqChip"
+      ],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
+      "name": "index",
+      "file": "app/index.tsx",
+      "declarations": [
+        "RootEntry"
+      ],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
+      "name": "lightbox",
+      "file": "app/lightbox.tsx",
+      "declarations": [
+        "LightboxScreen"
+      ],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
       "name": "list",
       "file": "app/list.tsx",
       "declarations": [
@@ -7054,10 +5782,21 @@
       "isSystemMaterial": false
     },
     {
-      "name": "database-context",
-      "file": "contexts/database-context.tsx",
+      "name": "note",
+      "file": "app/note.tsx",
       "declarations": [
-        "DatabaseProvider"
+        "NoteScreen"
+      ],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
+      "name": "onboarding",
+      "file": "app/onboarding.tsx",
+      "declarations": [
+        "OnboardingScreen"
       ],
       "usageCount": 0,
       "consumers": [],
@@ -7068,6 +5807,17 @@
       "name": "global-capture-context",
       "file": "contexts/global-capture-context.tsx",
       "declarations": [],
+      "usageCount": 0,
+      "consumers": [],
+      "tokensUsed": [],
+      "isSystemMaterial": false
+    },
+    {
+      "name": "onboarding-context",
+      "file": "contexts/onboarding-context.tsx",
+      "declarations": [
+        "OnboardingProvider"
+      ],
       "usageCount": 0,
       "consumers": [],
       "tokensUsed": [],
@@ -7120,145 +5870,98 @@
     }
   ],
   "unused": [
-    "DateInput",
-    "TimeInput",
-    "CalendarIcon",
-    "CapturePulse",
-    "CounterDisplay",
-    "DayCell",
+    "DiscButton",
     "EntryCluster",
-    "IconPill",
-    "MonthNavigator",
-    "MoodGlyph",
-    "NotificationBadge",
+    "LinkText",
     "OptionChip",
-    "ProjectBreadcrumb",
-    "ResolverSep",
-    "ResolverValue",
-    "ResolverVerb",
-    "SelectChip",
-    "ChipRail",
     "ChipRow",
-    "StreakBadge",
-    "ThemedView",
-    "TimeStepper",
-    "StepperColumn",
     "WaveformBar",
     "WaveformVisualizer",
-    "Waveform",
-    "WaveformBar",
     "WheelPicker",
     "ErrorFallback",
-    "HapticTab",
-    "AgendaHeader",
-    "BentoCardHeader",
-    "CaptureResolver",
-    "CompactCalendar",
     "CountClause",
-    "DetailActionBar",
-    "DetailHeaderRow",
-    "DetailHero",
-    "DetailMetadataRow",
-    "DetailNoteBlock",
-    "DetailViewMeta",
-    "DiaryComposer",
-    "Waveform",
-    "WaveformBar",
-    "DiaryNote",
     "Chip",
+    "BookmarkButton",
     "DirectFilterBar",
-    "DispatchRow",
+    "CATEGORIES",
+    "ALL_ROWS",
+    "EmojiPicker",
     "EntryRow",
-    "ExactInline",
-    "ExactWhen",
-    "FieldRow",
     "FieldSummary",
-    "FloatNote",
-    "HorizonStrip",
     "Divider",
-    "NodeReticle",
-    "NodeInteractive",
-    "NextUpChip",
-    "OptionRow",
-    "PenLine",
+    "MediaSourceSheet",
+    "Divider",
     "ProjectCard",
-    "ProjectEntryComposerSheet",
     "Divider",
-    "RecurrencePicker",
-    "RelatedNotes",
     "SectionHeader",
+    "SettingsSwitch",
     "StageHeader",
-    "StakeRow",
     "TaskRow",
-    "TaskChecklist",
-    "TypeLane",
-    "ValueRow",
-    "WeekdayRow",
     "DAY_ITEMS",
     "TIME_ITEMS",
-    "WhenStepper",
-    "RepeatButton",
-    "WireMarker",
-    "Separator",
-    "AgendaSection",
-    "CaptureBar",
-    "CaptureFlow",
-    "ClassifyStageView",
-    "HOURS",
-    "MINUTES",
-    "VerticalWheel",
-    "DatePickerSheet",
-    "DeadlinesCard",
-    "DeleteScopeSheet",
+    "ContextChip",
+    "ContextOption",
+    "MenuBlock",
     "DetailsStageView",
     "DockShell",
-    "Fab",
-    "WaveformBar",
-    "RecordingFab",
-    "FocusLine",
-    "IdeaConstellation",
-    "GridLayer",
-    "FreeThoughtsGauge",
-    "TendrilLayer",
-    "Tendril",
+    "DAY_ITEMS",
+    "TIME_ITEMS",
+    "ExactDateMenu",
     "TargetRow",
-    "ListProgress",
-    "MonthGrid",
-    "MoodSheet",
-    "NoteLinkStageView",
+    "ContextChip",
+    "LinkOption",
+    "Chapter",
+    "TypeHero",
+    "HeroLine",
+    "PromiseLines",
+    "ChapterCopy",
+    "ChapterBody",
+    "ChapterScene",
+    "ColdOpenWash",
+    "WashBand",
+    "SceneTurn",
+    "TurnCanvas",
+    "PingRing",
+    "IgniteNode",
+    "SceneCapture",
+    "CaptureCanvas",
+    "LandingRing",
+    "SceneEntities",
+    "EntitiesCanvas",
+    "WebSceneFallback",
+    "ChapterStage",
+    "StageTools",
+    "StageCaptureConsole",
+    "StageEntities",
+    "FabPill",
     "ProjectComposerBody",
     "ProjectEmptyFabPointer",
     "ActionPill",
-    "AddProjectTile",
-    "RecordingStage",
-    "SwipeableRow",
-    "UpcomingPreviewCard",
-    "WeekStrip",
-    "WeeklyOverviewCard"
+    "AddProjectTile"
   ],
   "duplicates": [
     {
       "names": [
-        "DeadlinesCard",
-        "WeeklyOverviewCard"
+        "ProjectGridCard",
+        "ProjectRow"
       ],
       "files": [
-        "components/organisms/deadlines-card.tsx",
-        "components/organisms/weekly-overview-card.tsx"
+        "components/molecules/project-grid-card.tsx",
+        "components/molecules/project-row.tsx"
       ],
-      "score": 0.6,
+      "score": 0.67,
       "signals": {
-        "props": 0.8,
+        "props": 1,
         "tokens": 0,
         "composition": 1
       }
     }
   ],
   "summary": {
-    "memberCount": 149,
-    "consumerCount": 43,
-    "candidateCount": 19,
-    "unusedCount": 115,
+    "memberCount": 119,
+    "consumerCount": 80,
+    "candidateCount": 26,
+    "unusedCount": 68,
     "duplicateCount": 1
   }
 }

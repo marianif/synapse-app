@@ -14,7 +14,7 @@ interface EntryRowProps {
 }
 
 /**
- * Agenda list item molecule.
+ * List item molecule.
  * Dot + title + subtitle on the left; time label pinned to the right.
  * No divider lines — vertical spacing handles separation (DESIGN.md rule).
  */

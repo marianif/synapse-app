@@ -18,7 +18,7 @@ and typed routes.
 
 - **PRODUCT.md** — strategy: users, purpose, brand personality, design principles, anti-references. Read before any UX decision.
 - **DESIGN.md** — the "Field Lab" visual system: tokens (mirrors `constants/theme.ts`), component patterns, do's and don'ts. Read before any UI work.
-- **BACKLOG.md** — the current product pivot ("the agenda that talks") with locked decisions and build phases.
+- **BACKLOG.md** — the work register: milestones, epics, areas, and typed work items.
 - **`.impeccable/brand.md`** — the Field Lab brand brief the rebrand was built from (historical reference; DESIGN.md documents the as-built drift).
 
 **Tech stack:** TypeScript · React 19 · Expo SDK 55 · expo-router v5 ·
@@ -170,7 +170,6 @@ synapse-app/
 │   │   ├── weekday-row.tsx     # Weekday header row
 │   │   └── wrapup-card.tsx     # End-of-day summary card
 │   ├── organisms/              # Complex UI sections
-│   │   ├── agenda-section.tsx  # Agenda list section
 │   │   ├── app-header.tsx      # Top navigation header
 │   │   ├── app-menu.tsx        # App menu/drawer
 │   │   ├── custom-tab-bar.tsx   # Custom tab bar

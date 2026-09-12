@@ -38,7 +38,7 @@ interface DirectRowProps {
  * done line.
  * Swiping reveals actions — an open row can be marked done OR deleted; a done
  * row can only be deleted (it's already crossed off, completing it again is
- * meaningless). A done row reads like a struck-through agenda line: muted ink,
+ * meaningless). A done row reads like a struck-through line: muted ink,
  * line-through title, dimmed dot.
  */
 export function DirectRow({

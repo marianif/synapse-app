@@ -203,9 +203,9 @@ export default function HomeScreen(): React.ReactElement {
   );
 
   // The next-action layer: open entries the user flagged, most recently chosen
-  // first. The greeting names up to three and folds the rest into "+N more";
-  // the Agenda lists them all. A done entry has had its mark auto-cleared, so
-  // the filter is belt-and-braces against a stale flag.
+  // first. The greeting names up to three and folds the rest into "+N more". A
+  // done entry has had its mark auto-cleared, so the filter is belt-and-braces
+  // against a stale flag.
   const nextActions = useMemo<NextAction[]>(
     () =>
       entries
@@ -259,7 +259,6 @@ export default function HomeScreen(): React.ReactElement {
           onSelectNext={(id) =>
             router.push({ pathname: "/edit", params: { id } })
           }
-          onShowMoreNext={() => router.push("/(tabs)/agenda")}
         />
 
         {/* TODO(flow): visual shaping pass — this is a minimal projects +

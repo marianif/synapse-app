@@ -1,15 +1,13 @@
 import * as Haptics from "expo-haptics";
 import { TabTrigger } from "expo-router/ui";
-import { forwardRef, useEffect, useMemo, useState } from "react";
+import { forwardRef } from "react";
 import type { View as RNView } from "react-native";
-import { AppState, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import type { IconSymbolName } from "@/components/ui/icon-symbol";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useGlobalCapture } from "@/contexts/global-capture-context";
-import { useDatabase } from "@/hooks/use-database/use-database";
-import { agendaPrompts } from "@/lib/agenda-prompts";
 
 type TabButtonProps = {
   icon: IconSymbolName;
@@ -71,26 +69,6 @@ const TabButton = forwardRef<RNView, TabButtonProps>(function TabButton(
 export function CustomTabBar(): React.ReactElement {
   const { colors } = useTheme();
   const cap = useGlobalCapture();
-  const { entries, tasks, projects } = useDatabase();
-
-  // Same derivation as the Agenda screen, so the dot appears exactly when the
-  // tab has an invitation to show. `now` is anchored once per mount and re-set
-  // on focus so a day passing is reflected without recomputing on every render.
-  const [now, setNow] = useState(() => Date.now());
-
-  // Re-anchor "now" whenever the app returns to the foreground so the dot
-  // reflects the current moment after a day has passed in the background.
-  useEffect(() => {
-    const sub = AppState.addEventListener("change", (state) => {
-      if (state === "active") setNow(Date.now());
-    });
-    return () => sub.remove();
-  }, []);
-
-  const agendaCount = useMemo(
-    () => agendaPrompts({ entries, tasks, projects, now }).length,
-    [entries, tasks, projects, now],
-  );
 
   return (
     <View
@@ -162,12 +140,7 @@ export function CustomTabBar(): React.ReactElement {
             <TabButton icon="Notebook" label="Notes" />
           </TabTrigger>
           <TabTrigger name="agenda" asChild resetOnFocus>
-            <TabButton
-              icon="DirectNotification2"
-              label="Agenda"
-              badgeCount={agendaCount}
-              hint="What the board has to say about your open items."
-            />
+            <TabButton icon="DirectNotification2" label="Agenda" />
           </TabTrigger>
         </View>
       </View>
@@ -201,8 +174,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: tokens.radius.sm,
   },
-  // Waiting dot on the Agenda icon — sits on the tab button, not the icon, so
-  // it stays within the 44pt touch target and reads as a badge on the tab.
+  // Waiting dot on a tab's icon — generic, reusable badge for a tab that has
+  // something waiting. Sits on the tab button, not the icon, so it stays within
+  // the 44pt touch target and reads as a badge on the tab.
   badge: {
     position: "absolute",
     top: 9,

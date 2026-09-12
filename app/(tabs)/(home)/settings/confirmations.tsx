@@ -19,6 +19,7 @@ const CONFIRM_ROWS: { key: ConfirmKeyValue; label: string }[] = [
   { key: ConfirmKey.deleteNote, label: "Diary notes" },
   { key: ConfirmKey.deleteProject, label: "Projects" },
   { key: ConfirmKey.deleteTask, label: "Subtasks" },
+  { key: ConfirmKey.deleteHabit, label: "Habits" },
 ];
 
 /** The stored value means "skip the prompt", so the UI value is its inverse. */
@@ -35,6 +36,7 @@ export default function ConfirmationsSettingsScreen(): React.ReactElement {
     [ConfirmKey.deleteNote]: true,
     [ConfirmKey.deleteProject]: true,
     [ConfirmKey.deleteTask]: true,
+    [ConfirmKey.deleteHabit]: true,
   });
   const [ready, setReady] = useState(false);
 

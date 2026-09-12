@@ -320,12 +320,12 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 
 ## Flow — Hold a cadence <!-- flow:flow:hold-a-cadence -->
 - Serves: Goal 3 — Hold a cadence
-- Entry: the Habits tab, the scoped habit FAB, or the capture resolver's "every day" door
+- Entry: the Habits tab and its New habit editor
 - Success: a habit's cadence and its reason are set and today's instance is marked; history reads as presence, never as a streak
 - Exit: the user leaves the tab — instance toggled, habit edited, paused, or deleted
 - Handoff: put-something-in
 - Handoff: browse-and-triage-a-project
-- Status: proposed
+- Status: complete
 
 ### Step — Open the cadence <!-- flow:step:open-the-cadence -->
 - Intent: the daily glance at what repeats
@@ -347,14 +347,14 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Action: type a habit title in the composer
 - State: draft-habit
 - Next: say-why-it-matters
-- Component: HabitComposer (inception)
+- Component: HabitEditor / (/habit modal) inception
 
 ### Step — Make a habit <!-- flow:step:make-a-habit -->
 - Intent: add a repeated intention
-- Action: tap the scoped habit FAB, or pick the capture resolver's "every day" door
+- Action: tap New habit on the tab (or the empty state) to open the editor modal
 - State: draft-habit
 - Next: say-why-it-matters
-- Component: habit FAB / HabitComposer / capture-resolver door
+- Component: HabitEditor (/habit modal)
 
 ### Step — Say why it matters <!-- flow:step:say-why-it-matters -->
 - Intent: record the user's own reason so the app can hold it back to them
@@ -362,22 +362,22 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - State: why-set
 - Next: set-the-cadence
 - Branch: reason left empty → draft-habit
-- Component: HabitComposer reason field
+- Component: HabitEditor reason field
 
 ### Step — Set the cadence <!-- flow:step:set-the-cadence -->
 - Intent: choose how often the habit repeats
-- Action: pick daily / weekdays / weekly days / monthly
+- Action: pick every day, weekdays, custom days, or monthly
 - State: cadence-set
 - Next: set-the-nudge
 - Branch: cancel → discarded
-- Component: HabitComposer cadence picker
+- Component: HabitEditor cadence and custom-days picker
 
 ### Step — Set the nudge <!-- flow:step:set-the-nudge -->
 - Intent: decide whether, and when, the habit asks for attention
 - Action: pick a reminder time, or leave it off
 - State: cadence-set
 - Next: file-habit
-- Component: HabitComposer reminder picker
+- Component: HabitEditor reminder picker
 
 ### Step — File it <!-- flow:step:file-habit -->
 - Intent: start the cadence
@@ -385,7 +385,7 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - State: active-habit
 - Next: read-today
 - Exit: true
-- Component: HabitComposer
+- Component: HabitEditor (/habit modal)
 
 ### Step — Mark today <!-- flow:step:mark-today -->
 - Intent: honor the cadence today
@@ -397,11 +397,11 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 
 ### Step — Manage a habit <!-- flow:step:manage-a-habit -->
 - Intent: the tier-3 verbs, deliberately out of the way
-- Action: open the habit's overflow — rename, change cadence, edit the reason, pause or resume, delete
+- Action: tap the row to reopen the editor — rename, change cadence, edit the reason, pause or resume, delete
 - State: active-habit
 - Next: done
 - Exit: true
-- Component: habit-overflow-sheet
+- Component: HabitEditor (/habit modal)
 
 ### State — Rhythm <!-- flow:state:rhythm -->
 - Meaning: the whole cadence set is visible, today's instances at the top
@@ -421,7 +421,7 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 ### State — Missed <!-- flow:state:missed -->
 - Meaning: an instance date passed unmarked — presence, not failure; no count, no red
 - Next: read-today
-- Recovery: mark a past instance or move on
+- Recovery: move on — the empty cell is the honest record; nothing is owed
 
 ### State — Why-set <!-- flow:state:why-set -->
 - Meaning: the user has said why the habit matters

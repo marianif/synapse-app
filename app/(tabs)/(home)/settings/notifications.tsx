@@ -15,6 +15,7 @@ import { useDatabase } from "@/hooks/use-database/use-database";
 import {
   requestNotificationPermissions,
   rescheduleAllEntries,
+  rescheduleAllHabitNotifications,
   rescheduleAllProjectNotifications,
 } from "@/lib/notifications";
 import {
@@ -28,7 +29,7 @@ type PermissionStatus = Notifications.PermissionStatus;
 export default function NotificationsSettingsScreen(): React.ReactElement {
   const router = useRouter();
   const { colors } = useTheme();
-  const { entries, projects } = useDatabase();
+  const { entries, projects, habits } = useDatabase();
 
   const [status, setStatus] = useState<PermissionStatus>(
     Notifications.PermissionStatus.UNDETERMINED,
@@ -36,6 +37,7 @@ export default function NotificationsSettingsScreen(): React.ReactElement {
   const [prefs, setPrefs] = useState<Record<NotificationPref, boolean>>({
     deadlines: true,
     projectReturns: true,
+    habits: true,
   });
   const [ready, setReady] = useState(false);
 
@@ -55,7 +57,10 @@ export default function NotificationsSettingsScreen(): React.ReactElement {
     await rescheduleAllProjectNotifications(projects, entries).catch((error) => {
       console.warn("[Settings] rescheduleAllProjectNotifications failed:", error);
     });
-  }, [entries, projects]);
+    await rescheduleAllHabitNotifications(habits).catch((error) => {
+      console.warn("[Settings] rescheduleAllHabitNotifications failed:", error);
+    });
+  }, [entries, projects, habits]);
 
   // Re-read on focus so a change made in system Settings is reflected on return.
   useFocusEffect(
@@ -70,10 +75,11 @@ export default function NotificationsSettingsScreen(): React.ReactElement {
       Promise.all([
         getNotificationPref("deadlines"),
         getNotificationPref("projectReturns"),
+        getNotificationPref("habits"),
       ])
-        .then(([deadlines, projectReturns]) => {
+        .then(([deadlines, projectReturns, habitsPref]) => {
           if (alive) {
-            setPrefs({ deadlines, projectReturns });
+            setPrefs({ deadlines, projectReturns, habits: habitsPref });
             setReady(true);
           }
         })
@@ -177,6 +183,13 @@ export default function NotificationsSettingsScreen(): React.ReactElement {
                 onValueChange={(next) =>
                   void handleToggle("projectReturns", next)
                 }
+              />
+              <SettingsSwitchRow
+                label="Habit nudges"
+                description="A habit's own reason, at the time you set."
+                value={prefs.habits}
+                disabled={status !== Notifications.PermissionStatus.GRANTED}
+                onValueChange={(next) => void handleToggle("habits", next)}
               />
             </SettingsSection>
 

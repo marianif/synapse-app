@@ -7,11 +7,13 @@ import { AppState } from "react-native";
 import {
   cancelProjectReturnNotification,
   cancelNotificationForEntry,
+  cancelHabitNotification,
   requestNotificationPermissions,
   scheduleEntryNotification,
+  scheduleHabitNotification,
   scheduleProjectReturnNotification,
 } from "@/lib/notifications";
-import type { DbEntry } from "@/lib/types";
+import type { DbEntry, DbHabit } from "@/lib/types";
 import { SpeechRecognizerModule } from "@/modules/speech-recognizer";
 import * as WatchConnectivity from "@/modules/watch-connectivity";
 import type { AppDispatch, RootState } from "@/store";
@@ -26,6 +28,11 @@ import {
   deleteProject,
   touchProject,
 } from "@/store/thunks/projects";
+import {
+  createHabit,
+  deleteHabit,
+  updateHabit,
+} from "@/store/thunks/habits";
 
 const storage = new ExtensionStorage("group.dev.the-wedge.synapse-app");
 
@@ -162,6 +169,33 @@ listenerMiddleware.startListening({
   actionCreator: deleteProject.fulfilled,
   effect: (action) => {
     void cancelProjectReturnNotification(action.payload);
+  },
+});
+
+// ─── Habit nudges: schedule on create/update, cancel on delete ───────────────
+
+listenerMiddleware.startListening({
+  matcher: isAnyOf(createHabit.fulfilled, updateHabit.fulfilled),
+  effect: async (action) => {
+    const habit = (action as unknown as { payload: DbHabit }).payload;
+    // A habit nudge is opt-in per habit: no reminder time means no notification.
+    if (habit.status !== "active" || !habit.reminder_time) return;
+    // Ask for permission only when the user has actually set a nudge — that is
+    // the moment the benefit is concrete, matching the deadline-reminder rule.
+    if (action.type === createHabit.fulfilled.type) {
+      const granted = await requestNotificationPermissions();
+      if (!granted) return;
+    }
+    scheduleHabitNotification(habit).catch((err) => {
+      console.warn("[store] scheduleHabitNotification failed:", err);
+    });
+  },
+});
+
+listenerMiddleware.startListening({
+  actionCreator: deleteHabit.fulfilled,
+  effect: (action) => {
+    void cancelHabitNotification(action.payload);
   },
 });
 

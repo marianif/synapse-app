@@ -70,14 +70,15 @@ The work register: milestones, epics, areas, and typed work items.
 ### Area — Habits
 
 - Serves: Goal 3 (Hold a cadence)
-- [ ] [feature] habits data model — the habits table (title, required reason, cadence, reminder, project link) and habit_completions, with migration, types, slice and thunks. effort: L @week
-- [ ] [feature] habit capture door — a fifth resolver door ("every day") arming the reason, cadence and reminder workbench. effort: M @week
-- [ ] [feature] habit notifications — a habits preference, next-instance scheduler, settings switch, deep-link, and the reason shown verbatim in the body. effort: M @week
-- [ ] [design] `craft habits` — the cadence surface: today list, presence strip, the reason resurfaced, and the empty state. @week
-- [ ] [feature] habit FAB and composer — a scoped per-surface FAB opening a composer with the required reason field. effort: M @week
-- [ ] [feature] project-linked habits — a habit can attach to a project and show on its spine, autonomous otherwise. effort: M @month
-- [ ] [task] remove the Agenda concept — route, tab trigger, icon, the dead getTodayAgenda helper, and the goldie "agenda" store flow. effort: S @week
-- [ ] [task] generalize recurrence expansion — let cadence-only habits reuse expandRecurringEntry without a DbEntry. effort: S @week
+- [x] [feature] habits data model — the habits table (title, required reason, cadence, reminder, project link) and habit_completions, with migration, types, slice and thunks. effort: L @week → shipped 2026-09-12 — schema v22 plus store slice and thunks
+- [x] [feature] habit capture door — a fifth resolver door ("every day") arming the reason, cadence and reminder workbench. effort: M @week → superseded 2026-09-12 — replaced by the /habit modal editor
+- [x] [feature] habit notifications — a habits preference, next-instance scheduler, settings switch, deep-link, and the reason shown verbatim in the body. effort: M @week → shipped 2026-09-12 — scheduleHabitNotification plus the settings toggle
+- [x] [design] `craft habits` — the cadence surface: today list, presence strip, the reason resurfaced, and the empty state. @week → shipped 2026-09-12 — Habits tab built, agenda tab removed
+- [x] [feature] habit FAB and composer — a scoped per-surface FAB opening a composer with the required reason field. effort: M @week → superseded 2026-09-12 — no FAB per DESIGN; the /habit modal editor shipped instead
+- [ ] [feature] project habits on the spine — show a project's linked habits on its screen, not only in the composer picker. effort: M @month
+- [x] [task] remove the Agenda concept — route, tab trigger, icon, and the dead getTodayAgenda helper. effort: S @week → shipped 2026-09-12 — done; the goldie marketing flow is tracked separately below
+- [x] [task] generalize recurrence expansion — let cadence-only habits reuse expandRecurringEntry without a DbEntry. effort: S @week → shipped 2026-09-12 — expandCadence plus expandHabitCadence
+- [ ] [task] goldie agenda flow — point the store screenshot flow at the Habits tab. @month
 - [ ] [design] `colorize habits` — per-habit user-chosen color: picker and token support (deferred iteration). @month
 
 

@@ -110,13 +110,18 @@ function ThemedNavigationShell(): React.ReactElement | null {
         kind?: unknown;
         projectId?: unknown;
       };
-      if (data.kind !== "project-return" || typeof data.projectId !== "string") {
+      if (data.kind === "project-return" && typeof data.projectId === "string") {
+        router.push({
+          pathname: "/(tabs)/(projects)/project",
+          params: { id: data.projectId },
+        });
         return;
       }
-      router.push({
-        pathname: "/(tabs)/(projects)/project",
-        params: { id: data.projectId },
-      });
+      // A habit nudge lands on the Habits tab, where the reason it quoted is
+      // waiting beside the habit.
+      if (data.kind === "habit") {
+        router.navigate("/(tabs)/habits");
+      }
     },
     [router],
   );
@@ -173,6 +178,7 @@ function ThemedNavigationShell(): React.ReactElement | null {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="note" options={{ presentation: "modal" }} />
           <Stack.Screen name="edit" options={{ presentation: "modal" }} />
+          <Stack.Screen name="habit" options={{ presentation: "modal" }} />
           <Stack.Screen
             name="lightbox"
             options={{ presentation: "fullScreenModal" }}

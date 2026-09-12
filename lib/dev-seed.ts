@@ -33,6 +33,14 @@ const endOfWeek = () => fmt(today.endOf("week"));
 const endOfMonth = () => fmt(today.endOf("month"));
 const endOfYear = () => fmt(today.endOf("year"));
 
+/**
+ * Days-ago offset to the most recent occurrence of `weekday` (0 = Sunday),
+ * counting backwards; `weeksBack` steps a further week(s) into the past. Lets a
+ * habit fixture land its completions on days the cadence actually schedules.
+ */
+const daysAgoToWeekday = (weekday: number, weeksBack = 0): number =>
+  ((today.day() - weekday + 7) % 7) + weeksBack * 7;
+
 // ─── Fixture types ────────────────────────────────────────────────────────────
 
 type ProjectSeed = {
@@ -77,10 +85,35 @@ type DiarySeed = {
   createdDaysAgo: number;
 };
 
+type HabitSeed = {
+  title: string;
+  /** The required reason — the user's own words. */
+  motivation: string;
+  freq: RecurrenceFrequency;
+  /** Only for freq "weekly". 0 = Sunday … 6 = Saturday. */
+  days?: number[];
+  /** First occurrence, days ago (0 = today). Defaults to 30. */
+  startDaysAgo?: number;
+  /** Optional last occurrence, DD/MM/YYYY. */
+  endDate?: string;
+  /** "HH:MM" 24h; null = no nudge. */
+  reminderTime?: string | null;
+  /** Project key, or omitted for an autonomous habit. */
+  project?: string;
+  status?: "active" | "paused";
+  /**
+   * Days ago (0 = today) marked done. Use `daysAgoToWeekday` for habits on a
+   * weekday cadence so the completions land on scheduled days.
+   */
+  completedDaysAgo?: number[];
+};
+
 type Fixture = {
   projects: ProjectSeed[];
   entries: EntrySeed[];
   diary: DiarySeed[];
+  /** Optional — only the habit-focused scenarios populate this. */
+  habits?: HabitSeed[];
 };
 
 export type ScenarioKey =
@@ -246,6 +279,30 @@ const MIXED_PRESSURE: Fixture = {
       body: "Quiet day. Read on the balcony and let the to-do list wait.",
       mood: "calm",
       createdDaysAgo: 3,
+    },
+  ],
+  habits: [
+    {
+      title: "Take the meds",
+      motivation: "Mornings fall apart when I skip them.",
+      freq: "daily",
+      reminderTime: "08:00",
+      completedDaysAgo: [0, 1, 2, 3, 4, 5, 6],
+    },
+    {
+      title: "Stretch",
+      motivation: "My back stops aching when I move first thing.",
+      freq: "daily",
+      reminderTime: "07:00",
+      completedDaysAgo: [1, 2, 3, 4, 6],
+    },
+    {
+      title: "Go for a walk",
+      motivation: "Fresh air clears the 3pm fog.",
+      freq: "weekly",
+      days: [1, 4],
+      reminderTime: "15:00",
+      completedDaysAgo: [daysAgoToWeekday(1), daysAgoToWeekday(4)],
     },
   ],
 };

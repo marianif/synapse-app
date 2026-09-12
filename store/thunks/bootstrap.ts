@@ -4,11 +4,13 @@ import { ensureDb, seedDefaultProjectsOnce } from "@/lib/database";
 import { seedDevDataIfEmpty } from "@/lib/dev-seed";
 import {
   rescheduleAllEntries,
+  rescheduleAllHabitNotifications,
   rescheduleAllProjectNotifications,
 } from "@/lib/notifications";
 import type {
   DbDiaryEntry,
   DbEntry,
+  DbHabit,
   DbProject,
   DbRecurrenceCompletion,
   DbTask,
@@ -17,6 +19,7 @@ import type { AppDispatch } from "@/store";
 import { startWatchSync } from "@/store/middleware";
 import { fetchDiary } from "@/store/thunks/diary";
 import { fetchEntries } from "@/store/thunks/entries";
+import { fetchHabits } from "@/store/thunks/habits";
 import { fetchProjects } from "@/store/thunks/projects";
 import { fetchRecurrenceCompletions } from "@/store/thunks/recurrence";
 import { fetchTasks } from "@/store/thunks/tasks";
@@ -42,9 +45,12 @@ export const initApp = createAsyncThunk("app/init", async (_arg, { dispatch }) =
     console.warn("[store] default-project seed failed:", err);
   }
 
-  const [entries, projects] = await Promise.all([
+  const [entries, projects, habits] = await Promise.all([
     dispatch(fetchEntries()).unwrap().catch(() => [] as DbEntry[]),
     dispatch(fetchProjects()).unwrap().catch(() => [] as DbProject[]),
+    dispatch(fetchHabits())
+      .unwrap()
+      .catch(() => ({ habits: [] as DbHabit[], completions: [] })),
     dispatch(fetchTasks()).unwrap().catch(() => [] as DbTask[]),
     dispatch(fetchRecurrenceCompletions())
       .unwrap()
@@ -62,6 +68,11 @@ export const initApp = createAsyncThunk("app/init", async (_arg, { dispatch }) =
   if (projects.length > 0) {
     await rescheduleAllProjectNotifications(projects, entries).catch((err) => {
       console.warn("[store] rescheduleAllProjectNotifications failed:", err);
+    });
+  }
+  if (habits.habits.length > 0) {
+    await rescheduleAllHabitNotifications(habits.habits).catch((err) => {
+      console.warn("[store] rescheduleAllHabitNotifications failed:", err);
     });
   }
 

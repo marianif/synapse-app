@@ -51,7 +51,7 @@ export default function TabLayout(): React.ReactElement {
               <TabTrigger name="projects" href="/(tabs)/(projects)" />
               <TabTrigger name="home" href="/(tabs)/(home)" />
               <TabTrigger name="notes" href="/(tabs)/notes" />
-              <TabTrigger name="agenda" href="/(tabs)/agenda" />
+              <TabTrigger name="habits" href="/(tabs)/habits" />
             </TabList>
           </Tabs>
 

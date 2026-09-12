@@ -3,11 +3,15 @@ import { useMemo } from "react";
 import type { EntryType } from "@/components/atoms/entry-dot";
 import type {
   CreateEntryInput,
+  CreateHabitInput,
   DbEntry,
+  DbHabit,
+  DbHabitCompletion,
   DbProject,
   DbRecurrenceCompletion,
   DbTask,
   UpdateEntryInput,
+  UpdateHabitInput,
 } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -43,12 +47,25 @@ import {
   setTaskDone as setTaskDoneThunk,
   updateTaskTitle as updateTaskTitleThunk,
 } from "@/store/thunks/tasks";
+import {
+  createHabit as createHabitThunk,
+  deleteHabit as deleteHabitThunk,
+  fetchHabits as fetchHabitsThunk,
+  toggleHabitInstance as toggleHabitInstanceThunk,
+  updateHabit as updateHabitThunk,
+} from "@/store/thunks/habits";
 
 export interface UseDatabaseReturn {
   entries: DbEntry[];
   projects: DbProject[];
   /** Every subtask across every entry. Filter by `entry_id` at the call site. */
   tasks: DbTask[];
+  /** All habits, active first. */
+  habits: DbHabit[];
+  /** Every habit completion, for resolving whether a given instance is done. */
+  habitCompletions: DbHabitCompletion[];
+  /** True while the habits collection is being loaded. */
+  habitsLoading: boolean;
   recurrenceCompletions: DbRecurrenceCompletion[];
   isLoading: boolean;
   isCreating: boolean;
@@ -106,6 +123,14 @@ export interface UseDatabaseReturn {
   ) => Promise<void>;
   deleteRecurringFuture: (entryId: string, fromDate: string) => Promise<void>;
   deleteRecurringSeries: (entryId: string) => Promise<void>;
+  /** Create a habit. Requires a motivation; throws if it is empty. */
+  createHabit: (data: CreateHabitInput) => Promise<DbHabit>;
+  updateHabit: (id: string, data: UpdateHabitInput) => Promise<void>;
+  deleteHabit: (id: string) => Promise<void>;
+  /** Toggle one habit instance (habit + DD/MM/YYYY day) done / not done. */
+  toggleHabitInstance: (habitId: string, instanceDate: string) => Promise<void>;
+  /** Reload habits + completions (e.g. after a dev wipe). */
+  refetchHabits: () => Promise<void>;
 }
 
 /**
@@ -120,6 +145,11 @@ export function useDatabase(): UseDatabaseReturn {
   const recurrenceCompletions = useAppSelector(
     (state) => state.recurrence.recurrenceCompletions,
   );
+  const habits = useAppSelector((state) => state.habits.habits);
+  const habitCompletions = useAppSelector(
+    (state) => state.habits.habitCompletions,
+  );
+  const habitsLoading = useAppSelector((state) => state.habits.isLoading);
   const isLoading = useAppSelector((state) => state.entries.isLoading);
   const isCreating = useAppSelector((state) => state.entries.isCreating);
   const dispatch = useAppDispatch();
@@ -235,6 +265,22 @@ export function useDatabase(): UseDatabaseReturn {
           ),
         deleteRecurringSeries: (entryId: string) =>
           toVoid(dispatch(deleteRecurringSeriesThunk(entryId)).unwrap()),
+        createHabit: (data: CreateHabitInput) =>
+          dispatch(createHabitThunk(data)).unwrap(),
+        updateHabit: (id: string, data: UpdateHabitInput) =>
+          toVoid(dispatch(updateHabitThunk({ id, data })).unwrap()),
+        deleteHabit: (id: string) =>
+          toVoid(dispatch(deleteHabitThunk(id)).unwrap()),
+        toggleHabitInstance: (habitId: string, instanceDate: string) =>
+          toVoid(
+            dispatch(toggleHabitInstanceThunk({ habitId, instanceDate })).unwrap(),
+          ),
+        refetchHabits: () =>
+          toVoid(
+            dispatch(fetchHabitsThunk()).unwrap().catch((error) => {
+              console.error("[store] fetchHabits failed:", error);
+            }),
+          ),
       };
     },
     [dispatch],
@@ -245,6 +291,9 @@ export function useDatabase(): UseDatabaseReturn {
     projects,
     tasks,
     recurrenceCompletions,
+    habits,
+    habitCompletions,
+    habitsLoading,
     isLoading,
     isCreating,
     ...actions,

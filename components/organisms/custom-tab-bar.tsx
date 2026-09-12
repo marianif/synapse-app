@@ -139,8 +139,10 @@ export function CustomTabBar(): React.ReactElement {
           <TabTrigger name="notes" asChild resetOnFocus>
             <TabButton icon="Notebook" label="Notes" />
           </TabTrigger>
-          <TabTrigger name="agenda" asChild resetOnFocus>
-            <TabButton icon="DirectNotification2" label="Agenda" />
+          {/* Cadence — what the user chose to repeat, present today. The rotate
+              glyph reads as a loop, never a streak flame. */}
+          <TabTrigger name="habits" asChild resetOnFocus>
+            <TabButton icon="Repeat" label="Habits" />
           </TabTrigger>
         </View>
       </View>

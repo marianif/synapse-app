@@ -18,15 +18,16 @@
 import * as Notifications from "expo-notifications";
 
 import { parseDate } from "@/lib/date-utils";
-import { expandRecurringEntry, isRecurringEntry } from "@/lib/recurrence";
+import { expandCadence, expandRecurringEntry, isRecurringEntry, parseRule } from "@/lib/recurrence";
 import { getNotificationPref } from "@/lib/settings";
-import type { DbEntry, DbProject } from "@/lib/types";
+import type { DbEntry, DbHabit, DbProject } from "@/lib/types";
 
 // ─── In-memory mapping ────────────────────────────────────────────────────────
 
 /** entryId → notificationId (in-memory, rebuilt on launch). */
 const notificationMap = new Map<string, string>();
 const projectNotificationMap = new Map<string, string>();
+const habitNotificationMap = new Map<string, string>();
 const PROJECT_RETURN_AFTER_DAYS = 7;
 const DAY_MS = 86_400_000;
 
@@ -378,4 +379,113 @@ export async function rescheduleAllProjectNotifications(
     await scheduleProjectReturnNotification(project, entries);
   }
   return new Map(projectNotificationMap);
+}
+
+// ─── Habit nudges ─────────────────────────────────────────────────────────────
+
+/**
+ * The next upcoming instance of a habit, at its reminder time. Returns null when
+ * the rule is unparseable or has no future occurrence. Mirrors the entry
+ * scheduler: only the NEXT instance is scheduled (iOS caps pending notifications
+ * at 64), and the nudge is opt-in — a habit with no `reminder_time` never fires.
+ */
+function nextHabitTrigger(habit: DbHabit): Date | null {
+  const rule = parseRule(habit.cadence);
+  if (!rule) return null;
+
+  const now = new Date();
+  const oneYearOut = new Date(now);
+  oneYearOut.setFullYear(oneYearOut.getFullYear() + 1);
+
+  // Expand from the start of today so an instance later today is a candidate.
+  const fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dates = expandCadence(
+    { rule, startDate: habit.start_date, endDate: habit.end_date },
+    fromDate,
+    oneYearOut,
+  );
+
+  // First instance whose reminder time is still ahead of us.
+  for (const dateStr of dates) {
+    const trigger = parseTriggerDate(dateStr, habit.reminder_time);
+    if (trigger && trigger > new Date()) return trigger;
+  }
+  return null;
+}
+
+/**
+ * Schedule the next nudge for one habit. The body is the user's own reason,
+ * verbatim — the encouragement is their words, never a streak. Gated by the
+ * `habits` preference and by the habit having a reminder time and being active.
+ */
+export async function scheduleHabitNotification(
+  habit: DbHabit,
+): Promise<string | null> {
+  if (!(await getNotificationPref("habits"))) {
+    await cancelHabitNotification(habit.id);
+    return null;
+  }
+  if (habit.status !== "active" || !habit.reminder_time) {
+    await cancelHabitNotification(habit.id);
+    return null;
+  }
+
+  const triggerDate = nextHabitTrigger(habit);
+  if (!triggerDate || triggerDate <= new Date()) return null;
+
+  try {
+    const notificationId = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: habit.title,
+        body: habit.motivation,
+        sound: true,
+        data: { kind: "habit", habitId: habit.id },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: triggerDate,
+      },
+    });
+    habitNotificationMap.set(habit.id, notificationId);
+    return notificationId;
+  } catch (error) {
+    console.warn("[notifications] scheduleHabitNotification failed:", error);
+    return null;
+  }
+}
+
+/** Cancel a habit's pending nudge. */
+export async function cancelHabitNotification(habitId: string): Promise<void> {
+  const notificationId = habitNotificationMap.get(habitId);
+  if (!notificationId) return;
+  habitNotificationMap.delete(habitId);
+  await cancelEntryNotification(notificationId);
+}
+
+/**
+ * Rebuild every habit nudge from scratch. Runs on bootstrap alongside the entry
+ * and project passes, so a stale schedule from a previous launch self-heals.
+ */
+export async function rescheduleAllHabitNotifications(
+  habits: DbHabit[],
+): Promise<Map<string, string>> {
+  try {
+    const pending = await Notifications.getAllScheduledNotificationsAsync();
+    for (const request of pending) {
+      const data = request.content.data as { kind?: unknown } | undefined;
+      if (data?.kind !== "habit") continue;
+      await Notifications.cancelScheduledNotificationAsync(request.identifier);
+    }
+  } catch (error) {
+    console.warn(
+      "[notifications] cancel habit notifications failed:",
+      error,
+    );
+  }
+  habitNotificationMap.clear();
+
+  for (const habit of habits) {
+    await scheduleHabitNotification(habit);
+  }
+  return new Map(habitNotificationMap);
 }

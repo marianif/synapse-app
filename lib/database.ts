@@ -1,9 +1,10 @@
 import * as SQLite from 'expo-sqlite';
 
-import { ALL_STATEMENTS, CREATE_DIARY_TABLE, CREATE_PROJECTS_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, CREATE_TASKS_ENTRY_INDEX, CREATE_TASKS_TABLE, SCHEMA_VERSION } from './schema';
+import { ALL_STATEMENTS, CREATE_DIARY_TABLE, CREATE_HABIT_COMPLETIONS_INDEX, CREATE_HABIT_COMPLETIONS_TABLE, CREATE_HABITS_TABLE, CREATE_PROJECTS_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, CREATE_TASKS_ENTRY_INDEX, CREATE_TASKS_TABLE, SCHEMA_VERSION } from './schema';
+import { toDisplayDate } from './date-utils';
 import { deleteMediaFile } from './media';
 import { isTaskable } from './types';
-import type { DbDiaryEntry, DbProject, DbTask, DiaryMood, EntryType, NoteMedia } from './types';
+import type { CreateHabitInput, DbDiaryEntry, DbHabit, DbHabitCompletion, DbProject, DbTask, DiaryMood, EntryType, NoteMedia, UpdateHabitInput } from './types';
 
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 let isInitialized = false;
@@ -539,6 +540,22 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 22) {
+    // Migration 22: habits. A standalone `habits` table plus its per-instance
+    // `habit_completions` — purely additive, no entries rebuild. A habit is not
+    // an entry: it lives on the Habits tab, never the board, and carries a
+    // required `motivation` (the user's own reason) instead of a streak.
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(CREATE_HABITS_TABLE);
+      await db.execAsync(CREATE_HABIT_COMPLETIONS_TABLE);
+      await db.execAsync(CREATE_HABIT_COMPLETIONS_INDEX);
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────
@@ -740,6 +757,10 @@ export async function unlinkProjectReferences(projectId: string): Promise<void> 
     'UPDATE diary_entries SET linked_project_id = NULL WHERE linked_project_id = ?',
     projectId,
   );
+  await db.runAsync(
+    'UPDATE habits SET project_id = NULL WHERE project_id = ?',
+    projectId,
+  );
 }
 
 /** Delete a project, unlinking all references first. Its entries survive unfiled. */
@@ -875,8 +896,180 @@ export async function deleteTasksForEntry(entryId: string): Promise<void> {
   await db.runAsync('DELETE FROM tasks WHERE entry_id = ?', entryId);
 }
 
-// ─── Diary helpers ──────────────────────────────────────────────────────────────
+// ─── Habit helpers ──────────────────────────────────────────────────────────────
 
+/**
+ * Insert a habit, returning the persisted row. A habit REQUIRES a motivation —
+ * the user's own reason. Enforced here as well as in the UI so no code path can
+ * create a reasonless habit that has nothing to read back.
+ */
+export async function insertHabit(input: CreateHabitInput): Promise<DbHabit> {
+  const db = await ensureDb();
+  const id = generateId();
+  const now = Math.floor(Date.now() / 1000);
+  const motivation = input.motivation.trim();
+  if (!motivation) throw new Error("A habit needs a reason.");
+  const startDate = input.startDate ?? toDisplayDate(new Date());
+  const cadence = JSON.stringify(input.cadence);
+  const endDate = input.endDate ?? null;
+  const reminderTime = input.reminderTime ?? null;
+  const projectId = input.projectId ?? null;
+
+  await db.runAsync(
+    `INSERT INTO habits (id, title, motivation, cadence, start_date, end_date, reminder_time, project_id, status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
+    id,
+    input.title,
+    motivation,
+    cadence,
+    startDate,
+    endDate,
+    reminderTime,
+    projectId,
+    now,
+    now,
+  );
+
+  return {
+    id,
+    title: input.title,
+    motivation,
+    cadence,
+    start_date: startDate,
+    end_date: endDate,
+    reminder_time: reminderTime,
+    project_id: projectId,
+    status: "active",
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+/** All habits, active first, in the order they were created. */
+export async function getHabits(): Promise<DbHabit[]> {
+  const db = await ensureDb();
+  return db.getAllAsync<DbHabit>(
+    "SELECT * FROM habits ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END, created_at ASC",
+  );
+}
+
+export async function getHabitRow(id: string): Promise<DbHabit> {
+  const db = await ensureDb();
+  const row = await db.getFirstAsync<DbHabit>(
+    "SELECT * FROM habits WHERE id = ?",
+    id,
+  );
+  if (!row) throw new Error(`Habit ${id} not found`);
+  return row;
+}
+
+/**
+ * Update a habit's editable fields. `cadence` is serialized here; the caller
+ * passes a `RecurrenceRule`. Does not touch `start_date` — the cadence's anchor
+ * is set at creation and preserved so past completions stay meaningful.
+ */
+export async function updateHabit(
+  id: string,
+  data: UpdateHabitInput,
+): Promise<void> {
+  const db = await ensureDb();
+  const updates: string[] = [];
+  const values: (string | number | null)[] = [];
+  if (data.title !== undefined) {
+    updates.push("title = ?");
+    values.push(data.title);
+  }
+  if (data.motivation !== undefined) {
+    updates.push("motivation = ?");
+    values.push(data.motivation.trim());
+  }
+  if (data.cadence !== undefined) {
+    updates.push("cadence = ?");
+    values.push(JSON.stringify(data.cadence));
+  }
+  if (data.endDate !== undefined) {
+    updates.push("end_date = ?");
+    values.push(data.endDate);
+  }
+  if (data.reminderTime !== undefined) {
+    updates.push("reminder_time = ?");
+    values.push(data.reminderTime);
+  }
+  if (data.projectId !== undefined) {
+    updates.push("project_id = ?");
+    values.push(data.projectId);
+  }
+  if (data.status !== undefined) {
+    updates.push("status = ?");
+    values.push(data.status);
+  }
+  if (updates.length === 0) return;
+  updates.push("updated_at = ?");
+  values.push(Math.floor(Date.now() / 1000));
+  values.push(id);
+  await db.runAsync(
+    `UPDATE habits SET ${updates.join(", ")} WHERE id = ?`,
+    ...values,
+  );
+}
+
+/** Delete a habit and its completions. History is not kept — the entity is gone. */
+export async function deleteHabit(id: string): Promise<void> {
+  const db = await ensureDb();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync("DELETE FROM habit_completions WHERE habit_id = ?", id);
+    await db.runAsync("DELETE FROM habits WHERE id = ?", id);
+  });
+}
+
+/** Every habit completion, for the store's client-side instance resolution. */
+export async function getHabitCompletions(): Promise<DbHabitCompletion[]> {
+  const db = await ensureDb();
+  return db.getAllAsync<DbHabitCompletion>("SELECT * FROM habit_completions");
+}
+
+/**
+ * Mark a habit instance (habit + DD/MM/YYYY day) done. Upserts so a re-tap is
+ * idempotent rather than a constraint error.
+ */
+export async function completeHabitInstance(
+  habitId: string,
+  instanceDate: string,
+): Promise<DbHabitCompletion> {
+  const db = await ensureDb();
+  const id = generateId();
+  const now = Math.floor(Date.now() / 1000);
+  await db.runAsync(
+    `INSERT OR REPLACE INTO habit_completions (id, habit_id, instance_date, status, created_at)
+     VALUES (?, ?, ?, 'completed', ?)`,
+    id,
+    habitId,
+    instanceDate,
+    now,
+  );
+  return {
+    id,
+    habit_id: habitId,
+    instance_date: instanceDate,
+    status: "completed",
+    created_at: now,
+  };
+}
+
+/** Clear a habit instance's completion (un-toggle). */
+export async function uncompleteHabitInstance(
+  habitId: string,
+  instanceDate: string,
+): Promise<void> {
+  const db = await ensureDb();
+  await db.runAsync(
+    "DELETE FROM habit_completions WHERE habit_id = ? AND instance_date = ?",
+    habitId,
+    instanceDate,
+  );
+}
+
+// ─── Diary helpers ──────────────────────────────────────────────────────────────
 /**
  * Parse a stored `tags` cell (JSON array of strings) into a label array.
  * NULL and malformed payloads read as an empty set — the schema's relaxed
@@ -1107,6 +1300,8 @@ export async function clearAllData(): Promise<void> {
   await db.withTransactionAsync(async () => {
     await db.execAsync('DELETE FROM diary_entries');
     await db.execAsync('DELETE FROM recurrence_completions');
+    await db.execAsync('DELETE FROM habit_completions');
+    await db.execAsync('DELETE FROM habits');
     await db.execAsync('DELETE FROM tasks');
     await db.execAsync('DELETE FROM entries');
     await db.execAsync('DELETE FROM projects');

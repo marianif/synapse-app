@@ -181,6 +181,68 @@ export interface DbRecurrenceCompletion {
   created_at: number;
 }
 
+/**
+ * A habit: a repeated intention the user chose, living on the Habits tab (never
+ * on the board). Carries a cadence (a `RecurrenceRule` serialized to JSON — the
+ * same rule shape an entry uses), an optional project link, an optional reminder
+ * time, and — the point of the entity — a REQUIRED `motivation`: the user's own
+ * words for why it matters. That reason is the encouragement engine; the UI and
+ * the notifications read it back instead of rewarding with streaks or badges.
+ */
+export interface DbHabit {
+  id: string;
+  title: string;
+  /** The user's own reason. Required at creation; never empty. */
+  motivation: string;
+  /** Serialized `RecurrenceRule` JSON. Parse with `parseRule`. */
+  cadence: string;
+  /** First occurrence, DD/MM/YYYY. */
+  start_date: string;
+  /** Optional last occurrence, DD/MM/YYYY. Null = open-ended. */
+  end_date: string | null;
+  /** Optional reminder time, "HH:MM" (24h). Null = no nudge. */
+  reminder_time: string | null;
+  /** Owning project, or null for autonomous. Same convention as entries. */
+  project_id: string | null;
+  status: "active" | "paused";
+  created_at: number;
+  updated_at: number;
+}
+
+/**
+ * TypeScript representation of a habit_completions row — one habit instance
+ * (habit + calendar day) marked done or skipped. `instance_date` is DD/MM/YYYY,
+ * matching `recurrence_completions.instance_date`.
+ */
+export interface DbHabitCompletion {
+  id: string;
+  habit_id: string;
+  instance_date: string;
+  status: "completed" | "skipped";
+  created_at: number;
+}
+
+export interface CreateHabitInput {
+  title: string;
+  motivation: string;
+  cadence: RecurrenceRule;
+  /** First occurrence, DD/MM/YYYY. Defaults to today when omitted. */
+  startDate?: string;
+  endDate?: string | null;
+  reminderTime?: string | null;
+  projectId?: string | null;
+}
+
+export interface UpdateHabitInput {
+  title?: string;
+  motivation?: string;
+  cadence?: RecurrenceRule;
+  endDate?: string | null;
+  reminderTime?: string | null;
+  projectId?: string | null;
+  status?: DbHabit["status"];
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type RecurrenceFrequency = "daily" | "weekdays" | "weekly" | "monthly";

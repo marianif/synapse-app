@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/atoms/themed-text";
+import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 
 // A single selectable pill — the shared chip used across the When / Repeat
@@ -12,6 +13,8 @@ type SelectChipProps = {
   selected: boolean;
   accentColor: string;
   onPress: () => void;
+  /** Leading glyph — used by date/time chips (cadence, nudge). */
+  icon?: IconSymbolName;
   /** Stretch to fill an equal-width slot (segmented rows). */
   fill?: boolean;
   /** Tighter footprint for dense option rails (When quick-picks). */
@@ -23,6 +26,7 @@ export function SelectChip({
   selected,
   accentColor,
   onPress,
+  icon,
   fill = false,
   compact = false,
 }: SelectChipProps): React.ReactElement {
@@ -43,6 +47,13 @@ export function SelectChip({
         pressed && !selected && { opacity: 0.6 },
       ]}
     >
+      {icon ? (
+        <IconSymbol
+          name={icon}
+          size={14}
+          color={selected ? accentColor : colors.inkMuted}
+        />
+      ) : null}
       <ThemedText
         type="caption"
         numberOfLines={1}
@@ -87,6 +98,8 @@ export function ChipRow({
 
 const styles = StyleSheet.create({
   chip: {
+    flexDirection: "row",
+    gap: tokens.space.xs,
     paddingHorizontal: tokens.space.md,
     minHeight: 32,
     borderRadius: tokens.radius.pill,

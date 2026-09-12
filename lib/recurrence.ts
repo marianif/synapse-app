@@ -1,5 +1,6 @@
 import type {
   DbEntry,
+  DbHabit,
   DbRecurrenceCompletion,
   RecurrenceRule,
   RecurringInstance,
@@ -70,29 +71,38 @@ function oneYearFrom(d: Date): Date {
 // ─── Expansion ────────────────────────────────────────────────────────────────
 
 /**
- * Returns all occurrence dates (DD/MM/YYYY) for a recurring entry that fall
- * within [fromDate, toDate] inclusive.
+ * A bare cadence: a rule plus its first (and optional last) occurrence date.
+ * Entries and habits both reduce to this, so the expansion math lives in one
+ * place — habits are not entries and must not pretend to be one.
  */
-export function expandRecurringEntry(
-  entry: DbEntry,
+export interface Cadence {
+  rule: RecurrenceRule;
+  /** First occurrence, DD/MM/YYYY. */
+  startDate: string;
+  /** Optional last occurrence, DD/MM/YYYY. Null / undefined = open-ended. */
+  endDate?: string | null;
+}
+
+/**
+ * Returns all occurrence dates (DD/MM/YYYY) for a cadence that fall within
+ * [fromDate, toDate] inclusive, capped at one year from today so an infinite
+ * rule can never run away.
+ */
+export function expandCadence(
+  cadence: Cadence,
   fromDate: Date,
   toDate: Date,
 ): string[] {
-  const rule = parseRule(entry.recurrence_rule);
-  if (!rule) return [];
-
-  const startStr = entry.scheduled_date ?? entry.due_date;
-  if (!startStr) return [];
-
-  const startDate = parseDDMMYYYY(startStr);
+  const { rule } = cadence;
+  const startDate = parseDDMMYYYY(cadence.startDate);
   if (!startDate) return [];
 
-  // Parse optional end date from the entry itself
+  // Parse optional end date from the cadence itself
   let effectiveEnd = toDate;
-  if (entry.recurrence_end_date) {
-    const entryEnd = parseDDMMYYYY(entry.recurrence_end_date);
-    if (entryEnd && entryEnd < effectiveEnd) {
-      effectiveEnd = entryEnd;
+  if (cadence.endDate) {
+    const end = parseDDMMYYYY(cadence.endDate);
+    if (end && end < effectiveEnd) {
+      effectiveEnd = end;
     }
   }
 
@@ -125,7 +135,6 @@ export function expandRecurringEntry(
       rule.days && rule.days.length > 0 ? rule.days : [startDate.getDay()];
 
     const cursor = new Date(startDate);
-    // Rewind cursor to the Monday of startDate's week, then walk forward
     while (cursor <= effectiveEnd) {
       const dow = cursor.getDay();
       if (
@@ -148,6 +157,48 @@ export function expandRecurringEntry(
   }
 
   return occurrences;
+}
+
+/**
+ * Returns all occurrence dates (DD/MM/YYYY) for a recurring entry that fall
+ * within [fromDate, toDate] inclusive.
+ */
+export function expandRecurringEntry(
+  entry: DbEntry,
+  fromDate: Date,
+  toDate: Date,
+): string[] {
+  const rule = parseRule(entry.recurrence_rule);
+  if (!rule) return [];
+
+  const startStr = entry.scheduled_date ?? entry.due_date;
+  if (!startStr) return [];
+
+  return expandCadence(
+    { rule, startDate: startStr, endDate: entry.recurrence_end_date },
+    fromDate,
+    toDate,
+  );
+}
+
+/**
+ * A habit's occurrence dates (DD/MM/YYYY) within [fromDate, toDate]. Habits are
+ * not entries, so this reads the habit's own cadence columns rather than
+ * pretending it is one.
+ */
+export function expandHabitCadence(
+  habit: DbHabit,
+  fromDate: Date,
+  toDate: Date,
+): string[] {
+  const rule = parseRule(habit.cadence);
+  if (!rule) return [];
+
+  return expandCadence(
+    { rule, startDate: habit.start_date, endDate: habit.end_date },
+    fromDate,
+    toDate,
+  );
 }
 
 // ─── Effective status ─────────────────────────────────────────────────────────
@@ -229,8 +280,12 @@ export function humanizeRule(ruleJson: string | null): string {
       return "Every weekday";
     case "weekly": {
       if (!rule.days || rule.days.length === 0) return "Weekly";
-      const dayNames = rule.days.map((d) => DAY_ABBRS[d]).join(", ");
-      return `Weekly on ${dayNames}`;
+      const sorted = [...rule.days].sort((a, b) => a - b);
+      if (sorted.length === 7) return "Every day";
+      if (sorted.length === 5 && sorted.every((d) => d >= 1 && d <= 5)) {
+        return "Every weekday";
+      }
+      return sorted.map((d) => DAY_ABBRS[d]).join(", ");
     }
     case "monthly":
       return "Monthly";

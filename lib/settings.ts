@@ -108,6 +108,7 @@ export const ConfirmKey = {
   deleteNote: "delete_note",
   deleteProject: "delete_project",
   deleteTask: "delete_task",
+  deleteHabit: "delete_habit",
 } as const;
 
 export type ConfirmKeyValue = (typeof ConfirmKey)[keyof typeof ConfirmKey];
@@ -182,7 +183,7 @@ export async function setUiPreference(
 // install keeps its current behavior, and the scheduler treats read errors as
 // enabled rather than silently dropping reminders.
 
-export type NotificationPref = "deadlines" | "projectReturns";
+export type NotificationPref = "deadlines" | "projectReturns" | "habits";
 
 const NOTIFICATION_PREF_PREFIX = "notification_pref:";
 

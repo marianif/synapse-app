@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 21;
+export const SCHEMA_VERSION = 22;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -153,11 +153,64 @@ export const CREATE_RECURRENCE_COMPLETIONS_TABLE = `
   );
 `;
 
+/**
+ * Habits: repeated intentions the user chose, off the board. Deliberately its
+ * own entity — a habit is not an entry (it never appears in the Field, Incoming,
+ * or the calendar) and carries a REQUIRED `motivation`, the user's own reason
+ * that the surface and the notifications read back instead of a streak.
+ *
+ * `cadence` is a serialized `RecurrenceRule` (same shape entries use), so the
+ * expansion math is shared (`expandCadence`). `project_id` is nullable — a habit
+ * is autonomous or linked to a project. FK SET-NULL on project delete is enforced
+ * app-side (`unlinkProjectReferences`), same as entries.
+ */
+export const CREATE_HABITS_TABLE = `
+  CREATE TABLE IF NOT EXISTS habits (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    motivation TEXT NOT NULL,
+    cadence TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    reminder_time TEXT,
+    project_id TEXT,
+    status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'paused')),
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+  );
+`;
+
+/**
+ * One habit instance (habit + calendar day) marked done or skipped. Mirrors
+ * `recurrence_completions` so the two reading patterns stay identical. The
+ * UNIQUE pair is the toggle key; `instance_date` is DD/MM/YYYY.
+ */
+export const CREATE_HABIT_COMPLETIONS_TABLE = `
+  CREATE TABLE IF NOT EXISTS habit_completions (
+    id TEXT PRIMARY KEY NOT NULL,
+    habit_id TEXT NOT NULL REFERENCES habits(id) ON DELETE CASCADE,
+    instance_date TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'completed'
+      CHECK(status IN ('completed', 'skipped')),
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    UNIQUE(habit_id, instance_date)
+  );
+`;
+
+/** Every completion read is "the completions of one habit". */
+export const CREATE_HABIT_COMPLETIONS_INDEX = `
+  CREATE INDEX IF NOT EXISTS idx_habit_completions_habit
+    ON habit_completions(habit_id, instance_date);
+`;
+
 export const ALL_STATEMENTS = [
   CREATE_ENTRIES_TABLE,
   CREATE_DIARY_TABLE,
   CREATE_PROJECTS_TABLE,
   CREATE_TASKS_TABLE,
   CREATE_TASKS_ENTRY_INDEX,
+  CREATE_HABITS_TABLE,
+  CREATE_HABIT_COMPLETIONS_TABLE,
+  CREATE_HABIT_COMPLETIONS_INDEX,
   CREATE_SCHEMA_META_TABLE,
 ];

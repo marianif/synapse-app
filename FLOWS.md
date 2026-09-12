@@ -2,7 +2,7 @@
 
 The behavioral architecture: every goal's paths through the product.
 
-Capture is the spine — one pen key, one trigger, a four-stage machine that takes any thought and files it as the right thing. The board then appears through two surfaces: the field (what exists, at equal volume, never curated) and the Agenda (one useful way back in, plus at most two alternatives). Projects are triage zones over one macro life area; the diary is the reflective layer that never touches the board.
+Capture is the spine — one pen key, one trigger, a four-stage machine that takes any thought and files it as the right thing. The board then appears through two surfaces: the field (what exists, at equal volume, never curated) and the Agenda (the next actions you flagged, then every opening the board offers, grouped by kind). Projects are triage zones over one macro life area; the diary is the reflective layer that never touches the board.
 
 Ambition order — what must exist before the app is real: capture spine → the field → the dispatch → project triage → reflective note-taking.
 
@@ -129,18 +129,27 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 
 ### Step — Read the board <!-- flow:step:read-the-board -->
 - Intent: see everything at equal volume, nothing hidden behind filters
-- Action: scan the greeting narrative, the projects overview, the direct rows
+- Action: scan the greeting narrative (which names your flagged next actions), the projects overview, the direct rows
 - State: glance
 - Next: done
 - Branch: empty board → empty-field
-- Component: FieldGreeting / ProjectsOverview / DirectOverview
+- Component: FieldGreeting (next clause) / ProjectsOverview / DirectOverview
 
 ### Step — Open a row <!-- flow:step:open-a-row -->
 - Intent: act on one thing
 - Action: tap a direct row or a project
 - State: selected
-- Next: close-the-loop
+- Next: mark-it-next
+- Branch: close it straight away → close-the-loop
 - Component: direct-row / direct-detail-sheet
+
+### Step — Mark it next <!-- flow:step:mark-it-next -->
+- Intent: choose the thing you're doing next so the app holds it for you
+- Action: tap the next-action latch in the edit header
+- State: next-action
+- Next: close-the-loop
+- Branch: not now → close-the-loop
+- Component: edit header latch / direct-row mark
 
 ### Step — Close the loop <!-- flow:step:close-the-loop -->
 - Intent: mark it done, or remove it for good
@@ -160,6 +169,11 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Next: close-the-loop
 - Recovery: dismiss the sheet
 
+### State — Next action <!-- flow:state:next-action -->
+- Meaning: an entry the user flagged as what they're doing next — named in the greeting, leading the Agenda, never recolored, dimmed, or reordered
+- Next: close-the-loop
+- Recovery: clear the latch; completing the entry clears it automatically
+
 ### State — Closed <!-- flow:state:closed -->
 - Meaning: a line struck through and sunk to the bottom
 - Next: done
@@ -177,7 +191,7 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 ## Flow — The agenda <!-- flow:flow:the-dispatch -->
 - Serves: Goal 2 — See it all at a glance
 - Entry: the user opens the agenda tab
-- Success: the user sees one useful way in and can take it in one tap
+- Success: the user sees their flagged next actions and every available opening, each one tap from the action it suggests
 - Exit: the user leaves the agenda — an invitation followed, or a tab switch
 - Handoff: the-field
 - Handoff: browse-and-triage-a-project
@@ -186,11 +200,11 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 
 ### Step — Choose a way in <!-- flow:step:read-the-feed -->
 - Intent: find one useful action without scanning the whole board
-- Action: read the primary invitation, then at most two alternatives
+- Action: read the flagged next actions, then every opening, grouped by kind
 - State: invited
 - Next: follow-an-invitation
 - Branch: no clear invitation → quiet-empty
-- Component: agenda-feed / agenda-prompt-card
+- Component: agenda-feed (NEXT UP) / agenda-prompt-card
 
 ### Step — Follow an invitation <!-- flow:step:follow-a-dispatch -->
 - Intent: make the suggested next move

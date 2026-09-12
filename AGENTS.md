@@ -241,6 +241,19 @@ python .opencode/skills/ui-ux-pro-max/search.py --stack react-native "<query>"
 
 ---
 
+## Verification
+
+- **Never launch, run, or drive a simulator or emulator on your own.** The human
+  runs and verifies the app. Do **not** run `npx expo start --ios` /
+  `--android` / `--web`, `xcrun simctl`, `adb`, Maestro, Detox, or any other
+  device/simulator automation, and do not open the app yourself.
+- Your tools are: edit code, run `npm run lint` / `npx eslint`, run
+  `npx tsc --noEmit`, and read screenshots/images the human provides.
+- Report what you changed and what still needs human verification; do not claim
+  visual verification you did not perform.
+
+---
+
 ## General Guidelines
 
 - Keep components small, single-responsibility.

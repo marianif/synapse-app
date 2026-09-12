@@ -18,7 +18,7 @@ companion tool: capture → trust → depend → expand
 
 - Outcome: projects and live deadlines are present the moment the app opens, never curated down to a "today" view.
 - Measure: 0-tap scan — a user sees projects + live deadlines without tapping, every open; D7 return.
-- Primary actions: open the app; read the field (projects, deadlines, todos, ideas at equal volume); take one useful way in from the Agenda.
+- Primary actions: open the app; read the field (projects, deadlines, todos, ideas at equal volume); flag an entry as your next action and see it named back in the greeting; take one useful way in from the Agenda.
 
 ## Critical path
 

@@ -514,6 +514,31 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 21) {
+    // Migration 21: "next action" — the user marks one or more entries as the
+    // thing(s) they're doing next. A user-set STATE on entries (todo /
+    // deadline / idea) only: never a type, never a system priority, and never
+    // exported to projects, notes, or subtasks. Cleared automatically when the
+    // entry is completed. next_marked_at orders the greeting's next clause.
+    await db.withTransactionAsync(async () => {
+      const addColumn = async (sql: string) => {
+        try {
+          await db.execAsync(sql);
+        } catch {
+          // column already exists (fresh installs got it from CREATE_ENTRIES_TABLE)
+        }
+      };
+      await addColumn(
+        'ALTER TABLE entries ADD COLUMN is_next INTEGER NOT NULL DEFAULT 0',
+      );
+      await addColumn('ALTER TABLE entries ADD COLUMN next_marked_at INTEGER');
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────

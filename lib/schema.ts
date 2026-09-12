@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 20;
+export const SCHEMA_VERSION = 21;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -25,6 +25,15 @@ export const CREATE_ENTRIES_TABLE = `
     due_range TEXT,
     -- For ideas: the project this idea was promoted into (provenance).
     promoted_project_id TEXT,
+    -- "Next action": the thing the user chose to do next. A user-set STATE, not
+    -- a type or a system priority — it never changes the entry's color or
+    -- volume (Equal Volume holds; nothing is dimmed for lacking the mark).
+    -- Cleared automatically when the entry is completed/met. SQLite has no
+    -- boolean; 0/1, same convention as projects.is_featured.
+    is_next INTEGER NOT NULL DEFAULT 0,
+    -- Ms/seconds epoch of when the user set the flag. Orders the greeting's
+    -- next-action clause (most recently chosen first). NULL when not flagged.
+    next_marked_at INTEGER,
     -- Attached photos (JSON array of {uri,kind,width,height}). Same shape as
     -- diary_entries.media: app-scoped document-directory paths, files deleted
     -- alongside the row. NULL = no photos.

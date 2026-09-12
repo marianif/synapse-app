@@ -7,6 +7,7 @@ import {
   deleteRecurringFuture,
   deleteRecurringSeries,
   fetchEntries,
+  setEntryNext,
   updateEntry,
   updateEntryStatus,
 } from "@/store/thunks/entries";
@@ -65,6 +66,9 @@ const entriesSlice = createSlice({
         upsert(state.entries, action.payload);
       })
       .addCase(updateEntryStatus.fulfilled, (state, action) => {
+        upsert(state.entries, action.payload);
+      })
+      .addCase(setEntryNext.fulfilled, (state, action) => {
         upsert(state.entries, action.payload);
       })
       .addCase(deleteEntry.fulfilled, (state, action) => {

@@ -16,6 +16,7 @@ import {
   deleteRecurringFuture as deleteRecurringFutureThunk,
   deleteRecurringSeries as deleteRecurringSeriesThunk,
   fetchEntries as fetchEntriesThunk,
+  setEntryNext as setEntryNextThunk,
   updateEntry as updateEntryThunk,
   updateEntryStatus as updateEntryStatusThunk,
 } from "@/store/thunks/entries";
@@ -54,6 +55,11 @@ export interface UseDatabaseReturn {
   createEntry: (data: CreateEntryInput) => Promise<DbEntry>;
   updateEntry: (id: string, data: UpdateEntryInput) => Promise<void>;
   updateEntryStatus: (id: string, status: DbEntry["status"]) => Promise<void>;
+  /**
+   * Set or clear the user's "next action" mark on an entry. A user-set state;
+   * cleared automatically when the entry is completed. Entries only.
+   */
+  setEntryNext: (id: string, value: boolean) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
   fetchEntries: (type?: EntryType) => Promise<DbEntry[]>;
   fetchProjects: () => Promise<void>;
@@ -131,6 +137,8 @@ export function useDatabase(): UseDatabaseReturn {
           toVoid(dispatch(updateEntryThunk({ id, data })).unwrap()),
         updateEntryStatus: (id: string, status: DbEntry["status"]) =>
           toVoid(dispatch(updateEntryStatusThunk({ id, status })).unwrap()),
+        setEntryNext: (id: string, value: boolean) =>
+          toVoid(dispatch(setEntryNextThunk({ id, value })).unwrap()),
         deleteEntry: (id: string) =>
           toVoid(dispatch(deleteEntryThunk(id)).unwrap()),
         fetchEntries: (type?: EntryType) =>

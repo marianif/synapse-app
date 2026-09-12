@@ -123,7 +123,7 @@ export function DirectRow({
         onPress={() => onPress(entry)}
         accessibilityRole="button"
         accessibilityState={{ checked: done }}
-        accessibilityLabel={`${entry.title}, ${when}${done ? ", done" : ""}`}
+        accessibilityLabel={`${entry.title}, ${when}${entry.is_next === 1 && !done ? ", next action" : ""}${done ? ", done" : ""}`}
         style={({ pressed }) => [
           styles.row,
           { backgroundColor: colors.surface },
@@ -152,6 +152,26 @@ export function DirectRow({
           >
             {entry.title}
           </ThemedText>
+
+          {/* "NEXT" chip — the user chose this as what they're doing next. A
+              neutral status chip, not a type color: it is a state, so it never
+              recolors the row or dims the ones without it (Equal Volume). A done
+              line has had the mark auto-cleared, so this only ever shows on
+              open rows. It sits before the when-label so the readout stays right. */}
+          {entry.is_next === 1 && !done ? (
+            <View
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={[
+                styles.nextChip,
+                { backgroundColor: colors.surfaceSubtle },
+              ]}
+            >
+              <ThemedText type="micro" style={{ color: colors.inkMuted }}>
+                NEXT
+              </ThemedText>
+            </View>
+          ) : null}
 
           <ThemedText type="mono" style={[styles.when, { color: whenColor }]}>
             {when}
@@ -223,6 +243,13 @@ const styles = StyleSheet.create({
   },
   when: {
     textAlign: "right",
+  },
+  // Neutral "NEXT" status chip — a seated chip, never a type color. Mirrors the
+  // SOMEDAY treatment: informational, not a reward.
+  nextChip: {
+    borderRadius: tokens.radius.sm,
+    paddingHorizontal: tokens.space.sm,
+    paddingVertical: 2,
   },
   taskCount: {
     textAlign: "right",

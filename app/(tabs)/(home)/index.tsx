@@ -32,6 +32,7 @@ import type {
   HorizonScope,
 } from "@/lib/direct-when";
 import type { FieldRowItem, Heat } from "@/components/molecules/field-row";
+import type { NextAction } from "@/components/molecules/field-summary";
 import type { DbEntry, EntryType } from "@/lib/types";
 
 dayjs.extend(customParseFormat);
@@ -201,6 +202,28 @@ export default function HomeScreen(): React.ReactElement {
     [projects],
   );
 
+  // The next-action layer: open entries the user flagged, most recently chosen
+  // first. The greeting names up to three and folds the rest into "+N more";
+  // the Agenda lists them all. A done entry has had its mark auto-cleared, so
+  // the filter is belt-and-braces against a stale flag.
+  const nextActions = useMemo<NextAction[]>(
+    () =>
+      entries
+        .filter(
+          (e) =>
+            e.is_next === 1 &&
+            e.status !== "completed" &&
+            e.status !== "met",
+        )
+        .sort((a, b) => (b.next_marked_at ?? 0) - (a.next_marked_at ?? 0))
+        .map((e) => ({
+          id: e.id,
+          type: e.type as EntryType,
+          title: e.title,
+        })),
+    [entries],
+  );
+
   // A summary count-phrase tap lands the direct register in view and narrows it
   // to that cut. Stakes are "this week" (matching how the summary counts them);
   // ideas have no date axis, so their tap just filters to the type.
@@ -231,7 +254,12 @@ export default function HomeScreen(): React.ReactElement {
           seasonalNote={seasonalNote(today.getMonth(), today.getHours())}
           stakes={stakes}
           present={present}
+          nextActions={nextActions}
           onSelectType={handleSelectType}
+          onSelectNext={(id) =>
+            router.push({ pathname: "/edit", params: { id } })
+          }
+          onShowMoreNext={() => router.push("/(tabs)/agenda")}
         />
 
         {/* TODO(flow): visual shaping pass — this is a minimal projects +

@@ -5,6 +5,7 @@ import { FieldSummary } from "@/components/molecules/field-summary";
 import { tokens, useTheme } from "@/constants/theme";
 
 import type { FieldRowItem } from "@/components/molecules/field-row";
+import type { NextAction } from "@/components/molecules/field-summary";
 import type { EntryType } from "@/lib/types";
 
 /**
@@ -128,8 +129,14 @@ interface FieldGreetingProps {
   stakes: FieldRowItem[];
   /** PRESENT rows (ideas). */
   present: FieldRowItem[];
+  /** Open entries the user flagged as next; named (up to three) in the voice. */
+  nextActions?: NextAction[];
   /** Optional tap per summary count-phrase — drill into that cut. */
   onSelectType?: (type: EntryType) => void;
+  /** Tapping a named next action opens its entry. */
+  onSelectNext?: (id: string) => void;
+  /** Tapping "+N more" routes to the Agenda, which lists them all. */
+  onShowMoreNext?: () => void;
 }
 
 export function FieldGreeting({
@@ -138,13 +145,20 @@ export function FieldGreeting({
   seasonalNote,
   stakes,
   present,
+  nextActions,
   onSelectType,
+  onSelectNext,
+  onShowMoreNext,
 }: FieldGreetingProps): React.ReactElement {
   const { colors } = useTheme();
 
-  // The board is clear when there are no stakes and nothing present. Empty shows
-  // the capture nudge; populated swaps it for the field summary.
-  const empty = stakes.length === 0 && present.length === 0;
+  // The board is clear when there are no stakes, nothing present, and no
+  // flagged next actions. Empty shows the capture nudge; populated swaps it for
+  // the field summary.
+  const empty =
+    stakes.length === 0 &&
+    present.length === 0 &&
+    (nextActions?.length ?? 0) === 0;
 
   return (
     <View style={styles.head}>
@@ -174,7 +188,10 @@ export function FieldGreeting({
         <FieldSummary
           stakes={stakes}
           present={present}
+          nextActions={nextActions}
           onSelectType={onSelectType}
+          onSelectNext={onSelectNext}
+          onShowMoreNext={onShowMoreNext}
         />
       )}
     </View>

@@ -35,6 +35,20 @@ export interface DbEntry {
    */
   promoted_project_id: string | null;
   /**
+   * The user's chosen "next action" — the thing they're doing next. A
+   * user-set STATE, never a system priority: it does not change the entry's
+   * color or volume. SQLite stores booleans as 0/1. Cleared automatically when
+   * the entry is completed/met. Only entries carry this (no projects, notes,
+   * or subtasks).
+   */
+  is_next: 0 | 1;
+  /**
+   * When the user set (or last re-set) the next-action flag. Orders the home
+   * greeting's next clause, most recently chosen first. Null when not flagged.
+   * Stored as seconds-since-epoch, matching created_at / updated_at.
+   */
+  next_marked_at: number | null;
+  /**
    * Photos attached to the entry (todo, deadline, or idea), in order. Same
    * shape as note media: each entry references a file in the app's media
    * directory; stored as a JSON array.

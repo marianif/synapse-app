@@ -36,7 +36,6 @@ export interface AgendaPrompt {
 
 const PROJECT_RETURN_DAYS = 7;
 const PREPARE_WINDOW_DAYS = 7;
-const MAX_PROMPTS = 3;
 
 const isDone = (entry: DbEntry): boolean =>
   entry.status === "completed" || entry.status === "met";
@@ -194,29 +193,28 @@ function decidePrompts(entries: DbEntry[], now: number): AgendaPrompt[] {
 function selectPrompts(candidates: AgendaPrompt[]): AgendaPrompt[] {
   const ranked = [...candidates].sort((a, b) => b.priority - a.priority);
   const selected: AgendaPrompt[] = [];
-  const kinds = new Set<AgendaPromptKind>();
   const targets = new Set<string>();
 
-  // The first pass gives the user a varied set of invitations. A second pass
-  // fills remaining space only when the board has no variety to offer.
-  for (const requireNewKind of [true, false]) {
-    for (const prompt of ranked) {
-      if (selected.length >= MAX_PROMPTS) return selected;
-      const targetKey = `${prompt.target.kind}:${prompt.target.id}`;
-      if (targets.has(targetKey)) continue;
-      if (requireNewKind && kinds.has(prompt.kind)) continue;
-      selected.push(prompt);
-      kinds.add(prompt.kind);
-      targets.add(targetKey);
-    }
+  // Every candidate is shown, most urgent first, deduped to one invitation per
+  // target. The old three-prompt cap is gone: the Agenda is still a curated
+  // surface, but it no longer hides a real opening just to stay shallow. The
+  // feed groups the results by kind (see AgendaFeed), so "all of them" reads
+  // as a small structured board rather than a wall.
+  for (const prompt of ranked) {
+    const targetKey = `${prompt.target.kind}:${prompt.target.id}`;
+    if (targets.has(targetKey)) continue;
+    selected.push(prompt);
+    targets.add(targetKey);
   }
 
   return selected;
 }
 
 /**
- * Build the Agenda's invitations. This is intentionally not a feed: it returns
- * one primary invitation and at most two alternatives, each with an action.
+ * Build the Agenda's invitations. Every useful opening the board offers, most
+ * urgent first, one per target. The first is still the primary invitation; the
+ * rest are grouped by kind downstream. The user asked for all available
+ * openings to be visible rather than capped at three.
  */
 export function agendaPrompts(input: {
   entries: DbEntry[];

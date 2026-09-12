@@ -10,22 +10,29 @@ import {
   ActivityIndicator,
   AppState,
   Keyboard,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   TextInput,
   TouchableWithoutFeedback,
   View,
+  type LayoutChangeEvent,
 } from "react-native";
 import Animated, {
   Easing,
   FadeIn,
   FadeOut,
   LinearTransition,
+  runOnJS,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { EntryDot } from "@/components/atoms/entry-dot";
 import { ChipRail, SelectChip } from "@/components/atoms/select-chip";
@@ -33,6 +40,7 @@ import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { DetailHeaderRow } from "@/components/molecules/detail-header-row";
 import { DiaryNote } from "@/components/molecules/diary-note";
+import { EntryActionBar } from "@/components/molecules/entry-action-bar";
 import { MediaStrip } from "@/components/molecules/media-strip";
 import { TaskChecklist } from "@/components/molecules/task-checklist";
 import { WhenPicker } from "@/components/molecules/when-picker";
@@ -238,12 +246,6 @@ function projectClause(
   return project ? project.title : "unfiled";
 }
 
-function doneLabel(type: DbEntry["type"]): string {
-  if (type === "deadline") return "Mark met";
-  if (type === "idea") return "Archive";
-  return "Complete";
-}
-
 // Only surfaces a narrative line when it adds information the status row
 // doesn't already carry: a settled entry's closure, and a stale idea's age.
 function narrativeFor(entry: DbEntry): string | null {
@@ -308,6 +310,7 @@ export default function EditScreen(): React.ReactElement {
     isLoading,
     updateEntry,
     updateEntryStatus,
+    setEntryNext,
     deleteEntry,
     fetchEntries,
   } = useDatabase();
@@ -320,6 +323,87 @@ export default function EditScreen(): React.ReactElement {
   const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteEntry });
   // Lets the checklist's open swipe row be dismissed when the editor scrolls.
   const taskSwipe = useRef<{ close: () => void } | null>(null);
+
+  const insets = useSafeAreaInsets();
+
+  // ─── Action bar peek: hide-on-down / reveal-on-up, and yield to the keyboard ─
+  // The commit bar rests at the screen bottom. Scrolling down into the entry
+  // slides it out (Safari-style) so the content gets the space back; the first
+  // upward scroll — or landing near the top — brings it back. While the keyboard
+  // is up it stays hidden. Mirrors the Notes composer / Projects shelf behavior,
+  // read on the UI thread so the slide stays in sync with the scroll.
+  const HIDE_AT = 32; // px of downward scroll before the bar yields
+  const barHidden = useSharedValue(false);
+  const barTranslate = useSharedValue(0);
+  const barHideDistance = useSharedValue(tokens.space.xxl + 52);
+  const keyboardUp = useSharedValue(false);
+  const lastScrollY = useSharedValue(0);
+
+  const closeTaskSwipe = useCallback(() => {
+    taskSwipe.current?.close();
+  }, []);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      runOnJS(closeTaskSwipe)();
+      const y = e.contentOffset.y;
+      const dy = y - lastScrollY.value;
+      lastScrollY.value = y;
+      if (keyboardUp.value) return;
+      if (!barHidden.value && y > HIDE_AT && dy > 1) {
+        barHidden.value = true;
+        barTranslate.value = withTiming(barHideDistance.value, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.inOut(Easing.cubic),
+        });
+      } else if (barHidden.value && (y <= HIDE_AT || dy < -1)) {
+        barHidden.value = false;
+        barTranslate.value = withTiming(0, {
+          duration: tokens.motion.duration.base,
+          easing: Easing.inOut(Easing.cubic),
+        });
+      }
+    },
+  });
+
+  const barStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: barTranslate.value }],
+  }));
+
+  // The bar slides down by its own height + the gap it rests at — enough to
+  // clear the screen bottom entirely.
+  const handleBarLayout = (e: LayoutChangeEvent): void => {
+    barHideDistance.value = e.nativeEvent.layout.height + tokens.space.lg;
+  };
+
+  // Keyboard up hides the commit bar; it slides back when the keyboard
+  // dismisses. iOS fires will* with a duration we can match, Android only did*.
+  useEffect(() => {
+    const showEvt =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const show = Keyboard.addListener(showEvt, () => {
+      keyboardUp.value = true;
+      barHidden.value = true;
+      barTranslate.value = withTiming(barHideDistance.value, {
+        duration: tokens.motion.duration.base,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    const hide = Keyboard.addListener(hideEvt, () => {
+      keyboardUp.value = false;
+      barHidden.value = false;
+      barTranslate.value = withTiming(0, {
+        duration: tokens.motion.duration.base,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [keyboardUp, barHidden, barTranslate, barHideDistance]);
 
   const entry = entries.find((item) => item.id === id);
 
@@ -519,19 +603,27 @@ export default function EditScreen(): React.ReactElement {
     });
   };
 
-  const canComplete = !done;
-  const canUndo = done;
+  // The "next action" latch: the user's chosen thing to do next. A user-set
+  // state, not a priority — it never recolors the entry. Completing the entry
+  // clears it automatically; here the user sets or clears it by hand. Light
+  // haptic because it is a deliberate, reversible choice, not a destructive one.
+  const handleToggleNext = (): void => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    void setEntryNext(entry.id, entry.is_next !== 1).catch((err) =>
+      console.error("Failed to toggle next action:", err),
+    );
+  };
 
   return (
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: colors.paper }]}
-      edges={["top", "bottom"]}
+      edges={["top"]}
     >
-      {/* Modal header — the lit-dial instrument row: close on a seated cell, the
-          type kicker on a mono chip, complete/undo as the committed success
-          slab (the system's one sanctioned green), delete on a danger tint.
-          Closing autosaves (beforeRemove); the slab is the send-equivalent of
-          the capture bar. */}
+      {/* Modal header — the lit-dial instrument row: close on a seated cell,
+          the type kicker on a mono chip, delete on a danger tint. The commit
+          verbs (complete, mark as next) live on the bottom action bar, not
+          here: delete stays tier-3, deliberately apart from the commit cluster.
+          Closing autosaves (beforeRemove). */}
       <View style={styles.modalHeader}>
         <Pressable
           onPress={() => router.back()}
@@ -562,50 +654,6 @@ export default function EditScreen(): React.ReactElement {
         </View>
 
         <View style={styles.headerActions}>
-          {canComplete ? (
-            <Pressable
-              onPress={handleMarkDone}
-              hitSlop={18}
-              accessibilityRole="button"
-              accessibilityLabel={doneLabel(entry.type)}
-              style={({ pressed }) => [
-                styles.headerBtn,
-                {
-                  backgroundColor: pressed
-                    ? tokens.feedback.successPressed
-                    : tokens.feedback.success,
-                },
-              ]}
-            >
-              <IconSymbol
-                name="Check"
-                size={18}
-                color={tokens.color.light.ink}
-              />
-            </Pressable>
-          ) : canUndo ? (
-            <Pressable
-              onPress={handleUndoDone}
-              hitSlop={12}
-              accessibilityRole="button"
-              accessibilityLabel="Mark as not done"
-              style={({ pressed }) => [
-                styles.headerBtn,
-                {
-                  backgroundColor: pressed
-                    ? tokens.feedback.successPressed
-                    : tokens.feedback.success,
-                },
-              ]}
-            >
-              <IconSymbol
-                name="Undo"
-                size={18}
-                color={tokens.color.light.ink}
-              />
-            </Pressable>
-          ) : null}
-
           <Pressable
             onPress={handleDelete}
             hitSlop={12}
@@ -629,18 +677,15 @@ export default function EditScreen(): React.ReactElement {
         </View>
       </View>
 
-      <KeyboardAvoidingView
+      <Animated.ScrollView
         style={styles.screen}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}
+        automaticallyAdjustKeyboardInsets
+        scrollEventThrottle={16}
+        onScroll={scrollHandler}
       >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          showsVerticalScrollIndicator={false}
-          automaticallyAdjustKeyboardInsets
-          scrollEventThrottle={16}
-          onScroll={() => taskSwipe.current?.close()}
-        >
           <TouchableWithoutFeedback
             onPress={Keyboard.dismiss}
             accessible={false}
@@ -931,8 +976,32 @@ export default function EditScreen(): React.ReactElement {
               ) : null}
             </View>
           </TouchableWithoutFeedback>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          <View style={styles.bottomSpacer} />
+        </Animated.ScrollView>
+
+      {/* Commit bar — the two verbs the entry commits with, labeled and thumb-
+          reachable, resting at the screen bottom under the home indicator. It
+          yields to scroll and to the keyboard (see the peek block above). */}
+      <Animated.View
+        onLayout={handleBarLayout}
+        style={[
+          styles.actionBar,
+          tokens.elevation.capture,
+          {
+            paddingBottom: Math.max(insets.bottom, tokens.space.md),
+            backgroundColor: colors.surface,
+          },
+          barStyle,
+        ]}
+      >
+        <EntryActionBar
+          type={entry.type}
+          done={done}
+          isNext={entry.is_next === 1}
+          onComplete={done ? handleUndoDone : handleMarkDone}
+          onToggleNext={handleToggleNext}
+        />
+      </Animated.View>
 
       <ConfirmSheet
         visible={deleteConfirm.visible}
@@ -1115,6 +1184,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space.sm,
     paddingVertical: tokens.space.xs,
     borderRadius: tokens.radius.sm,
+  },
+  actionBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: tokens.space.lg,
+    paddingTop: tokens.space.md,
+  },
+  bottomSpacer: {
+    height: 120,
   },
   content: {
     paddingHorizontal: tokens.space.lg,

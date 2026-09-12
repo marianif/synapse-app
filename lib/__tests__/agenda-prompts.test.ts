@@ -33,6 +33,8 @@ function entry(overrides: Partial<DbEntry> = {}): DbEntry {
     project_id: null,
     due_range: null,
     promoted_project_id: null,
+    is_next: 0,
+    next_marked_at: null,
     media: [],
     created_at: secondsAgo(30 * DAY),
     updated_at: secondsAgo(30 * DAY),
@@ -183,7 +185,7 @@ describe("agendaPrompts", () => {
     );
   });
 
-  test("returns one primary invitation and at most two alternatives", () => {
+  test("returns every opening, deduped to one per target, not capped", () => {
     const result = prompts({
       projects: [project()],
       entries: [
@@ -202,8 +204,34 @@ describe("agendaPrompts", () => {
       ],
     });
 
-    expect(result.length).toBeLessThanOrEqual(3);
+    // Three distinct openings: the old three-item cap is gone, so all show.
+    expect(result).toHaveLength(3);
     expect(result.every((prompt) => prompt.actionLabel.length > 0)).toBe(true);
-    expect(new Set(result.map((prompt) => prompt.kind)).size).toBe(result.length);
+  });
+
+  test("shows more than three openings when the board offers them", () => {
+    const result = prompts({
+      projects: [
+        project(),
+        project({ id: "project-2", title: "Studio" }),
+      ],
+      entries: [
+        entry({ project_id: "project-1" }),
+        entry({ id: "entry-2", project_id: "project-2" }),
+        entry({
+          id: "deadline-1",
+          title: "Book dentist",
+          type: "deadline",
+          due_date: date(1),
+        }),
+        entry({
+          id: "idea-1",
+          title: "Summer studio",
+          type: "idea",
+        }),
+      ],
+    });
+
+    expect(result.length).toBeGreaterThan(3);
   });
 });

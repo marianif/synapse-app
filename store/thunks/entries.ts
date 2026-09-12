@@ -190,10 +190,41 @@ export const updateEntryStatus = createAsyncThunk<
   run("updateEntryStatus", async () => {
     const db = await ensureDb();
     const now = Math.floor(Date.now() / 1000);
+    // Completing an entry retires its "next action" mark automatically: the
+    // greeting must never name a finished thing, and the user's mandate was
+    // "clear on done, assume nothing else." A re-open leaves the flag alone
+    // (it was cleared at completion; re-flag deliberately).
+    const done = status === "completed" || status === "met";
     await db.runAsync(
-      "UPDATE entries SET status = ?, updated_at = ? WHERE id = ?",
+      done
+        ? "UPDATE entries SET status = ?, is_next = 0, next_marked_at = NULL, updated_at = ? WHERE id = ?"
+        : "UPDATE entries SET status = ?, updated_at = ? WHERE id = ?",
       status,
       now,
+      id,
+    );
+    return readEntry(id);
+  }),
+);
+
+/**
+ * Set or clear the user's "next action" flag on an entry. A user-set state,
+ * not a system priority: it stamps next_marked_at so the greeting can order
+ * the clause by when the user last chose it. Completing the entry clears the
+ * flag automatically (see updateEntryStatus); this thunk is the only other
+ * writer.
+ */
+export const setEntryNext = createAsyncThunk<
+  DbEntry,
+  { id: string; value: boolean }
+>("entries/setNext", ({ id, value }) =>
+  run("setEntryNext", async () => {
+    const db = await ensureDb();
+    const now = Math.floor(Date.now() / 1000);
+    await db.runAsync(
+      "UPDATE entries SET is_next = ?, next_marked_at = ? WHERE id = ?",
+      value ? 1 : 0,
+      value ? now : null,
       id,
     );
     return readEntry(id);

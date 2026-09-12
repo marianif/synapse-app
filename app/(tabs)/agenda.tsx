@@ -41,6 +41,23 @@ export default function AgendaScreen(): React.ReactElement {
     [entries, tasks, projects, now],
   );
 
+  // The entries the user flagged as next — not suggestions, so they lead the
+  // page and are never dropped by the prompt ranking. Most recently chosen
+  // first. A done entry has had its mark auto-cleared; the status guard is
+  // belt-and-braces.
+  const nextActions = useMemo(
+    () =>
+      entries
+        .filter(
+          (e) =>
+            e.is_next === 1 &&
+            e.status !== "completed" &&
+            e.status !== "met",
+        )
+        .sort((a, b) => (b.next_marked_at ?? 0) - (a.next_marked_at ?? 0)),
+    [entries],
+  );
+
   // Every invitation has one direct way in. The Agenda is useful only if the
   // action it suggests is one tap away.
   const handleSelect = useCallback(
@@ -74,7 +91,7 @@ export default function AgendaScreen(): React.ReactElement {
         What could move?
       </ThemedText>
       <ThemedText type="body" muted style={styles.subtitle}>
-        One useful way in is enough.
+        What you flagged to do next, and where else you could start.
       </ThemedText>
     </View>
   );
@@ -83,7 +100,11 @@ export default function AgendaScreen(): React.ReactElement {
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       <AgendaFeed
         prompts={prompts}
+        nextActions={nextActions}
         onSelect={handleSelect}
+        onSelectEntry={(id) =>
+          router.push({ pathname: "/edit", params: { id } })
+        }
         header={header}
         bottomInset={cap.tabBarHeight}
       />

@@ -13,7 +13,7 @@ Field Lab is built for an ADHD-adjacent user who opens the app mid-thought and n
 
 The system explicitly rejects: corporate productivity tools, gamified habit-trackers (streaks, badges, confetti), pastel-illustration journaling apps, pure white / pure black interfaces, and plain checklist task managers with no projects and no memory.
 
-**The Agenda is an invitation, not a narrator.** It notices a useful opening, gives it a human reason, and offers one direct action: return, continue, prepare, or decide. It never narrates stale state, guilts the user, or creates a wall of choices. The copy should sound like a person making it easier to begin, not a system explaining what it measured.
+**The Agenda is an invitation, not a narrator.** It leads with the entries the user themselves flagged as **next actions**, then gives every other opening a human reason and one direct action: return, continue, prepare, or decide. It never narrates stale state, guilts the user, or presents a flat wall: when it lists every opening, it groups them by kind so the set reads as structure. The copy should sound like a person making it easier to begin, not a system explaining what it measured.
 
 **Core-model note (Jun 11 pivot).** The model is now four board things — **idea · todo · deadline · diary note** — over **projects**. **Events are removed** (the persona doesn't live event-to-event), which frees the ultraviolet code from the palette. **Someday is no longer a type or a color**: an undated todo IS a "someday", marked by a quiet mono **badge**, never a lime downgrade — so lime also leaves the type palette. The palette drops from five electric codes to three (deadline coral, todo cyan, idea amber).
 
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
 
 ### Someday badge
 
-An undated todo is still a todo — same cyan code, same volume. The undated state is carried by a small mono badge, never by a color change. The badge is a neutral chip (it must not read as another type code), and it ships an accessibility label so the state is not color/visual-only.
+An undated todo is still a todo — same cyan code, same volume. The undated state is carried by a small mono badge, never by a color change. The badge is a neutral chip (it must not read as another type code), and it ships an accessibility label so the state is not color/visual-only. It is one of **two neutral status chips** on the board — `SOMEDAY` (undated) and `NEXT` (flagged as the next action) — neither a type colour nor a reward; every other row mark is a type code, a when-label, or a progress thread.
 
 ```tsx
 import { StyleSheet, Text, View } from "react-native";
@@ -326,9 +326,25 @@ const styles = StyleSheet.create({
 });
 ```
 
+### Next-action mark
+
+A user-set state on any entry (todo / deadline / idea): "this is what I'm doing next." It is **not** a type and **not** a priority, so it never recolors a row, never dims the rows without it, and never reorders the register (Equal Volume holds). It is carried by a **neutral `NEXT` chip** in the row's trailing cluster — a seated `surfaceSubtle` chip with `inkMuted` mono text, the same informational treatment as `SOMEDAY`, never a type colour — and by a **seated key in `/edit`'s bottom commit bar that inverts to ink when latched**. It never takes the accent slab: a supporting state does not spend the action colour, and no new colour code is introduced. Clearing is automatic on completion; the latch is the only manual writer. It appears on the home voice as a Caveat clause naming up to three, and in full at the top of the Agenda.
+
+```tsx
+// Row mark — a neutral chip, no recolor. Rendered only on open, flagged rows.
+{entry.is_next === 1 && !done ? (
+  <View style={[styles.nextChip, { backgroundColor: colors.surfaceSubtle }]}>
+    <ThemedText type="micro" style={{ color: colors.inkMuted }}>
+      NEXT
+    </ThemedText>
+  </View>
+) : null}
+```
+
 ### Signature organisms (existing, documented for reference)
 
 - **CaptureBar** (`components/organisms/capture-bar.tsx`) — always-on bottom capture; neutral idle bar, recording state goes full amber with live waveform; `elevation.capture` lift.
+- **EntryActionBar** (`components/molecules/entry-action-bar.tsx`) — the `/edit` commit bar: two equal-width action keys composing the **`DiscButton`** atom (`components/atoms/disc-button.tsx`). Each key is a `radius.pill` with a fully-rounded 28px glyph disc; the disc carries the colour — the sanctioned completion green on the committing verb (Complete / Mark met / Archive, or Reopen when done), ink on the next-action latch (which inverts to an ink pill when on). Neutral `surface` panel on `elevation.capture`; yields to scroll and the keyboard. Delete stays tier-3 in the route header, never in this cluster.
 - **FieldGreeting** (`components/molecules/field-greeting.tsx`) — display-step companion voice plus a mono instrument readout ("3 pressing · 12 in field").
 - **Custom tab bar** (`components/organisms/custom-tab-bar.tsx`) — replaces the native bar; center slab action key.
 
@@ -361,7 +377,7 @@ const styles = StyleSheet.create({
 ### Don't
 
 - **Don't** build anything that reads as a corporate productivity tool (the rejected blue-lavender "Kinetic Equilibrium" direction).
-- **Don't** add streaks, achievement badges, confetti, or any gamified habit-tracker mechanics — no celebration, no dopamine loops. (The neutral "someday" status badge is informational, not a reward — it is the one sanctioned badge.)
+- **Don't** add streaks, achievement badges, confetti, or any gamified habit-tracker mechanics — no celebration, no dopamine loops. (The neutral `SOMEDAY` and `NEXT` status chips are informational, not rewards.)
 - **Don't** add pastel-illustration mascots or decorative spot art.
 - **Don't** use pure white or pure black anywhere — cool extremes only.
 - **Don't** use warm tones — no oat-cream, no terracotta, no warm shadows. Field Lab is cool only.

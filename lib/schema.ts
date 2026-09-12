@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 22;
+export const SCHEMA_VERSION = 23;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -169,6 +169,9 @@ export const CREATE_HABITS_TABLE = `
     id TEXT PRIMARY KEY NOT NULL,
     title TEXT NOT NULL,
     motivation TEXT NOT NULL,
+    -- Autonomous-habit glyph; a project-linked habit inherits the project's
+    -- emoji at render time instead. Null = fallback Repeat glyph.
+    emoji TEXT,
     cadence TEXT NOT NULL,
     start_date TEXT NOT NULL,
     end_date TEXT,

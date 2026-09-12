@@ -31,24 +31,61 @@ struct VoiceInputProvider: AppIntentTimelineProvider {
     }
 }
 
-// MARK: - Shared: neutral mic disc
+// MARK: - Shared: keys
 //
-// The one action color, solid — no gradient, no glow. Color categorizes and
-// activates; it never decorates. The disc IS the affordance.
+// The Field Lab action language at widget scale — mirrors
+// `components/atoms/disc-button.tsx`: the key carries the shape, the disc
+// carries the color, and only the tier-1 key earns the clay slab. Depth is
+// one cool shadow per key — no border, no gradient.
 
-private struct MicButton: View {
+private struct DiscKey: View {
+    let systemName: String
     let size: CGFloat
     let iconSize: CGFloat
 
     var body: some View {
         Circle()
-            .fill(Color.clay)
+            .fill(Color.surface)
             .frame(width: size, height: size)
             .overlay(
-                Image(systemName: "mic.fill")
+                Image(systemName: systemName)
                     .font(.system(size: iconSize, weight: .semibold))
-                    .foregroundStyle(Color.onClay)
+                    .foregroundStyle(Color.ink)
             )
+            .keyShadow()
+    }
+}
+
+private struct SpeakKey: View {
+    let height: CGFloat
+    let discSize: CGFloat
+    let labelSize: CGFloat
+
+    var body: some View {
+        HStack(spacing: Spacing.md) {
+            Circle()
+                .fill(Color.clay)
+                .frame(width: discSize, height: discSize)
+                .overlay(
+                    Image(systemName: "mic.fill")
+                        .font(.system(size: discSize * 0.42, weight: .semibold))
+                        .foregroundStyle(Color.onClay)
+                )
+
+            Text("Speak")
+                .font(.system(size: labelSize, weight: .semibold))
+                .foregroundStyle(Color.ink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, Spacing.md)
+        .frame(maxWidth: .infinity, minHeight: height)
+        .background(
+            Capsule(style: .continuous)
+                .fill(Color.surface)
+        )
+        .keyShadow()
     }
 }
 
@@ -79,7 +116,10 @@ struct VoiceInputWidgetEntryView: View {
     }
 }
 
-// MARK: - Shared: kicker (the only all-caps element) — mono signal layer.
+// MARK: - Shared: kicker — metadata voice only, in muted ink.
+//
+// The electric type-codes are content colors, never chrome: a label is not
+// a todo, so the cyan stays out of the widget.
 
 private struct Kicker: View {
     let text: String
@@ -88,47 +128,37 @@ private struct Kicker: View {
         Text(text)
             .font(.system(size: 11, weight: .semibold, design: .monospaced))
             .tracking(0.8)
-            .foregroundStyle(Color.typeTodo)
-    }
-}
-
-// MARK: - Shared: tonal tile
-//
-// Structure without a 1px border, without a colored edge-bar — a tonal surface
-// lifted off the paper. The 6px dot / mono kicker carry structure, not chrome.
-
-private struct FieldTile<Content: View>: View {
-    @ViewBuilder let content: () -> Content
-
-    var body: some View {
-        content()
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: Radius.lg, style: .continuous)
-                    .fill(Color.surface)
-            )
+            .foregroundStyle(Color.inkMuted)
     }
 }
 
 // MARK: - Small Widget
+//
+// One composition, not an icon on a card: the tier-1 Speak key up top, its
+// two capture companions on the same grid below. Keys sit directly on the
+// paper — no tile-in-tile.
 
 struct SmallVoiceWidgetView: View {
     var body: some View {
-        Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
-            FieldTile {
-                VStack(alignment: .center, spacing: Spacing.md) {
-                    Spacer(minLength: 0)
+        VStack(spacing: Spacing.sm) {
+            Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
+                SpeakKey(height: 58, discSize: 38, labelSize: 20)
+            }
+            .accessibilityLabel("Speak — start voice capture")
 
-                    MicButton(size: 72, iconSize: 30)
-
-                    Spacer(minLength: 0)
-
-                    Kicker(text: "VOICE")
+            HStack(spacing: Spacing.sm) {
+                Link(destination: URL(string: "synapseapp:///?capture=text")!) {
+                    DiscKey(systemName: "keyboard", size: 54, iconSize: 20)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(Spacing.lg)
+                .accessibilityLabel("Type — capture with the keyboard")
+
+                Link(destination: URL(string: "synapseapp:///list")!) {
+                    DiscKey(systemName: "list.bullet", size: 54, iconSize: 22)
+                }
+                .accessibilityLabel("List — open all entries")
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -136,33 +166,32 @@ struct SmallVoiceWidgetView: View {
 
 struct MediumVoiceWidgetView: View {
     var body: some View {
-        Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
-            FieldTile {
-                HStack(spacing: Spacing.xl) {
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
-                        Kicker(text: "VOICE")
+        VStack(alignment: .leading, spacing: 0) {
+            Kicker(text: "CAPTURE")
 
-                        Text("Capture a thought")
-                            .font(.system(size: 24, weight: .semibold))
-                            .foregroundStyle(Color.ink)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
+            Spacer(minLength: Spacing.sm)
 
-                        Text("Tap to start recording, from anywhere.")
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundStyle(Color.inkMuted)
-                            .lineLimit(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    MicButton(size: 56, iconSize: 24)
+            HStack(spacing: Spacing.sm) {
+                Link(destination: URL(string: "synapseapp:///?capture=voice")!) {
+                    SpeakKey(height: 64, discSize: 40, labelSize: 22)
                 }
-                .padding(.vertical, Spacing.lg)
-                .padding(.leading, Spacing.xl)
-                .padding(.trailing, Spacing.lg)
+                .accessibilityLabel("Speak — start voice capture")
+
+                Link(destination: URL(string: "synapseapp:///?capture=text")!) {
+                    DiscKey(systemName: "keyboard", size: 64, iconSize: 24)
+                }
+                .accessibilityLabel("Type — capture with the keyboard")
+
+                Link(destination: URL(string: "synapseapp:///list")!) {
+                    DiscKey(systemName: "list.bullet", size: 64, iconSize: 26)
+                }
+                .accessibilityLabel("List — open all entries")
             }
+            .frame(maxWidth: .infinity)
+
+            Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 

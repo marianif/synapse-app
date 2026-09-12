@@ -194,6 +194,12 @@ export interface DbHabit {
   title: string;
   /** The user's own reason. Required at creation; never empty. */
   motivation: string;
+  /**
+   * Single-character emoji carrying the habit's visual identity. Only shown
+   * when the habit is autonomous: a project-linked habit inherits the project's
+   * emoji instead (see the glyph precedence in the Habits UI). Null = fallback.
+   */
+  emoji: string | null;
   /** Serialized `RecurrenceRule` JSON. Parse with `parseRule`. */
   cadence: string;
   /** First occurrence, DD/MM/YYYY. */
@@ -225,6 +231,8 @@ export interface DbHabitCompletion {
 export interface CreateHabitInput {
   title: string;
   motivation: string;
+  /** Autonomous-habit glyph. Ignored while the habit is project-linked. */
+  emoji?: string | null;
   cadence: RecurrenceRule;
   /** First occurrence, DD/MM/YYYY. Defaults to today when omitted. */
   startDate?: string;
@@ -236,6 +244,8 @@ export interface CreateHabitInput {
 export interface UpdateHabitInput {
   title?: string;
   motivation?: string;
+  /** Autonomous-habit glyph. Ignored while the habit is project-linked. */
+  emoji?: string | null;
   cadence?: RecurrenceRule;
   endDate?: string | null;
   reminderTime?: string | null;

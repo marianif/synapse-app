@@ -89,6 +89,8 @@ type HabitSeed = {
   title: string;
   /** The required reason — the user's own words. */
   motivation: string;
+  /** Autonomous-habit glyph; project-linked habits inherit the project emoji. */
+  emoji?: string;
   freq: RecurrenceFrequency;
   /** Only for freq "weekly". 0 = Sunday … 6 = Saturday. */
   days?: number[];
@@ -125,7 +127,11 @@ export type ScenarioKey =
   | "archived-heavy"
   | "freshness-ladder"
   | "empty-project-starters"
-  | "detail-sheet-showcase";
+  | "detail-sheet-showcase"
+  | "habits-variety"
+  | "habits-all-done"
+  | "habits-missed"
+  | "habits-year-history";
 
 export type Scenario = {
   key: ScenarioKey;
@@ -285,6 +291,7 @@ const MIXED_PRESSURE: Fixture = {
     {
       title: "Take the meds",
       motivation: "Mornings fall apart when I skip them.",
+      emoji: "💊",
       freq: "daily",
       reminderTime: "08:00",
       completedDaysAgo: [0, 1, 2, 3, 4, 5, 6],
@@ -292,6 +299,7 @@ const MIXED_PRESSURE: Fixture = {
     {
       title: "Stretch",
       motivation: "My back stops aching when I move first thing.",
+      emoji: "🤸",
       freq: "daily",
       reminderTime: "07:00",
       completedDaysAgo: [1, 2, 3, 4, 6],
@@ -299,6 +307,7 @@ const MIXED_PRESSURE: Fixture = {
     {
       title: "Go for a walk",
       motivation: "Fresh air clears the 3pm fog.",
+      emoji: "🚶",
       freq: "weekly",
       days: [1, 4],
       reminderTime: "15:00",
@@ -771,6 +780,209 @@ const DETAIL_SHEET_SHOWCASE: Fixture = {
   diary: [],
 };
 
+/**
+ * The habit showcase. One habit per cadence shape plus the states the surface
+ * has to carry: daily with a full history, daily with today still open, custom
+ * weekdays (Mon/Thu) and (Sun/Wed), weekdays-only, monthly with no history, a
+ * paused habit, and a project-linked one. Exercises the presence strip's
+ * scheduled vs. off-cadence cells, the Today/Resting split, and the PAUSED chip.
+ */
+const HABITS_VARIETY: Fixture = {
+  projects: [
+    { key: "body", title: "Body", emoji: "🌿" },
+    { key: "studio", title: "Studio rebrand", emoji: "🪩" },
+  ],
+  entries: [],
+  diary: [],
+  habits: [
+    {
+      title: "Take the meds",
+      motivation: "Mornings fall apart when I skip them.",
+      emoji: "💊",
+      freq: "daily",
+      reminderTime: "08:00",
+      project: "body",
+      completedDaysAgo: [0, 1, 2, 3, 4, 5, 6],
+    },
+    {
+      title: "Stretch",
+      motivation: "My back stops aching when I move first thing.",
+      emoji: "🤸",
+      freq: "daily",
+      reminderTime: "07:00",
+      project: "body",
+      completedDaysAgo: [1, 2, 3, 4, 6],
+    },
+    {
+      title: "Go for a walk",
+      motivation: "Fresh air clears the 3pm fog.",
+      emoji: "🚶",
+      freq: "weekly",
+      days: [1, 4],
+      reminderTime: "15:00",
+      completedDaysAgo: [
+        daysAgoToWeekday(1),
+        daysAgoToWeekday(4),
+        daysAgoToWeekday(1, 1),
+      ],
+    },
+    {
+      title: "Read 10 pages",
+      motivation: "I want to finish books, not just start them.",
+      emoji: "📚",
+      freq: "weekdays",
+      reminderTime: "21:00",
+      completedDaysAgo: [
+        daysAgoToWeekday(1),
+        daysAgoToWeekday(2),
+        daysAgoToWeekday(3),
+      ],
+    },
+    {
+      title: "Water the plants",
+      motivation: "They die quietly when I forget.",
+      emoji: "🪴",
+      freq: "weekly",
+      days: [0, 3],
+      project: "body",
+      completedDaysAgo: [daysAgoToWeekday(0), daysAgoToWeekday(3)],
+    },
+    {
+      title: "Meditate",
+      motivation: "Ten minutes so the day starts on my terms.",
+      emoji: "🧘",
+      freq: "daily",
+      status: "paused",
+      completedDaysAgo: [10, 11, 12, 13],
+    },
+    {
+      title: "Call my sister",
+      motivation: "She's the one who always calls first.",
+      emoji: "☎️",
+      freq: "monthly",
+      startDaysAgo: 45,
+    },
+  ],
+};
+
+/**
+ * Every habit due today is already done, so the Today zone shows the quiet
+ * all-done line. A custom-days habit sits in RESTING when today isn't one of
+ * its days, proving the two zones are independent.
+ */
+const HABITS_ALL_DONE: Fixture = {
+  projects: [{ key: "body", title: "Body", emoji: "🌿" }],
+  entries: [],
+  diary: [],
+  habits: [
+    {
+      title: "Take the meds",
+      motivation: "Mornings fall apart when I skip them.",
+      emoji: "💊",
+      freq: "daily",
+      reminderTime: "08:00",
+      project: "body",
+      completedDaysAgo: [0, 1, 2, 3, 4, 5, 6],
+    },
+    {
+      title: "Stretch",
+      motivation: "My back stops aching when I move first thing.",
+      emoji: "🤸",
+      freq: "daily",
+      completedDaysAgo: [0, 1, 2, 3, 4, 5],
+    },
+    {
+      title: "Water the plants",
+      motivation: "They die quietly when I forget.",
+      emoji: "🪴",
+      freq: "weekly",
+      days: [0, 3],
+      completedDaysAgo: [daysAgoToWeekday(0), daysAgoToWeekday(3)],
+    },
+  ],
+};
+
+/**
+ * The failure-and-recovery states: a Mon/Thu habit that missed this week's
+ * scheduled days (solid empty cells) surrounded by off-cadence days (faint
+ * cells), a daily habit with scattered misses, a paused habit, and a brand-new
+ * habit with no history at all.
+ */
+const HABITS_MISSED: Fixture = {
+  projects: [],
+  entries: [],
+  diary: [],
+  habits: [
+    {
+      title: "Go for a walk",
+      motivation: "Fresh air clears the 3pm fog.",
+      emoji: "🚶",
+      freq: "weekly",
+      days: [1, 4],
+      completedDaysAgo: [daysAgoToWeekday(1, 1), daysAgoToWeekday(4, 1)],
+    },
+    {
+      title: "Stretch",
+      motivation: "My back stops aching when I move first thing.",
+      emoji: "🤸",
+      freq: "daily",
+      completedDaysAgo: [3, 4],
+    },
+    {
+      title: "Meditate",
+      motivation: "Ten minutes so the day starts on my terms.",
+      emoji: "🧘",
+      freq: "daily",
+      status: "paused",
+      completedDaysAgo: [15, 16, 17],
+    },
+    {
+      title: "Journal",
+      motivation: "Writing it down is how I stop circling it.",
+      emoji: "✍️",
+      freq: "weekdays",
+      startDaysAgo: 2,
+    },
+  ],
+};
+
+/**
+ * A year of history so the detail's Year heatmap has a real shape. Two daily
+ * habits: one steady (~80% of the year), one patchier and shorter. The
+ * completion lists are generated deterministically so the grid looks the same
+ * on every seed.
+ */
+const HABITS_YEAR_HISTORY: Fixture = {
+  projects: [{ key: "body", title: "Body", emoji: "🌿" }],
+  entries: [],
+  diary: [],
+  habits: [
+    {
+      title: "Take the meds",
+      motivation: "Mornings fall apart when I skip them.",
+      emoji: "💊",
+      freq: "daily",
+      reminderTime: "08:00",
+      project: "body",
+      startDaysAgo: 365,
+      completedDaysAgo: Array.from({ length: 365 }, (_, i) => i).filter(
+        (i) => i % 5 !== 3,
+      ),
+    },
+    {
+      title: "Stretch",
+      motivation: "My back stops aching when I move first thing.",
+      emoji: "🤸",
+      freq: "daily",
+      reminderTime: "07:00",
+      startDaysAgo: 260,
+      completedDaysAgo: Array.from({ length: 260 }, (_, i) => i).filter(
+        (i) => i % 2 === 0 || i % 7 === 5,
+      ),
+    },
+  ],
+};
+
 const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
   empty: {
     key: "empty",
@@ -837,6 +1049,27 @@ const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
       "One entry per DirectDetailSheet state: urgency, done, horizons, every recurrence, subtasks, inspiration/notes, unfiled. Ideas open from Home, not the project page.",
     fixture: DETAIL_SHEET_SHOWCASE,
   },
+  "habits-variety": {
+    key: "habits-variety",
+    label: "Habits · variety",
+    description:
+      "One habit per cadence (daily, weekdays, custom Mon/Thu, custom Sun/Wed, monthly) plus paused and project-linked, with mixed history. Exercises the presence strip and the Today/Resting split.",
+    fixture: HABITS_VARIETY,
+  },
+  "habits-all-done": {
+    key: "habits-all-done",
+    label: "Habits · all done",
+    description:
+      "Every habit due today is done, so the Today zone shows the quiet all-done line. A custom-days habit rests below.",
+    fixture: HABITS_ALL_DONE,
+  },
+  "habits-missed": {
+    key: "habits-missed",
+    label: "Habits · missed",
+    description:
+      "Missed scheduled days (solid empty cells) against off-cadence days (faint cells), a paused habit, and a brand-new habit with no history.",
+    fixture: HABITS_MISSED,
+  },
 };
 
 /** Ordered list for the dev-menu picker. */
@@ -849,6 +1082,9 @@ export const SCENARIOS: Scenario[] = [
   SCENARIOS_BY_KEY["freshness-ladder"],
   SCENARIOS_BY_KEY["empty-project-starters"],
   SCENARIOS_BY_KEY["detail-sheet-showcase"],
+  SCENARIOS_BY_KEY["habits-variety"],
+  SCENARIOS_BY_KEY["habits-all-done"],
+  SCENARIOS_BY_KEY["habits-missed"],
   SCENARIOS_BY_KEY.empty,
 ];
 
@@ -939,6 +1175,41 @@ async function insertFixture(
       created,
     );
   }
+
+  for (const h of fixture.habits ?? []) {
+    const habitId = generateId();
+    const start = h.startDaysAgo ?? 30;
+    const created = now - start * DAY_SECS;
+    await db.runAsync(
+      `INSERT INTO habits
+       (id, title, motivation, emoji, cadence, start_date, end_date, reminder_time, project_id, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      habitId,
+      h.title,
+      h.motivation,
+      h.emoji ?? null,
+      serializeRule({ freq: h.freq, days: h.days }),
+      d(-start),
+      h.endDate ?? null,
+      h.reminderTime ?? null,
+      h.project ? (projectId[h.project] ?? null) : null,
+      h.status ?? "active",
+      created,
+      created,
+    );
+
+    for (const ago of h.completedDaysAgo ?? []) {
+      await db.runAsync(
+        `INSERT OR IGNORE INTO habit_completions
+         (id, habit_id, instance_date, status, created_at)
+         VALUES (?, ?, ?, 'completed', ?)`,
+        generateId(),
+        habitId,
+        d(-ago),
+        now - ago * DAY_SECS,
+      );
+    }
+  }
 }
 
 /**
@@ -966,7 +1237,7 @@ export async function seedDevDataIfEmpty(
     "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('did_seed_default_projects', '1')",
   );
   console.log(
-    `[dev-seed] auto-seeded "mixed-pressure": ${fixture.projects.length} projects, ${fixture.entries.length} entries, ${fixture.diary.length} diary notes`,
+    `[dev-seed] auto-seeded "mixed-pressure": ${fixture.projects.length} projects, ${fixture.entries.length} entries, ${fixture.diary.length} diary notes, ${fixture.habits?.length ?? 0} habits`,
   );
   return true;
 }
@@ -1004,6 +1275,6 @@ export async function seedScenario(
     "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('did_seed_default_projects', '1')",
   );
   console.log(
-    `[dev-seed] applied "${scenario.label}": ${scenario.fixture.projects.length} projects, ${scenario.fixture.entries.length} entries, ${scenario.fixture.diary.length} diary notes`,
+    `[dev-seed] applied "${scenario.label}": ${scenario.fixture.projects.length} projects, ${scenario.fixture.entries.length} entries, ${scenario.fixture.diary.length} diary notes, ${scenario.fixture.habits?.length ?? 0} habits`,
   );
 }

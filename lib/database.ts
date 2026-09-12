@@ -556,6 +556,24 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 23) {
+    // Migration 23: habit emoji — the glyph for an autonomous habit. Nullable
+    // so existing habits survive; a project-linked habit inherits the project's
+    // emoji at render time instead, so this column is simply dormant while a
+    // link exists.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync('ALTER TABLE habits ADD COLUMN emoji TEXT');
+      } catch {
+        // column already exists (fresh installs got it from CREATE_HABITS_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────
@@ -914,13 +932,15 @@ export async function insertHabit(input: CreateHabitInput): Promise<DbHabit> {
   const endDate = input.endDate ?? null;
   const reminderTime = input.reminderTime ?? null;
   const projectId = input.projectId ?? null;
+  const emoji = input.emoji ?? null;
 
   await db.runAsync(
-    `INSERT INTO habits (id, title, motivation, cadence, start_date, end_date, reminder_time, project_id, status, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
+    `INSERT INTO habits (id, title, motivation, emoji, cadence, start_date, end_date, reminder_time, project_id, status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
     id,
     input.title,
     motivation,
+    emoji,
     cadence,
     startDate,
     endDate,
@@ -934,6 +954,7 @@ export async function insertHabit(input: CreateHabitInput): Promise<DbHabit> {
     id,
     title: input.title,
     motivation,
+    emoji,
     cadence,
     start_date: startDate,
     end_date: endDate,
@@ -982,6 +1003,10 @@ export async function updateHabit(
   if (data.motivation !== undefined) {
     updates.push("motivation = ?");
     values.push(data.motivation.trim());
+  }
+  if (data.emoji !== undefined) {
+    updates.push("emoji = ?");
+    values.push(data.emoji);
   }
   if (data.cadence !== undefined) {
     updates.push("cadence = ?");

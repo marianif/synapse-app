@@ -46,6 +46,7 @@ export default function SettingsScreen(): React.ReactElement {
     fetchProjects,
     refetchTasks,
     refetchRecurrenceCompletions,
+    refetchHabits,
   } = useDatabase();
   const { refresh: refreshDiary } = useDiary();
   const { resetOnboarding } = useOnboarding();
@@ -57,6 +58,7 @@ export default function SettingsScreen(): React.ReactElement {
     await fetchProjects();
     await refetchTasks();
     await refetchRecurrenceCompletions();
+    await refetchHabits();
     await refreshDiary();
   };
 

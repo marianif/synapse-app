@@ -99,3 +99,24 @@ enum Spacing {
     static let xxl: CGFloat = 24
     static let xxxl: CGFloat = 32
 }
+
+// MARK: - Depth — one cool shadow, no borders, no gradients.
+//
+// Keys lift off the paper ground the same way bento tiles do in the app:
+// `tokens.elevation.tile`'s cool `#28384f`, never pure black.
+
+struct KeyShadow: ViewModifier {
+    func body(content: Content) -> some View {
+        content.shadow(
+            color: Color(hex: "28384f").opacity(0.35),
+            radius: 8,
+            x: 0,
+            y: 3
+        )
+    }
+}
+
+extension View {
+    /// Lift a key off the paper ground — the widget's only depth device.
+    func keyShadow() -> some View { modifier(KeyShadow()) }
+}

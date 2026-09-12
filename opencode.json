@@ -8,6 +8,11 @@
         "mcp"
       ],
       "enabled": true
+    },
+    "mobbin": {
+      "type": "remote",
+      "url": "https://api.mobbin.com/mcp",
+      "enabled": true
     }
   }
 }

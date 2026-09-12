@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import {
+  Keyboard,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -111,7 +112,7 @@ export const CaptureConsole = forwardRef<InputStageHandle, CaptureConsoleProps>(
     const { colors, scheme } = useTheme();
     const reduced = useReducedMotion();
     const inputRef = useRef<TextInput | null>(null);
-    const whenAnchorRef = useRef<View | null>(null);
+    const consoleRef = useRef<View | null>(null);
 
     const [lastKind, setLastKind, preferenceLoaded] = useUiPreference(
       LAST_KIND_KEY,
@@ -304,7 +305,8 @@ export const CaptureConsole = forwardRef<InputStageHandle, CaptureConsoleProps>(
       setMenu(null);
       setExact(true);
       setDueRange(null);
-      whenAnchorRef.current?.measureInWindow((x, y, w, h) => {
+      Keyboard.dismiss();
+      consoleRef.current?.measureInWindow((x, y, w, h) => {
         setAnchorRect({ x, y, w, h });
         setDatePickerOpen(true);
       });
@@ -385,7 +387,7 @@ export const CaptureConsole = forwardRef<InputStageHandle, CaptureConsoleProps>(
           ) : undefined
         }
       >
-        <View style={styles.console}>
+        <View ref={consoleRef} collapsable={false} style={styles.console}>
           <View style={styles.thoughtRow}>
             {cap.isRecording ? (
               <View
@@ -536,15 +538,13 @@ export const CaptureConsole = forwardRef<InputStageHandle, CaptureConsoleProps>(
               />
 
               {isDatedKind(kind) ? (
-                <View ref={whenAnchorRef} collapsable={false}>
-                  <ContextChip
-                    label={whenLabel(exact, date, time, dueRange)}
-                    icon="Calendar"
-                    scheme={scheme}
-                    onPress={() => openMenu("when")}
-                    disabled={cap.isRecording}
-                  />
-                </View>
+                <ContextChip
+                  label={whenLabel(exact, date, time, dueRange)}
+                  icon="Calendar"
+                  scheme={scheme}
+                  onPress={() => openMenu("when")}
+                  disabled={cap.isRecording}
+                />
               ) : null}
             </ScrollView>
 

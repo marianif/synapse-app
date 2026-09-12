@@ -71,7 +71,8 @@ export function WheelPicker({
   const paddingRows = (visibleRows - 1) / 2;
 
   // Keep the wheel parked on the selected row when it changes from outside
-  // (e.g. a quick-pick chip), without fighting an in-progress drag.
+  // (e.g. a quick-pick chip), without fighting an in-progress drag OR the
+  // coast that follows a release — the guard stays up until the wheel settles.
   const isDragging = useRef(false);
   useEffect(() => {
     if (isDragging.current) return;
@@ -81,15 +82,57 @@ export function WheelPicker({
     });
   }, [selectedIndex, rowHeight]);
 
-  function handleMomentumEnd(
-    e: NativeSyntheticEvent<NativeScrollEvent>,
-  ): void {
-    isDragging.current = false;
-    const y = e.nativeEvent.contentOffset.y;
+  // A fling keeps decelerating after the finger lifts. Committing on drag-end
+  // would change `selectedValue`, whose effect scrollTo() cancels the coast —
+  // so a hard flick stops dead on the release row. Instead, commit only once
+  // momentum settles; the drag-end handler is just a fallback for releases that
+  // produce no momentum (and no `onMomentumScrollEnd`).
+  const momentum = useRef(false);
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearSettle = (): void => {
+    if (settleTimer.current !== null) {
+      clearTimeout(settleTimer.current);
+      settleTimer.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (settleTimer.current !== null) clearTimeout(settleTimer.current);
+    };
+  }, []);
+
+  const commitOffset = (y: number): void => {
     const index = Math.round(y / rowHeight);
     const clamped = Math.min(Math.max(index, 0), items.length - 1);
     const next = items[clamped];
     if (next && next.value !== selectedValue) onChange(next.value);
+  };
+
+  function handleMomentumBegin(): void {
+    momentum.current = true;
+    clearSettle();
+  }
+
+  function handleMomentumEnd(
+    e: NativeSyntheticEvent<NativeScrollEvent>,
+  ): void {
+    clearSettle();
+    momentum.current = false;
+    isDragging.current = false;
+    commitOffset(e.nativeEvent.contentOffset.y);
+  }
+
+  function handleDragEnd(e: NativeSyntheticEvent<NativeScrollEvent>): void {
+    const y = e.nativeEvent.contentOffset.y;
+    clearSettle();
+    settleTimer.current = setTimeout(() => {
+      settleTimer.current = null;
+      if (momentum.current) return;
+      isDragging.current = false;
+      commitOffset(y);
+    }, 120);
   }
 
   return (
@@ -98,16 +141,19 @@ export function WheelPicker({
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
         snapToInterval={rowHeight}
-        decelerationRate="fast"
+        decelerationRate="normal"
         nestedScrollEnabled
         contentContainerStyle={{
           paddingVertical: paddingRows * rowHeight,
         }}
         onScrollBeginDrag={() => {
           isDragging.current = true;
+          momentum.current = false;
+          clearSettle();
         }}
+        onMomentumScrollBegin={handleMomentumBegin}
         onMomentumScrollEnd={handleMomentumEnd}
-        onScrollEndDrag={handleMomentumEnd}
+        onScrollEndDrag={handleDragEnd}
       >
         {items.map((item, i) => {
           const distance = Math.abs(i - selectedIndex);

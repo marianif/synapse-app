@@ -2,9 +2,9 @@
 
 The behavioral architecture: every goal's paths through the product.
 
-Capture is the spine — one pen key, one trigger, a four-stage machine that takes any thought and files it as the right thing. The board then appears through the field (what exists, at equal volume, never curated). Projects are triage zones over one macro life area; the diary is the reflective layer that never touches the board. The Agenda tab is a placeholder for a future activation surface — its previous feed (flagged next actions plus the board's openings, grouped by kind) has been removed.
+Capture is the spine — one pen key, one trigger, a four-stage machine that takes any thought and files it as the right thing. The board then appears through the field (what exists, at equal volume, never curated). Projects are triage zones over one macro life area; the diary is the reflective layer that never touches the board. The Habits tab holds the user's cadences — repeated intentions, each carrying the user's own reason, present today and encouraged by that reason rather than by streaks. The previous Agenda activation surface (flagged next actions plus the board's openings) has been removed.
 
-Ambition order — what must exist before the app is real: capture spine → the field → project triage → reflective note-taking. The next activation surface on the Agenda tab is still to be designed.
+Ambition order — what must exist before the app is real: capture spine → the field → project triage → cadence → reflective note-taking.
 
 Open decision (flagged, not absorbed): GOALS.md says the share extension "funnels through the same capture," but the code routes share-in to the notes composer — a shared link resolves to a diary note, never through the classify spine. FLOWS.md models the code; GOALS.md's primary-action wording is a candidate follow-up.
 
@@ -317,3 +317,148 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Meaning: in the diary, never on the board
 - Next: done
 - Recovery: filter and re-relate are the ways back in
+
+## Flow — Hold a cadence <!-- flow:flow:hold-a-cadence -->
+- Serves: Goal 3 — Hold a cadence
+- Entry: the Habits tab, the scoped habit FAB, or the capture resolver's "every day" door
+- Success: a habit's cadence and its reason are set and today's instance is marked; history reads as presence, never as a streak
+- Exit: the user leaves the tab — instance toggled, habit edited, paused, or deleted
+- Handoff: put-something-in
+- Handoff: browse-and-triage-a-project
+- Status: proposed
+
+### Step — Open the cadence <!-- flow:step:open-the-cadence -->
+- Intent: the daily glance at what repeats
+- Action: open the Habits tab
+- State: rhythm
+- Next: read-today
+- Screen: /(tabs)/habits
+
+### Step — Read today <!-- flow:step:read-today -->
+- Intent: see the habits due today and how the recent weeks read
+- Action: scan the today rows, each habit's presence strip, and its reason
+- State: rhythm
+- Next: mark-today
+- Branch: no habits yet → name-your-first-habit
+- Component: HabitTodayList / HabitRow / HabitPresenceStrip
+
+### Step — Name your first habit <!-- flow:step:name-your-first-habit -->
+- Intent: inception — the empty cadence's first commit
+- Action: type a habit title in the composer
+- State: draft-habit
+- Next: say-why-it-matters
+- Component: HabitComposer (inception)
+
+### Step — Make a habit <!-- flow:step:make-a-habit -->
+- Intent: add a repeated intention
+- Action: tap the scoped habit FAB, or pick the capture resolver's "every day" door
+- State: draft-habit
+- Next: say-why-it-matters
+- Component: habit FAB / HabitComposer / capture-resolver door
+
+### Step — Say why it matters <!-- flow:step:say-why-it-matters -->
+- Intent: record the user's own reason so the app can hold it back to them
+- Action: type or speak the reason; it is required
+- State: why-set
+- Next: set-the-cadence
+- Branch: reason left empty → draft-habit
+- Component: HabitComposer reason field
+
+### Step — Set the cadence <!-- flow:step:set-the-cadence -->
+- Intent: choose how often the habit repeats
+- Action: pick daily / weekdays / weekly days / monthly
+- State: cadence-set
+- Next: set-the-nudge
+- Branch: cancel → discarded
+- Component: HabitComposer cadence picker
+
+### Step — Set the nudge <!-- flow:step:set-the-nudge -->
+- Intent: decide whether, and when, the habit asks for attention
+- Action: pick a reminder time, or leave it off
+- State: cadence-set
+- Next: file-habit
+- Component: HabitComposer reminder picker
+
+### Step — File it <!-- flow:step:file-habit -->
+- Intent: start the cadence
+- Action: tap the check
+- State: active-habit
+- Next: read-today
+- Exit: true
+- Component: HabitComposer
+
+### Step — Mark today <!-- flow:step:mark-today -->
+- Intent: honor the cadence today
+- Action: tap the check on a habit row
+- State: done-today
+- Next: done
+- Branch: unmark → due-today
+- Component: HabitRow check / HabitPresenceStrip
+
+### Step — Manage a habit <!-- flow:step:manage-a-habit -->
+- Intent: the tier-3 verbs, deliberately out of the way
+- Action: open the habit's overflow — rename, change cadence, edit the reason, pause or resume, delete
+- State: active-habit
+- Next: done
+- Exit: true
+- Component: habit-overflow-sheet
+
+### State — Rhythm <!-- flow:state:rhythm -->
+- Meaning: the whole cadence set is visible, today's instances at the top
+- Next: read-today
+- Recovery: add a habit, or mark one
+
+### State — Due today <!-- flow:state:due-today -->
+- Meaning: a habit's instance for today is open
+- Next: mark-today
+- Recovery: mark it or leave it — no shame, no count
+
+### State — Done today <!-- flow:state:done-today -->
+- Meaning: today's instance is complete
+- Next: done
+- Recovery: unmark to undo
+
+### State — Missed <!-- flow:state:missed -->
+- Meaning: an instance date passed unmarked — presence, not failure; no count, no red
+- Next: read-today
+- Recovery: mark a past instance or move on
+
+### State — Why-set <!-- flow:state:why-set -->
+- Meaning: the user has said why the habit matters
+- Next: set-the-cadence
+- Recovery: edit the reason in the composer or from the habit's overflow
+
+### State — Cadence-set <!-- flow:state:cadence-set -->
+- Meaning: how often the habit repeats is chosen, not yet filed
+- Next: file-habit
+- Recovery: change the cadence, or cancel to discard
+
+### State — Draft habit <!-- flow:state:draft-habit -->
+- Meaning: the composer is open, reason or cadence not yet set
+- Next: say-why-it-matters
+- Recovery: cancel discards
+
+### State — Encouraged <!-- flow:state:encouraged -->
+- Meaning: the app reads the user's own reason back — on a due instance, a missed day, or in a nudge
+- Next: mark-today
+- Recovery: nothing to recover — it is the user's own words, not a reward
+
+### State — Active habit <!-- flow:state:active-habit -->
+- Meaning: a cadence is running
+- Next: read-today
+- Recovery: pause it
+
+### State — Paused habit <!-- flow:state:paused-habit -->
+- Meaning: a cadence the user stopped on purpose; the habit stays, never deleted by absence
+- Next: read-today
+- Recovery: resume it
+
+### State — Discarded <!-- flow:state:discarded-cadence -->
+- Meaning: the habit draft is gone on purpose
+- Next: exit
+- Recovery: make a habit again
+
+### State — Empty cadence <!-- flow:state:empty-cadence -->
+- Meaning: no habits yet — the tab is an inception door
+- Next: exit
+- Recovery: name your first habit

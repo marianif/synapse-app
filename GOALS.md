@@ -20,6 +20,12 @@ companion tool: capture → trust → depend → expand
 - Measure: 0-tap scan — a user sees projects + live deadlines without tapping, every open; D7 return.
 - Primary actions: open the app; read the field (projects, deadlines, todos, ideas at equal volume); flag an entry as your next action and see it named back in the greeting.
 
+## Goal 3 — Hold a cadence
+
+- Outcome: a repeated intention the user chose is present today and completable in one tap, so keeping it stops depending on memory. Each habit carries the user's own reason, which the app holds back to them instead of rewarding with points.
+- Measure: weekly habit-instance completion and return to the Habits tab; encouragement is always the user's own stated reason, never an extrinsic reward.
+- Primary actions: open the Habits tab; mark today's instance done; add a habit with a required reason, a cadence, and an optional nudge; link a habit to a project or leave it autonomous.
+
 ## Critical path
 
 Capture. Everything hangs on the pen key: it owns the tab-bar center, the slab accent, the 5-second window. Glance is what capture preserves — the whole field stays present so nothing captured ever slips out of sight.
@@ -32,8 +38,10 @@ Capture. Everything hangs on the pen key: it owns the tab-bar center, the slab a
 - Diary never appears on the board. Reflective is not actionable; they don't share surfaces.
 - Settings never above the fold. Header menu only.
 - Destructive actions are tier 3 regardless of frequency. Delete lives in the detail sheet, never as a swipe on the board.
-- No gamification. Streaks, badges, confetti are banned as actions and visuals. The "someday" badge is informational, the one sanctioned badge.
+- No gamification. Streaks, badges, confetti are banned as actions and visuals. The "someday" badge is informational, the one sanctioned badge. **Scoped exception — the Habits cadence surface only:** a habit may encourage the user with their own stated reason for pursuing it, shown verbatim and in their voice. This is intrinsic motivation, not a reward loop; no streak count, flame, badge, points, or confetti appears on Habits or anywhere else.
 
 ## Accent color budget
 
 The scheme-aware neutral slab (`accent.clay`) is spent on the tier-1 capture key, the composer's send/confirm button, and the tier-2 scoped FABs (project FAB, projects-list create FAB). Supporting actions use tonal surfaces plus the 6px EntryDot / mono kicker; they never take the slab. The three electric type-codes (deadline coral, todo cyan, idea amber) are content colors, not action colors — they identify what a row is, never what tapping it does.
+
+Habits are a new entity with no electric type-code. Habit color is user-picked per habit; the picker and its token support are a later iteration (see BACKLOG `colorize habits`). Until then the surface uses the neutral tonal range, not a new content color.

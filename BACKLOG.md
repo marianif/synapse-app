@@ -46,10 +46,38 @@ The work register: milestones, epics, areas, and typed work items.
 
 - [x] [design] `shape settings` — split settings into meaningful subroutes instead of one flat screen. @month → shipped 2026-09-10 — settings hub + Notifications / Confirmations / About subroutes shipped
 
+### Area — Notifications
+
+- Serves: Goal 2 (See it all at a glance)
+- [x] [bug] duplicate deadline reminders on edit — editing a deadline re-scheduled without cancelling the prior request, so reminders stacked. → shipped 2026-09-12 — deterministic identifiers plus cancel-before-schedule
+- [x] [bug] completed deadlines kept firing — completing or meeting an entry re-scheduled but never cancelled its reminder. → shipped 2026-09-12 — entry listener cancels on completed or met
+- [x] [bug] launch reschedule wiped project-return reminders — the global cancel took every pending notification, not just deadlines. → shipped 2026-09-12 — scoped cancel preserves project returns, clears legacy untagged
+- [ ] [bug] recurring reminders fire once and never re-arm — the next instance is only scheduled at launch, never after a delivery. effort: M @month
+- [ ] [bug] 64-pending-notification cap unmanaged — many deadlines can overflow the iOS limit with no priority or cap. effort: S @month
+- [x] [bug] dormant-project reminder burst — every active project past its 7-day window fired about 60s after launch, all at once. @month → shipped 2026-09-12 — stale return windows are dropped instead of re-armed; a future window still schedules normally
+- [ ] [bug] project returns re-arm on every entry change — any entry mutation reschedules all projects and resets the 7-day clock. effort: S @month
+- [ ] [feature] configurable deadline lead time — let the user choose to be notified ahead of a deadline, not only at its time. effort: M @month
+- [ ] [feature] configurable dormant-project reminder behavior — a Settings choice of drop, one summary, or staggered decides how elapsed windows surface; drop is the current default. effort: M @month
+- [ ] [feature] deadline reminder deep-link — tapping a deadline reminder should open its entry, not just the app. effort: S @month
+- [ ] [design] `clarify deadline-reminder-copy` — the body always reads "Deadline today", even when it fires days out or points at a project. @month
+
 ## Milestone — Release 1.1.0 <!-- flow:ms:m01tjqm0q -->
 
 ### Area — Settings
 
 - [ ] [design] `shape appearance` — appearance subroute: multiple themes, left/right-hand layout toggle, and more. @month
+
+### Area — Habits
+
+- Serves: Goal 3 (Hold a cadence)
+- [ ] [feature] habits data model — the habits table (title, required reason, cadence, reminder, project link) and habit_completions, with migration, types, slice and thunks. effort: L @week
+- [ ] [feature] habit capture door — a fifth resolver door ("every day") arming the reason, cadence and reminder workbench. effort: M @week
+- [ ] [feature] habit notifications — a habits preference, next-instance scheduler, settings switch, deep-link, and the reason shown verbatim in the body. effort: M @week
+- [ ] [design] `craft habits` — the cadence surface: today list, presence strip, the reason resurfaced, and the empty state. @week
+- [ ] [feature] habit FAB and composer — a scoped per-surface FAB opening a composer with the required reason field. effort: M @week
+- [ ] [feature] project-linked habits — a habit can attach to a project and show on its spine, autonomous otherwise. effort: M @month
+- [ ] [task] remove the Agenda concept — route, tab trigger, icon, the dead getTodayAgenda helper, and the goldie "agenda" store flow. effort: S @week
+- [ ] [task] generalize recurrence expansion — let cadence-only habits reuse expandRecurringEntry without a DbEntry. effort: S @week
+- [ ] [design] `colorize habits` — per-habit user-chosen color: picker and token support (deferred iteration). @month
 
 

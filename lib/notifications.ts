@@ -33,6 +33,20 @@ const DAY_MS = 86_400_000;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
+ * Stable notification identifiers. Re-using the same identifier makes
+ * re-scheduling idempotent at the OS level (iOS replaces the pending request),
+ * so an edited entry or reopened project can never stack duplicates — even
+ * after a cold start rebuilt an empty in-memory map.
+ */
+function entryNotificationId(entryId: string): string {
+  return `entry-${entryId}`;
+}
+
+function projectReturnNotificationId(projectId: string): string {
+  return `project-return-${projectId}`;
+}
+
+/**
  * Parse a DD/MM/YYYY date string + optional "HH:MM" time string into a Date.
  * Defaults to 09:00 local time when no time is provided.
  */
@@ -135,9 +149,12 @@ function projectReturnDate(
   if (lastSeen === null) return null;
 
   const scheduled = new Date(lastSeen + PROJECT_RETURN_AFTER_DAYS * DAY_MS);
-  // If the app was not opened during the return window, surface the reminder
-  // shortly after the next launch rather than scheduling into the past.
-  return scheduled > new Date() ? scheduled : new Date(Date.now() + 60_000);
+  // Only arm a reminder whose window is still ahead. A window that already
+  // elapsed either already fired or belongs to a dormancy the user has since
+  // returned from; re-arming it as a fresh trigger on every launch fired a
+  // burst of stale nudges for every dormant project at once. The next real
+  // invitation comes from the next project touch.
+  return scheduled > new Date() ? scheduled : null;
 }
 
 async function cancelScheduledProjectNotifications(
@@ -201,15 +218,24 @@ export async function scheduleEntryNotification(
     return null;
   }
 
+  // Replace any existing reminder for this entry before scheduling, and do it
+  // before the trigger check so a moved/past/completed deadline drops its stale
+  // reminder instead of leaving it pending. The deterministic identifier makes
+  // the re-schedule idempotent; the explicit cancel guarantees it on platforms
+  // where replacement by identifier isn't guaranteed.
+  await cancelNotificationForEntry(entry.id);
+
   const triggerDate = buildTriggerDate(entry);
   if (!triggerDate) return null;
 
   try {
     const notificationId = await Notifications.scheduleNotificationAsync({
+      identifier: entryNotificationId(entry.id),
       content: {
         title: entry.title,
         body: notificationBody(entry),
         sound: true,
+        data: { kind: "deadline", entryId: entry.id },
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -237,29 +263,37 @@ export async function cancelEntryNotification(
 }
 
 /**
- * Cancel the notification associated with an entry (looked up from the
- * in-memory map). No-op if the entry has no scheduled notification.
+ * Cancel the notification associated with an entry. Cancels the deterministic
+ * identifier directly (so it works even when the in-memory map is cold) and
+ * drops the map entry. No-op if the entry has no scheduled notification.
  */
 export async function cancelNotificationForEntry(entryId: string): Promise<void> {
-  const notificationId = notificationMap.get(entryId);
-  if (!notificationId) return;
   notificationMap.delete(entryId);
-  await cancelEntryNotification(notificationId);
+  await cancelEntryNotification(entryNotificationId(entryId));
 }
 
 /**
- * Cancel all pending notifications, then re-schedule for all provided entries.
+ * Cancel pending deadline reminders, then re-schedule for all provided entries.
  * Called once on app launch to self-heal any stale notification state.
+ * Project-return invitations are deliberately left untouched so this can run
+ * without re-arming them.
  * Returns a Map of entryId → notificationId for entries that got scheduled.
  */
 export async function rescheduleAllEntries(
   entries: DbEntry[],
 ): Promise<Map<string, string>> {
   try {
-    await Notifications.cancelAllScheduledNotificationsAsync();
+    const pending = await Notifications.getAllScheduledNotificationsAsync();
+    for (const request of pending) {
+      const data = request.content.data as { kind?: unknown } | undefined;
+      // Preserve project-return invitations; clear everything else, including
+      // legacy reminders scheduled before they carried a kind tag.
+      if (data?.kind === "project-return") continue;
+      await Notifications.cancelScheduledNotificationAsync(request.identifier);
+    }
     notificationMap.clear();
   } catch (error) {
-    console.warn("[notifications] cancelAllScheduledNotificationsAsync failed:", error);
+    console.warn("[notifications] rescheduleAllEntries cancel failed:", error);
   }
 
   for (const entry of entries) {
@@ -289,6 +323,7 @@ export async function scheduleProjectReturnNotification(
 
   try {
     const notificationId = await Notifications.scheduleNotificationAsync({
+      identifier: projectReturnNotificationId(project.id),
       content: {
         title: `There's a thread waiting in ${project.title}`,
         body: "Open it and choose one thing to move.",

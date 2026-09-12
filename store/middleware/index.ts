@@ -77,6 +77,14 @@ listenerMiddleware.startListening({
   ),
   effect: async (action) => {
     const entry = (action as unknown as { payload: DbEntry }).payload;
+    // A completed/met entry must not keep a pending reminder: cancel instead of
+    // re-scheduling so a finished deadline goes quiet.
+    if (entry.status === "completed" || entry.status === "met") {
+      await cancelNotificationForEntry(entry.id).catch((err) => {
+        console.warn("[store] cancelNotificationForEntry failed:", err);
+      });
+      return;
+    }
     // Ask for notifications only when a deadline makes the benefit clear.
     if (action.type === createEntry.fulfilled.type && entry.type === "deadline") {
       const granted = await requestNotificationPermissions();

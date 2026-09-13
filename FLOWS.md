@@ -332,7 +332,7 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Action: open the Habits tab
 - State: rhythm
 - Next: read-today
-- Screen: /(tabs)/habits
+- Screen: /(tabs)/(habits)
 
 ### Step — Read today <!-- flow:step:read-today -->
 - Intent: see the habits due today and how the recent weeks read
@@ -340,7 +340,15 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - State: rhythm
 - Next: mark-today
 - Branch: no habits yet → name-your-first-habit
-- Component: HabitTodayList / HabitRow / HabitPresenceStrip
+- Branch: open one habit → open-a-habit
+- Component: HabitRow / HabitPresenceStrip
+
+### Step — Open a habit <!-- flow:step:open-a-habit -->
+- Intent: see one habit's record — its reason, its settings, and its history
+- Action: tap a habit row
+- State: reviewing
+- Next: manage-a-habit
+- Component: HabitDetail (read-only info + stats + month/year grid)
 
 ### Step — Name your first habit <!-- flow:step:name-your-first-habit -->
 - Intent: inception — the empty cadence's first commit
@@ -397,7 +405,7 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 
 ### Step — Manage a habit <!-- flow:step:manage-a-habit -->
 - Intent: the tier-3 verbs, deliberately out of the way
-- Action: tap the row to reopen the editor — rename, change cadence, edit the reason, pause or resume, delete
+- Action: from the detail's Edit CTA, or swipe the row and tap Edit — rename, change cadence, edit the reason, pick a glyph, pause or resume, delete
 - State: active-habit
 - Next: done
 - Exit: true
@@ -423,10 +431,15 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Next: read-today
 - Recovery: move on — the empty cell is the honest record; nothing is owed
 
+### State — Reviewing <!-- flow:state:reviewing -->
+- Meaning: a habit's read-only detail is open — reason, settings, stats, and history grid; nothing writes here
+- Next: manage-a-habit
+- Recovery: go back to the list; editing is a deliberate second step
+
 ### State — Why-set <!-- flow:state:why-set -->
 - Meaning: the user has said why the habit matters
 - Next: set-the-cadence
-- Recovery: edit the reason in the composer or from the habit's overflow
+- Recovery: edit the reason in the editor
 
 ### State — Cadence-set <!-- flow:state:cadence-set -->
 - Meaning: how often the habit repeats is chosen, not yet filed

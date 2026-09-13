@@ -116,22 +116,6 @@ struct VoiceInputWidgetEntryView: View {
     }
 }
 
-// MARK: - Shared: kicker — metadata voice only, in muted ink.
-//
-// The electric type-codes are content colors, never chrome: a label is not
-// a todo, so the cyan stays out of the widget.
-
-private struct Kicker: View {
-    let text: String
-
-    var body: some View {
-        Text(text)
-            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-            .tracking(0.8)
-            .foregroundStyle(Color.inkMuted)
-    }
-}
-
 // MARK: - Small Widget
 //
 // One composition, not an icon on a card: the tier-1 Speak key up top, its

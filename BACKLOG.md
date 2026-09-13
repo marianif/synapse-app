@@ -75,10 +75,12 @@ The work register: milestones, epics, areas, and typed work items.
 - [x] [feature] habit notifications — a habits preference, next-instance scheduler, settings switch, deep-link, and the reason shown verbatim in the body. effort: M @week → shipped 2026-09-12 — scheduleHabitNotification plus the settings toggle
 - [x] [design] `craft habits` — the cadence surface: today list, presence strip, the reason resurfaced, and the empty state. @week → shipped 2026-09-12 — Habits tab built, agenda tab removed
 - [x] [feature] habit FAB and composer — a scoped per-surface FAB opening a composer with the required reason field. effort: M @week → superseded 2026-09-12 — no FAB per DESIGN; the /habit modal editor shipped instead
-- [ ] [feature] project habits on the spine — show a project's linked habits on its screen, not only in the composer picker. effort: M @month
+- [ ] [feature] project screen habit section — when a project has linked habits, show them on the project screen with their cadence and presence; render nothing when it has none. effort: M @month
 - [x] [task] remove the Agenda concept — route, tab trigger, icon, and the dead getTodayAgenda helper. effort: S @week → shipped 2026-09-12 — done; the goldie marketing flow is tracked separately below
 - [x] [task] generalize recurrence expansion — let cadence-only habits reuse expandRecurringEntry without a DbEntry. effort: S @week → shipped 2026-09-12 — expandCadence plus expandHabitCadence
+- [x] [feature] habit detail — read-only info, easy-read stats, and a month/year history grid; row tap opens it, swipe Edit opens the editor. effort: M @week → shipped 2026-09-12
+- [x] [feature] habit emoji — autonomous glyph with a locked project-emoji inheritance when linked. effort: S @week → shipped 2026-09-12 — schema v23
 - [ ] [task] goldie agenda flow — point the store screenshot flow at the Habits tab. @month
-- [ ] [design] `colorize habits` — per-habit user-chosen color: picker and token support (deferred iteration). @month
+- [ ] [design] `colorize habits` — habit color selection: a per-habit color picker plus the token support, applied to the history grid and the habit row glyph. The next necessary iteration now that stats and grid ship. @week
 
 

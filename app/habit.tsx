@@ -12,6 +12,7 @@ import { DiscButton } from "@/components/atoms/disc-button";
 import { ChipRail, ChipRow, SelectChip } from "@/components/atoms/select-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
+import { EmojiPickerSheet } from "@/components/molecules/emoji-picker-sheet";
 import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -95,6 +96,8 @@ export default function HabitScreen(): React.ReactElement {
   const [days, setDays] = useState<number[]>([]);
   const [reminder, setReminder] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [emoji, setEmoji] = useState<string | null>(null);
+  const [emojiSheetOpen, setEmojiSheetOpen] = useState(false);
   const [paused, setPaused] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,6 +118,7 @@ export default function HabitScreen(): React.ReactElement {
     setDays(rule?.days ?? []);
     setReminder(habit?.reminder_time ?? null);
     setProjectId(habit?.project_id ?? null);
+    setEmoji(habit?.emoji ?? null);
     setPaused(habit?.status === "paused");
   }, [habit, editing]);
 
@@ -161,6 +165,7 @@ export default function HabitScreen(): React.ReactElement {
         await updateHabit(habit.id, {
           title: title.trim(),
           motivation: motivation.trim(),
+          emoji,
           cadence: buildCadence(),
           reminderTime: reminder,
           projectId,
@@ -169,6 +174,7 @@ export default function HabitScreen(): React.ReactElement {
         await createHabit({
           title: title.trim(),
           motivation: motivation.trim(),
+          emoji,
           cadence: buildCadence(),
           reminderTime: reminder,
           projectId,
@@ -236,6 +242,17 @@ export default function HabitScreen(): React.ReactElement {
     (project) => project.status === "active",
   );
 
+  const selectedProject = projectId
+    ? (activeProjects.find((project) => project.id === projectId) ??
+      projects.find((project) => project.id === projectId) ??
+      null)
+    : null;
+
+  // Glyph precedence mirrors the row and detail: a project-linked habit
+  // inherits the project's emoji (locked), so the habit's own choice is dormant
+  // while a link exists and resurfaces if the link is cleared.
+  const displayEmoji = selectedProject?.emoji ?? emoji ?? null;
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.paper }]}>
       {/* Header — close / kicker / save. Sits at the top so the keyboard never
@@ -284,17 +301,51 @@ export default function HabitScreen(): React.ReactElement {
       >
         {field(
           "WHAT REPEATS",
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            autoFocus={!editing}
-            placeholder="Stretch, read, call your sister…"
-            placeholderTextColor={colors.inkMuted}
-            selectionColor={colors.accent.clay}
-            style={[styles.titleInput, { color: colors.ink }]}
-            accessibilityLabel="Habit title"
-            returnKeyType="next"
-          />,
+          <View style={styles.identityRow}>
+            <Pressable
+              onPress={() => setEmojiSheetOpen(true)}
+              disabled={selectedProject !== null}
+              accessibilityRole="button"
+              accessibilityLabel={
+                selectedProject
+                  ? `Using ${selectedProject.title}'s emoji`
+                  : displayEmoji
+                    ? `Change emoji, currently ${displayEmoji}`
+                    : "Pick an emoji"
+              }
+              style={[
+                styles.emojiHero,
+                { backgroundColor: colors.surfaceSubtle },
+                selectedProject !== null && styles.emojiLocked,
+              ]}
+            >
+              {displayEmoji ? (
+                <ThemedText type="title">{displayEmoji}</ThemedText>
+              ) : (
+                <IconSymbol
+                  name="EmojiHappy2"
+                  size={22}
+                  color={colors.inkMuted}
+                />
+              )}
+            </Pressable>
+            <TextInput
+              value={title}
+              onChangeText={setTitle}
+              autoFocus={!editing}
+              placeholder="Stretch, read, call your sister…"
+              placeholderTextColor={colors.inkMuted}
+              selectionColor={colors.accent.clay}
+              style={[styles.titleInput, { color: colors.ink }]}
+              accessibilityLabel="Habit title"
+              returnKeyType="next"
+            />
+          </View>,
+          selectedProject
+            ? selectedProject.emoji
+              ? `Using ${selectedProject.title}'s emoji`
+              : `Linked to ${selectedProject.title} — its emoji shows here once set.`
+            : "Pick a glyph, or leave the fallback.",
         )}
 
         {field(
@@ -460,6 +511,14 @@ export default function HabitScreen(): React.ReactElement {
         onConfirm={deleteConfirm.confirm}
         onCancel={deleteConfirm.cancel}
       />
+
+      <EmojiPickerSheet
+        visible={emojiSheetOpen}
+        selected={emoji}
+        onSelect={(next) => setEmoji(next)}
+        onClear={() => setEmoji(null)}
+        onClose={() => setEmojiSheetOpen(false)}
+      />
     </View>
   );
 }
@@ -502,12 +561,30 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   titleInput: {
+    flex: 1,
     fontFamily: tokens.type.fontInter.semiBold,
     fontSize: tokens.type.title.size,
     lineHeight: tokens.type.title.lineHeight,
     letterSpacing: tokens.type.title.tracking,
     padding: 0,
     minHeight: 44,
+  },
+  identityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.md,
+  },
+  emojiHero: {
+    width: 48,
+    height: 48,
+    borderRadius: tokens.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  // A project-linked habit inherits the project's emoji — the hero stays
+  // visible but is not a control while the link exists.
+  emojiLocked: {
+    opacity: 0.7,
   },
   reasonInput: {
     minHeight: 80,

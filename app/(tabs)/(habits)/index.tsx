@@ -26,8 +26,8 @@ interface DecoratedHabit {
 
 /**
  * The Habits tab: the user's chosen cadences, today first, each carrying their
- * own reason instead of a streak. The tab reads and marks; creating and
- * managing happen in the /habit modal, the same compose pattern as /note.
+ * own reason instead of a streak. Tapping a row opens its read-only detail
+ * (stats + grid); swiping reveals Edit, which opens the /habit editor modal.
  */
 export default function HabitsScreen(): React.ReactElement {
   const router = useRouter();
@@ -106,6 +106,13 @@ export default function HabitsScreen(): React.ReactElement {
     router.push("/habit");
   };
 
+  const openDetail = (habit: DbHabit): void => {
+    router.push({
+      pathname: "/(tabs)/(habits)/detail",
+      params: { id: habit.id },
+    });
+  };
+
   const openEdit = (habit: DbHabit): void => {
     router.push({ pathname: "/habit", params: { id: habit.id } });
   };
@@ -123,7 +130,8 @@ export default function HabitsScreen(): React.ReactElement {
           console.error("[Habits] toggleHabitInstance failed:", error),
         );
       }}
-      onOpen={openEdit}
+      onOpen={openDetail}
+      onEdit={openEdit}
     />
   );
 

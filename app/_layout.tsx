@@ -120,7 +120,7 @@ function ThemedNavigationShell(): React.ReactElement | null {
       // A habit nudge lands on the Habits tab, where the reason it quoted is
       // waiting beside the habit.
       if (data.kind === "habit") {
-        router.navigate("/(tabs)/habits");
+        router.navigate("/(tabs)/(habits)");
       }
     },
     [router],

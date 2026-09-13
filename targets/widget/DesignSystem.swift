@@ -100,15 +100,31 @@ enum Spacing {
     static let xxxl: CGFloat = 32
 }
 
+// MARK: - Shared: kicker — the only all-caps element, muted mono metadata.
+
+struct Kicker: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 11, weight: .semibold, design: .monospaced))
+            .tracking(0.8)
+            .foregroundStyle(Color.inkMuted)
+    }
+}
+
 // MARK: - Depth — one cool shadow, no borders, no gradients.
 //
 // Keys lift off the paper ground the same way bento tiles do in the app:
-// `tokens.elevation.tile`'s cool `#28384f`, never pure black.
+// `tokens.elevation.tile`'s cool `#28384f`, never pure black. The lift is
+// lighter in light mode — the cool shadow reads heavier on the bright paper.
 
 struct KeyShadow: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+
     func body(content: Content) -> some View {
         content.shadow(
-            color: Color(hex: "28384f").opacity(0.35),
+            color: Color(hex: "28384f").opacity(colorScheme == .dark ? 0.35 : 0.20),
             radius: 8,
             x: 0,
             y: 3

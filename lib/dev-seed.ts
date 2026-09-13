@@ -1070,6 +1070,13 @@ const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
       "Missed scheduled days (solid empty cells) against off-cadence days (faint cells), a paused habit, and a brand-new habit with no history.",
     fixture: HABITS_MISSED,
   },
+  "habits-year-history": {
+    key: "habits-year-history",
+    label: "Habits · year history",
+    description:
+      "A year of completions on two daily habits, so the detail's Year heatmap has a real shape.",
+    fixture: HABITS_YEAR_HISTORY,
+  },
 };
 
 /** Ordered list for the dev-menu picker. */
@@ -1085,6 +1092,7 @@ export const SCENARIOS: Scenario[] = [
   SCENARIOS_BY_KEY["habits-variety"],
   SCENARIOS_BY_KEY["habits-all-done"],
   SCENARIOS_BY_KEY["habits-missed"],
+  SCENARIOS_BY_KEY["habits-year-history"],
   SCENARIOS_BY_KEY.empty,
 ];
 

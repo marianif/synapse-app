@@ -38,12 +38,25 @@ const storage = new ExtensionStorage("group.dev.the-wedge.synapse-app");
 
 function syncEntriesToWidget(entries: DbEntry[]): void {
   try {
-    const widgetEntries = entries.slice(0, 10).map((e) => ({
-      id: e.id,
-      title: e.title,
-      status: e.status,
-    }));
+    // `ExtensionStorage` only carries `string | number` values, so `due_date`
+    // is attached only when set rather than sent as null.
+    const widgetEntries = entries.slice(0, 10).map((e) => {
+      const row: Record<string, string | number> = {
+        id: e.id,
+        title: e.title,
+        status: e.status,
+        type: e.type,
+      };
+      if (e.due_date) row.due_date = e.due_date;
+      return row;
+    });
     storage.set("widget_entries", widgetEntries);
+    // The slice above caps at 10, so the widget's open count must come from
+    // the whole list or it would silently stop at the cap.
+    const openCount = entries.filter(
+      (e) => e.status !== "completed" && e.status !== "met",
+    ).length;
+    storage.set("widget_open_count", openCount);
     ExtensionStorage.reloadWidget("entriesWidget");
   } catch (error) {
     console.error("[store] syncEntriesToWidget failed:", error);

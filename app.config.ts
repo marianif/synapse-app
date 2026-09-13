@@ -1,11 +1,23 @@
 import type { ExpoConfig } from "expo/config";
 import appJson from "./app.json";
 
-const PROFILE = process.env.EAS_BUILD_PROFILE ?? "development";
-const IS_DEVELOPMENT = PROFILE === "development";
+// Build variant, set per EAS profile (eas.json) and inlined into the JS bundle
+// by Metro through the EXPO_PUBLIC_ prefix. Local `expo start` / `expo run:ios`
+// leaves it unset and falls back to "development" (the `.dev` bundle).
+//   development → `…-app.dev`      dev client, full dev tooling
+//   founder     → `…-app.founder`  preview profile; Pro unlocked, no paywall
+//   production  → `…-app`          store / TestFlight
+const APP_VARIANT = process.env.EXPO_PUBLIC_APP_VARIANT ?? "development";
+
+const BUNDLE_SUFFIX =
+  APP_VARIANT === "development"
+    ? ".dev"
+    : APP_VARIANT === "founder"
+      ? ".founder"
+      : "";
 
 const BASE_BUNDLE_ID = "dev.the-wedge.synapse-app";
-const BUNDLE_ID = `${BASE_BUNDLE_ID}${IS_DEVELOPMENT ? ".dev" : ""}`;
+const BUNDLE_ID = `${BASE_BUNDLE_ID}${BUNDLE_SUFFIX}`;
 const APP_GROUP = `group.${BUNDLE_ID}`;
 
 const expo = appJson.expo as unknown as ExpoConfig;

@@ -36,6 +36,13 @@ type EntitlementContextValue = Entitlement & {
 
 const EntitlementContext = createContext<EntitlementContextValue | null>(null);
 
+/**
+ * Founder builds (the `preview` profile) ship with Pro unlocked so the app
+ * never asks for money. They are release builds, so `__DEV__` can't carry
+ * this; the flag is baked in from the EAS profile via the EXPO_PUBLIC_ prefix.
+ */
+const IS_FOUNDER = process.env.EXPO_PUBLIC_APP_VARIANT === "founder";
+
 /** Force a plan state for testing; only reachable from __DEV__. */
 function applyOverride(
   base: Entitlement,
@@ -154,7 +161,11 @@ export function EntitlementProvider({
     proKind,
   });
 
-  const effectiveOverride: PlanOverride = __DEV__ ? planOverride : "auto";
+  const effectiveOverride: PlanOverride = __DEV__
+    ? planOverride
+    : IS_FOUNDER
+      ? "lifetime"
+      : "auto";
   const entitlement = applyOverride(real, effectiveOverride);
 
   const setPlanOverride = (value: PlanOverride): void => {

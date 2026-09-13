@@ -4,6 +4,8 @@ import dayjs from "dayjs";
 import * as Notifications from "expo-notifications";
 import { AppState } from "react-native";
 
+import { toDisplayDate } from "@/lib/date-utils";
+import { habitTone } from "@/lib/habit-color";
 import {
   cancelProjectReturnNotification,
   cancelNotificationForEntry,
@@ -13,6 +15,7 @@ import {
   scheduleHabitNotification,
   scheduleProjectReturnNotification,
 } from "@/lib/notifications";
+import { expandHabitCadence } from "@/lib/recurrence";
 import type { DbEntry, DbHabit } from "@/lib/types";
 import { SpeechRecognizerModule } from "@/modules/speech-recognizer";
 import * as WatchConnectivity from "@/modules/watch-connectivity";
@@ -46,6 +49,7 @@ function syncEntriesToWidget(entries: DbEntry[]): void {
         title: e.title,
         status: e.status,
         type: e.type,
+        is_next: e.is_next,
       };
       if (e.due_date) row.due_date = e.due_date;
       return row;
@@ -58,6 +62,7 @@ function syncEntriesToWidget(entries: DbEntry[]): void {
     ).length;
     storage.set("widget_open_count", openCount);
     ExtensionStorage.reloadWidget("entriesWidget");
+    ExtensionStorage.reloadWidget("nextActionWidget");
   } catch (error) {
     console.error("[store] syncEntriesToWidget failed:", error);
   }
@@ -84,6 +89,78 @@ listenerMiddleware.startListening({
         },
       );
     }
+  },
+});
+
+// ─── Habits context for the Habits widget ────────────────────────────────────
+//
+// Only today's due habits travel — the same `expandHabitCadence` verdict the
+// Habits tab renders. Hues are resolved to both schemes here so the Swift side
+// never re-derives color math.
+
+function syncHabitsToWidget(state: RootState): void {
+  try {
+    const today = dayjs().startOf("day").toDate();
+    const todayKey = toDisplayDate(today);
+    const doneKeys = new Set(
+      state.habits.habitCompletions.map(
+        (c) => `${c.habit_id}::${c.instance_date}`,
+      ),
+    );
+    const projectEmojis: Record<string, string> = {};
+    for (const project of state.projects.projects) {
+      if (project.emoji) projectEmojis[project.id] = project.emoji;
+    }
+
+    const habits = state.habits.habits
+      .filter(
+        (habit) =>
+          habit.status === "active" &&
+          expandHabitCadence(habit, today, today).length > 0,
+      )
+      .slice(0, 10)
+      .map((habit) => {
+        const row: Record<string, string | number> = {
+          id: habit.id,
+          title: habit.title,
+          done: doneKeys.has(`${habit.id}::${todayKey}`) ? 1 : 0,
+        };
+        // Glyph precedence mirrors HabitRow: project emoji, then own emoji.
+        const glyph =
+          (habit.project_id ? projectEmojis[habit.project_id] : null) ??
+          habit.emoji ??
+          null;
+        if (glyph) row.glyph = glyph;
+        if (habit.color_hue !== null) {
+          const light = habitTone(habit.color_hue, "light");
+          const dark = habitTone(habit.color_hue, "dark");
+          row.tint_light = light.tint;
+          row.tint_dark = dark.tint;
+          row.mark_light = light.mark;
+          row.mark_dark = dark.mark;
+          row.ink_light = light.ink;
+          row.ink_dark = dark.ink;
+        }
+        return row;
+      });
+
+    storage.set("widget_habits", habits);
+    // The widget stamps its header with this so a day the app was never
+    // opened reads as "as of", never as a silently wrong today.
+    storage.set("widget_habits_date", todayKey);
+    ExtensionStorage.reloadWidget("habitsWidget");
+  } catch (error) {
+    console.error("[store] syncHabitsToWidget failed:", error);
+  }
+}
+
+listenerMiddleware.startListening({
+  // Projects ride along: a project-linked habit inherits the project's emoji.
+  predicate: (action) =>
+    typeof action.type === "string" &&
+    (action.type.startsWith("habits/") || action.type.startsWith("projects/")),
+  effect: (_action, api) => {
+    syncHabitsToWidget(api.getState() as RootState);
   },
 });
 

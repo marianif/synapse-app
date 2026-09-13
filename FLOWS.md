@@ -368,9 +368,16 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 - Intent: record the user's own reason so the app can hold it back to them
 - Action: type or speak the reason; it is required
 - State: why-set
-- Next: set-the-cadence
+- Next: give-it-a-hue
 - Branch: reason left empty → draft-habit
 - Component: HabitEditor reason field
+
+### Step — Give it a hue <!-- flow:step:give-it-a-hue -->
+- Intent: give the habit its own identity color
+- Action: drag the wheel to any hue, or keep it neutral
+- State: hue-set
+- Next: set-the-cadence
+- Component: HabitColorWheel
 
 ### Step — Set the cadence <!-- flow:step:set-the-cadence -->
 - Intent: choose how often the habit repeats
@@ -405,7 +412,7 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 
 ### Step — Manage a habit <!-- flow:step:manage-a-habit -->
 - Intent: the tier-3 verbs, deliberately out of the way
-- Action: from the detail's Edit CTA, or swipe the row and tap Edit — rename, change cadence, edit the reason, pick a glyph, pause or resume, delete
+- Action: from the detail's Edit CTA, or swipe the row and tap Edit — rename, change cadence, edit the reason, pick a glyph or hue, pause or resume, delete
 - State: active-habit
 - Next: done
 - Exit: true
@@ -438,8 +445,13 @@ Open decision (flagged, not absorbed): GOALS.md says the share extension "funnel
 
 ### State — Why-set <!-- flow:state:why-set -->
 - Meaning: the user has said why the habit matters
-- Next: set-the-cadence
+- Next: give-it-a-hue
 - Recovery: edit the reason in the editor
+
+### State — Hue-set <!-- flow:state:hue-set -->
+- Meaning: the habit has an identity hue, or deliberately stays neutral
+- Next: set-the-cadence
+- Recovery: reopen the editor and reset to neutral
 
 ### State — Cadence-set <!-- flow:state:cadence-set -->
 - Meaning: how often the habit repeats is chosen, not yet filed

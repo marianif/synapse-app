@@ -200,6 +200,11 @@ export interface DbHabit {
    * emoji instead (see the glyph precedence in the Habits UI). Null = fallback.
    */
   emoji: string | null;
+  /**
+   * User-picked identity hue (0–359). The system derives every tone (tint,
+   * mark, ink) from it per scheme, so no hex is stored. Null = neutral.
+   */
+  color_hue: number | null;
   /** Serialized `RecurrenceRule` JSON. Parse with `parseRule`. */
   cadence: string;
   /** First occurrence, DD/MM/YYYY. */
@@ -233,6 +238,8 @@ export interface CreateHabitInput {
   motivation: string;
   /** Autonomous-habit glyph. Ignored while the habit is project-linked. */
   emoji?: string | null;
+  /** Identity hue (0–359); the system derives the tones. Null = neutral. */
+  colorHue?: number | null;
   cadence: RecurrenceRule;
   /** First occurrence, DD/MM/YYYY. Defaults to today when omitted. */
   startDate?: string;
@@ -246,6 +253,8 @@ export interface UpdateHabitInput {
   motivation?: string;
   /** Autonomous-habit glyph. Ignored while the habit is project-linked. */
   emoji?: string | null;
+  /** Identity hue (0–359); the system derives the tones. Null = neutral. */
+  colorHue?: number | null;
   cadence?: RecurrenceRule;
   endDate?: string | null;
   reminderTime?: string | null;

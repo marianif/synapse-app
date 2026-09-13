@@ -41,6 +41,18 @@ const endOfYear = () => fmt(today.endOf("year"));
 const daysAgoToWeekday = (weekday: number, weeksBack = 0): number =>
   ((today.day() - weekday + 7) % 7) + weeksBack * 7;
 
+/**
+ * Deterministic hue for a seeded habit, so fixtures show the color system
+ * without every entry hand-picking one. Explicit `colorHue` wins when set.
+ */
+function seedHue(title: string): number {
+  let h = 0;
+  for (let i = 0; i < title.length; i++) {
+    h = (h * 31 + title.charCodeAt(i)) >>> 0;
+  }
+  return h % 360;
+}
+
 // ─── Fixture types ────────────────────────────────────────────────────────────
 
 type ProjectSeed = {
@@ -91,6 +103,8 @@ type HabitSeed = {
   motivation: string;
   /** Autonomous-habit glyph; project-linked habits inherit the project emoji. */
   emoji?: string;
+  /** Identity hue (0–359) for the free hue wheel. Omitted = neutral. */
+  colorHue?: number;
   freq: RecurrenceFrequency;
   /** Only for freq "weekly". 0 = Sunday … 6 = Saturday. */
   days?: number[];
@@ -1190,12 +1204,13 @@ async function insertFixture(
     const created = now - start * DAY_SECS;
     await db.runAsync(
       `INSERT INTO habits
-       (id, title, motivation, emoji, cadence, start_date, end_date, reminder_time, project_id, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, title, motivation, emoji, color_hue, cadence, start_date, end_date, reminder_time, project_id, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       habitId,
       h.title,
       h.motivation,
       h.emoji ?? null,
+      h.colorHue ?? seedHue(h.title),
       serializeRule({ freq: h.freq, days: h.days }),
       d(-start),
       h.endDate ?? null,

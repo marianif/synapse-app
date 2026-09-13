@@ -6,6 +6,8 @@
 // Source of truth: .impeccable/brand-brief.json (direction "Field Lab").
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { habitTone } from "@/lib/habit-color";
+import type { HabitTone } from "@/lib/habit-color";
 import type { EntryType } from "@/lib/types";
 import { Platform } from "react-native";
 
@@ -393,6 +395,17 @@ function resolveSurface(layer: SurfaceLayer, colors: ThemeColors): string {
 export function useSurfaceColor(layer: SurfaceLayer): string {
   const { colors } = useTheme();
   return resolveSurface(layer, colors);
+}
+
+/**
+ * A habit's identity tone for the active scheme, resolved from its user-picked
+ * hue through the shared derivation (lib/habit-color.ts). A null hue returns
+ * null: callers fall back to `surfaceSubtle` for the glyph and success green
+ * for marks, which is the pre-color behavior.
+ */
+export function useHabitTone(hue: number | null): HabitTone | null {
+  const { scheme } = useTheme();
+  return hue === null ? null : habitTone(hue, scheme);
 }
 
 // ColorScheme kept as an alias of Scheme — consumed by hooks/use-color-scheme.ts.

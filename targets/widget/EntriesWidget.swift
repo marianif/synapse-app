@@ -14,15 +14,6 @@ struct EntriesEntry: TimelineEntry {
     var isEmpty: Bool { entries.isEmpty }
 }
 
-// MARK: - Entry Data Model
-
-struct EntryData: Codable, Identifiable {
-    let id: String
-    let title: String
-    let status: String
-    let type: String? // "todo", "deadline", "idea"
-}
-
 // MARK: - Timeline Provider
 
 struct EntriesProvider: AppIntentTimelineProvider {
@@ -36,21 +27,21 @@ struct EntriesProvider: AppIntentTimelineProvider {
     }
 
     func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> EntriesEntry {
-        let entries = loadEntries()
+        let entries = WidgetStore.entries()
         return EntriesEntry(
             date: Date(),
             entries: entries,
-            openCount: loadOpenCount(entries),
+            openCount: WidgetStore.openCount(fallback: entries),
             configuration: configuration
         )
     }
     
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<EntriesEntry> {
-        let entries = loadEntries()
+        let entries = WidgetStore.entries()
         let entry = EntriesEntry(
             date: Date(),
             entries: entries,
-            openCount: loadOpenCount(entries),
+            openCount: WidgetStore.openCount(fallback: entries),
             configuration: configuration
         )
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
@@ -65,25 +56,6 @@ struct EntriesProvider: AppIntentTimelineProvider {
             EntryData(id: "4", title: "Research competitor analysis", status: "scheduled", type: "idea"),
             EntryData(id: "5", title: "Fix navigation bug", status: "completed", type: "todo"),
         ]
-    }
-
-    private func loadEntries() -> [EntryData] {
-        guard let defaults = UserDefaults(suiteName: "group.dev.the-wedge.synapse-app"),
-              let data = defaults.data(forKey: "widget_entries"),
-              let decoded = try? JSONDecoder().decode([EntryData].self, from: data) else {
-            return []
-        }
-        return decoded
-    }
-
-    /// Prefers the true open count the app syncs alongside the slice; falls
-    /// back to counting the slice for payloads written before that key existed.
-    private func loadOpenCount(_ entries: [EntryData]) -> Int {
-        if let defaults = UserDefaults(suiteName: "group.dev.the-wedge.synapse-app"),
-           defaults.object(forKey: "widget_open_count") != nil {
-            return defaults.integer(forKey: "widget_open_count")
-        }
-        return entries.filter { $0.status != "completed" && $0.status != "met" }.count
     }
 }
 
@@ -215,10 +187,10 @@ private struct EntryRow: View {
     let entry: EntryData
 
     var body: some View {
-        Link(destination: URL(string: "synapseapp:///edit?id=\(encodedID)")!) {
+        Link(destination: entry.editURL) {
             HStack(spacing: Spacing.sm) {
                 Circle()
-                    .fill(accentColor)
+                    .fill(entry.accentColor)
                     .frame(width: 6, height: 6)
 
                 Text(entry.title)
@@ -231,27 +203,6 @@ private struct EntryRow: View {
             .frame(minHeight: 20)
         }
         .accessibilityLabel(entry.title)
-    }
-
-    private var encodedID: String {
-        entry.id.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? entry.id
-    }
-
-    /// Completed/met reads success green; everything else wears its type code.
-    /// The old mapping checked values the database never writes — "done",
-    /// "in-progress" — so every dot fell through to muted ink.
-    private var accentColor: Color {
-        switch entry.status.lowercased() {
-        case "completed", "met":
-            return .success
-        default:
-            switch entry.type?.lowercased() {
-            case "todo": return .typeTodo
-            case "deadline": return .typeBills
-            case "idea": return .typeIdea
-            default: return .inkMuted
-            }
-        }
     }
 }
 

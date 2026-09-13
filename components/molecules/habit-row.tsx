@@ -9,7 +9,7 @@ import {
 } from "@/components/atoms/habit-presence-strip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { tokens, useTheme } from "@/constants/theme";
+import { tokens, useHabitTone, useTheme } from "@/constants/theme";
 import { humanizeRule } from "@/lib/recurrence";
 import type { DbHabit } from "@/lib/types";
 
@@ -50,6 +50,7 @@ export function HabitRow({
   onEdit,
 }: HabitRowProps): React.ReactElement {
   const { colors } = useTheme();
+  const tone = useHabitTone(habit.color_hue);
   const paused = habit.status === "paused";
   const swipeableRef = useRef<Swipeable>(null);
 
@@ -108,12 +109,19 @@ export function HabitRow({
         ]}
       >
         <View
-          style={[styles.glyph, { backgroundColor: colors.surfaceSubtle }]}
+          style={[
+            styles.glyph,
+            { backgroundColor: tone?.tint ?? colors.surfaceSubtle },
+          ]}
         >
           {glyph ? (
             <ThemedText type="item">{glyph}</ThemedText>
           ) : (
-            <IconSymbol name="Repeat" size={17} color={colors.inkMuted} />
+            <IconSymbol
+              name="Repeat"
+              size={17}
+              color={tone?.ink ?? colors.inkMuted}
+            />
           )}
         </View>
 
@@ -149,7 +157,11 @@ export function HabitRow({
           </ThemedText>
 
           <View style={styles.metaRow}>
-            <HabitPresenceStrip days={days} muted={paused} />
+            <HabitPresenceStrip
+              days={days}
+              muted={paused}
+              color={tone?.mark}
+            />
             <ThemedText type="mono" muted style={styles.cadence}>
               {humanizeRule(habit.cadence)}
             </ThemedText>

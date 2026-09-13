@@ -10,7 +10,7 @@ import { SelectChip } from "@/components/atoms/select-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { tokens, useTheme } from "@/constants/theme";
+import { tokens, useHabitTone, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { formatTime12h, parseDate, parseTimeToMinutes } from "@/lib/date-utils";
 import { expandHabitCadence, humanizeRule } from "@/lib/recurrence";
@@ -39,6 +39,10 @@ export default function HabitDetailScreen(): React.ReactElement {
   const habit: DbHabit | undefined = id
     ? habits.find((h) => h.id === id)
     : undefined;
+
+  // Hooks run before any early return; the tone resolves from the habit's hue
+  // (or null, which keeps the neutral look).
+  const tone = useHabitTone(habit?.color_hue ?? null);
 
   const done = useMemo(() => {
     if (!habit) return new Set<string>();
@@ -105,6 +109,7 @@ export default function HabitDetailScreen(): React.ReactElement {
   // Glyph precedence: project emoji (locked when linked) → habit emoji →
   // Repeat fallback.
   const glyph = project?.emoji ?? habit.emoji ?? null;
+  const markColor = tone?.mark ?? colors.feedback.success;
   const cadence = humanizeRule(habit.cadence);
   const nudge = habit.reminder_time
     ? formatTime12h(parseTimeToMinutes(habit.reminder_time) ?? 0)
@@ -153,12 +158,19 @@ export default function HabitDetailScreen(): React.ReactElement {
             hero. The reason is the one thing this screen must never bury. */}
         <View style={styles.identity}>
           <View
-            style={[styles.glyph, { backgroundColor: colors.surfaceSubtle }]}
+            style={[
+              styles.glyph,
+              { backgroundColor: tone?.tint ?? colors.surfaceSubtle },
+            ]}
           >
             {glyph ? (
               <ThemedText type="title">{glyph}</ThemedText>
             ) : (
-              <IconSymbol name="Repeat" size={24} color={colors.inkMuted} />
+              <IconSymbol
+                name="Repeat"
+                size={24}
+                color={tone?.ink ?? colors.inkMuted}
+              />
             )}
           </View>
           <ThemedText type="title" style={styles.title}>
@@ -260,13 +272,14 @@ export default function HabitDetailScreen(): React.ReactElement {
               done={done}
               monthOffset={monthOffset}
               onChangeMonth={setMonthOffset}
+              markColor={markColor}
             />
           ) : (
-            <HabitYearHeatmap habit={habit} done={done} />
+            <HabitYearHeatmap habit={habit} done={done} markColor={markColor} />
           )}
 
           <View style={styles.legend}>
-            <Legend color={colors.feedback.success} label="Done" />
+            <Legend color={markColor} label="Done" />
             <Legend color={colors.inkMuted} label="Missed" opacity={0.3} />
             <Legend color={colors.inkMuted} label="Off cadence" opacity={0.12} />
           </View>

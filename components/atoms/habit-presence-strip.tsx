@@ -18,6 +18,11 @@ interface HabitPresenceStripProps {
   days: HabitDay[];
   /** Paused habits read at reduced emphasis. */
   muted?: boolean;
+  /**
+   * Fill for done cells — the habit's mark tone. Defaults to success green,
+   * which is what a neutral (un-hued) habit keeps.
+   */
+  color?: string;
 }
 
 /**
@@ -31,8 +36,10 @@ interface HabitPresenceStripProps {
 export function HabitPresenceStrip({
   days,
   muted = false,
+  color,
 }: HabitPresenceStripProps): React.ReactElement {
   const { colors } = useTheme();
+  const doneColor = color ?? colors.feedback.success;
   const doneCount = days.filter((day) => day.done).length;
   const scheduledCount = days.filter((day) => day.scheduled).length;
 
@@ -49,7 +56,7 @@ export function HabitPresenceStrip({
             styles.cell,
             {
               backgroundColor: day.done
-                ? colors.feedback.success
+                ? doneColor
                 : colors.surfaceSubtle,
             },
             // A day the habit wasn't scheduled on is not an absence — it is

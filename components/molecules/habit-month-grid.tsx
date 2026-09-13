@@ -26,6 +26,8 @@ interface HabitMonthGridProps {
   /** 0 = current month, -1 = previous, … */
   monthOffset: number;
   onChangeMonth: (next: number) => void;
+  /** Fill for done marks — the habit's mark tone, or success green. */
+  markColor?: string;
 }
 
 /**
@@ -39,8 +41,10 @@ export function HabitMonthGrid({
   done,
   monthOffset,
   onChangeMonth,
+  markColor,
 }: HabitMonthGridProps): React.ReactElement {
   const { colors } = useTheme();
+  const doneFill = markColor ?? colors.feedback.success;
   const today = useMemo(() => dayjs().startOf("day"), []);
   const monthStart = useMemo(
     () => today.add(monthOffset, "month").startOf("month"),
@@ -151,7 +155,7 @@ export function HabitMonthGrid({
                         styles.mark,
                         {
                           backgroundColor: isDone
-                            ? colors.feedback.success
+                            ? doneFill
                             : colors.inkMuted,
                           opacity,
                         },

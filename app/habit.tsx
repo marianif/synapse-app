@@ -13,8 +13,9 @@ import { ChipRail, ChipRow, SelectChip } from "@/components/atoms/select-chip";
 import { ThemedText } from "@/components/atoms/themed-text";
 import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { EmojiPickerSheet } from "@/components/molecules/emoji-picker-sheet";
+import { HabitColorWheel } from "@/components/molecules/habit-color-wheel";
 import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
-import { tokens, useTheme } from "@/constants/theme";
+import { tokens, useHabitTone, useTheme } from "@/constants/theme";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { toDisplayDate } from "@/lib/date-utils";
@@ -98,10 +99,13 @@ export default function HabitScreen(): React.ReactElement {
   const [projectId, setProjectId] = useState<string | null>(null);
   const [emoji, setEmoji] = useState<string | null>(null);
   const [emojiSheetOpen, setEmojiSheetOpen] = useState(false);
+  const [colorHue, setColorHue] = useState<number | null>(null);
+  const [wheelOpen, setWheelOpen] = useState(false);
   const [paused, setPaused] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteHabit });
+  const tone = useHabitTone(colorHue);
 
   // Seed once per habit id so a store round-trip (pause, save) never resets
   // fields the user is typing into.
@@ -119,6 +123,7 @@ export default function HabitScreen(): React.ReactElement {
     setReminder(habit?.reminder_time ?? null);
     setProjectId(habit?.project_id ?? null);
     setEmoji(habit?.emoji ?? null);
+    setColorHue(habit?.color_hue ?? null);
     setPaused(habit?.status === "paused");
   }, [habit, editing]);
 
@@ -166,6 +171,7 @@ export default function HabitScreen(): React.ReactElement {
           title: title.trim(),
           motivation: motivation.trim(),
           emoji,
+          colorHue,
           cadence: buildCadence(),
           reminderTime: reminder,
           projectId,
@@ -175,6 +181,7 @@ export default function HabitScreen(): React.ReactElement {
           title: title.trim(),
           motivation: motivation.trim(),
           emoji,
+          colorHue,
           cadence: buildCadence(),
           reminderTime: reminder,
           projectId,
@@ -315,7 +322,7 @@ export default function HabitScreen(): React.ReactElement {
               }
               style={[
                 styles.emojiHero,
-                { backgroundColor: colors.surfaceSubtle },
+                { backgroundColor: tone?.tint ?? colors.surfaceSubtle },
                 selectedProject !== null && styles.emojiLocked,
               ]}
             >
@@ -365,6 +372,62 @@ export default function HabitScreen(): React.ReactElement {
             accessibilityLabel="Why this habit matters"
           />,
           "Required. This is what a nudge will read back to you.",
+        )}
+
+        {field(
+          "COLOR",
+          <View style={styles.colorField}>
+            <Pressable
+              onPress={() => setWheelOpen((open) => !open)}
+              accessibilityRole="button"
+              accessibilityLabel={
+                colorHue === null
+                  ? "Pick a habit color"
+                  : `Habit color, hue ${Math.round(colorHue)}`
+              }
+              accessibilityState={{ expanded: wheelOpen }}
+              style={({ pressed }) => [
+                styles.colorToggle,
+                { backgroundColor: colors.surfaceSubtle },
+                pressed && { opacity: 0.7 },
+              ]}
+            >
+              <View
+                style={[
+                  styles.colorSwatch,
+                  { borderColor: colors.inkMuted },
+                  tone ? { backgroundColor: tone.mark } : null,
+                ]}
+              />
+              <ThemedText
+                type="caption"
+                style={[styles.colorValue, { color: colors.ink }]}
+              >
+                {colorHue === null ? "Neutral" : `Hue ${Math.round(colorHue)}`}
+              </ThemedText>
+              <IconSymbol
+                name={wheelOpen ? "ChevronUp" : "ChevronDown"}
+                size={16}
+                color={colors.inkMuted}
+              />
+            </Pressable>
+
+            {wheelOpen ? (
+              <HabitColorWheel
+                hue={colorHue}
+                onChange={setColorHue}
+                onClear={() => setColorHue(null)}
+                renderCenter={(ink) =>
+                  displayEmoji ? (
+                    <ThemedText type="title">{displayEmoji}</ThemedText>
+                  ) : (
+                    <IconSymbol name="Repeat" size={22} color={ink} />
+                  )
+                }
+              />
+            ) : null}
+          </View>,
+          "Any hue. We keep the tone readable in both schemes.",
         )}
 
         {field(
@@ -585,6 +648,28 @@ const styles = StyleSheet.create({
   // visible but is not a control while the link exists.
   emojiLocked: {
     opacity: 0.7,
+  },
+  colorField: {
+    gap: tokens.space.sm,
+  },
+  colorToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.sm,
+    minHeight: 44,
+    paddingHorizontal: tokens.space.md,
+    borderRadius: tokens.radius.md,
+  },
+  // A ring plus the chosen fill; neutral keeps the ring only, so the control
+  // reads even against its own tonal row.
+  colorSwatch: {
+    width: 18,
+    height: 18,
+    borderRadius: tokens.radius.pill,
+    borderWidth: 1,
+  },
+  colorValue: {
+    flex: 1,
   },
   reasonInput: {
     minHeight: 80,

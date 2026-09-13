@@ -1,3 +1,4 @@
+import { hslToHex } from "@/lib/color";
 import type { DbDiaryEntry } from "@/lib/types";
 
 export interface TagCount {
@@ -60,21 +61,6 @@ function tagHue(tag: string): number {
     h = (h * 31 + tag.charCodeAt(i)) >>> 0;
   }
   return h % 360;
-}
-
-/** HSL → hex. h∈[0,360), s,l∈[0,100]. */
-function hslToHex(h: number, s: number, l: number): string {
-  const sat = s / 100;
-  const light = l / 100;
-  const k = (n: number): number => (n + h / 30) % 12;
-  const a = sat * Math.min(light, 1 - light);
-  const f = (n: number): number =>
-    light - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-  const toHex = (v: number): string =>
-    Math.round(v * 255)
-      .toString(16)
-      .padStart(2, "0");
-  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
 }
 
 export interface TagTone {

@@ -574,6 +574,23 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       );
     });
   }
+
+  if (currentVersion < 24) {
+    // Migration 24: habit identity hue (0–359) for the free hue wheel. The
+    // tones are derived at render time, so only the hue is stored. Nullable so
+    // existing habits keep the neutral look until the user picks one.
+    await db.withTransactionAsync(async () => {
+      try {
+        await db.execAsync('ALTER TABLE habits ADD COLUMN color_hue INTEGER');
+      } catch {
+        // column already exists (fresh installs got it from CREATE_HABITS_TABLE)
+      }
+      await db.runAsync(
+        "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
+        String(SCHEMA_VERSION),
+      );
+    });
+  }
 }
 
 // ─── Project helpers ────────────────────────────────────────────────────────────
@@ -933,14 +950,16 @@ export async function insertHabit(input: CreateHabitInput): Promise<DbHabit> {
   const reminderTime = input.reminderTime ?? null;
   const projectId = input.projectId ?? null;
   const emoji = input.emoji ?? null;
+  const colorHue = input.colorHue ?? null;
 
   await db.runAsync(
-    `INSERT INTO habits (id, title, motivation, emoji, cadence, start_date, end_date, reminder_time, project_id, status, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
+    `INSERT INTO habits (id, title, motivation, emoji, color_hue, cadence, start_date, end_date, reminder_time, project_id, status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
     id,
     input.title,
     motivation,
     emoji,
+    colorHue,
     cadence,
     startDate,
     endDate,
@@ -955,6 +974,7 @@ export async function insertHabit(input: CreateHabitInput): Promise<DbHabit> {
     title: input.title,
     motivation,
     emoji,
+    color_hue: colorHue,
     cadence,
     start_date: startDate,
     end_date: endDate,
@@ -1007,6 +1027,10 @@ export async function updateHabit(
   if (data.emoji !== undefined) {
     updates.push("emoji = ?");
     values.push(data.emoji);
+  }
+  if (data.colorHue !== undefined) {
+    updates.push("color_hue = ?");
+    values.push(data.colorHue);
   }
   if (data.cadence !== undefined) {
     updates.push("cadence = ?");

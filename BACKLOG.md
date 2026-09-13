@@ -81,6 +81,6 @@ The work register: milestones, epics, areas, and typed work items.
 - [x] [feature] habit detail — read-only info, easy-read stats, and a month/year history grid; row tap opens it, swipe Edit opens the editor. effort: M @week → shipped 2026-09-12
 - [x] [feature] habit emoji — autonomous glyph with a locked project-emoji inheritance when linked. effort: S @week → shipped 2026-09-12 — schema v23
 - [ ] [task] goldie agenda flow — point the store screenshot flow at the Habits tab. @month
-- [ ] [design] `colorize habits` — habit color selection: a per-habit color picker plus the token support, applied to the history grid and the habit row glyph. The next necessary iteration now that stats and grid ship. @week
+- [x] [design] `colorize habits` — habit color selection: a per-habit color picker plus the token support, applied to the history grid and the habit row glyph. @week → shipped 2026-09-12 — free Skia hue wheel; tint/mark/ink derived per scheme, hue stored as an int
 
 

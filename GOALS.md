@@ -44,4 +44,4 @@ Capture. Everything hangs on the pen key: it owns the tab-bar center, the slab a
 
 The scheme-aware neutral slab (`accent.clay`) is spent on the tier-1 capture key, the composer's send/confirm button, and the tier-2 scoped FABs (project FAB, projects-list create FAB). Supporting actions use tonal surfaces plus the 6px EntryDot / mono kicker; they never take the slab. The three electric type-codes (deadline coral, todo cyan, idea amber) are content colors, not action colors — they identify what a row is, never what tapping it does.
 
-Habits are a new entity with no electric type-code. Habit color is user-picked per habit; the picker and its token support are a later iteration (see BACKLOG `colorize habits`). Until then the surface uses the neutral tonal range, not a new content color.
+Habits are a new entity with no electric type-code. A habit's color is a user-picked **hue** (free wheel); the system derives the tint, mark, and ink from it per scheme, so any pick stays readable and cohesive. It is a content color for identity (glyph, presence strip, history grid), never an action color and never the slab. A neutral hue is the default until the user picks one.

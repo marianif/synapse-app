@@ -18,6 +18,8 @@ interface HabitYearHeatmapProps {
   habit: DbHabit;
   /** "habitId::DD/MM/YYYY" keys of completed instances for this habit. */
   done: Set<string>;
+  /** Fill for done marks — the habit's mark tone, or success green. */
+  markColor?: string;
 }
 
 /**
@@ -29,8 +31,10 @@ interface HabitYearHeatmapProps {
 export function HabitYearHeatmap({
   habit,
   done,
+  markColor,
 }: HabitYearHeatmapProps): React.ReactElement {
   const { colors } = useTheme();
+  const doneFill = markColor ?? colors.feedback.success;
   const scrollRef = useRef<ScrollView>(null);
   const today = useMemo(() => dayjs().startOf("day"), []);
   const yearStart = useMemo(() => today.startOf("year"), [today]);
@@ -101,7 +105,7 @@ export function HabitYearHeatmap({
                   styles.cell,
                   {
                     backgroundColor: isDone
-                      ? colors.feedback.success
+                      ? doneFill
                       : colors.inkMuted,
                     opacity,
                   },

@@ -15,6 +15,8 @@ The system explicitly rejects: corporate productivity tools, gamified habit-trac
 
 **The Habits surface is a cadence readout, not a tracker.** It shows what repeats today, lets one tap honor it, and holds the user's own reason beside each habit instead of a score. Presence is shown as a quiet recent-days strip, never a streak count or a celebration; a missed day stays neutral, a paused habit stays visible, and the copy sounds like the user's own note to themselves, never a system reporting what it measured.
 
+**Habit color is identity, not a new type-code.** A habit has no electric code, so the user picks a hue on a free wheel (`lib/habit-color.ts`) and the system derives three roles from it — a soft `tint` (the row glyph circle and detail hero), a vivid `mark` (presence strip and history grid fills), and an AA-safe `ink` — with contrast clamped per scheme, so no pick can break readability. Only the hue is stored. A neutral hue keeps the old look; the completion disc stays `feedback.success`, because completion is the app's green everywhere and a habit hue identifies, it never celebrates.
+
 **Core-model note (Jun 11 pivot).** The model is now four board things — **idea · todo · deadline · diary note** — over **projects**. **Events are removed** (the persona doesn't live event-to-event), which frees the ultraviolet code from the palette. **Someday is no longer a type or a color**: an undated todo IS a "someday", marked by a quiet mono **badge**, never a lime downgrade — so lime also leaves the type palette. The palette drops from five electric codes to three (deadline coral, todo cyan, idea amber).
 
 Three voices carry the typography: **Host Grotesk** (display/body — Inter was removed as too neutral), **IBM Plex Mono** (the signal layer: counts, status lines, time, kickers — the instrument-panel feel), and **Caveat** (the handwritten layer: the companion voice and margin-notes).
@@ -385,7 +387,7 @@ A user-set state on any entry (todo / deadline / idea): "this is what I'm doing 
 - **Don't** give an undated todo its own color — "someday" is a badge on the cyan todo code, never a lime (or any) recolor. Datedness is a state, not a type.
 - **Don't** reintroduce an event type or an event color (ultraviolet) — events are out of the model.
 - **Don't** use green for anything but completion.
-- **Don't** use gradients — glow is solid-color opacity, never a gradient ramp.
+- **Don't** use gradients — glow is solid-color opacity, never a gradient ramp. **Scoped exception:** the habit hue wheel is the one sanctioned functional gradient; it renders the spectrum because it *is* the color control, never decoration.
 - **Don't** add 1px structural borders and don't use colored edge-bars on rows, chips, composers, or hero surfaces — tonal layering, spacing, and the 6px EntryDot / mono kicker carry structure. No card fills where a row on tone will do.
 - **Don't** curate the home down to "today" or hide items behind filters — the whole field stays present.
 - **Don't** show dead count-only tiles — every tile shows real, tappable items.

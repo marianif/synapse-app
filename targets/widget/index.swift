@@ -5,6 +5,8 @@ import SwiftUI
 struct exportWidgets: WidgetBundle {
     var body: some Widget {
         entriesWidget()
+        nextActionWidget()
         voiceInputWidget()
+        habitsWidget()
     }
 }

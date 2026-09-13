@@ -2,7 +2,7 @@
  * SQL schema for the Synapse app database.
  * All CREATE statements to initialize the database.
  */
-export const SCHEMA_VERSION = 23;
+export const SCHEMA_VERSION = 24;
 
 export const CREATE_ENTRIES_TABLE = `
   CREATE TABLE IF NOT EXISTS entries (
@@ -172,6 +172,9 @@ export const CREATE_HABITS_TABLE = `
     -- Autonomous-habit glyph; a project-linked habit inherits the project's
     -- emoji at render time instead. Null = fallback Repeat glyph.
     emoji TEXT,
+    -- User-picked identity hue (0–359). Every tone is derived from it at
+    -- render time per scheme, so no hex is ever stored. Null = neutral.
+    color_hue INTEGER,
     cadence TEXT NOT NULL,
     start_date TEXT NOT NULL,
     end_date TEXT,

@@ -2,6 +2,8 @@ import * as SQLite from 'expo-sqlite';
 
 import { ALL_STATEMENTS, CREATE_DIARY_TABLE, CREATE_HABIT_COMPLETIONS_INDEX, CREATE_HABIT_COMPLETIONS_TABLE, CREATE_HABITS_TABLE, CREATE_PROJECTS_TABLE, CREATE_RECURRENCE_COMPLETIONS_TABLE, CREATE_TASKS_ENTRY_INDEX, CREATE_TASKS_TABLE, SCHEMA_VERSION } from './schema';
 import { toDisplayDate } from './date-utils';
+import { ARCHIVE_TABLE_NAMES } from './import-format';
+import type { ArchiveRows, ArchiveTable } from './import-format';
 import { deleteMediaFile } from './media';
 import { isTaskable } from './types';
 import type { CreateHabitInput, DbDiaryEntry, DbHabit, DbHabitCompletion, DbProject, DbTask, DiaryMood, EntryType, NoteMedia, UpdateHabitInput } from './types';
@@ -1357,8 +1359,62 @@ export async function clearAllData(): Promise<void> {
     await db.execAsync('DELETE FROM tasks');
     await db.execAsync('DELETE FROM entries');
     await db.execAsync('DELETE FROM projects');
-    await db.execAsync(
+    await db.runAsync(
       "DELETE FROM schema_meta WHERE key = 'did_seed_default_projects'",
+    );
+  });
+}
+
+/** Insert order respects FK intent: parents before the rows that point at them. */
+const RESTORE_TABLE_ORDER: readonly ArchiveTable[] = [
+  'projects',
+  'entries',
+  'tasks',
+  'recurrenceCompletions',
+  'habits',
+  'habitCompletions',
+  'diaryEntries',
+];
+
+/**
+ * Replace the whole store with an imported archive, in one transaction. Wipes
+ * every data table (same order as `clearAllData`) then re-inserts the mapped
+ * rows parent-first, with only the columns each row actually carries so schema
+ * defaults fill anything an older archive omits.
+ *
+ * The `did_seed_default_projects` gate is set afterward: a restored store is
+ * authoritative, so the first-run default projects must never seed over it.
+ */
+export async function restoreArchive(rows: ArchiveRows): Promise<void> {
+  const db = getDb();
+  await db.withTransactionAsync(async () => {
+    await db.execAsync('DELETE FROM diary_entries');
+    await db.execAsync('DELETE FROM recurrence_completions');
+    await db.execAsync('DELETE FROM habit_completions');
+    await db.execAsync('DELETE FROM habits');
+    await db.execAsync('DELETE FROM tasks');
+    await db.execAsync('DELETE FROM entries');
+    await db.execAsync('DELETE FROM projects');
+
+    for (const table of RESTORE_TABLE_ORDER) {
+      const tableName = ARCHIVE_TABLE_NAMES[table];
+      for (const row of rows[table]) {
+        const columns = Object.keys(row);
+        if (columns.length === 0) continue;
+        const placeholders = columns.map(() => '?').join(', ');
+        const params = columns.map(
+          (column) =>
+            row[column] as string | number | null | boolean | Uint8Array,
+        );
+        await db.runAsync(
+          `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`,
+          ...params,
+        );
+      }
+    }
+
+    await db.runAsync(
+      "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('did_seed_default_projects', '1')",
     );
   });
 }

@@ -19,7 +19,7 @@ type PlanChoice = Extract<PlanOverride, "lifetime" | "monthly">;
 
 const BENEFITS = [
   "Unlimited projects, habits, and notes",
-  "Export everything you've captured",
+  "Export and restore everything you've captured",
   "The whole board, no ceilings",
 ] as const;
 
@@ -56,6 +56,8 @@ function reasonMessage(reason: UpgradeReason): string {
       return `You've reached ${FREE_LIMITS.notes} notes on the free plan.`;
     case "export":
       return "Export is part of Synapse Pro.";
+    case "import":
+      return "Import and restore are part of Synapse Pro.";
   }
 }
 

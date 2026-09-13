@@ -2,8 +2,8 @@ import { useRouter } from "expo-router";
 
 import type { CapKind } from "@/lib/entitlements";
 
-/** Which limit tripped — a numeric cap, or the Pro-only export switch. */
-export type UpgradeReason = CapKind | "export";
+/** Which limit tripped — a numeric cap, or a Pro-only data switch. */
+export type UpgradeReason = CapKind | "export" | "import";
 
 export function isUpgradeReason(value: unknown): value is UpgradeReason {
   return (
@@ -11,7 +11,8 @@ export function isUpgradeReason(value: unknown): value is UpgradeReason {
     value === "habits" ||
     value === "entries" ||
     value === "notes" ||
-    value === "export"
+    value === "export" ||
+    value === "import"
   );
 }
 

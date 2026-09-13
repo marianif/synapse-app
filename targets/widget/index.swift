@@ -8,5 +8,10 @@ struct exportWidgets: WidgetBundle {
         nextActionWidget()
         voiceInputWidget()
         habitsWidget()
+
+        if #available(iOS 18.0, *) {
+            speakControl()
+            typeControl()
+        }
     }
 }

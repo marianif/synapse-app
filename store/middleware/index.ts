@@ -7,13 +7,15 @@ import { AppState } from "react-native";
 import { toDisplayDate } from "@/lib/date-utils";
 import { habitTone } from "@/lib/habit-color";
 import {
-  cancelProjectReturnNotification,
-  cancelNotificationForEntry,
   cancelHabitNotification,
+  cancelNotificationForEntry,
+  cancelProjectReturnNotification,
+  NOTIFICATION_RESYNC_INTERVAL_MS,
   requestNotificationPermissions,
   scheduleEntryNotification,
   scheduleHabitNotification,
   scheduleProjectReturnNotification,
+  syncScheduledNotifications,
 } from "@/lib/notifications";
 import { expandHabitCadence } from "@/lib/recurrence";
 import type { DbEntry, DbHabit } from "@/lib/types";
@@ -243,14 +245,44 @@ listenerMiddleware.startListening({
     updateEntryStatus.fulfilled,
     deleteEntry.fulfilled,
   ),
-  effect: async (_action, api) => {
+  effect: async (action, api) => {
+    // `getOriginalState` must be read synchronously, before the first await.
+    const originalEntries = (api.getOriginalState() as RootState).entries
+      .entries;
     const state = api.getState() as RootState;
-    const { projects, entries } = state;
+
+    // Only the project(s) an entry actually left or landed in can change.
+    // Rescheduling every project on every entry mutation was pure churn: the
+    // 7-day window keys off last_opened_at, so the clock never moved.
+    const affected = new Set<string>();
+    if (deleteEntry.fulfilled.match(action)) {
+      const previous = originalEntries.find(
+        (entry) => entry.id === action.payload,
+      );
+      if (previous?.project_id) affected.add(previous.project_id);
+    } else {
+      const entry = (action as unknown as { payload: DbEntry }).payload;
+      const previous = originalEntries.find((row) => row.id === entry.id);
+      if (previous?.project_id) affected.add(previous.project_id);
+      if (entry.project_id) affected.add(entry.project_id);
+    }
+    if (affected.size === 0) return;
+
     const permission = await Notifications.getPermissionsAsync();
     if (permission.status !== "granted") return;
 
-    for (const project of projects.projects) {
-      await scheduleProjectReturnNotification(project, entries.entries);
+    console.log(
+      `[store] project-return resync for ${affected.size} affected project(s)`,
+    );
+    for (const projectId of affected) {
+      const project = state.projects.projects.find(
+        (candidate) => candidate.id === projectId,
+      );
+      if (!project) {
+        await cancelProjectReturnNotification(projectId);
+        continue;
+      }
+      await scheduleProjectReturnNotification(project, state.entries.entries);
     }
   },
 });
@@ -292,6 +324,30 @@ listenerMiddleware.startListening({
 // ─── Watch connectivity pipeline ──────────────────────────────────────────────
 
 let watchSyncStarted = false;
+let lastNotificationResyncAt = Date.now();
+
+/**
+ * Rebuild the notification schedule after the app comes back to the
+ * foreground. Throttled: the pending series already covers the near future,
+ * so this only needs to refill the lookahead occasionally. Bootstrap just
+ * synced, hence the `lastNotificationResyncAt` seed.
+ */
+async function resyncNotificationsIfStale(
+  getState: () => RootState,
+): Promise<void> {
+  if (Date.now() - lastNotificationResyncAt < NOTIFICATION_RESYNC_INTERVAL_MS) {
+    return;
+  }
+  lastNotificationResyncAt = Date.now();
+  const state = getState();
+  await syncScheduledNotifications({
+    entries: state.entries.entries,
+    projects: state.projects.projects,
+    habits: state.habits.habits,
+  }).catch((error) => {
+    console.warn("[store] foreground notification resync failed:", error);
+  });
+}
 
 /**
  * One-time subscription to the Watch pipeline: pending-note drain on mount,
@@ -299,7 +355,10 @@ let watchSyncStarted = false;
  * Lives in the middleware (not a component) because the listeners must survive
  * navigation. Guarded so React StrictMode double-mounts can't double-subscribe.
  */
-export function startWatchSync(dispatch: AppDispatch): void {
+export function startWatchSync(
+  dispatch: AppDispatch,
+  getState: () => RootState,
+): void {
   if (watchSyncStarted) return;
   watchSyncStarted = true;
 
@@ -355,7 +414,9 @@ export function startWatchSync(dispatch: AppDispatch): void {
   void syncPendingNotes();
 
   const appStateSub = AppState.addEventListener("change", (nextAppState) => {
-    if (nextAppState === "active") void syncPendingNotes();
+    if (nextAppState !== "active") return;
+    void syncPendingNotes();
+    void resyncNotificationsIfStale(getState);
   });
 
   // Listen for real-time messages from Watch

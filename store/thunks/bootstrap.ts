@@ -2,11 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import { ensureDb, seedDefaultProjectsOnce } from "@/lib/database";
 import { seedDevDataIfEmpty } from "@/lib/dev-seed";
-import {
-  rescheduleAllEntries,
-  rescheduleAllHabitNotifications,
-  rescheduleAllProjectNotifications,
-} from "@/lib/notifications";
+import { syncScheduledNotifications } from "@/lib/notifications";
 import type {
   DbDiaryEntry,
   DbEntry,
@@ -15,7 +11,7 @@ import type {
   DbRecurrenceCompletion,
   DbTask,
 } from "@/lib/types";
-import type { AppDispatch } from "@/store";
+import type { AppDispatch, RootState } from "@/store";
 import { startWatchSync } from "@/store/middleware";
 import { fetchDiary } from "@/store/thunks/diary";
 import { fetchEntries } from "@/store/thunks/entries";
@@ -29,7 +25,7 @@ import { fetchTasks } from "@/store/thunks/tasks";
  * open the DB, seed dev/default data, load every collection into the store,
  * then self-heal notifications and arm the Watch pipeline.
  */
-export const initApp = createAsyncThunk("app/init", async (_arg, { dispatch }) => {
+export const initApp = createAsyncThunk("app/init", async (_arg, { dispatch, getState }) => {
   const db = await ensureDb();
   // DEV: populate mock data once if the table is empty, then load.
   try {
@@ -58,23 +54,16 @@ export const initApp = createAsyncThunk("app/init", async (_arg, { dispatch }) =
     dispatch(fetchDiary()).unwrap().catch(() => [] as DbDiaryEntry[]),
   ]);
 
-  // After the initial load, rebuild all scheduled notifications from scratch.
-  // This self-heals any stale state from a previous launch.
-  if (entries.length > 0) {
-    await rescheduleAllEntries(entries).catch((err) => {
-      console.warn("[store] rescheduleAllEntries failed:", err);
-    });
-  }
-  if (projects.length > 0) {
-    await rescheduleAllProjectNotifications(projects, entries).catch((err) => {
-      console.warn("[store] rescheduleAllProjectNotifications failed:", err);
-    });
-  }
-  if (habits.habits.length > 0) {
-    await rescheduleAllHabitNotifications(habits.habits).catch((err) => {
-      console.warn("[store] rescheduleAllHabitNotifications failed:", err);
-    });
-  }
+  // After the initial load, rebuild the whole notification schedule under one
+  // shared budget. This self-heals any stale state from a previous launch and
+  // keeps the pending count under the iOS cap.
+  await syncScheduledNotifications({
+    entries,
+    projects,
+    habits: habits.habits,
+  }).catch((err) => {
+    console.warn("[store] syncScheduledNotifications failed:", err);
+  });
 
-  startWatchSync(dispatch as AppDispatch);
+  startWatchSync(dispatch as AppDispatch, () => getState() as RootState);
 });

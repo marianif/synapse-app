@@ -4,15 +4,16 @@
  * Local notification scheduling for Synapse. Pure module — no React.
  *
  * Design decisions:
- * - Deadlines: single notification AT the scheduled time (not 15 min before),
- *   keeping v1 simple and predictable.
+ * - Deadlines: one-shot reminders at the scheduled time for one-off entries.
+ * - Recurring entries and habits: the next `RECURRING_LOOKAHEAD` instances are
+ *   pre-armed with deterministic per-instance identifiers, so a series keeps
+ *   reminding across days the app is never opened. A foreground resync (driven
+ *   by the store middleware) refills the lookahead afterwards.
  * - Project returns: one invitation after a dormant project reaches seven days
  *   without opening, only while it still has open work.
- * - Recurring entries: schedule ONLY the next upcoming instance.
- *   iOS caps pending notifications at 64; scheduling the full series would
- *   exhaust that budget quickly.
- * - entryId → notificationId mapping is kept in-memory; rebuilt on each
- *   launch via rescheduleAllEntries(). No new DB column required.
+ * - One in-memory registry plus a budget coordinator keeps the pending count
+ *   under the iOS 64-notification cap: soonest-firing first, with the kind as
+ *   tiebreaker (deadline > habit > project return).
  */
 
 import * as Notifications from "expo-notifications";
@@ -22,14 +23,47 @@ import { expandCadence, expandRecurringEntry, isRecurringEntry, parseRule } from
 import { getNotificationPref } from "@/lib/settings";
 import type { DbEntry, DbHabit, DbProject } from "@/lib/types";
 
-// ─── In-memory mapping ────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-/** entryId → notificationId (in-memory, rebuilt on launch). */
-const notificationMap = new Map<string, string>();
-const projectNotificationMap = new Map<string, string>();
-const habitNotificationMap = new Map<string, string>();
 const PROJECT_RETURN_AFTER_DAYS = 7;
 const DAY_MS = 86_400_000;
+/** Instances pre-armed per recurring entry / habit. */
+const RECURRING_LOOKAHEAD = 8;
+/** Headroom under the iOS 64-pending-notification cap. */
+const MAX_PENDING_NOTIFICATIONS = 60;
+/** How often a foreground resync is allowed to rebuild the schedule. */
+export const NOTIFICATION_RESYNC_INTERVAL_MS = 60 * 60 * 1000;
+
+type ManagedKind = "deadline" | "habit" | "project-return";
+
+/** Tiebreaker when two planned reminders land at the same moment. */
+const KIND_PRIORITY: Record<ManagedKind, number> = {
+  deadline: 0,
+  habit: 1,
+  "project-return": 2,
+};
+
+interface PendingNotification {
+  kind: ManagedKind;
+  /** entryId / habitId / projectId, depending on kind. */
+  entityId: string;
+  triggerDate: Date;
+}
+
+interface PlannedNotification extends PendingNotification {
+  identifier: string;
+  content: Notifications.NotificationContentInput;
+}
+
+// ─── In-memory registry ───────────────────────────────────────────────────────
+
+/**
+ * notificationId → what it is. Rebuilt on launch and kept in step by every
+ * schedule/cancel. The deterministic identifiers make re-scheduling idempotent
+ * at the OS level; this registry is what lets the budget guard compare and
+ * trim pending reminders without parsing native triggers.
+ */
+const pendingRegistry = new Map<string, PendingNotification>();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -37,14 +71,28 @@ const DAY_MS = 86_400_000;
  * Stable notification identifiers. Re-using the same identifier makes
  * re-scheduling idempotent at the OS level (iOS replaces the pending request),
  * so an edited entry or reopened project can never stack duplicates — even
- * after a cold start rebuilt an empty in-memory map.
+ * after a cold start rebuilt an empty in-memory registry.
  */
 function entryNotificationId(entryId: string): string {
   return `entry-${entryId}`;
 }
 
+function entryInstanceNotificationId(entryId: string, dateKey: string): string {
+  return `entry-${entryId}-${dateKey}`;
+}
+
+function habitInstanceNotificationId(habitId: string, dateKey: string): string {
+  return `habit-${habitId}-${dateKey}`;
+}
+
 function projectReturnNotificationId(projectId: string): string {
   return `project-return-${projectId}`;
+}
+
+/** DD/MM/YYYY → YYYYMMDD, for compact per-instance identifiers. */
+function instanceDateKey(dateStr: string): string {
+  const [dd, mm, yyyy] = dateStr.split("/");
+  return `${yyyy}${mm}${dd}`;
 }
 
 /**
@@ -69,53 +117,6 @@ function parseTriggerDate(
   // Default: 9:00 AM local
   base.setHours(9, 0, 0, 0);
   return base;
-}
-
-/**
- * Returns the next upcoming instance date string (DD/MM/YYYY) for a recurring
- * entry, looking ahead up to one year from now. Returns null if none found.
- */
-function nextRecurringDate(entry: DbEntry): string | null {
-  const now = new Date();
-  const oneYearOut = new Date(now);
-  oneYearOut.setFullYear(oneYearOut.getFullYear() + 1);
-
-  const dates = expandRecurringEntry(entry, now, oneYearOut);
-  return dates.length > 0 ? dates[0] : null;
-}
-
-/**
- * Build a trigger Date for an entry. Returns null when the entry should not
- * receive a notification (wrong type, already done, no date, or in the past).
- */
-function buildTriggerDate(entry: DbEntry): Date | null {
-  // Only deadlines get notifications (todos/ideas are not time-triggered).
-  if (entry.type !== "deadline") return null;
-
-  // Skip completed/met entries
-  if (entry.status === "completed" || entry.status === "met") return null;
-
-  let dateStr: string | null;
-  let timeStr: string | null;
-
-  if (isRecurringEntry(entry)) {
-    // For recurring entries, find the next future instance
-    const nextDate = nextRecurringDate(entry);
-    if (!nextDate) return null;
-    dateStr = nextDate;
-    timeStr = entry.due_time;
-  } else {
-    dateStr = entry.due_date;
-    timeStr = entry.due_time;
-  }
-
-  const triggerDate = parseTriggerDate(dateStr, timeStr);
-  if (!triggerDate) return null;
-
-  // Don't schedule if the trigger is in the past
-  if (triggerDate <= new Date()) return null;
-
-  return triggerDate;
 }
 
 /** Human-readable notification body line. */
@@ -158,34 +159,229 @@ function projectReturnDate(
   return scheduled > new Date() ? scheduled : null;
 }
 
-async function cancelScheduledProjectNotifications(
-  projectId?: string,
+/** Soonest first; kind only breaks exact ties. */
+function comparePending(
+  a: PendingNotification,
+  b: PendingNotification,
+): number {
+  const byDate = a.triggerDate.getTime() - b.triggerDate.getTime();
+  if (byDate !== 0) return byDate;
+  return KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind];
+}
+
+// ─── Planning ─────────────────────────────────────────────────────────────────
+
+/**
+ * One-off deadlines fire once at their due time. Recurring deadlines arm the
+ * next several instances instead, so the series survives days without an app
+ * launch — the same `expandRecurringEntry` math the board renders.
+ */
+function planEntryNotifications(entry: DbEntry): PlannedNotification[] {
+  // Only deadlines get notifications (todos/ideas are not time-triggered).
+  if (entry.type !== "deadline") return [];
+  if (isDone(entry)) return [];
+
+  if (!isRecurringEntry(entry)) {
+    const triggerDate = parseTriggerDate(entry.due_date, entry.due_time);
+    if (!triggerDate || triggerDate <= new Date()) return [];
+    return [
+      {
+        kind: "deadline",
+        entityId: entry.id,
+        triggerDate,
+        identifier: entryNotificationId(entry.id),
+        content: {
+          title: entry.title,
+          body: notificationBody(entry),
+          sound: true,
+          data: { kind: "deadline", entryId: entry.id },
+        },
+      },
+    ];
+  }
+
+  const now = new Date();
+  const oneYearOut = new Date(now);
+  oneYearOut.setFullYear(oneYearOut.getFullYear() + 1);
+  const dates = expandRecurringEntry(entry, now, oneYearOut);
+
+  const planned: PlannedNotification[] = [];
+  for (const dateStr of dates) {
+    const triggerDate = parseTriggerDate(dateStr, entry.due_time);
+    // Consume the lookahead only for instances that can still fire: today's
+    // already-passed occurrence must not cost a slot.
+    if (!triggerDate || triggerDate <= now) continue;
+    planned.push({
+      kind: "deadline",
+      entityId: entry.id,
+      triggerDate,
+      identifier: entryInstanceNotificationId(
+        entry.id,
+        instanceDateKey(dateStr),
+      ),
+      content: {
+        title: entry.title,
+        body: notificationBody(entry),
+        sound: true,
+        data: { kind: "deadline", entryId: entry.id, instanceDate: dateStr },
+      },
+    });
+    if (planned.length >= RECURRING_LOOKAHEAD) break;
+  }
+  return planned;
+}
+
+/**
+ * The next instances of a habit at its reminder time. The body is the user's
+ * own reason, verbatim — the encouragement is their words, never a streak.
+ */
+function planHabitNotifications(habit: DbHabit): PlannedNotification[] {
+  if (habit.status !== "active" || !habit.reminder_time) return [];
+
+  const rule = parseRule(habit.cadence);
+  if (!rule) return [];
+
+  const now = new Date();
+  const oneYearOut = new Date(now);
+  oneYearOut.setFullYear(oneYearOut.getFullYear() + 1);
+
+  // Expand from the start of today so an instance later today is a candidate.
+  const fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dates = expandCadence(
+    { rule, startDate: habit.start_date, endDate: habit.end_date },
+    fromDate,
+    oneYearOut,
+  );
+
+  const planned: PlannedNotification[] = [];
+  for (const dateStr of dates) {
+    const triggerDate = parseTriggerDate(dateStr, habit.reminder_time);
+    if (!triggerDate || triggerDate <= now) continue;
+    planned.push({
+      kind: "habit",
+      entityId: habit.id,
+      triggerDate,
+      identifier: habitInstanceNotificationId(
+        habit.id,
+        instanceDateKey(dateStr),
+      ),
+      content: {
+        title: habit.title,
+        body: habit.motivation,
+        sound: true,
+        data: { kind: "habit", habitId: habit.id, instanceDate: dateStr },
+      },
+    });
+    if (planned.length >= RECURRING_LOOKAHEAD) break;
+  }
+  return planned;
+}
+
+function planProjectReturnNotification(
+  project: DbProject,
+  entries: DbEntry[],
+): PlannedNotification | null {
+  const triggerDate = projectReturnDate(project, entries);
+  if (!triggerDate) return null;
+
+  return {
+    kind: "project-return",
+    entityId: project.id,
+    triggerDate,
+    identifier: projectReturnNotificationId(project.id),
+    content: {
+      title: `There's a thread waiting in ${project.title}`,
+      body: "Open it and choose one thing to move.",
+      sound: true,
+      data: { kind: "project-return", projectId: project.id },
+    },
+  };
+}
+
+// ─── Low-level scheduling ─────────────────────────────────────────────────────
+
+async function schedulePlanned(
+  planned: PlannedNotification,
+): Promise<string | null> {
+  try {
+    const notificationId = await Notifications.scheduleNotificationAsync({
+      identifier: planned.identifier,
+      content: planned.content,
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: planned.triggerDate,
+      },
+    });
+    pendingRegistry.set(notificationId, {
+      kind: planned.kind,
+      entityId: planned.entityId,
+      triggerDate: planned.triggerDate,
+    });
+    return notificationId;
+  } catch (error) {
+    console.warn("[notifications] scheduleNotificationAsync failed:", error);
+    return null;
+  }
+}
+
+async function cancelScheduledId(identifier: string): Promise<void> {
+  pendingRegistry.delete(identifier);
+  try {
+    await Notifications.cancelScheduledNotificationAsync(identifier);
+  } catch (error) {
+    console.warn(
+      "[notifications] cancelScheduledNotificationAsync failed:",
+      error,
+    );
+  }
+}
+
+/** Cancel every recorded instance belonging to one entry / habit / project. */
+async function cancelEntityNotifications(
+  kind: ManagedKind,
+  entityId: string,
 ): Promise<void> {
+  for (const [identifier, pending] of Array.from(pendingRegistry.entries())) {
+    if (pending.kind === kind && pending.entityId === entityId) {
+      await cancelScheduledId(identifier);
+    }
+  }
+}
+
+/**
+ * Cancel everything this app scheduled. Used by the full coordinator before it
+ * rebuilds: any pending request is one of ours (the share-extension fallback
+ * notification is immediate, never pending), including reminders from builds
+ * that predate the `kind` tag.
+ */
+async function cancelAllManagedNotifications(): Promise<void> {
   try {
     const pending = await Notifications.getAllScheduledNotificationsAsync();
     for (const request of pending) {
-      const data = request.content.data as
-        | { kind?: unknown; projectId?: unknown }
-        | undefined;
-      if (
-        data?.kind !== "project-return" ||
-        (projectId !== undefined && data.projectId !== projectId)
-      ) {
-        continue;
-      }
       await Notifications.cancelScheduledNotificationAsync(request.identifier);
     }
   } catch (error) {
     console.warn(
-      "[notifications] cancelScheduledProjectNotifications failed:",
+      "[notifications] cancelAllManagedNotifications failed:",
       error,
     );
   }
+  pendingRegistry.clear();
+}
 
-  if (projectId === undefined) {
-    projectNotificationMap.clear();
-  } else {
-    projectNotificationMap.delete(projectId);
+/** Drop the furthest-firing, lowest-priority reminders past the iOS budget. */
+async function pruneToBudget(): Promise<void> {
+  if (pendingRegistry.size <= MAX_PENDING_NOTIFICATIONS) return;
+
+  const ordered = Array.from(pendingRegistry.entries()).sort(([, a], [, b]) =>
+    comparePending(a, b),
+  );
+  const overflow = ordered.slice(MAX_PENDING_NOTIFICATIONS);
+  console.log(
+    `[notifications] pending cap reached, dropping ${overflow.length} request(s)`,
+  );
+  for (const [identifier] of overflow) {
+    await cancelScheduledId(identifier);
   }
 }
 
@@ -206,8 +402,9 @@ export async function requestNotificationPermissions(): Promise<boolean> {
 }
 
 /**
- * Schedule a local notification for a single entry.
- * Returns the notification ID, or null if no notification should be scheduled.
+ * Schedule the reminders for a single entry. One-offs get a single request;
+ * recurring deadlines get their next several instances. Returns the first
+ * notification ID, or null if nothing should be scheduled.
  */
 export async function scheduleEntryNotification(
   entry: DbEntry,
@@ -219,89 +416,70 @@ export async function scheduleEntryNotification(
     return null;
   }
 
-  // Replace any existing reminder for this entry before scheduling, and do it
-  // before the trigger check so a moved/past/completed deadline drops its stale
-  // reminder instead of leaving it pending. The deterministic identifier makes
-  // the re-schedule idempotent; the explicit cancel guarantees it on platforms
-  // where replacement by identifier isn't guaranteed.
+  // Replace every existing reminder for this entry before scheduling, and do
+  // it before the trigger checks so a moved/past/completed deadline drops all
+  // its stale reminders instead of leaving them pending. The deterministic
+  // identifiers make the re-schedule idempotent; the explicit cancel
+  // guarantees it on platforms where replacement by identifier isn't.
   await cancelNotificationForEntry(entry.id);
 
-  const triggerDate = buildTriggerDate(entry);
-  if (!triggerDate) return null;
-
-  try {
-    const notificationId = await Notifications.scheduleNotificationAsync({
-      identifier: entryNotificationId(entry.id),
-      content: {
-        title: entry.title,
-        body: notificationBody(entry),
-        sound: true,
-        data: { kind: "deadline", entryId: entry.id },
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: triggerDate,
-      },
-    });
-
-    notificationMap.set(entry.id, notificationId);
-    return notificationId;
-  } catch (error) {
-    console.warn("[notifications] scheduleEntryNotification failed:", error);
-    return null;
+  const planned = planEntryNotifications(entry);
+  let firstId: string | null = null;
+  for (const item of planned) {
+    const id = await schedulePlanned(item);
+    if (id !== null && firstId === null) firstId = id;
   }
+  await pruneToBudget();
+  return firstId;
 }
 
 /** Cancel a previously scheduled notification by its notification ID. */
 export async function cancelEntryNotification(
   notificationId: string,
 ): Promise<void> {
-  try {
-    await Notifications.cancelScheduledNotificationAsync(notificationId);
-  } catch (error) {
-    console.warn("[notifications] cancelEntryNotification failed:", error);
-  }
+  await cancelScheduledId(notificationId);
 }
 
 /**
- * Cancel the notification associated with an entry. Cancels the deterministic
- * identifier directly (so it works even when the in-memory map is cold) and
- * drops the map entry. No-op if the entry has no scheduled notification.
+ * Cancel every reminder associated with an entry. Registry-backed (works for
+ * a multi-instance recurring series) plus the one-off deterministic identifier
+ * so it works even when the in-memory registry is cold. No-op if the entry has
+ * no scheduled notification.
  */
 export async function cancelNotificationForEntry(entryId: string): Promise<void> {
-  notificationMap.delete(entryId);
-  await cancelEntryNotification(entryNotificationId(entryId));
+  await cancelEntityNotifications("deadline", entryId);
+  await cancelScheduledId(entryNotificationId(entryId));
 }
 
 /**
- * Cancel pending deadline reminders, then re-schedule for all provided entries.
- * Called once on app launch to self-heal any stale notification state.
- * Project-return invitations are deliberately left untouched so this can run
- * without re-arming them.
- * Returns a Map of entryId → notificationId for entries that got scheduled.
+ * Schedule the next nudge for one habit. Gated by the `habits` preference and
+ * by the habit having a reminder time and being active.
  */
-export async function rescheduleAllEntries(
-  entries: DbEntry[],
-): Promise<Map<string, string>> {
-  try {
-    const pending = await Notifications.getAllScheduledNotificationsAsync();
-    for (const request of pending) {
-      const data = request.content.data as { kind?: unknown } | undefined;
-      // Preserve project-return invitations; clear everything else, including
-      // legacy reminders scheduled before they carried a kind tag.
-      if (data?.kind === "project-return") continue;
-      await Notifications.cancelScheduledNotificationAsync(request.identifier);
-    }
-    notificationMap.clear();
-  } catch (error) {
-    console.warn("[notifications] rescheduleAllEntries cancel failed:", error);
+export async function scheduleHabitNotification(
+  habit: DbHabit,
+): Promise<string | null> {
+  if (!(await getNotificationPref("habits"))) {
+    await cancelHabitNotification(habit.id);
+    return null;
   }
 
-  for (const entry of entries) {
-    await scheduleEntryNotification(entry);
-  }
+  // Replace any existing nudge before re-planning, so an edited cadence can't
+  // leave earlier instances armed.
+  await cancelHabitNotification(habit.id);
 
-  return new Map(notificationMap);
+  const planned = planHabitNotifications(habit);
+  let firstId: string | null = null;
+  for (const item of planned) {
+    const id = await schedulePlanned(item);
+    if (id !== null && firstId === null) firstId = id;
+  }
+  await pruneToBudget();
+  return firstId;
+}
+
+/** Cancel every pending nudge for a habit. */
+export async function cancelHabitNotification(habitId: string): Promise<void> {
+  await cancelEntityNotifications("habit", habitId);
 }
 
 /**
@@ -313,179 +491,94 @@ export async function scheduleProjectReturnNotification(
   project: DbProject,
   entries: DbEntry[],
 ): Promise<string | null> {
-  await cancelScheduledProjectNotifications(project.id);
+  await cancelProjectReturnNotification(project.id);
 
   // User preference gates dormant-project invitations. Cancel above already
   // clears any pending one, so a mid-flight toggle-off sticks.
   if (!(await getNotificationPref("projectReturns"))) return null;
 
-  const triggerDate = projectReturnDate(project, entries);
-  if (!triggerDate) return null;
+  const invitation = planProjectReturnNotification(project, entries);
+  if (!invitation) return null;
 
-  try {
-    const notificationId = await Notifications.scheduleNotificationAsync({
-      identifier: projectReturnNotificationId(project.id),
-      content: {
-        title: `There's a thread waiting in ${project.title}`,
-        body: "Open it and choose one thing to move.",
-        sound: true,
-        data: { kind: "project-return", projectId: project.id },
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: triggerDate,
-      },
-    });
-    projectNotificationMap.set(project.id, notificationId);
-    return notificationId;
-  } catch (error) {
-    console.warn(
-      "[notifications] scheduleProjectReturnNotification failed:",
-      error,
-    );
-    return null;
-  }
+  const id = await schedulePlanned(invitation);
+  await pruneToBudget();
+  return id;
 }
 
 /** Cancel a project's pending return invitation. */
 export async function cancelProjectReturnNotification(
   projectId: string,
 ): Promise<void> {
-  await cancelScheduledProjectNotifications(projectId);
+  await cancelEntityNotifications("project-return", projectId);
+  await cancelScheduledId(projectReturnNotificationId(projectId));
+}
+
+export interface NotificationSyncInput {
+  entries: DbEntry[];
+  projects: DbProject[];
+  habits: DbHabit[];
 }
 
 /**
- * Rebuild project-return requests without touching deadline notifications.
- * This runs on bootstrap only when notification permission already exists;
- * opening a project is what requests permission for the first time.
+ * Rebuild the whole schedule from scratch under one shared budget: cancel
+ * every pending request, plan deadlines, habit nudges, and project returns,
+ * then arm the soonest `MAX_PENDING_NOTIFICATIONS` of them. Runs on bootstrap,
+ * on a Settings resync, and (throttled) when the app returns to foreground so
+ * a delivered recurring instance is replaced by the next one.
  */
-export async function rescheduleAllProjectNotifications(
-  projects: DbProject[],
-  entries: DbEntry[],
-): Promise<Map<string, string>> {
-  try {
-    const { status } = await Notifications.getPermissionsAsync();
-    if (status !== "granted") return new Map();
-  } catch (error) {
-    console.warn(
-      "[notifications] getPermissionsAsync for projects failed:",
-      error,
-    );
-    return new Map();
-  }
+export async function syncScheduledNotifications(
+  input: NotificationSyncInput,
+): Promise<void> {
+  await cancelAllManagedNotifications();
 
-  await cancelScheduledProjectNotifications();
-  for (const project of projects) {
-    await scheduleProjectReturnNotification(project, entries);
-  }
-  return new Map(projectNotificationMap);
-}
+  const [deadlinesEnabled, habitsEnabled, projectReturnsEnabled] =
+    await Promise.all([
+      getNotificationPref("deadlines"),
+      getNotificationPref("habits"),
+      getNotificationPref("projectReturns"),
+    ]);
 
-// ─── Habit nudges ─────────────────────────────────────────────────────────────
+  const planned: PlannedNotification[] = [];
 
-/**
- * The next upcoming instance of a habit, at its reminder time. Returns null when
- * the rule is unparseable or has no future occurrence. Mirrors the entry
- * scheduler: only the NEXT instance is scheduled (iOS caps pending notifications
- * at 64), and the nudge is opt-in — a habit with no `reminder_time` never fires.
- */
-function nextHabitTrigger(habit: DbHabit): Date | null {
-  const rule = parseRule(habit.cadence);
-  if (!rule) return null;
-
-  const now = new Date();
-  const oneYearOut = new Date(now);
-  oneYearOut.setFullYear(oneYearOut.getFullYear() + 1);
-
-  // Expand from the start of today so an instance later today is a candidate.
-  const fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const dates = expandCadence(
-    { rule, startDate: habit.start_date, endDate: habit.end_date },
-    fromDate,
-    oneYearOut,
-  );
-
-  // First instance whose reminder time is still ahead of us.
-  for (const dateStr of dates) {
-    const trigger = parseTriggerDate(dateStr, habit.reminder_time);
-    if (trigger && trigger > new Date()) return trigger;
-  }
-  return null;
-}
-
-/**
- * Schedule the next nudge for one habit. The body is the user's own reason,
- * verbatim — the encouragement is their words, never a streak. Gated by the
- * `habits` preference and by the habit having a reminder time and being active.
- */
-export async function scheduleHabitNotification(
-  habit: DbHabit,
-): Promise<string | null> {
-  if (!(await getNotificationPref("habits"))) {
-    await cancelHabitNotification(habit.id);
-    return null;
-  }
-  if (habit.status !== "active" || !habit.reminder_time) {
-    await cancelHabitNotification(habit.id);
-    return null;
-  }
-
-  const triggerDate = nextHabitTrigger(habit);
-  if (!triggerDate || triggerDate <= new Date()) return null;
-
-  try {
-    const notificationId = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: habit.title,
-        body: habit.motivation,
-        sound: true,
-        data: { kind: "habit", habitId: habit.id },
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: triggerDate,
-      },
-    });
-    habitNotificationMap.set(habit.id, notificationId);
-    return notificationId;
-  } catch (error) {
-    console.warn("[notifications] scheduleHabitNotification failed:", error);
-    return null;
-  }
-}
-
-/** Cancel a habit's pending nudge. */
-export async function cancelHabitNotification(habitId: string): Promise<void> {
-  const notificationId = habitNotificationMap.get(habitId);
-  if (!notificationId) return;
-  habitNotificationMap.delete(habitId);
-  await cancelEntryNotification(notificationId);
-}
-
-/**
- * Rebuild every habit nudge from scratch. Runs on bootstrap alongside the entry
- * and project passes, so a stale schedule from a previous launch self-heals.
- */
-export async function rescheduleAllHabitNotifications(
-  habits: DbHabit[],
-): Promise<Map<string, string>> {
-  try {
-    const pending = await Notifications.getAllScheduledNotificationsAsync();
-    for (const request of pending) {
-      const data = request.content.data as { kind?: unknown } | undefined;
-      if (data?.kind !== "habit") continue;
-      await Notifications.cancelScheduledNotificationAsync(request.identifier);
+  if (deadlinesEnabled) {
+    for (const entry of input.entries) {
+      planned.push(...planEntryNotifications(entry));
     }
-  } catch (error) {
-    console.warn(
-      "[notifications] cancel habit notifications failed:",
-      error,
-    );
   }
-  habitNotificationMap.clear();
+  if (habitsEnabled) {
+    for (const habit of input.habits) {
+      planned.push(...planHabitNotifications(habit));
+    }
+  }
+  if (projectReturnsEnabled) {
+    // A project-return invitation is the one notification permission was
+    // requested for; only rebuild them once it has been granted.
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status === "granted") {
+        for (const project of input.projects) {
+          const invitation = planProjectReturnNotification(
+            project,
+            input.entries,
+          );
+          if (invitation) planned.push(invitation);
+        }
+      }
+    } catch (error) {
+      console.warn(
+        "[notifications] getPermissionsAsync for projects failed:",
+        error,
+      );
+    }
+  }
 
-  for (const habit of habits) {
-    await scheduleHabitNotification(habit);
+  planned.sort(comparePending);
+
+  const toSchedule = planned.slice(0, MAX_PENDING_NOTIFICATIONS);
+  for (const item of toSchedule) {
+    await schedulePlanned(item);
   }
-  return new Map(habitNotificationMap);
+  console.log(
+    `[notifications] synced ${toSchedule.length} of ${planned.length} planned reminder(s)`,
+  );
 }

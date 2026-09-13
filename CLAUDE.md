@@ -108,7 +108,7 @@ Reflective notes live in a separate `diary_entries` table (body, optional mood, 
 - `lib/schema.ts` — table definitions
 - `lib/recurrence.ts` — serialize/deserialize recurrence rules, expand instances
 - `lib/date-utils.ts` — date formatting helpers (dates stored as `DD/MM/YYYY` strings)
-- `lib/notifications.ts` — `expo-notifications` scheduling layer (`scheduleEntryNotification`, `cancelNotificationForEntry`, `rescheduleAllEntries`). `DatabaseContext` keeps scheduled notifications in sync with entry mutations
+- `lib/notifications.ts` — `expo-notifications` scheduling layer (`scheduleEntryNotification`, `cancelNotificationForEntry`, `syncScheduledNotifications`). The store middleware keeps scheduled notifications in sync with entry/habit/project mutations
 - `contexts/database-context.tsx` — `DatabaseContext` + `DatabaseProvider`; the single source of truth for all entries in memory
 - `hooks/use-database/use-database.ts` — thin wrapper around `DatabaseContext`; the only hook components should import
 

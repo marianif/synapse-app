@@ -238,9 +238,11 @@ init effect:
    (the six macro-areas), both failure-tolerant
 3. fetches **all five collections** into the store (`Promise.all`), each with
    a `.catch(() => [])` so one failure can't abort the boot
-4. `rescheduleAllEntries` once the entries are loaded (self-heals
-   notification state)
-5. `startWatchSync(dispatch)`
+4. `syncScheduledNotifications` once every collection is loaded — cancels and
+   rebuilds all reminders (deadlines, habit nudges, project returns) under the
+   shared iOS pending-notification budget
+5. `startWatchSync(dispatch, getState)` — Watch pipeline plus the throttled
+   foreground notification resync
 
 ---
 

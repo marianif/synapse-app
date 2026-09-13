@@ -30,7 +30,7 @@ The work register: milestones, epics, areas, and typed work items.
 
 ### Area — Legal & compliance
 
-- [ ] [feature] privacy policy and legal — hosted policy plus in-app links (settings + onboarding). @month
+- [ ] [feature] privacy policy and legal — hosted policy plus in-app links (settings + onboarding). @month — partial: in-app links shipped in Settings → About (2026-09-13); hosted policy URLs still placeholders, no onboarding link
 
 ### Area — Localization
 
@@ -39,8 +39,11 @@ The work register: milestones, epics, areas, and typed work items.
 ### Area — Widgets
 
 - Serves: Goal 2 (See it all at a glance)
-- [ ] [design] `redesign entries-widget` — bring the home-screen entries widget up to the Field Lab language. @month
-- [ ] [design] `redesign recording-widget` — align the recording widget with the Field Lab language. @month
+- [x] [design] `redesign entries-widget` — bring the home-screen entries widget up to the Field Lab language. @month
+- [x] [design] `redesign recording-widget` — align the recording widget with the Field Lab language. @month
+- [x] [feature] habits home-screen widget — today's cadences as presence only, each row carrying the habit's identity tone; no streaks. effort: M @month → shipped 2026-09-13 — HabitsWidget.swift plus the widget_habits store wiring
+- [x] [feature] next-action widget — the one entry the user flagged as next, one focused thing with no choice paralysis. effort: S @month → shipped 2026-09-13 — NextActionWidget.swift
+- [x] [feature] iOS 18 capture controls — speak and type control-center widgets. effort: S @month → shipped 2026-09-13 — CaptureControl.swift
 
 ### Area — Settings
 
@@ -52,10 +55,10 @@ The work register: milestones, epics, areas, and typed work items.
 - [x] [bug] duplicate deadline reminders on edit — editing a deadline re-scheduled without cancelling the prior request, so reminders stacked. → shipped 2026-09-12 — deterministic identifiers plus cancel-before-schedule
 - [x] [bug] completed deadlines kept firing — completing or meeting an entry re-scheduled but never cancelled its reminder. → shipped 2026-09-12 — entry listener cancels on completed or met
 - [x] [bug] launch reschedule wiped project-return reminders — the global cancel took every pending notification, not just deadlines. → shipped 2026-09-12 — scoped cancel preserves project returns, clears legacy untagged
-- [ ] [bug] recurring reminders fire once and never re-arm — the next instance is only scheduled at launch, never after a delivery. effort: M @month
-- [ ] [bug] 64-pending-notification cap unmanaged — many deadlines can overflow the iOS limit with no priority or cap. effort: S @month
+- [x] [bug] recurring reminders fire once and never re-arm — the next instance is only scheduled at launch, never after a delivery. → shipped 2026-09-13 — next eight instances pre-armed per series with deterministic per-instance ids; a throttled foreground resync refills the lookahead
+- [x] [bug] 64-pending-notification cap unmanaged — many deadlines can overflow the iOS limit with no priority or cap. → shipped 2026-09-13 — one coordinator plans deadlines, habits, and project returns, arming the soonest 60
 - [x] [bug] dormant-project reminder burst — every active project past its 7-day window fired about 60s after launch, all at once. @month → shipped 2026-09-12 — stale return windows are dropped instead of re-armed; a future window still schedules normally
-- [ ] [bug] project returns re-arm on every entry change — any entry mutation reschedules all projects and resets the 7-day clock. effort: S @month
+- [x] [bug] project returns re-arm on every entry change — any entry mutation reschedules all projects; the 7-day window is keyed to last_opened_at, so the clock itself no longer resets. → shipped 2026-09-13 — the entry listener syncs only the project(s) the entry left or joined, read from getOriginalState
 - [ ] [feature] configurable deadline lead time — let the user choose to be notified ahead of a deadline, not only at its time. effort: M @month
 - [ ] [feature] configurable dormant-project reminder behavior — a Settings choice of drop, one summary, or staggered decides how elapsed windows surface; drop is the current default. effort: M @month
 - [ ] [feature] deadline reminder deep-link — tapping a deadline reminder should open its entry, not just the app. effort: S @month

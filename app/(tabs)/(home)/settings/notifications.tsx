@@ -14,9 +14,7 @@ import { tokens, useTheme } from "@/constants/theme";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import {
   requestNotificationPermissions,
-  rescheduleAllEntries,
-  rescheduleAllHabitNotifications,
-  rescheduleAllProjectNotifications,
+  syncScheduledNotifications,
 } from "@/lib/notifications";
 import {
   getNotificationPref,
@@ -51,15 +49,11 @@ export default function NotificationsSettingsScreen(): React.ReactElement {
   }, []);
 
   const resync = useCallback(async (): Promise<void> => {
-    await rescheduleAllEntries(entries).catch((error) => {
-      console.warn("[Settings] rescheduleAllEntries failed:", error);
-    });
-    await rescheduleAllProjectNotifications(projects, entries).catch((error) => {
-      console.warn("[Settings] rescheduleAllProjectNotifications failed:", error);
-    });
-    await rescheduleAllHabitNotifications(habits).catch((error) => {
-      console.warn("[Settings] rescheduleAllHabitNotifications failed:", error);
-    });
+    await syncScheduledNotifications({ entries, projects, habits }).catch(
+      (error) => {
+        console.warn("[Settings] syncScheduledNotifications failed:", error);
+      },
+    );
   }, [entries, projects, habits]);
 
   // Re-read on focus so a change made in system Settings is reflected on return.

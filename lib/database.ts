@@ -818,12 +818,15 @@ export async function getTasks(): Promise<DbTask[]> {
 }
 
 /**
- * Append a task to an entry's checklist. Every entry type — todo, deadline,
+ * Prepend a task to an entry's checklist. Every entry type — todo, deadline,
  * and idea — can own subtasks. The type guard can't be a CHECK constraint (it
  * spans tables), so it lives here.
  *
- * Position is `max(position) + 1` within the parent, computed in the same
- * transaction as the insert so two rapid adds can't collide on one slot.
+ * Position is `min(position) - 1` within the parent — the composer sits at the
+ * top of the checklist, so a new line lands directly under the input, pushing
+ * older lines down (newest-first). Computed in the same transaction as the
+ * insert so two rapid adds can't collide on one slot. Positions are left
+ * sparse; negatives are harmless.
  */
 export async function insertTask(
   entryId: string,
@@ -843,11 +846,11 @@ export async function insertTask(
   const now = Math.floor(Date.now() / 1000);
   let position = 0;
   await db.withTransactionAsync(async () => {
-    const last = await db.getFirstAsync<{ max_position: number | null }>(
-      'SELECT MAX(position) AS max_position FROM tasks WHERE entry_id = ?',
+    const first = await db.getFirstAsync<{ min_position: number | null }>(
+      'SELECT MIN(position) AS min_position FROM tasks WHERE entry_id = ?',
       entryId,
     );
-    position = (last?.max_position ?? -1) + 1;
+    position = (first?.min_position ?? 1) - 1;
     await db.runAsync(
       'INSERT INTO tasks (id, entry_id, title, done, position, created_at, updated_at) VALUES (?, ?, ?, 0, ?, ?, ?)',
       id,

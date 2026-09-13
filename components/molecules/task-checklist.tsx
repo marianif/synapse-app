@@ -7,12 +7,15 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/atoms/themed-text";
+import { ConfirmSheet } from "@/components/molecules/confirm-sheet";
 import { TaskRow } from "@/components/molecules/task-row";
 import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
+import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { ConfirmKey } from "@/lib/settings";
+import type { DbTask } from "@/lib/types";
 
 interface TaskChecklistProps {
   /** The owning entry — any type (todo, deadline, idea) can own a checklist. */
@@ -35,20 +38,25 @@ interface TaskChecklistProps {
 
 /**
  * The subtask checklist under a todo or a deadline. A kicker, a mono `2/5`
- * counter, rows on tone, and a always-mounted composer at the foot.
+ * counter, rows on tone, and an always-mounted composer at the top.
  *
- * The composer never hides behind a "+" — for a capture-first user, an add
- * affordance that costs a tap to reveal is the wrong trade. It re-focuses after
- * every submit so a burst of subtasks lands without touching the screen again.
+ * The composer sits directly under the header and never hides behind a "+" —
+ * for a capture-first user, an add affordance that costs a tap (or a scroll
+ * past a long list) is the wrong trade. It re-focuses after every submit so a
+ * burst of subtasks lands without touching the screen again, and each new line
+ * prepends to the open list so it lands directly under the caret.
+ *
+ * Completed lines sink to the bottom and fold into a single quiet `3 done` row,
+ * so the open work never drowns under a finished pile. The row's Clear action
+ * is the one deliberate sweep — it deletes every done line in a confirmed
+ * batch, the answer to a checklist that has grown too long.
  *
  * Completing every task deliberately does NOT complete the parent: closing an
  * entry stays the user's call. The counter is the entire progress surface — no
  * bar, no ring, no celebration (see DESIGN.md: no gamification).
  *
- * Owns its own edit toggle (a pencil beside the kicker) rather than taking one
- * from the parent sheet — rename/delete are per-task destructive actions
- * (ACTIONS.md tier 3) that stay off the default reading surface regardless of
- * whether the sheet's title/when are being edited.
+ * Rename is per-row (tap a title); delete is a swipe (tier-3, confirmed); both
+ * stay off the default reading surface.
  */
 export function TaskChecklist({
   entryId,
@@ -58,17 +66,22 @@ export function TaskChecklist({
   toggleOnly = false,
   swipeController,
 }: TaskChecklistProps): React.ReactElement {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const reduced = useReducedMotion();
   const { tasks, createTask, setTaskDone, updateTaskTitle, deleteTask } =
     useDatabase();
 
   const [drafting, setDrafting] = useState("");
-  const [editing, setEditing] = useState(false);
   // Per-row inline editing: the id of the task whose title the user tapped.
-  // Tapping a row opens it directly; the pencil pill still offers bulk mode.
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [doneExpanded, setDoneExpanded] = useState(false);
+  const [confirmCopy, setConfirmCopy] = useState({
+    kicker: "CLEAR DONE",
+    message: "Removes the done lines from this checklist.",
+  });
   const inputRef = useRef<TextInput>(null);
+
+  const clearConfirm = useConfirm({ confirmKey: ConfirmKey.deleteTask });
 
   // Only one row is swiped open at a time. Track the open row's close handle
   // so any other interaction — another row, the composer, the header, or the
@@ -98,15 +111,18 @@ export function TaskChecklist({
   }, [swipeController, closeOpenRow]);
 
   // `tasks` is the flat store of every entry's subtasks. Open subtasks sit on
-  // top so the unfinished work reads first; done lines sink to the bottom, with
-  // position order preserved inside each group so completing a task moves just
-  // that line, not its peers.
+  // top so the unfinished work reads first; done lines sink to the bottom and
+  // fold away behind a single summary row. Position order is preserved inside
+  // each group, and new lines prepend (min - 1), so the newest sits directly
+  // under the composer.
   const mine = tasks
     .filter((t) => t.entry_id === entryId)
     .sort((a, b) =>
       a.done === b.done ? a.position - b.position : a.done - b.done,
     );
-  const doneCount = mine.filter((t) => t.done === 1).length;
+  const openTasks = mine.filter((t) => t.done === 0);
+  const doneTasks = mine.filter((t) => t.done === 1);
+  const doneCount = doneTasks.length;
 
   // Deleting is a swipe on the row — the same gesture the feeds use. Read-only
   // and toggle-only renders keep rows gesture-free.
@@ -133,35 +149,83 @@ export function TaskChecklist({
     commitDraft();
   };
 
+  // Clear is the one batch write: every done line, confirmed once. Each delete
+  // rides its own thunk (the store updates optimistically per line).
+  const clearDone = (): void => {
+    const ids = doneTasks.map((t) => t.id);
+    if (ids.length === 0) return;
+    setConfirmCopy({
+      kicker: "CLEAR DONE",
+      message:
+        ids.length === 1
+          ? "Removes the done line from this checklist."
+          : `Removes ${ids.length} done lines from this checklist.`,
+    });
+    void clearConfirm.request(() => {
+      for (const id of ids) {
+        void deleteTask(id).catch((error: unknown) => {
+          console.error("[task-checklist] delete failed:", error);
+        });
+      }
+    });
+  };
+
+  const renderRow = (task: DbTask): React.ReactElement => {
+    const row = (
+      <TaskRow
+        key={task.id}
+        task={task}
+        accent={accent}
+        editing={!readOnly && editingId === task.id}
+        autoFocus={!readOnly && editingId === task.id}
+        onEndEdit={() =>
+          setEditingId((current) => (current === task.id ? null : current))
+        }
+        readOnly={readOnly}
+        toggleOnly={toggleOnly}
+        onPressTitle={() => {
+          if (readOnly) return;
+          closeOpenRow();
+          setEditingId(task.id);
+        }}
+        onToggle={() => {
+          closeOpenRow();
+          void setTaskDone(task.id, task.done === 0).catch((error: unknown) => {
+            console.error("[task-checklist] toggle failed:", error);
+          });
+        }}
+        onRename={(title) => {
+          void updateTaskTitle(task.id, title).catch((error: unknown) => {
+            console.error("[task-checklist] rename failed:", error);
+          });
+        }}
+      />
+    );
+    if (!canSwipeDelete) return row;
+    return (
+      <SwipeableRow
+        key={task.id}
+        onDelete={() => {
+          void deleteTask(task.id).catch((error: unknown) => {
+            console.error("[task-checklist] delete failed:", error);
+          });
+        }}
+        confirmKey={ConfirmKey.deleteTask}
+        confirmKicker={`DELETE ${label.toUpperCase()}`}
+        confirmMessage="Removes this line from the checklist."
+        onSwipeOpen={handleSwipeOpen}
+      >
+        {row}
+      </SwipeableRow>
+    );
+  };
+
   return (
     <View style={styles.block}>
       <View style={styles.head} onTouchStart={closeOpenRow}>
-        <View style={styles.headLeft}>
-          <ThemedText type="micro" muted style={styles.kicker}>
-            {label}
-          </ThemedText>
-          {mine.length > 0 && !readOnly ? (
-              <Pressable
-                onPress={() => setEditing((v) => !v)}
-                hitSlop={8}
-                style={({ pressed }) => [
-                  styles.editPill,
-                  { backgroundColor: accent + (editing ? "22" : "18") },
-                  pressed && styles.pressed,
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={
-                  editing ? `Done editing ${label.toLowerCase()}` : `Edit ${label.toLowerCase()}`
-                }
-              >
-                <IconSymbol
-                  name={editing ? "Check" : "Edit2"}
-                  size={13}
-                  color={accent}
-                />
-              </Pressable>
-          ) : null}
-        </View>
+        <ThemedText type="micro" muted style={styles.kicker}>
+          {label}
+        </ThemedText>
         {mine.length > 0 ? (
           <ThemedText
             type="mono"
@@ -182,85 +246,93 @@ export function TaskChecklist({
         layout={
           reduced
             ? undefined
-            : LinearTransition.duration(220).easing(Easing.bezier(0.22, 1, 0.36, 1))
+            : LinearTransition.duration(220).easing(
+                Easing.bezier(0.22, 1, 0.36, 1),
+              )
         }
       >
-        {mine.map((task) => {
-          const row = (
-            <TaskRow
-              key={task.id}
-              task={task}
-              accent={accent}
-              editing={!readOnly && (editing || editingId === task.id)}
-              autoFocus={!readOnly && editingId === task.id}
-              onEndEdit={() =>
-                setEditingId((current) =>
-                  current === task.id ? null : current,
-                )
+        {!readOnly ? (
+          <View style={styles.row}>
+            <View style={styles.check}>
+              <IconSymbol name="Add2" size={18} color={colors.inkMuted} />
+            </View>
+            <TextInput
+              ref={inputRef}
+              value={drafting}
+              onChangeText={setDrafting}
+              onFocus={closeOpenRow}
+              onBlur={handleComposerBlur}
+              onSubmitEditing={handleAdd}
+              placeholder={
+                mine.length ? "Add another" : `Add a ${label.toLowerCase()}`
               }
-              readOnly={readOnly}
-              toggleOnly={toggleOnly}
-              onPressTitle={() => {
-                if (readOnly) return;
-                closeOpenRow();
-                setEditingId(task.id);
-              }}
-              onToggle={() => {
-                closeOpenRow();
-                void setTaskDone(task.id, task.done === 0).catch(
-                  (error: unknown) => {
-                    console.error("[task-checklist] toggle failed:", error);
-                  },
-                );
-              }}
-              onRename={(title) => {
-                void updateTaskTitle(task.id, title).catch((error: unknown) => {
-                  console.error("[task-checklist] rename failed:", error);
-                });
-              }}
+              placeholderTextColor={colors.inkMuted}
+              submitBehavior="submit"
+              returnKeyType="next"
+              style={[styles.input, { color: colors.ink }]}
+              accessibilityLabel={`Add a ${label.toLowerCase()}`}
             />
-          );
-          if (!canSwipeDelete) return row;
-          return (
-            <SwipeableRow
-              key={task.id}
-              onDelete={() => {
-                void deleteTask(task.id).catch((error: unknown) => {
-                  console.error("[task-checklist] delete failed:", error);
-                });
-              }}
-              confirmKey={ConfirmKey.deleteTask}
-              confirmKicker={`DELETE ${label.toUpperCase()}`}
-              confirmMessage="Removes this line from the checklist."
-              onSwipeOpen={handleSwipeOpen}
+          </View>
+        ) : null}
+
+        {openTasks.map(renderRow)}
+
+        {doneCount > 0 ? (
+          <View style={styles.foldRow}>
+            <Pressable
+              onPress={() => setDoneExpanded((value) => !value)}
+              style={({ pressed }) => [
+                styles.foldToggle,
+                pressed && styles.pressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={`${doneCount} done ${label.toLowerCase()}, ${
+                doneExpanded ? "expanded" : "collapsed"
+              }`}
+              accessibilityState={{ expanded: doneExpanded }}
             >
-              {row}
-            </SwipeableRow>
-          );
-        })}
+              <IconSymbol
+                name={doneExpanded ? "ChevronUp" : "ChevronDown"}
+                size={16}
+                color={colors.inkMuted}
+              />
+              <ThemedText type="mono" muted>
+                {doneCount} done
+              </ThemedText>
+            </Pressable>
+
+            <Pressable
+              onPress={clearDone}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.clearBtn,
+                { backgroundColor: colors.feedback.dangerTint[scheme] },
+                pressed && styles.pressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={`Clear done ${label.toLowerCase()}`}
+            >
+              <IconSymbol
+                name="Trash"
+                size={16}
+                color={tokens.feedback.danger}
+              />
+            </Pressable>
+          </View>
+        ) : null}
+
+        {doneExpanded ? doneTasks.map(renderRow) : null}
       </Animated.View>
 
-      {!readOnly ? (
-        <View style={styles.row}>
-          <View style={styles.check}>
-            <IconSymbol name="Add2" size={18} color={colors.inkMuted} />
-          </View>
-          <TextInput
-            ref={inputRef}
-            value={drafting}
-            onChangeText={setDrafting}
-            onFocus={closeOpenRow}
-            onBlur={handleComposerBlur}
-            onSubmitEditing={handleAdd}
-            placeholder={mine.length ? "Add another" : `Add a ${label.toLowerCase()}`}
-            placeholderTextColor={colors.inkMuted}
-            submitBehavior="submit"
-            returnKeyType="next"
-            style={[styles.input, { color: colors.ink }]}
-            accessibilityLabel={`Add a ${label.toLowerCase()}`}
-          />
-        </View>
-      ) : null}
+      <ConfirmSheet
+        visible={clearConfirm.visible}
+        kicker={confirmCopy.kicker}
+        message={confirmCopy.message}
+        dontAsk={clearConfirm.dontAsk}
+        onToggleDontAsk={clearConfirm.toggleDontAsk}
+        onConfirm={clearConfirm.confirm}
+        onCancel={clearConfirm.cancel}
+      />
     </View>
   );
 }
@@ -276,18 +348,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: tokens.space.xs,
-  },
-  headLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: tokens.space.sm,
-  },
-  editPill: {
-    width: 26,
-    height: 26,
-    borderRadius: tokens.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
   },
   kicker: {
     letterSpacing: tokens.type.micro.tracking,
@@ -311,6 +371,28 @@ const styles = StyleSheet.create({
     fontFamily: tokens.type.fontInter.medium,
     fontSize: tokens.type.item.size,
     lineHeight: tokens.type.item.lineHeight,
+  },
+  // The done fold: one quiet summary row where completed lines collect. The
+  // toggle owns the row's left; Clear sits quietly at its end.
+  foldRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 48,
+  },
+  foldToggle: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.space.xs,
+    minHeight: 48,
+  },
+  clearBtn: {
+    minHeight: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: tokens.space.sm,
+    borderRadius: tokens.radius.sm,
   },
   pressed: {
     opacity: 0.6,

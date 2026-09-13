@@ -1,9 +1,9 @@
 import { useRef } from 'react';
 import { StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Swipeable, RectButton } from 'react-native-gesture-handler';
 
 import { ConfirmSheet } from '@/components/molecules/confirm-sheet';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useTheme, tokens } from '@/constants/theme';
 import { useConfirm } from '@/hooks/use-confirm';
 import { ConfirmKey } from '@/lib/settings';
@@ -62,11 +62,7 @@ export function SwipeableRow({
       style={[styles.deleteAction, { backgroundColor: colors.feedback.danger }]}
       onPress={handleDelete}
     >
-      <MaterialCommunityIcons
-        name="trash-can-outline"
-        size={22}
-        color={ON_DANGER}
-      />
+      <IconSymbol name="Trash2" size={22} color={ON_DANGER} />
     </RectButton>
   );
 

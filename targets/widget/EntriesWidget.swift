@@ -210,9 +210,9 @@ private struct EntryRow: View {
 
 private struct OverflowRow: View {
     var body: some View {
-        Link(destination: URL(string: "synapseapp:///list")!) {
+        Link(destination: URL(string: "synapseapp:///")!) {
             HStack(spacing: Spacing.xs) {
-                Text("All entries")
+                Text("Open board")
                     .font(.system(size: 12, weight: .medium))
 
                 Image(systemName: "chevron.right")
@@ -220,7 +220,7 @@ private struct OverflowRow: View {
             }
             .foregroundStyle(Color.inkMuted)
         }
-        .accessibilityLabel("All entries")
+        .accessibilityLabel("Open the board")
     }
 }
 

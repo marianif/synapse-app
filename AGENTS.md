@@ -66,7 +66,6 @@ synapse-app/
 │   ├── modal.tsx               # Generic modal overlay
 │   ├── voice-input.tsx         # Voice input modal (speech-to-text)
 │   ├── detail.tsx              # Task/entry detail view
-│   ├── list.tsx                # Full list view (all entries)
 │   └── (tabs)/                 # Tab group (expo-router convention)
 │       ├── _layout.tsx         # Tab navigator (BottomTabNavigator)
 │       ├── index.tsx           # Home tab (today's view)
@@ -90,13 +89,11 @@ synapse-app/
 │   │   ├── detail-someday-hero.tsx
 │   │   ├── empty-state.tsx     # Empty list state
 │   │   ├── entry-row.tsx       # Entry list row (no dividers)
-│   │   ├── list-item.tsx       # Generic list item
 │   │   ├── recurrence-picker.tsx
 │   │   ├── someday-item.tsx    # Someday/maybe entry
 │   │   ├── today-event-row.tsx # Today's event row
 │   │   ├── week-strip.tsx      # Week strip row
 │   │   ├── weekday-row.tsx     # Weekday header row
-│   │   ├── wrapup-card.tsx     # End-of-day summary card
 │   │   └── week-strip.tsx
 │   ├── organisms/              # Complex UI sections
 │   │   ├── app-header.tsx      # Top navigation header

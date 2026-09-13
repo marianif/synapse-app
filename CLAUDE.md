@@ -137,7 +137,6 @@ synapse-app/
 │   ├── modal.tsx               # Rich add/edit entry modal
 │   ├── calendar.tsx            # Calendar view (monthly)
 │   ├── detail.tsx              # Task/entry detail view (inline editing)
-│   ├── list.tsx                # Full list view (all entries)
 │   └── (tabs)/                 # Tab group (expo-router convention)
 │       ├── _layout.tsx         # Tab navigator (custom tab bar, native bar hidden)
 │       ├── index.tsx           # Home tab — the Field (STAKES + PRESENT zones)
@@ -162,13 +161,11 @@ synapse-app/
 │   │   ├── detail-someday-hero.tsx
 │   │   ├── empty-state.tsx     # Empty list state
 │   │   ├── entry-row.tsx       # Entry list row (no dividers)
-│   │   ├── list-item.tsx       # Generic list item
 │   │   ├── recurrence-picker.tsx
 │   │   ├── someday-item.tsx    # Someday/maybe entry
 │   │   ├── today-event-row.tsx # Today's event row
 │   │   ├── week-strip.tsx      # Week strip row
 │   │   ├── weekday-row.tsx     # Weekday header row
-│   │   └── wrapup-card.tsx     # End-of-day summary card
 │   ├── organisms/              # Complex UI sections
 │   │   ├── app-header.tsx      # Top navigation header
 │   │   ├── app-menu.tsx        # App menu/drawer

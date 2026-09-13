@@ -136,10 +136,10 @@ struct SmallVoiceWidgetView: View {
                 }
                 .accessibilityLabel("Type — capture with the keyboard")
 
-                Link(destination: URL(string: "synapseapp:///list")!) {
-                    DiscKey(systemName: "list.bullet", size: 54, iconSize: 22)
+                Link(destination: URL(string: "synapseapp:///")!) {
+                    DiscKey(systemName: "rectangle.grid.1x2", size: 54, iconSize: 20)
                 }
-                .accessibilityLabel("List — open all entries")
+                .accessibilityLabel("Field — open the board")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -166,10 +166,10 @@ struct MediumVoiceWidgetView: View {
                 }
                 .accessibilityLabel("Type — capture with the keyboard")
 
-                Link(destination: URL(string: "synapseapp:///list")!) {
-                    DiscKey(systemName: "list.bullet", size: 64, iconSize: 26)
+                Link(destination: URL(string: "synapseapp:///")!) {
+                    DiscKey(systemName: "rectangle.grid.1x2", size: 64, iconSize: 24)
                 }
-                .accessibilityLabel("List — open all entries")
+                .accessibilityLabel("Field — open the board")
             }
             .frame(maxWidth: .infinity)
 

@@ -1,7 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/atoms/themed-text";
@@ -22,6 +22,26 @@ const BENEFITS = [
   "Export everything you've captured",
   "The whole board, no ceilings",
 ] as const;
+
+type NarrativeSegment = { text: string; hand?: boolean };
+
+/**
+ * The "why the price is what it is" note. Base runs read in the neutral body
+ * voice; the meaningful runs take the Caveat hand and the primary ink, so the
+ * emphasis is scrawled rather than shouted. Three hand runs max — more turns
+ * jumpy.
+ */
+const NARRATIVE: NarrativeSegment[] = [
+  { text: "Synapse keeps everything " },
+  { text: "on your device", hand: true },
+  { text: ", with " },
+  { text: "no ads and no tracking", hand: true },
+  {
+    text: ". The price stays as low as it can while keeping the app running, so it can stay ",
+  },
+  { text: "fair for everyone", hand: true },
+  { text: " and the board stays yours." },
+];
 
 /** The specific limit that sent the user here, stated plainly. */
 function reasonMessage(reason: UpgradeReason): string {
@@ -79,12 +99,6 @@ export default function PaywallScreen(): React.ReactElement {
     : isMonthly
       ? "Make it yours for good."
       : "Keep the whole board.";
-
-  const companion = isLifetime
-    ? "Everything is already uncapped."
-    : isMonthly
-      ? "One payment and the monthly stops."
-      : "Everything has a place, even the ones that don't fit yet.";
 
   const lifetimePrice = introEligible
     ? PRICING.lifetimeIntro.display
@@ -165,8 +179,19 @@ export default function PaywallScreen(): React.ReactElement {
           <ThemedText type="display" style={{ color: colors.ink }}>
             {hero}
           </ThemedText>
-          <ThemedText type="hand" muted style={styles.companion}>
-            {companion}
+          <ThemedText type="body" muted style={styles.narrative}>
+            {NARRATIVE.map((segment, index) =>
+              segment.hand ? (
+                <Text
+                  key={index}
+                  style={[styles.handRun, { color: colors.ink }]}
+                >
+                  {segment.text}
+                </Text>
+              ) : (
+                segment.text
+              ),
+            )}
           </ThemedText>
           <ThemedText type="mono" muted style={styles.status}>
             {statusLine}
@@ -297,8 +322,15 @@ const styles = StyleSheet.create({
   hero: {
     gap: tokens.space.sm,
   },
-  companion: {
+  narrative: {
     marginTop: tokens.space.xs,
+    // Even leading so the larger Caveat runs don't jitter the paragraph.
+    lineHeight: 26,
+  },
+  handRun: {
+    fontFamily: tokens.type.fontHand.regular,
+    fontSize: 20,
+    lineHeight: 26,
   },
   status: {
     marginTop: tokens.space.sm,

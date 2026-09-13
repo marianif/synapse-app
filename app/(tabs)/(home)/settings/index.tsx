@@ -151,6 +151,14 @@ export default function SettingsScreen(): React.ReactElement {
           />
         </SettingsSection>
 
+        <SettingsSection label="Data">
+          <SettingsRow
+            label="Export your data"
+            description="Download a copy of everything you've captured."
+            onPress={() => router.push("/settings/data")}
+          />
+        </SettingsSection>
+
         <SettingsSection label="About">
           <SettingsRow
             label="About & Legal"

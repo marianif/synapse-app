@@ -70,6 +70,11 @@ The work register: milestones, epics, areas, and typed work items.
 
 - [ ] [design] `shape appearance` — appearance subroute: multiple themes, left/right-hand layout toggle, and more. @month
 
+### Area — Data
+
+- [ ] [feature] export your data — one shareable archive of entries, projects, diary notes, tasks, habits, preferences, and attached photos. effort: M @month
+- [ ] [feature] import and restore — restore a Synapse archive into the store, with a conflict policy for existing rows. effort: L @month
+
 ### Area — Habits
 
 - Serves: Goal 3 (Hold a cadence)

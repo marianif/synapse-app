@@ -31,6 +31,10 @@ import "react-native-reanimated";
 
 import { ErrorBoundary } from "@/components/error-boundary";
 import {
+  EntitlementProvider,
+  useEntitlement,
+} from "@/contexts/entitlement-context";
+import {
   OnboardingProvider,
   useOnboarding,
 } from "@/contexts/onboarding-context";
@@ -48,9 +52,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
         <ThemeProvider>
-          <OnboardingProvider>
-            <ThemedNavigationShell />
-          </OnboardingProvider>
+          <EntitlementProvider>
+            <OnboardingProvider>
+              <ThemedNavigationShell />
+            </OnboardingProvider>
+          </EntitlementProvider>
         </ThemeProvider>
       </Provider>
     </GestureHandlerRootView>
@@ -61,6 +67,7 @@ export default function RootLayout() {
 // component cannot read a context it also renders the Provider for, hence the split.
 function ThemedNavigationShell(): React.ReactElement | null {
   const { resolvedScheme, isReady } = useThemeContext();
+  const { isReady: entitlementReady } = useEntitlement();
   const { complete: onboardingComplete, isReady: onboardingReady } =
     useOnboarding();
   const segments = useSegments();
@@ -164,6 +171,7 @@ function ThemedNavigationShell(): React.ReactElement | null {
   if (
     !fontsLoaded ||
     !isReady ||
+    !entitlementReady ||
     !onboardingReady ||
     onboardingComplete === null
   ) {
@@ -193,6 +201,7 @@ function ThemedNavigationShell(): React.ReactElement | null {
           <Stack.Screen name="note" options={{ presentation: "modal" }} />
           <Stack.Screen name="edit" options={{ presentation: "modal" }} />
           <Stack.Screen name="habit" options={{ presentation: "modal" }} />
+          <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
           <Stack.Screen
             name="lightbox"
             options={{ presentation: "fullScreenModal" }}

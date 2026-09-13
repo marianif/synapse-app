@@ -403,3 +403,91 @@ export async function setArmedDeadlines(
     console.error("[settings] setArmedDeadlines failed:", error);
   }
 }
+
+// ─── Entitlement: trial clock ────────────────────────────────────────────────
+//
+// The 7-day trial is app-level: StoreKit and Play have no trial for a
+// non-consumable, so the start instant is ours to keep. Stored as epoch ms.
+// Absent means the trial has never started; the entitlement provider stamps it
+// on first launch. Mirrored to RevenueCat later so a reinstall can't reset it.
+
+const TRIAL_STARTED_AT_KEY = "entitlement_trial_started_at";
+
+/** Returns the trial start instant in epoch ms, or null if never started. */
+export async function getTrialStartedAt(): Promise<number | null> {
+  try {
+    const raw = await AsyncStorage.getItem(TRIAL_STARTED_AT_KEY);
+    if (raw === null) return null;
+    const value = Number.parseInt(raw, 10);
+    return Number.isFinite(value) ? value : null;
+  } catch (error) {
+    console.error("[settings] getTrialStartedAt failed:", error);
+    return null;
+  }
+}
+
+/** Persists the trial start instant in epoch ms. */
+export async function setTrialStartedAt(at: number): Promise<void> {
+  try {
+    await AsyncStorage.setItem(TRIAL_STARTED_AT_KEY, String(at));
+  } catch (error) {
+    console.error("[settings] setTrialStartedAt failed:", error);
+  }
+}
+
+/** Clears the trial clock so it restarts on the next launch (dev). */
+export async function clearTrialStartedAt(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(TRIAL_STARTED_AT_KEY);
+  } catch (error) {
+    console.error("[settings] clearTrialStartedAt failed:", error);
+  }
+}
+
+// ─── Entitlement: dev plan override ──────────────────────────────────────────
+//
+// "auto" follows the real derivation. The rest force a state so cap behavior
+// and the paywall can be exercised without RevenueCat. Dev only — the provider
+// ignores this outside __DEV__.
+
+export type PlanOverride = "auto" | "trial" | "free" | "monthly" | "lifetime";
+
+export const PLAN_OVERRIDES: readonly PlanOverride[] = [
+  "auto",
+  "trial",
+  "free",
+  "monthly",
+  "lifetime",
+];
+
+const PLAN_OVERRIDE_KEY = "entitlement_plan_override";
+
+function isPlanOverride(value: string | null): value is PlanOverride {
+  return (
+    value === "auto" ||
+    value === "trial" ||
+    value === "free" ||
+    value === "monthly" ||
+    value === "lifetime"
+  );
+}
+
+/** Returns the saved plan override, defaulting to "auto". */
+export async function getPlanOverride(): Promise<PlanOverride> {
+  try {
+    const value = await AsyncStorage.getItem(PLAN_OVERRIDE_KEY);
+    return isPlanOverride(value) ? value : "auto";
+  } catch (error) {
+    console.error("[settings] getPlanOverride failed:", error);
+    return "auto";
+  }
+}
+
+/** Persists the dev plan override. */
+export async function setPlanOverride(value: PlanOverride): Promise<void> {
+  try {
+    await AsyncStorage.setItem(PLAN_OVERRIDE_KEY, value);
+  } catch (error) {
+    console.error("[settings] setPlanOverride failed:", error);
+  }
+}

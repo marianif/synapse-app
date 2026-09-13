@@ -28,14 +28,24 @@ import {
   useTheme,
   type Scheme,
 } from "@/constants/theme";
+import { useEntitlement } from "@/contexts/entitlement-context";
 import { useOnboarding } from "@/contexts/onboarding-context";
 import { useThemeContext } from "@/contexts/theme-context";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 import { clearAllData, getDb, seedDefaultProjectsOnce } from "@/lib/database";
 import { SCENARIOS, seedScenario, type ScenarioKey } from "@/lib/dev-seed";
+import { PLAN_OVERRIDES, type PlanOverride } from "@/lib/settings";
 
 const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
+
+const PLAN_OVERRIDE_LABELS: Record<PlanOverride, string> = {
+  auto: "Auto (real state)",
+  trial: "Trial (7 days on)",
+  free: "Free (caps apply)",
+  monthly: "Pro · monthly",
+  lifetime: "Pro · lifetime",
+};
 
 export default function SettingsScreen(): React.ReactElement {
   const router = useRouter();
@@ -50,6 +60,7 @@ export default function SettingsScreen(): React.ReactElement {
   } = useDatabase();
   const { refresh: refreshDiary } = useDiary();
   const { resetOnboarding } = useOnboarding();
+  const { planOverride, setPlanOverride, restartTrial } = useEntitlement();
   const ideaAccent = useEntryKicker("idea");
   const deadlineAccent = useEntryKicker("deadline");
 
@@ -232,6 +243,71 @@ export default function SettingsScreen(): React.ReactElement {
                   style={styles.devDescription}
                 >
                   Reopens the first-run story from chapter one. Dev only.
+                </ThemedText>
+              </View>
+            </Pressable>
+          </SettingsSection>
+        )}
+
+        {__DEV__ && (
+          <SettingsSection label="Dev · Plan">
+            {PLAN_OVERRIDES.map((option) => {
+              const active = planOverride === option;
+              return (
+                <Pressable
+                  key={option}
+                  onPress={() => setPlanOverride(option)}
+                  style={({ pressed }) => [
+                    styles.devRow,
+                    {
+                      backgroundColor: colors.surface,
+                      opacity: pressed ? 0.7 : 1,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`Simulate plan: ${PLAN_OVERRIDE_LABELS[option]}`}
+                >
+                  <IconSymbol
+                    name={active ? "Check" : "PlayCircle"}
+                    size={16}
+                    color={active ? ideaAccent : colors.inkMuted}
+                  />
+                  <View style={styles.devCopy}>
+                    <ThemedText
+                      type="item"
+                      style={{ color: active ? ideaAccent : colors.ink }}
+                    >
+                      {PLAN_OVERRIDE_LABELS[option]}
+                    </ThemedText>
+                  </View>
+                </Pressable>
+              );
+            })}
+            <Pressable
+              onPress={() => void restartTrial()}
+              style={({ pressed }) => [
+                styles.devRow,
+                {
+                  backgroundColor: colors.surface,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Restart the 7-day trial"
+            >
+              <IconSymbol name="PlayCircle" size={16} color={deadlineAccent} />
+              <View style={styles.devCopy}>
+                <ThemedText type="item" style={{ color: colors.ink }}>
+                  Restart trial
+                </ThemedText>
+                <ThemedText
+                  type="caption"
+                  muted
+                  numberOfLines={2}
+                  style={styles.devDescription}
+                >
+                  Resets the 7-day trial clock to today. Dev only.
                 </ThemedText>
               </View>
             </Pressable>

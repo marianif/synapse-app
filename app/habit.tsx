@@ -16,8 +16,10 @@ import { EmojiPickerSheet } from "@/components/molecules/emoji-picker-sheet";
 import { HabitColorWheel } from "@/components/molecules/habit-color-wheel";
 import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
 import { tokens, useHabitTone, useTheme } from "@/constants/theme";
+import { useCaps } from "@/hooks/use-caps";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDatabase } from "@/hooks/use-database/use-database";
+import { useUpgrade } from "@/hooks/use-upgrade";
 import { toDisplayDate } from "@/lib/date-utils";
 import { parseRule } from "@/lib/recurrence";
 import { ConfirmKey } from "@/lib/settings";
@@ -105,6 +107,8 @@ export default function HabitScreen(): React.ReactElement {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const deleteConfirm = useConfirm({ confirmKey: ConfirmKey.deleteHabit });
+  const caps = useCaps();
+  const { showUpgrade } = useUpgrade();
   const tone = useHabitTone(colorHue);
 
   // Seed once per habit id so a store round-trip (pause, save) never resets
@@ -176,6 +180,11 @@ export default function HabitScreen(): React.ReactElement {
           reminderTime: reminder,
           projectId,
         });
+      } else if (caps.at.habits) {
+        // Free plan at capacity: keep the form, open the paywall instead.
+        showUpgrade("habits");
+        setSaving(false);
+        return;
       } else {
         await createHabit({
           title: title.trim(),

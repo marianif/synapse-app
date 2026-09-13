@@ -17,6 +17,10 @@ The work register: milestones, epics, areas, and typed work items.
 
 - Serves: Goal 1 (Capture a thought) / Goal 2 (See it all at a glance)
 
+### Area — Revenue (later)
+
+- [ ] [feature] AI & sync subscription — a monthly auto-renewable add-on (separate entitlement) for AI-powered features and remote DB sync. Open: standalone vs lifetime-gated; metered quota vs unlimited. Only once those features exist. effort: L
+
 ## Milestone — Official Release 1.0.0 <!-- flow:ms:m01vl4baw -->
 
 ### Area — Onboarding & guidance
@@ -30,7 +34,7 @@ The work register: milestones, epics, areas, and typed work items.
 
 ### Area — Legal & compliance
 
-- [ ] [feature] privacy policy and legal — hosted policy plus in-app links (settings + onboarding). @month — partial: in-app links shipped in Settings → About (2026-09-13); hosted policy URLs still placeholders, no onboarding link
+- [ ] [feature] privacy policy and legal — hosted policy plus in-app links (settings + onboarding). @month — partial: in-app links shipped in Settings → About (2026-09-13); hosted policy URLs still placeholders, no onboarding link; must also cover the lifetime purchase and the future auto-renewing subscription terms
 
 ### Area — Localization
 
@@ -64,6 +68,23 @@ The work register: milestones, epics, areas, and typed work items.
 - [x] [feature] deadline reminder deep-link — tapping a deadline reminder should open its entry, not just the app. → shipped 2026-09-13 — response handler routes deadline taps to /edit and clears the cold-start response
 - [x] [design] `clarify deadline-reminder-copy` — the body always reads "Deadline today", even when it fires days out or points at a project. → shipped 2026-09-13 — body states the remaining gap and the owning project
 
+### Area — Monetization
+
+- [ ] [design] `define pricing layers` — lock the boundary: 7-day no-card trial → capped free (8 projects · 3 habits · 20 open entries · 5 notes · no export) → `pro` via monthly subscription or lifetime purchase, both removing every cap. Prices locked: $1.99/mo, $19.99 lifetime, and a $9.99 lifetime intro shown only while the trial is active (the same SKU doubles as the active-subscriber crossgrade). Remaining: the copy deck, the "open entries count, completing frees a slot" rule, widgets/watch staying free, and grandfathering for installs already over a cap. effort: M @month
+- [ ] [design] `craft paywall` — the upgrade surface in the Field Lab language: a monthly-vs-lifetime selector, trial days left and Pro status, the limits named plainly, one direct action. Monthly $1.99 always; lifetime $19.99, shown struck to $9.99 while the trial is active or the user is an active monthly subscriber. No gamification, no pressure timer. effort: M @month — built 2026-09-13 — real surface at app/paywall.tsx + components/molecules/plan-card.tsx + lib/pricing.ts; monthly/lifetime selector with trial-only or subscriber `$9.99` intro, contextual limit line from the `reason` param; purchase + Restore inert until RevenueCat
+- [ ] [feature] trial lifecycle — 7-day trial starts at first launch with every feature on; expiry falls back to the capped free tier; purchase restores full access. effort: M @week — partial 2026-09-13: the trial clock, fallback-to-capped-free, and foreground/expiry refresh shipped (lib/entitlements.ts, contexts/entitlement-context.tsx); purchase-restore waits on RevenueCat
+- [ ] [feature] plan & restore settings — a Settings → Plan subroute: trial/Pro status, days left, upgrade CTA, restore purchases, manage (future). effort: S @month — waits on RevenueCat (restore needs a real store product)
+
+### Area — Payments & entitlement
+
+- [ ] [feature] entitlement model — the local source of truth for trial + `pro`: a slice exposing `isPro`, `isTrialActive`, `trialDaysLeft`, the active plan kind (monthly vs lifetime), subscription status (active / grace / expired), and cap helpers; consumed by project/habit/entry/note creation and export. effort: M @week — shipped 2026-09-13 minus RevenueCat: lib/entitlements.ts (pure domain), contexts/entitlement-context.tsx (isPro / isTrialActive / trialDaysLeft / planKind / hasFullAccess), hooks/use-caps.ts, and the Dev · Plan simulator in Settings; the paid plan and subscription status arrive with RevenueCat
+- [ ] [feature] cap enforcement — gates on `createProject`, `promoteIdeaToProject`, `createHabit` (store/thunks/habits.ts:34), entry creation, note creation, and `exportData` (lib/export.ts:207). Projects count active rows (the 6 seeded macro-areas included → 2 free slots); entries count open rows only; notes count all `diary_entries`. effort: M @week — shipped 2026-09-13 — gates on project create ((projects)/index.tsx), habit create (create-only; edits pass), note save (draft preserved via the composer's boolean onSave), and export (settings/data.tsx), each opening /paywall directly via useUpgrade with the tripped limit passed as a `reason` param (the interim LimitSheet was removed); `promoteIdeaToProject` still has no screen caller (ungated, harmless), entry capture intentionally ungated
+- [x] [task] free-cap seed scenario — a dev fixture landing every cap at once (8 active projects + 1 archived, 3 habits incl. paused, 20 open + 2 closed entries, 5 notes) so the gates are testable in one shot. effort: S @week → shipped 2026-09-13 — `free-caps-full` in lib/dev-seed.ts
+- [ ] [feature] RevenueCat integration — SDK + config plugin, one default offering (monthly auto-renewable $1.99, lifetime non-consumable $19.99, intro lifetime $9.99) sharing the `pro` entitlement, purchase flow, restore-on-launch, and error handling. Store intro trial stays off. iOS only for 1.0.0; purchases only exercise in a TestFlight/sandbox build. effort: L @week
+- [ ] [feature] subscription lifecycle & crossgrade — renewal, grace period, billing retry, expiry auto-downgrade to the capped free tier, and the active-subscriber upgrade to the discounted lifetime SKU (a separate one-time product surfaced only while monthly is active; the discount is UI-enforced since the store can't prorate). effort: L @week
+- [ ] [feature] trial persistence — local `trial_started_at` plus a RevenueCat subscriber-attribute mirror so a reinstall can't reset the 7 days; anonymous RevenueCat ids reset on reinstall, so a stable app user id (IDFV) or future login is required. effort: M @week
+- [ ] [task] App Store product & review setup — subscription group + monthly product ($1.99), lifetime non-consumable ($19.99), intro lifetime SKU ($9.99, surfaced only while the trial is active or to active subscribers), metadata, paywall screenshots, and a review note explaining trial → monthly/lifetime and the discounted SKU. effort: S @month
+
 ## Milestone — Release 1.1.0 <!-- flow:ms:m01tjqm0q -->
 
 ### Area — Settings
@@ -72,7 +93,7 @@ The work register: milestones, epics, areas, and typed work items.
 
 ### Area — Data
 
-- [ ] [feature] export your data — one shareable archive of entries, projects, diary notes, tasks, habits, preferences, and attached photos. effort: M @month
+- [x] [feature] export your data — one shareable archive of entries, projects, diary notes, tasks, habits, preferences, and attached photos. effort: M @month
 - [ ] [feature] import and restore — restore a Synapse archive into the store, with a conflict policy for existing rows. effort: L @month
 
 ### Area — Habits

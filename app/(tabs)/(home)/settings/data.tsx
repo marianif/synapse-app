@@ -14,6 +14,8 @@ import { SettingsSection } from "@/components/molecules/settings-section";
 import { ScreenHeader } from "@/components/organisms/screen-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
+import { useCaps } from "@/hooks/use-caps";
+import { useUpgrade } from "@/hooks/use-upgrade";
 import { exportData, type ExportProgress } from "@/lib/export";
 
 function progressLabel(progress: ExportProgress): string {
@@ -36,9 +38,16 @@ export default function DataSettingsScreen(): React.ReactElement {
   const { colors } = useTheme();
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<ExportProgress | null>(null);
+  const caps = useCaps();
+  const { showUpgrade } = useUpgrade();
 
   const handleExport = async (): Promise<void> => {
     if (busy) return;
+    // Export is a Pro feature; the free plan opens the paywall instead.
+    if (!caps.canExport) {
+      showUpgrade("export");
+      return;
+    }
     setBusy(true);
     try {
       await exportData({ onProgress: setProgress });

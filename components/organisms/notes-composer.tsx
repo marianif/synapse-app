@@ -38,7 +38,8 @@ import { useUiPreference } from "@/hooks/use-ui-preference";
 
 interface NotesComposerProps {
   targets: LinkableTarget[];
-  onSave: (body: string, selection: LinkSelection) => Promise<void> | void;
+  /** Return false to reject the save (e.g. a free-plan cap) — the draft stays. */
+  onSave: (body: string, selection: LinkSelection) => Promise<boolean> | boolean;
   /** Fires whenever the composer transitions between resting and actively
    *  lifted (focused, recording, or with the link menu open), so the screen can
    *  show a backdrop scrim behind the bar — its surface tone otherwise fuses
@@ -230,8 +231,10 @@ export const NotesComposer = forwardRef<
     const text = draft.trim();
     if (!text) return;
     setMenuOpen(false);
-    await onSave(text, selection);
-    setDraft("");
+    // Keep the draft when the save is refused (a free-plan cap): the thought
+    // must survive the upgrade prompt.
+    const saved = await onSave(text, selection);
+    if (saved) setDraft("");
   };
 
   const menuEntering = reduced

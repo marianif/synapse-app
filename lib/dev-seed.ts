@@ -145,7 +145,8 @@ export type ScenarioKey =
   | "habits-variety"
   | "habits-all-done"
   | "habits-missed"
-  | "habits-year-history";
+  | "habits-year-history"
+  | "free-caps-full";
 
 export type Scenario = {
   key: ScenarioKey;
@@ -997,6 +998,117 @@ const HABITS_YEAR_HISTORY: Fixture = {
   ],
 };
 
+/**
+ * Every free-plan cap hit at once, so the gating UI can be exercised with a
+ * single seed. Counts follow the locked rules exactly: 8 ACTIVE projects (+1
+ * archived that must NOT count), 3 habits (+0) with one paused — a paused habit
+ * still counts, 20 OPEN entries (+2 completed/met that must NOT count), and 5
+ * notes. Set Settings → Dev · Plan to "Free" to make the caps bite.
+ */
+const FREE_CAPS_FULL: Fixture = {
+  projects: [
+    { key: "work", title: "Work", emoji: "💼" },
+    { key: "home", title: "Home", emoji: "🏠" },
+    { key: "body", title: "Body", emoji: "🌿" },
+    { key: "money", title: "Money", emoji: "💰" },
+    { key: "people", title: "People", emoji: "👥" },
+    { key: "making", title: "Making", emoji: "🔨" },
+    { key: "study", title: "Study", emoji: "📚" },
+    { key: "travel", title: "Travel", emoji: "✈️" },
+    // Archived — deliberately over the count, must not push active past 8.
+    { key: "old", title: "Old archive", emoji: "🗄️", status: "archived" },
+  ],
+  entries: [
+    // 20 open rows: at the entry cap.
+    { title: "Draft the studio brief", type: "todo", project: "study" },
+    { title: "Reply to the collective", type: "todo", project: "people" },
+    { title: "Electricity bill", type: "deadline", project: "money", due_date: d(3) },
+    { title: "Rent", type: "deadline", project: "money", due_date: d(7) },
+    { title: "A zine about transit", type: "idea", project: "making" },
+    { title: "Ship the analytics patch", type: "todo", project: "work" },
+    { title: "Book the dentist", type: "todo", project: "body" },
+    {
+      title: "Visa paperwork",
+      type: "deadline",
+      project: "travel",
+      due_date: endOfMonth(),
+      due_range: "month",
+    },
+    { title: "Buy a new kettle", type: "todo", project: "home" },
+    { title: "Weekend print run", type: "idea", project: "making" },
+    { title: "Review the budget", type: "todo", project: "money" },
+    { title: "Call Mum", type: "todo", project: "people" },
+    {
+      title: "Portfolio deadline",
+      type: "deadline",
+      project: "work",
+      due_date: d(-2),
+      status: "overdue",
+    },
+    { title: "Photo series on bridges", type: "idea" },
+    { title: "Fix the wobbling chair", type: "todo", project: "home" },
+    { title: "Read chapter 4", type: "todo", project: "study" },
+    {
+      title: "Passport renewal",
+      type: "deadline",
+      project: "travel",
+      due_date: endOfYear(),
+      due_range: "year",
+    },
+    { title: "Stretch ten minutes", type: "todo", project: "body" },
+    { title: "Voice memo app", type: "idea", project: "work" },
+    { title: "Plan the trip", type: "todo", project: "travel" },
+    // Closed rows — must NOT count toward the 20 open.
+    {
+      title: "Old task, finished",
+      type: "todo",
+      project: "work",
+      status: "completed",
+    },
+    {
+      title: "Last month's bill",
+      type: "deadline",
+      project: "money",
+      due_date: d(-30),
+      status: "met",
+    },
+  ],
+  diary: [
+    { body: "The transit idea keeps coming back.", mood: "charged", createdDaysAgo: 2 },
+    { body: "Money week. Logged everything.", mood: "calm", project: "money", createdDaysAgo: 5 },
+    { body: "Studio light at 6pm is unreal.", project: "making", createdDaysAgo: 9 },
+    { body: "Tired, but the walk helped.", mood: "tired", createdDaysAgo: 12 },
+    { body: "Called Mum. Good talk.", project: "people", createdDaysAgo: 15 },
+  ],
+  habits: [
+    {
+      title: "Move for 20 minutes",
+      motivation: "I want my back to stop hurting.",
+      emoji: "🏃",
+      freq: "daily",
+      status: "active",
+      completedDaysAgo: [0, 1, 3],
+    },
+    {
+      title: "Read before bed",
+      motivation: "Screens steal my sleep.",
+      emoji: "📖",
+      freq: "weekdays",
+      status: "active",
+      completedDaysAgo: [1, 2],
+    },
+    // Paused — still counts toward the 3-habit cap.
+    {
+      title: "Weekly money check",
+      motivation: "I spend better when I look.",
+      emoji: "🧾",
+      freq: "weekly",
+      days: [1],
+      status: "paused",
+    },
+  ],
+};
+
 const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
   empty: {
     key: "empty",
@@ -1091,6 +1203,13 @@ const SCENARIOS_BY_KEY: Record<ScenarioKey, Scenario> = {
       "A year of completions on two daily habits, so the detail's Year heatmap has a real shape.",
     fixture: HABITS_YEAR_HISTORY,
   },
+  "free-caps-full": {
+    key: "free-caps-full",
+    label: "Free caps · full",
+    description:
+      "Every free cap hit at once: 8 active projects (+1 archived), 3 habits (one paused), 20 open entries (+2 done), 5 notes. Set Dev · Plan to Free to test the gates.",
+    fixture: FREE_CAPS_FULL,
+  },
 };
 
 /** Ordered list for the dev-menu picker. */
@@ -1107,6 +1226,7 @@ export const SCENARIOS: Scenario[] = [
   SCENARIOS_BY_KEY["habits-all-done"],
   SCENARIOS_BY_KEY["habits-missed"],
   SCENARIOS_BY_KEY["habits-year-history"],
+  SCENARIOS_BY_KEY["free-caps-full"],
   SCENARIOS_BY_KEY.empty,
 ];
 

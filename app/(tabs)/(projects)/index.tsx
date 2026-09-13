@@ -32,8 +32,10 @@ import { SwipeableRow } from "@/components/organisms/swipeable-row";
 import { IconSymbol, type IconSymbolName } from "@/components/ui/icon-symbol";
 import { tokens, useTheme } from "@/constants/theme";
 import { useGlobalCapture } from "@/contexts/global-capture-context";
+import { useCaps } from "@/hooks/use-caps";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useUiPreference } from "@/hooks/use-ui-preference";
+import { useUpgrade } from "@/hooks/use-upgrade";
 import { ConfirmKey } from "@/lib/settings";
 
 import type { DbProject } from "@/lib/types";
@@ -110,6 +112,8 @@ export default function ProjectsScreen(): React.ReactElement {
     setProjectFeatured,
     deleteProject,
   } = useDatabase();
+  const caps = useCaps();
+  const { showUpgrade } = useUpgrade();
   const addProjectBarRef = useRef<AddProjectBarHandle | null>(null);
 
   // AddProjectBar handles its own keyboard lift to match CaptureDock. The
@@ -249,6 +253,11 @@ export default function ProjectsScreen(): React.ReactElement {
   const handleCreateProject = (title: string): void => {
     const name = title.trim();
     if (!name) return;
+    // Free plan at capacity: keep the draft, open the paywall instead.
+    if (caps.at.projects) {
+      showUpgrade("projects");
+      return;
+    }
     setDraft("");
     createProject(name)
       .then((project) =>

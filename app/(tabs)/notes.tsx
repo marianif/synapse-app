@@ -34,9 +34,11 @@ import {
 } from "@/components/organisms/notes-composer";
 import { tokens } from "@/constants/theme";
 import { useGlobalCapture } from "@/contexts/global-capture-context";
+import { useCaps } from "@/hooks/use-caps";
 import { useDatabase } from "@/hooks/use-database/use-database";
 import { useDiary } from "@/hooks/use-diary";
 import { useSharedIntake } from "@/hooks/use-shared-intake";
+import { useUpgrade } from "@/hooks/use-upgrade";
 import { countTags } from "@/lib/tags";
 import type { TagCount } from "@/lib/tags";
 
@@ -79,6 +81,8 @@ export default function NotesScreen(): React.ReactElement {
   const TAB_BAR_HEIGHT_FALLBACK = 8 + 52 + 20;
 
   const { entries, addEntry, updateEntry, removeEntry } = useDiary();
+  const caps = useCaps();
+  const { showUpgrade } = useUpgrade();
   // Board entries + projects — read-only, used to resolve linked titles for the
   // feed chip and to offer targets in the composer's link sheet. Notes writes
   // never touch these stores.
@@ -282,14 +286,22 @@ export default function NotesScreen(): React.ReactElement {
     : null;
 
   const handleSave = useCallback(
-    (body: string, selection: LinkSelection) =>
-      addEntry(
+    async (body: string, selection: LinkSelection): Promise<boolean> => {
+      // Free plan at its note cap: the composer keeps the draft and the
+      // paywall opens instead of saving.
+      if (caps.at.notes) {
+        showUpgrade("notes");
+        return false;
+      }
+      await addEntry(
         body,
         null,
         selection?.kind === "idea" ? selection.id : null,
         selection?.kind === "project" ? selection.id : null,
-      ),
-    [addEntry],
+      );
+      return true;
+    },
+    [addEntry, caps.at.notes, showUpgrade],
   );
 
   const handlePickTarget = useCallback((selection: LinkSelection) => {

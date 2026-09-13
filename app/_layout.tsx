@@ -109,7 +109,18 @@ function ThemedNavigationShell(): React.ReactElement | null {
       const data = response.notification.request.content.data as {
         kind?: unknown;
         projectId?: unknown;
+        entryId?: unknown;
       };
+      // A deadline reminder opens the entry it is about, not just the app.
+      if (data.kind === "deadline" && typeof data.entryId === "string") {
+        router.push({ pathname: "/edit", params: { id: data.entryId } });
+        return;
+      }
+      // The dormant-project summary has no single project; land on the shelf.
+      if (data.kind === "project-summary") {
+        router.navigate("/(tabs)/(projects)");
+        return;
+      }
       if (data.kind === "project-return" && typeof data.projectId === "string") {
         router.push({
           pathname: "/(tabs)/(projects)/project",
@@ -132,9 +143,12 @@ function ThemedNavigationShell(): React.ReactElement | null {
     );
     // A notification tap that launched the app is delivered as a "last
     // response" rather than a live event — handle it on mount so the tap
-    // actually navigates instead of just opening the app.
+    // actually navigates instead of just opening the app. Clear it afterwards
+    // so a later cold start doesn't replay the same navigation.
     Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) handleNotificationResponse(response);
+      if (!response) return;
+      handleNotificationResponse(response);
+      void Notifications.clearLastNotificationResponseAsync();
     });
     return () => subscription.remove();
   }, [handleNotificationResponse]);

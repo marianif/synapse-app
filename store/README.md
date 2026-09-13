@@ -204,11 +204,12 @@ none of them dispatch back into the store, so there's no feedback loop.
 2. **Notifications — schedule** — matches `createEntry`, `updateEntry`, and
    `updateEntryStatus` `fulfilled`. Requests notification permission only for
    deadlines on create, then fire-and-forgets
-   `scheduleEntryNotification(entry)` (internally a no-op for non-deadlines).
+   `scheduleEntryNotification(entry, projectTitle)` (internally a no-op for
+   non-deadlines).
 3. **Notifications — cancel** — matches `deleteEntry` and
    `deleteRecurringSeries` `fulfilled` and cancels the entry's pending
    notification.
-4. **Watch pipeline** — `startWatchSync(dispatch)` is called once by `initApp`.
+4. **Watch pipeline** — `startWatchSync(dispatch, getState)` is called once by `initApp`.
    It's guarded by a module flag so StrictMode double-effects can't double
    subscribe. Owns: the `pending_notes` drain on mount / AppState "active" /
    30s interval, the Watch message / context / file listeners (filed as todos

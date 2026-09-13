@@ -59,10 +59,10 @@ The work register: milestones, epics, areas, and typed work items.
 - [x] [bug] 64-pending-notification cap unmanaged — many deadlines can overflow the iOS limit with no priority or cap. → shipped 2026-09-13 — one coordinator plans deadlines, habits, and project returns, arming the soonest 60
 - [x] [bug] dormant-project reminder burst — every active project past its 7-day window fired about 60s after launch, all at once. @month → shipped 2026-09-12 — stale return windows are dropped instead of re-armed; a future window still schedules normally
 - [x] [bug] project returns re-arm on every entry change — any entry mutation reschedules all projects; the 7-day window is keyed to last_opened_at, so the clock itself no longer resets. → shipped 2026-09-13 — the entry listener syncs only the project(s) the entry left or joined, read from getOriginalState
-- [ ] [feature] configurable deadline lead time — let the user choose to be notified ahead of a deadline, not only at its time. effort: M @month
-- [ ] [feature] configurable dormant-project reminder behavior — a Settings choice of drop, one summary, or staggered decides how elapsed windows surface; drop is the current default. effort: M @month
-- [ ] [feature] deadline reminder deep-link — tapping a deadline reminder should open its entry, not just the app. effort: S @month
-- [ ] [design] `clarify deadline-reminder-copy` — the body always reads "Deadline today", even when it fires days out or points at a project. @month
+- [x] [feature] configurable deadline lead time — let the user choose to be notified ahead of a deadline, not only at its time. → shipped 2026-09-13 — Remind me setting (at time / 10m / 30m / 1h / 1 day); an armed-deadline ledger keeps a missed lead a once-only immediate nudge
+- [x] [feature] configurable dormant-project reminder behavior — a Settings choice of drop, one summary, or staggered decides how elapsed windows surface; drop is the current default. → shipped 2026-09-13 — dormancy markers re-surface a still-quiet project at most weekly
+- [x] [feature] deadline reminder deep-link — tapping a deadline reminder should open its entry, not just the app. → shipped 2026-09-13 — response handler routes deadline taps to /edit and clears the cold-start response
+- [x] [design] `clarify deadline-reminder-copy` — the body always reads "Deadline today", even when it fires days out or points at a project. → shipped 2026-09-13 — body states the remaining gap and the owning project
 
 ## Milestone — Release 1.1.0 <!-- flow:ms:m01tjqm0q -->
 

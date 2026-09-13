@@ -214,3 +214,192 @@ export async function setNotificationPref(
     console.error("[settings] setNotificationPref failed:", error);
   }
 }
+
+// ─── Deadline lead time ──────────────────────────────────────────────────────
+//
+// How far ahead of a deadline its reminder fires. Stored in minutes so the
+// planner can subtract it directly; 0 means "at the deadline".
+
+export type DeadlineLeadMinutes = 0 | 10 | 30 | 60 | 1440;
+
+/** The offered lead times, in minutes. Order is the display order. */
+export const DEADLINE_LEAD_MINUTES: readonly DeadlineLeadMinutes[] = [
+  0, 10, 30, 60, 1440,
+];
+
+const DEADLINE_LEAD_KEY = "notification_deadline_lead_minutes";
+
+function isDeadlineLead(value: number): value is DeadlineLeadMinutes {
+  return (DEADLINE_LEAD_MINUTES as readonly number[]).includes(value);
+}
+
+/** Returns the saved deadline lead time in minutes, defaulting to 0. */
+export async function getDeadlineLeadMinutes(): Promise<DeadlineLeadMinutes> {
+  try {
+    const value = await AsyncStorage.getItem(DEADLINE_LEAD_KEY);
+    if (value === null) return 0;
+    const parsed = Number.parseInt(value, 10);
+    return isDeadlineLead(parsed) ? parsed : 0;
+  } catch (error) {
+    console.error("[settings] getDeadlineLeadMinutes failed:", error);
+    return 0;
+  }
+}
+
+/** Persists the deadline lead time in minutes. */
+export async function setDeadlineLeadMinutes(
+  value: DeadlineLeadMinutes,
+): Promise<void> {
+  try {
+    await AsyncStorage.setItem(DEADLINE_LEAD_KEY, String(value));
+  } catch (error) {
+    console.error("[settings] setDeadlineLeadMinutes failed:", error);
+  }
+}
+
+// ─── Dormant-project reminder behavior ──────────────────────────────────────
+//
+// What happens to a project whose 7-day window has already elapsed and that
+// still has open work: "drop" (default, current behavior), one catch-up
+// "summary" for all of them, or individual "staggered" nudges.
+
+export type DormantReminderBehavior = "drop" | "summary" | "staggered";
+
+export const DORMANT_REMINDER_BEHAVIORS: readonly DormantReminderBehavior[] = [
+  "drop",
+  "summary",
+  "staggered",
+];
+
+const DORMANT_BEHAVIOR_KEY = "notification_dormant_behavior";
+
+function isDormantBehavior(value: string | null): value is DormantReminderBehavior {
+  return value === "summary" || value === "staggered" || value === "drop";
+}
+
+/** Returns the saved dormant-project behavior, defaulting to "drop". */
+export async function getDormantReminderBehavior(): Promise<DormantReminderBehavior> {
+  try {
+    const value = await AsyncStorage.getItem(DORMANT_BEHAVIOR_KEY);
+    return isDormantBehavior(value) ? value : "drop";
+  } catch (error) {
+    console.error("[settings] getDormantReminderBehavior failed:", error);
+    return "drop";
+  }
+}
+
+/** Persists the dormant-project behavior. */
+export async function setDormantReminderBehavior(
+  value: DormantReminderBehavior,
+): Promise<void> {
+  try {
+    await AsyncStorage.setItem(DORMANT_BEHAVIOR_KEY, value);
+  } catch (error) {
+    console.error("[settings] setDormantReminderBehavior failed:", error);
+  }
+}
+
+// ─── Dormancy surfacing markers ──────────────────────────────────────────────
+//
+// One marker per project records when its next dormant-project notification is
+// armed, plus which mode armed it. The scheduler rebuilds every pending
+// notification on launch/foreground, so a marker whose `fireAt` is still ahead
+// is re-planned at the exact same instant — never dropped, never re-nudged
+// early. Once `fireAt` passes, the cooldown (`fireAt + 7 days`) gates the next
+// catch-up. A project touch overwrites the marker with the new invitation.
+
+export interface DormancyMarker {
+  /** Epoch ms the next surface notification is armed for. */
+  fireAt: number;
+  mode: "invitation" | "summary" | "staggered";
+}
+
+const DORMANCY_MARKERS_KEY = "notification_dormancy_markers";
+
+function isDormancyMarker(value: unknown): value is DormancyMarker {
+  if (typeof value !== "object" || value === null) return false;
+  const marker = value as { fireAt?: unknown; mode?: unknown };
+  return (
+    typeof marker.fireAt === "number" &&
+    (marker.mode === "invitation" ||
+      marker.mode === "summary" ||
+      marker.mode === "staggered")
+  );
+}
+
+/** Returns the per-project dormancy markers, defaulting to an empty map. */
+export async function getDormancyMarkers(): Promise<
+  Record<string, DormancyMarker>
+> {
+  try {
+    const raw = await AsyncStorage.getItem(DORMANCY_MARKERS_KEY);
+    if (!raw) return {};
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== "object" || parsed === null) return {};
+    const markers: Record<string, DormancyMarker> = {};
+    for (const [projectId, value] of Object.entries(
+      parsed as Record<string, unknown>,
+    )) {
+      if (isDormancyMarker(value)) markers[projectId] = value;
+    }
+    return markers;
+  } catch (error) {
+    console.error("[settings] getDormancyMarkers failed:", error);
+    return {};
+  }
+}
+
+/** Persists the per-project dormancy markers. */
+export async function setDormancyMarkers(
+  markers: Record<string, DormancyMarker>,
+): Promise<void> {
+  try {
+    await AsyncStorage.setItem(DORMANCY_MARKERS_KEY, JSON.stringify(markers));
+  } catch (error) {
+    console.error("[settings] setDormancyMarkers failed:", error);
+  }
+}
+
+// ─── Armed deadline ledger ───────────────────────────────────────────────────
+//
+// notificationId → the deadline instant (ms) its reminder was armed for. The
+// scheduler rebuilds the whole schedule on launch/foreground, so without this
+// a reminder whose lead window already passed would be re-armed and re-delivered
+// on every pass. A matching entry means "this deadline's reminder was already
+// armed", so the late path stays a once-only catch-up. Entries whose deadline
+// has passed are pruned by the caller.
+
+export type ArmedDeadlines = Record<string, number>;
+
+const ARMED_DEADLINES_KEY = "notification_armed_deadlines";
+
+/** Returns the armed-deadline ledger, defaulting to an empty map. */
+export async function getArmedDeadlines(): Promise<ArmedDeadlines> {
+  try {
+    const raw = await AsyncStorage.getItem(ARMED_DEADLINES_KEY);
+    if (!raw) return {};
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== "object" || parsed === null) return {};
+    const armed: ArmedDeadlines = {};
+    for (const [id, value] of Object.entries(
+      parsed as Record<string, unknown>,
+    )) {
+      if (typeof value === "number") armed[id] = value;
+    }
+    return armed;
+  } catch (error) {
+    console.error("[settings] getArmedDeadlines failed:", error);
+    return {};
+  }
+}
+
+/** Persists the armed-deadline ledger. */
+export async function setArmedDeadlines(
+  armed: ArmedDeadlines,
+): Promise<void> {
+  try {
+    await AsyncStorage.setItem(ARMED_DEADLINES_KEY, JSON.stringify(armed));
+  } catch (error) {
+    console.error("[settings] setArmedDeadlines failed:", error);
+  }
+}

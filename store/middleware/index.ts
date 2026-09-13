@@ -174,7 +174,7 @@ listenerMiddleware.startListening({
     updateEntry.fulfilled,
     updateEntryStatus.fulfilled,
   ),
-  effect: async (action) => {
+  effect: async (action, api) => {
     const entry = (action as unknown as { payload: DbEntry }).payload;
     // A completed/met entry must not keep a pending reminder: cancel instead of
     // re-scheduling so a finished deadline goes quiet.
@@ -189,8 +189,14 @@ listenerMiddleware.startListening({
       const granted = await requestNotificationPermissions();
       if (!granted) return;
     }
+    // The reminder body names the owning project, so resolve it from state.
+    const projectTitle = entry.project_id
+      ? (api.getState() as RootState).projects.projects.find(
+          (project) => project.id === entry.project_id,
+        )?.title
+      : null;
     // Scheduling remains fire-and-forget so it never blocks a save.
-    scheduleEntryNotification(entry).catch((err) => {
+    scheduleEntryNotification(entry, projectTitle).catch((err) => {
       console.warn("[store] scheduleEntryNotification failed:", err);
     });
   },
